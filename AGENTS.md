@@ -8,6 +8,24 @@
 - `GraphEditorStates` contains WolvenKit graph editor state JSON. Treat it as editor support data, not the packed asset source of truth.
 - `generated` contains older/generated JSON snapshots. Prefer `source/raw` when preparing CR2W assets for use.
 
+## Archive Layout
+
+- `source/archive/base` may contain supporting base game files. It currently contains custom NPC template files.
+- `source/archive/mod` contains all mod-owned packed resources.
+- `source/archive/mod/ghostline` is for generic Ghostline files shared across the quest series, such as characters.
+- `source/archive/mod/ghostline/characters` contains Ghostline character resources.
+- `source/archive/mod/ghostline/characters/patch` contains the first custom character, Patch. The root `.ent` entity points to `.app` appearance file(s). Files under `body/` and `head/` are also part of the custom NPC template file set.
+- `source/archive/mod/gq000` contains the first Ghostline quest. `gq` means Ghostline quest, and `000` identifies the first quest.
+- `source/archive/mod/gq000/localization/en-us` contains subtitles, onscreens, and voiceover maps.
+- `source/archive/mod/gq000/phases` contains questphase resources. `gq000.questphase` is the main questphase for the `gq000` quest, and `gq000_patch_meet.questphase` is the first stage where the player meets the quest giver.
+- `source/archive/mod/gq000/scenes` contains scene resources used for dialogue, interactions, animations, and related scene work. `gq000_patch_meet.scene` is part of `gq000_patch_meet.questphase`.
+
+## Tweak Resources
+
+- `resources/r6/tweaks` is also part of the mod.
+- `resources/r6/tweaks/ghostline/character_patch.yaml` defines the custom NPC.
+- `resources/r6/tweaks/ghostline/faction_ghostline.yaml` defines the custom Ghostline faction.
+
 ## Generator
 
 - Run `python .\create_files.py` from the repo root to generate the `gq000_01` conversation resources from `template.scene.json`.
@@ -15,6 +33,12 @@
 - The generator expects WAV files in `source/archive/mod/gq000/localization/en-us/vo`. If a WAV named after a line key exists, it renames it to the hashed actor filename.
 - `create_files.py` uses random dialogue gaps when building section timing, so reruns can change generated scene timing even with the same dialogue.
 - The generator writes CR2W-JSON files, not game-ready CR2W binaries. Convert them before use.
+
+## Voice Generation
+
+- `voice_generate.py` is the voice design and voice clone process.
+- For the Player Character ("V"), use voice clone only.
+- For custom characters, design a voice first, then clone it for repeated usage.
 
 ## WolvenKit CLI
 
