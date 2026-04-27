@@ -1,0 +1,21 @@
+# Automatically normalize text files to LF in the repository
+* text=auto
+
+# Force LF for shell scripts
+*.sh text eol=lf
+
+# Force CRLF for batch files
+*.bat text eol=crlf
+
+# CR2W
+*.scene binary
+*.quest binary
+*.questphase binary
+*.wav binary
+*.mesh binary
+*.tmp binary
+*.app binary
+*.ent binary
+*.xbm binary
+*.morphtarget binary
+source/archive/**/*.json binary
