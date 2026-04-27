@@ -1,6 +1,6 @@
 # Ghostline Roadmap
 
-Last audited: 2026-04-27
+Last audited: 2026-04-28
 
 This file records the current project state and the next work needed to turn `gq000` from a dialogue prototype into a playable quest slice. It is based on the files under `source`, the helper explorers in `tools`, and local references in `modding_docs`.
 
@@ -70,7 +70,9 @@ This file records the current project state and the next work needed to turn `gq
 - `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json` and `source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json` are aligned.
 - `py .\tools\explore_localization.py check` reports no subtitle/VO coverage problems.
 - `source/raw/gq000_01_manifest.json` records the generated line keys, string IDs, text, audio paths, and durations.
-- The VO map points at `.wem` paths, but `source/archive/mod/gq000/localization/en-us/vo` currently contains `.wav` files and no `.wem` files. The final audio pipeline still needs Wwise/WEM conversion or a verified WolvenKit packing path.
+- The VO map points at `.wem` paths, and `source/archive/mod/gq000/localization/en-us/vo` now contains matching Wwise-generated `.wem` files alongside the authored `.wav` sources.
+- `tools/convert_wavs_to_wem.ps1` normalizes WAVs into `wwise_conversion\ExternalSources`, writes `external_sources.wsources`, runs Wwise external source conversion for Windows with `Vorbis Quality High`, and copies WEMs back into the VO folder without deleting WAVs.
+- Checked 2026-04-27: WolvenKit.CLI 8.17.4 exposes a `wwise` command, but its implementation only supports `.wem` to `.ogg` conversion when `--wem` is set and cannot convert the current `.wav` VO sources to `.wem`.
 
 ### Generated/editor support data
 
@@ -215,11 +217,11 @@ $wk = 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe'
 - Add objective updates, mappin changes, and failure/completion branches.
 - Replace placeholder/base references with Ghostline-owned resources where needed.
 
-### 5. Finish audio packaging
+### 5. Validate audio packaging
 
-- Convert or pack WAV voice lines into the `.wem` resources referenced by the VO map.
+- Wwise `.wem` files have been generated for the current WAV voice lines referenced by the VO map.
 - Add lipsync resources if the chosen scene presentation requires them.
-- Validate that subtitles, VO map, and audio assets remain aligned after any dialogue edits.
+- Validate in game that subtitles, VO map, and audio assets remain aligned after any dialogue edits.
 
 ### 6. Pack and test in game
 
@@ -243,5 +245,5 @@ py .\tools\explore_scene.py summary
 py .\tools\explore_scene.py refs --kind NodeRef
 py .\tools\explore_scene.py refs --kind journal_path
 py .\tools\explore_localization.py check
+.\tools\convert_wavs_to_wem.ps1
 ```
-

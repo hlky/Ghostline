@@ -80,3 +80,24 @@ Pass one or more localization files with repeated `--file` arguments:
 ```powershell
 py .\tools\explore_localization.py --file .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json --file .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json check
 ```
+
+## Voiceover WEM Conversion
+
+Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into
+Wwise `.wem` files. The script normalizes WAVs into
+`wwise_conversion\ExternalSources`, writes `external_sources.wsources`, runs
+Wwise external source conversion, and copies the resulting WEM files back into
+the VO folder without deleting the source WAVs.
+
+```powershell
+.\tools\convert_wavs_to_wem.ps1
+```
+
+By default it uses:
+
+```powershell
+C:\Audiokinetic\Wwise2025.1.7.9143\Authoring\x64\Release\bin\WwiseConsole.exe
+```
+
+Override that path with `-WwiseConsole` or the `WWISE_CONSOLE` environment
+variable if Wwise is installed somewhere else.
