@@ -10,6 +10,12 @@
 - `GraphEditorStates` contains WolvenKit graph editor state JSON. Treat it as editor support data, not the packed asset source of truth.
 - `generated` contains older/generated JSON snapshots. Prefer `source/raw` when preparing CR2W assets for use.
 
+## Roadmap
+
+- `ROADMAP.md` tracks current implementation status, unresolved references, and next milestones.
+- When work changes quest status, adds/removes resources, resolves a listed gap, or discovers a new blocker, update `ROADMAP.md` in the same change so it stays current.
+- Before starting broad quest, world, journal, scene, or packaging work, skim `ROADMAP.md` to avoid re-discovering known gaps.
+
 ## Local Modding Docs
 
 - Before guessing at Cyberpunk-specific behavior, check `modding_docs` locally.
