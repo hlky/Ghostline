@@ -113,6 +113,12 @@ WolvenKit command naming is easy to invert:
 
 When converting more than one file, avoid a single flat output directory if assets share a basename. For example, subtitles and VO both output as `gq000_01.json.json`, so they must use separate output directories.
 
+WolvenKit CLI serialization expects the `-o` output directory to exist for newly added raw resource trees. Before serializing a file into a raw folder that has not been created yet, make it first, for example:
+
+```powershell
+New-Item -ItemType Directory -Force .\source\raw\mod\ghostline\characters\patch
+```
+
 ## CR2W to Raw JSON
 
 Use this when a resource was changed in WolvenKit and the editable JSON needs to be refreshed.
@@ -121,6 +127,9 @@ Use this when a resource was changed in WolvenKit and the editable JSON needs to
 & $wk convert serialize .\source\archive\mod\gq000\localization\en-us\subtitles\gq000_01.json -o .\source\raw\mod\gq000\localization\en-us\subtitles -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\localization\en-us\vo\gq000_01.json -o .\source\raw\mod\gq000\localization\en-us\vo -v Minimal
 & $wk convert serialize .\source\archive\mod\ghostline\localization\en-us\onscreens\ghostline.json -o .\source\raw\mod\ghostline\localization\en-us\onscreens -v Minimal
+& $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.ent -o .\source\raw\mod\ghostline\characters\patch -v Minimal
+& $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.app -o .\source\raw\mod\ghostline\characters\patch -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\phases\gq000.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\scenes\gq000_patch_meet.scene -o .\source\raw\mod\gq000\scenes -v Minimal
 ```
@@ -130,6 +139,9 @@ The expected raw outputs are:
 - `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json`
 - `source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json`
 - `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
+- `source/raw/mod/ghostline/characters/patch/patch.ent.json`
+- `source/raw/mod/ghostline/characters/patch/patch.app.json`
+- `source/raw/mod/gq000/phases/gq000.questphase.json`
 - `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
 - `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
 
@@ -141,6 +153,9 @@ Use this before packing or testing the asset in game.
 & $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json -o .\source\archive\mod\gq000\localization\en-us\subtitles -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json -o .\source\archive\mod\gq000\localization\en-us\vo -v Minimal
 & $wk convert deserialize .\source\raw\mod\ghostline\localization\en-us\onscreens\ghostline.json.json -o .\source\archive\mod\ghostline\localization\en-us\onscreens -v Minimal
+& $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.ent.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
+& $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.app.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_patch_meet.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json -o .\source\archive\mod\gq000\scenes -v Minimal
 ```

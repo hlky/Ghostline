@@ -28,15 +28,31 @@ This file records the current project state and the next work needed to turn `gq
   - `voiceTag: gq_patch`
 - `source/resources/r6/tweaks/ghostline/faction_ghostline.yaml` defines `Factions.Ghostline`.
 - `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json` contains onscreen entries for `gq_npc_patch` and `mod_gq_faction_ghostline`.
-- There are no raw CR2W-JSON source files for `patch.ent` or `patch.app`; if either is edited in WolvenKit, serialize them into `source/raw` before making further scripted changes.
+- Raw CR2W-JSON source files now exist for Patch's root entity and appearance resource:
+  - `source/raw/mod/ghostline/characters/patch/patch.ent.json`
+  - `source/raw/mod/ghostline/characters/patch/patch.app.json`
+- `py .\tools\explore_ent_app.py summary` reports:
+  - `patch.ent`: 1 root appearance, 110 root components, 249 handles, 61 resolved dependencies
+  - `patch.app`: 1 appearance definition named `default`, 47 appearance components, 103 handles
+- `patch.ent` appearance `ghostline_patch_default` maps `appearanceName: default` to `mod\ghostline\characters\patch\patch.app`.
 
 ### Quest phases
 
 - Packed questphase binaries exist:
   - `source/archive/mod/gq000/phases/gq000.questphase`
   - `source/archive/mod/gq000/phases/gq000_patch_meet.questphase`
-- The editable raw JSON exists only for `gq000_patch_meet.questphase`:
+- Editable raw JSON now exists for both current questphases:
+  - `source/raw/mod/gq000/phases/gq000.questphase.json`
   - `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
+- `gq000.questphase` has 7 graph nodes and 7 edges:
+  - input
+  - phase node id `2` containing setup/community/journal work
+  - phase node id `3`, which loads `mod\gq000\phases\gq000_patch_meet.questphase`
+  - logical hub node id `11` on the phase failure branch
+  - facts DB manager node id `12` on the phase success branch
+  - phase node id `13`
+  - terminating output
+- The root phase flow is `input -> phase id 2 -> gq000_patch_meet phase id 3 -> facts/logical branch -> phase id 13 -> output`.
 - `gq000_patch_meet.questphase` currently has 7 graph nodes and 6 edges:
   - input
   - journal node for `gq000_01_poi_patch_bridge`
@@ -46,7 +62,6 @@ This file records the current project state and the next work needed to turn `gq
   - scene node for `mod\gq000\scenes\gq000_patch_meet.scene` at `#gq000_01_sm_patch_bridge`
   - terminating output
 - The phase exits through the scene node socket `job_accept` into a terminating output. No post-accept gameplay phase/objective branch exists yet.
-- The raw source for root `gq000.questphase` is missing. This blocks reliable scripted review of how the registered root phase starts and hands off to `gq000_patch_meet`.
 
 ### Scene
 
@@ -82,6 +97,7 @@ This file records the current project state and the next work needed to turn `gq
   - `tools/explore_questphase.py`
   - `tools/explore_scene.py`
   - `tools/explore_localization.py`
+  - `tools/explore_ent_app.py`
 
 ## Missing Or Unresolved References
 
@@ -163,38 +179,22 @@ Docs checked:
 
 Current reference:
 
-- `#mq003_pr_homeless` in `gq000_patch_meet.questphase` phase prefab data
+- `#mq003_pr_homeless` in `gq000_patch_meet.questphase` phase prefab data and root `gq000.questphase` phase prefab data
+- `#mq003_pr_corpse` in root `gq000.questphase` phase prefab data
 
 Needed:
 
-- Confirm this is an intentional base-game prefab reference.
-- If it is only a placeholder, replace it with a Ghostline-owned prefab or remove it once the custom streaming-sector setup owns the required markers/triggers.
-
-### Root questphase raw source
-
-Current gap:
-
-- `source/archive/mod/gq000/phases/gq000.questphase` exists and is registered, but `source/raw/mod/gq000/phases/gq000.questphase.json` does not exist.
-
-Needed:
-
-- Serialize the binary with WolvenKit CLI:
-
-```powershell
-$wk = 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe'
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-```
-
-- Use `tools/explore_questphase.py --file .\source\raw\mod\gq000\phases\gq000.questphase.json summary` to document the root graph.
-- Confirm how the root phase activates `gq000_patch_meet`.
+- Confirm these are intentional base-game prefab references.
+- If they are only placeholders, replace them with Ghostline-owned prefabs or remove them once the custom streaming-sector setup owns the required markers/triggers.
 
 ## Next Milestones
 
-### 1. Make all current packed assets inspectable
+### 1. Make all current packed assets inspectable (complete 2026-04-28)
 
-- Serialize `gq000.questphase` into `source/raw`.
-- If Patch character assets need more changes, serialize `patch.ent` and `patch.app` into `source/raw`.
-- Re-run the three explorer tools and update this roadmap if the raw graphs differ from the current notes.
+- Serialized `gq000.questphase` into `source/raw/mod/gq000/phases/gq000.questphase.json`.
+- Serialized `patch.ent` and `patch.app` into `source/raw/mod/ghostline/characters/patch`.
+- Added `tools/explore_ent_app.py` for `.ent` and `.app` inspection.
+- Re-ran the questphase, scene, localization, and ent/app explorers and updated the current notes above.
 
 ### 2. Add journal and quest UI data
 
@@ -245,5 +245,9 @@ py .\tools\explore_scene.py summary
 py .\tools\explore_scene.py refs --kind NodeRef
 py .\tools\explore_scene.py refs --kind journal_path
 py .\tools\explore_localization.py check
+py .\tools\explore_ent_app.py summary
+py .\tools\explore_ent_app.py appearances
+py .\tools\explore_ent_app.py components --resources-only
+py .\tools\explore_ent_app.py refs --kind ResourcePath
 .\tools\convert_wavs_to_wem.ps1
 ```

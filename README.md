@@ -81,6 +81,29 @@ Pass one or more localization files with repeated `--file` arguments:
 py .\tools\explore_localization.py --file .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json --file .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json check
 ```
 
+## Entity / Appearance Explorer
+
+Use `tools/explore_ent_app.py` to inspect deserialized `.ent` and `.app`
+CR2W-JSON. By default it loads Patch's root entity and app files together:
+
+```powershell
+py .\tools\explore_ent_app.py summary
+py .\tools\explore_ent_app.py appearances
+py .\tools\explore_ent_app.py components --resources-only
+py .\tools\explore_ent_app.py components --type SkinnedMesh
+py .\tools\explore_ent_app.py component c124
+py .\tools\explore_ent_app.py refs --kind ResourcePath
+py .\tools\explore_ent_app.py handles
+py .\tools\explore_ent_app.py search patch
+py .\tools\explore_ent_app.py types
+```
+
+Pass one or more raw entity/app files with repeated `--file` arguments:
+
+```powershell
+py .\tools\explore_ent_app.py --file .\source\raw\mod\ghostline\characters\patch\patch.ent.json --file .\source\raw\mod\ghostline\characters\patch\patch.app.json summary
+```
+
 ## Voiceover WEM Conversion
 
 Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into
