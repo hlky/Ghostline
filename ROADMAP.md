@@ -11,9 +11,9 @@ This file records the current project state and the next work needed to turn `gq
 - `source/resources/Ghostline.archive.xl` exists and currently registers:
   - `mod\gq000\phases\gq000.questphase` as a root questphase under `base\quest\cyberpunk2077.quest`
   - `mod\ghostline\localization\en-us\onscreens\ghostline.json` for generic onscreen localization
-- The ArchiveXL file does not yet register any `journal:` resources.
+  - `mod\gq000\journal\gq000.journal` for the first quest journal data
+  - `mod\gq000\localization\en-us\onscreens\gq000.json` for quest-specific onscreen localization
 - The ArchiveXL file does not yet register any `streaming: blocks:` resources.
-- The ArchiveXL file does not yet register quest-specific onscreen localization under `mod\gq000`.
 
 ### Patch character
 
@@ -55,7 +55,7 @@ This file records the current project state and the next work needed to turn `gq
 - The root phase flow is `input -> phase id 2 -> gq000_patch_meet phase id 3 -> facts/logical branch -> phase id 13 -> output`.
 - `gq000_patch_meet.questphase` currently has 7 graph nodes and 6 edges:
   - input
-  - journal node for `gq000_01_poi_patch_bridge`
+  - journal node for `points_of_interest/minor_quests/gq000_01_poi_patch_bridge`
   - trigger wait for `#gq000_01_tr_setup`
   - checkpoint `gq000_patch_meet`
   - trigger wait for `#gq000_01_tr_engage`
@@ -89,6 +89,36 @@ This file records the current project state and the next work needed to turn `gq
 - `tools/convert_wavs_to_wem.ps1` normalizes WAVs into `wwise_conversion\ExternalSources`, writes `external_sources.wsources`, runs Wwise external source conversion for Windows with `Vorbis Quality High`, and copies WEMs back into the VO folder without deleting WAVs.
 - Checked 2026-04-27: WolvenKit.CLI 8.17.4 exposes a `wwise` command, but its implementation only supports `.wem` to `.ogg` conversion when `--wem` is set and cannot convert the current `.wav` VO sources to `.wem`.
 
+### Journal and quest UI
+
+- Added journal explorer tooling:
+  - `tools/explore_journal.py`
+  - `py .\tools\explore_journal.py prefixes --with-types` summarizes one representative `.journal` file for each first-dot prefix in `journal_reference`.
+- Explored representative journal reference prefixes:
+  - `briefings`: briefing folders plus `gameJournalBriefing*` sections.
+  - `codex`: codex categories/groups/entries/descriptions.
+  - `contacts`: `gameJournalContact`.
+  - `internet_sites`: internet site/page entries.
+  - `onscreens`: onscreen groups and onscreen entries.
+  - `points_of_interest`: `gameJournalPointOfInterestGroup` and `gameJournalPointOfInterestMappin`.
+  - `quests`: `gameJournalQuest`, phase, objective, description, quest map pin, and codex link entries.
+  - `tarots`: tarot group/card entries.
+- Added packed and raw `gq000` journal resources:
+  - `source/archive/mod/gq000/journal/gq000.journal`
+  - `source/raw/mod/gq000/journal/gq000.journal.json`
+- The `gq000` journal currently defines:
+  - quest root `quests/minor_quest/gq000`
+  - phase `quests/minor_quest/gq000/gq000_01`
+  - objective `quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch`
+  - description `quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_desc_meet_patch`
+  - quest map pin `quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge`
+  - point of interest `points_of_interest/minor_quests/gq000_01_poi_patch_bridge`
+- Added packed and raw quest onscreen localization:
+  - `source/archive/mod/gq000/localization/en-us/onscreens/gq000.json`
+  - `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
+- Quest onscreen localization uses ArchiveXL-style `primaryKey: "0"` entries with unique `gl_` secondary keys, and the journal fields reference those secondary keys directly.
+- Updated `gq000.questphase`, `gq000_patch_meet.questphase`, and `gq000_patch_meet.scene` raw and packed resources so journal references use full journal paths instead of bare leaf ids.
+
 ### Generated/editor support data
 
 - `generated` contains older generated snapshots. Prefer `source/raw` when changing CR2W assets.
@@ -98,32 +128,11 @@ This file records the current project state and the next work needed to turn `gq
   - `tools/explore_scene.py`
   - `tools/explore_localization.py`
   - `tools/explore_ent_app.py`
+  - `tools/explore_journal.py`
 
 ## Missing Or Unresolved References
 
 These are references found in current raw assets that do not have matching project-owned resources under `source`.
-
-### Journal and quest mappin data
-
-Current references:
-
-- `gq000_01_poi_patch_bridge`
-- `gq000_01_obj_meet_patch`
-- `gq000_01_desc_meet_patch`
-- `gq000_01_qmp_patch_bridge`
-
-Needed:
-
-- Add a quest journal resource, for example `source/archive/mod/gq000/journal/gq000.journal`, with raw source under `source/raw/mod/gq000/journal`.
-- Register it in `source/resources/Ghostline.archive.xl` using `journal:`.
-- Add quest-specific onscreen localization for journal title/objective/description text, likely under `source/archive/mod/gq000/localization/en-us/onscreens/gq000.json`, and register it under `localization: onscreens: en-us:`.
-- Keep journal paths aligned with the existing questphase and scene journal nodes.
-
-Docs checked:
-
-- `modding_docs/modding-guides/quest/how-to-add-new-text-messages-thread-to-cyberpunk-2077.md`
-- `modding_docs/modding-guides/quest/creating-custom-shards.md`
-- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/translation-files-.json.md`
 
 ### World placement, trigger areas, and scene marker
 
@@ -198,10 +207,15 @@ Needed:
 
 ### 2. Add journal and quest UI data
 
-- Create the `gq000` `.journal` resource.
-- Add entries for the quest root, objective, description, point of interest, and quest mappin paths currently referenced by scene/quest nodes.
-- Add quest-specific onscreen localization for those journal entries.
-- Register both `journal:` and quest onscreens in `Ghostline.archive.xl`.
+- Completed 2026-04-28.
+- Created `gq000` journal and quest onscreen localization resources in raw and packed form.
+- Registered both `journal:` and quest onscreens in `source/resources/Ghostline.archive.xl`.
+- Updated scene and questphase journal paths to full journal hierarchy paths.
+- Added `tools/explore_journal.py` and documented first-dot `.journal` reference prefixes in `AGENTS.md`.
+- Docs checked:
+  - `modding_docs/modding-guides/quest/how-to-add-new-text-messages-thread-to-cyberpunk-2077.md`
+  - `modding_docs/modding-guides/quest/creating-custom-shards.md`
+  - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/translation-files-.json.md`
 
 ### 3. Add the meeting-location world data
 
@@ -249,5 +263,8 @@ py .\tools\explore_ent_app.py summary
 py .\tools\explore_ent_app.py appearances
 py .\tools\explore_ent_app.py components --resources-only
 py .\tools\explore_ent_app.py refs --kind ResourcePath
+py .\tools\explore_journal.py prefixes --with-types
+py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json summary
+py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json tree --max-depth 6
 .\tools\convert_wavs_to_wem.ps1
 ```
