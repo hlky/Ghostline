@@ -127,6 +127,12 @@ This file records the current project state and the next work needed to turn `gq
 - Added world reference tooling:
   - `tools/serialize_reference_world.ps1` serializes `.streamingblock` and `.streamingsector` CR2W binaries under `reference/world` into colocated CR2W-JSON.
   - `tools/explore_world.py` summarizes streaming block descriptors, sector nodes, NodeRefs, trigger outlines, and community registry/area wiring.
+  - `tools/generate_world.py` generates Ghostline-owned raw `.streamingsector.json`
+    and `.streamingblock.json` files from a coordinate spec, including static
+    markers, quest trigger areas, optional Patch community/AI spot wiring,
+    ArchiveXL registration, and optional WolvenKit deserialization.
+  - `tools/gq000_world_spec.example.json` documents the current generator spec
+    shape for the Patch meeting world data.
 - `py .\tools\explore_world.py summary` reports:
   - `reference/world/000/blocks/all.streamingblock.json`: 2 quest descriptors, both with `questPrefabNodeRef` values under the mq003 Santo Domingo prefab path.
   - `reference/world/000/always_loaded_0.streamingsector.json`: 0 nodes, 4 `nodeData` entries, and 32 registered `nodeRefs`; this is a useful reference for alias registration separate from concrete node definitions.
@@ -140,6 +146,22 @@ This file records the current project state and the next work needed to turn `gq
 - Trigger reference findings from `py .\tools\explore_world.py nodes --type TriggerArea --limit 0`:
   - mq003 quest triggers and Object Spawner trigger examples both use `worldTriggerAreaNode` with `AreaShapeOutline` height `2` and 4 points.
   - The current Ghostline trigger names have direct mq003 analogs for engage, case mood, and someone-coming trigger patterns.
+- Programmatic world-generation findings from 2026-04-28:
+  - A generated raw `worldStreamingSector` containing a `worldStaticMarkerNode`
+    and `worldTriggerAreaNode` deserialized with WolvenKit.CLI 8.17.4 and
+    round-tripped back to JSON with the expected NodeRefs intact.
+  - `AreaShapeOutline.buffer` is the trigger outline source of truth. It stores
+    a little-endian `uint32` point count, local `Vector4` points with `W = 1`,
+    and a trailing `float` height. WolvenKit may serialize the visible `points`
+    array as a default square even when the buffer contains the real outline.
+  - `WolvenKit.RED4.Types.NodeRef.GetRedHash()` returns the compound
+    `worldGlobalNodeID` hash used by community spot IDs. The CLI `hash`
+    command is plain FNV1A and does not produce these values.
+  - A generated AI spot plus `worldCompiledCommunityAreaNode_Streamable`,
+    always-loaded `worldCommunityRegistryNode`, and matching streaming block
+    also deserialized to CR2W. This proves the CR2W shape is scriptable, but
+    the generated resources still need in-game validation before treating the
+    generator as production-ready.
 
 ### Generated/editor support data
 
@@ -343,6 +365,8 @@ py .\tools\explore_world.py summary
 py .\tools\explore_world.py blocks
 py .\tools\explore_world.py nodes --type TriggerArea --limit 0
 py .\tools\explore_world.py communities
+py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
+py .\tools\generate_world.py hash "$/mod/npcac/#npcac_spot"
 .\tools\serialize_reference_world.ps1
 .\tools\convert_wavs_to_wem.ps1
 ```

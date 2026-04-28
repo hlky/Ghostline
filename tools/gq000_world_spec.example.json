@@ -1,0 +1,109 @@
+{
+  "_note": "Example only. Replace origin with coordinates captured in game before generating real gq000 world assets.",
+  "name": "gq000",
+  "prefab_root": "$/mod/gq000/#gq000_pr_patch_meet",
+  "block_path": "mod\\gq000\\world\\gq000_patch_meet.streamingblock",
+  "quest_sector_path": "mod\\gq000\\world\\gq000_patch_meet.streamingsector",
+  "always_loaded_sector_path": "mod\\gq000\\world\\gq000_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -287.155151,
+    "y": -1950.40015,
+    "z": 8.96000099,
+    "yaw": -135
+  },
+  "markers": [
+    {
+      "ref": "#gq000_01_sm_patch_bridge",
+      "position": {
+        "from": "origin"
+      },
+      "yaw": "origin"
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gq000_01_tr_setup",
+      "position": {
+        "from": "origin",
+        "forward": -8
+      },
+      "outline": {
+        "type": "rectangle",
+        "width": 8,
+        "depth": 8,
+        "height": 2
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq000_01_tr_engage",
+      "position": {
+        "from": "origin"
+      },
+      "outline": {
+        "type": "rectangle",
+        "width": 4,
+        "depth": 4,
+        "height": 2
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq000_01_tr_bridge_case_mood",
+      "position": {
+        "from": "origin",
+        "forward": 10
+      },
+      "outline": {
+        "type": "rectangle",
+        "width": 12,
+        "depth": 8,
+        "height": 2
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq000_01_tr_someone_coming",
+      "position": {
+        "from": "origin",
+        "forward": -5,
+        "right": 8
+      },
+      "outline": {
+        "type": "rectangle",
+        "width": 6,
+        "depth": 6,
+        "height": 2
+      },
+      "notifiers": [
+        "quest"
+      ]
+    }
+  ],
+  "community": {
+    "ref": "#gq000_01_com_patch_bridge",
+    "entry": "patch",
+    "phase": "default",
+    "period": "Day",
+    "character": "Character.GhostlinePatch",
+    "appearance": "default",
+    "source_object_id": "auto",
+    "active_on_start": 1,
+    "spot": {
+      "ref": "#gq000_01_spot_patch_bridge",
+      "position": {
+        "from": "origin",
+        "right": -1.5
+      },
+      "yaw": "origin",
+      "workspot": "base\\workspots\\common\\wall\\generic__stand_wall_lean_back_cigarette__smoke__01.workspot"
+    }
+  }
+}

@@ -147,6 +147,29 @@ Pass one or more files or directories with repeated `--file` arguments:
 py .\tools\explore_world.py --file .\reference\world\001\sectors summary
 ```
 
+## World Generator
+
+Use `tools/generate_world.py` to turn captured in-game coordinates into raw
+`.streamingsector.json` and `.streamingblock.json` files. The checked-in example
+spec uses placeholder/reference coordinates; copy it and replace the `origin`
+before generating real quest assets.
+
+```powershell
+py .\tools\generate_world.py example
+py .\tools\generate_world.py hash "$/mod/npcac/#npcac_spot"
+py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
+```
+
+When the spec is ready, generate raw files under `source/raw`, register the
+block in ArchiveXL, and deserialize to `source/archive`:
+
+```powershell
+py .\tools\generate_world.py generate --spec .\path\to\gq000_patch_meet.world.json --register --deserialize
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world noderefs --limit 0
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
+```
+
 ## Voiceover WEM Conversion
 
 Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into
