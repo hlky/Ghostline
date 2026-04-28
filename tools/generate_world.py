@@ -57,6 +57,12 @@ class GeneratedFile:
     archive_path: Path
 
 
+@dataclass(frozen=True)
+class MeasurePoint:
+    label: str
+    position: Vec3
+
+
 class HandleAllocator:
     def __init__(self) -> None:
         self.next_id = 0
@@ -170,6 +176,30 @@ def tweakdbid(value: str) -> dict[str, Any]:
 
 def fixed_point(value: float) -> dict[str, Any]:
     return {"$type": "FixedPoint", "Bits": int(round(value * 131072))}
+
+
+def parse_measure_point(value: str) -> MeasurePoint:
+    label = value
+    raw = value
+    if "=" in value:
+        label, raw = value.split("=", 1)
+        label = label.strip() or value
+    parts = [part.strip() for part in raw.replace(";", ",").split(",")]
+    if len(parts) != 3:
+        raise argparse.ArgumentTypeError("coordinates must be x,y,z or label=x,y,z")
+    try:
+        return MeasurePoint(label, Vec3(float(parts[0]), float(parts[1]), float(parts[2])))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("coordinates must contain numeric x,y,z values") from exc
+
+
+def coordinate_distance(a: Vec3, b: Vec3, include_z: bool) -> float:
+    dx = b.x - a.x
+    dy = b.y - a.y
+    dz = b.z - a.z
+    if include_z:
+        return math.sqrt(dx * dx + dy * dy + dz * dz)
+    return math.sqrt(dx * dx + dy * dy)
 
 
 def as_vec3(value: Any, label: str) -> Vec3:
@@ -925,6 +955,55 @@ def command_hash(args: argparse.Namespace) -> None:
         print_table(rows, [("node_ref", "NodeRef"), ("red_hash", "RED Hash")])
 
 
+def command_measure(args: argparse.Namespace) -> None:
+    if len(args.points) < 2:
+        raise SystemExit("measure needs at least two coordinate points")
+    origin = args.points[0]
+    rows = []
+    for target in args.points[1:]:
+        dx = target.position.x - origin.position.x
+        dy = target.position.y - origin.position.y
+        dz = target.position.z - origin.position.z
+        rows.append(
+            {
+                "from": origin.label,
+                "to": target.label,
+                "dx": dx,
+                "dy": dy,
+                "dz": dz,
+                "xy_distance": coordinate_distance(origin.position, target.position, False),
+                "xyz_distance": coordinate_distance(origin.position, target.position, True),
+            }
+        )
+    if args.json:
+        print_json(rows)
+    else:
+        display_rows = []
+        for row in rows:
+            display_rows.append(
+                {
+                    **row,
+                    "dx": f"{row['dx']:.3f}",
+                    "dy": f"{row['dy']:.3f}",
+                    "dz": f"{row['dz']:.3f}",
+                    "xy_distance": f"{row['xy_distance']:.3f}",
+                    "xyz_distance": f"{row['xyz_distance']:.3f}",
+                }
+            )
+        print_table(
+            display_rows,
+            [
+                ("from", "From"),
+                ("to", "To"),
+                ("dx", "dX"),
+                ("dy", "dY"),
+                ("dz", "dZ"),
+                ("xy_distance", "XY Distance"),
+                ("xyz_distance", "XYZ Distance"),
+            ],
+        )
+
+
 def command_example(args: argparse.Namespace) -> None:
     path = Path("tools/gq000_world_spec.example.json")
     print(path.read_text(encoding="utf-8"))
@@ -950,6 +1029,19 @@ def build_parser() -> argparse.ArgumentParser:
     hash_parser.add_argument("node_refs", nargs="+", help="Absolute NodeRefs to hash.")
     hash_parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON summary.")
     hash_parser.set_defaults(func=command_hash)
+
+    measure = subparsers.add_parser(
+        "measure",
+        help="Measure horizontal and 3D distances between captured x,y,z coordinates.",
+    )
+    measure.add_argument(
+        "points",
+        nargs="+",
+        type=parse_measure_point,
+        help="Coordinates as x,y,z or label=x,y,z. Use -- before negative values.",
+    )
+    measure.add_argument("--json", action="store_true", help="Emit machine-readable JSON summary.")
+    measure.set_defaults(func=command_measure)
 
     example = subparsers.add_parser("example", help="Print the checked-in gq000 world spec example.")
     example.set_defaults(func=command_example)

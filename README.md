@@ -154,9 +154,16 @@ Use `tools/generate_world.py` to turn captured in-game coordinates into raw
 spec uses placeholder/reference coordinates; copy it and replace the `origin`
 before generating real quest assets.
 
+Distances in specs are world-coordinate units: local `forward`, `right`,
+`distance`, trigger widths/depths, and radii all use the same scale as captured
+CET/WolvenKit coordinates. Current reference-sector evidence points to roughly
+1 coordinate unit per in-game meter, but final placement still needs in-game
+validation against the HUD/objective distance display.
+
 ```powershell
 py .\tools\generate_world.py example
 py .\tools\generate_world.py hash "$/mod/npcac/#npcac_spot"
+py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
 py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
 ```
 

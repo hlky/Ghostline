@@ -162,6 +162,13 @@ This file records the current project state and the next work needed to turn `gq
     also deserialized to CR2W. This proves the CR2W shape is scriptable, but
     the generated resources still need in-game validation before treating the
     generator as production-ready.
+  - Coordinate-distance investigation: CET player coordinates are used directly
+    by WolvenKit sector search and streaming-sector grid math, reference sector
+    positions measure out as plausible gameplay distances, and `WorldPosition`
+    fixed-point values store coordinates as `coordinate * 131072`. Treat
+    generator distances as world-coordinate units, approximately 1 unit per
+    in-game meter, with final HUD/objective-distance calibration still required
+    in game.
 
 ### Generated/editor support data
 
