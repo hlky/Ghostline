@@ -133,6 +133,9 @@ This file records the current project state and the next work needed to turn `gq
     ArchiveXL registration, and optional WolvenKit deserialization.
   - `tools/gq000_world_spec.example.json` documents the current generator spec
     shape for the Patch meeting world data.
+  - `tools/world_spec.md` is the full generator spec reference, including
+    coordinate units, anchors, trigger outlines, notifiers, community fields,
+    node-data overrides, and validation workflow.
 - `py .\tools\explore_world.py summary` reports:
   - `reference/world/000/blocks/all.streamingblock.json`: 2 quest descriptors, both with `questPrefabNodeRef` values under the mq003 Santo Domingo prefab path.
   - `reference/world/000/always_loaded_0.streamingsector.json`: 0 nodes, 4 `nodeData` entries, and 32 registered `nodeRefs`; this is a useful reference for alias registration separate from concrete node definitions.

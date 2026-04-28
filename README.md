@@ -152,7 +152,8 @@ py .\tools\explore_world.py --file .\reference\world\001\sectors summary
 Use `tools/generate_world.py` to turn captured in-game coordinates into raw
 `.streamingsector.json` and `.streamingblock.json` files. The checked-in example
 spec uses placeholder/reference coordinates; copy it and replace the `origin`
-before generating real quest assets.
+before generating real quest assets. The full spec reference lives in
+`tools/world_spec.md`.
 
 Distances in specs are world-coordinate units: local `forward`, `right`,
 `distance`, trigger widths/depths, and radii all use the same scale as captured
