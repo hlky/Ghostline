@@ -59,7 +59,7 @@ Useful docs:
 
 ## Journal Resources
 
-- `journal_reference` contains serialized `.journal` reference slices.
+- `reference/journal` contains serialized `.journal` reference slices.
 - Use `py .\tools\explore_journal.py prefixes --with-types` to inspect one
   representative file per first-dot prefix before creating or editing custom
   journal resources.

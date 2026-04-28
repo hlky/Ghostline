@@ -45,6 +45,14 @@ to be refreshed.
 & $wk convert serialize .\source\archive\mod\gq000\scenes\gq000_patch_meet.scene -o .\source\raw\mod\gq000\scenes -v Minimal
 ```
 
+For reference world resources under `reference/world`, use the helper script so
+duplicate basenames such as `all.streamingblock` are serialized beside their
+source binaries:
+
+```powershell
+.\tools\serialize_reference_world.ps1
+```
+
 Expected raw outputs:
 
 - `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json`
@@ -55,6 +63,8 @@ Expected raw outputs:
 - `source/raw/mod/gq000/phases/gq000.questphase.json`
 - `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
 - `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
+- `reference/world/**/<name>.streamingsector.json`
+- `reference/world/**/<name>.streamingblock.json`
 
 ## Raw JSON To CR2W
 

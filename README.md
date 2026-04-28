@@ -104,6 +104,49 @@ Pass one or more raw entity/app files with repeated `--file` arguments:
 py .\tools\explore_ent_app.py --file .\source\raw\mod\ghostline\characters\patch\patch.ent.json --file .\source\raw\mod\ghostline\characters\patch\patch.app.json summary
 ```
 
+## Journal Explorer
+
+Use `tools/explore_journal.py` to inspect deserialized `.journal` CR2W-JSON.
+By default it loads the mq003 quest journal reference from `reference/journal`:
+
+```powershell
+py .\tools\explore_journal.py summary
+py .\tools\explore_journal.py prefixes --with-types
+py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json tree --max-depth 6
+py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json refs
+```
+
+Pass a different reference directory to the prefix command with
+`--reference-dir`.
+
+## World Reference Explorer
+
+Use `tools/serialize_reference_world.ps1` to serialize CR2W binary world
+references under `reference/world` into CR2W-JSON companions:
+
+```powershell
+.\tools\serialize_reference_world.ps1
+```
+
+Use `tools/explore_world.py` to inspect deserialized `.streamingblock` and
+`.streamingsector` CR2W-JSON without dumping full world files:
+
+```powershell
+py .\tools\explore_world.py summary
+py .\tools\explore_world.py blocks
+py .\tools\explore_world.py nodes --type TriggerArea --limit 0
+py .\tools\explore_world.py nodes --type AISpot --limit 0
+py .\tools\explore_world.py noderefs --contains mq003_tr --limit 0
+py .\tools\explore_world.py communities
+py .\tools\explore_world.py search gq000
+```
+
+Pass one or more files or directories with repeated `--file` arguments:
+
+```powershell
+py .\tools\explore_world.py --file .\reference\world\001\sectors summary
+```
+
 ## Voiceover WEM Conversion
 
 Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into

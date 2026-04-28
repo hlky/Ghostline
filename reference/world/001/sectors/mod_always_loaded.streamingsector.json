@@ -1,0 +1,267 @@
+{
+  "Header": {
+    "WolvenKitVersion": "8.17.4",
+    "WKitJsonVersion": "0.0.9",
+    "GameVersion": 2310,
+    "ExportedDateTime": "2026-04-28T10:17:21.3383081Z",
+    "DataType": "CR2W",
+    "ArchiveFileName": "H:\\projects\\Ghostline\\reference\\world\\001\\sectors\\mod_always_loaded.streamingsector"
+  },
+  "Data": {
+    "Version": 195,
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "worldStreamingSector",
+      "category": "AlwaysLoaded",
+      "cookingPlatform": "PLATFORM_None",
+      "externInplaceResource": {
+        "DepotPath": {
+          "$type": "ResourcePath",
+          "$storage": "uint64",
+          "$value": "0"
+        },
+        "Flags": "Soft"
+      },
+      "level": 1,
+      "localInplaceResource": [],
+      "nodeData": {
+        "BufferId": "0",
+        "Flags": 0,
+        "Type": "WolvenKit.RED4.Archive.Buffer.worldNodeDataBuffer, WolvenKit.RED4, Version=8.17.4.0, Culture=neutral, PublicKeyToken=null",
+        "Data": [
+          {
+            "Id": "0",
+            "NodeIndex": 0,
+            "Position": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "Orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0,
+              "r": 0
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 1,
+              "Y": 1,
+              "Z": 1
+            },
+            "Pivot": {
+              "$type": "Vector3",
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "Bounds": {
+              "$type": "Box",
+              "Max": {
+                "$type": "Vector4",
+                "W": 0,
+                "X": 0,
+                "Y": 0,
+                "Z": 0
+              },
+              "Min": {
+                "$type": "Vector4",
+                "W": 0,
+                "X": 0,
+                "Y": 0,
+                "Z": 0
+              }
+            },
+            "QuestPrefabRefHash": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "16632786921165530000"
+            },
+            "UkHash1": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "CookedPrefabData": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "uint64",
+                "$value": "0"
+              },
+              "Flags": "Default"
+            },
+            "MaxStreamingDistance": 17.320507,
+            "UkFloat1": 100000000,
+            "Uk10": 32,
+            "Uk11": 512,
+            "Uk12": 0,
+            "Uk13": "0",
+            "Uk14": "0"
+          }
+        ]
+      },
+      "nodeRefs": [],
+      "nodes": [
+        {
+          "HandleId": "0",
+          "Data": {
+            "$type": "worldCommunityRegistryNode",
+            "communitiesData": [
+              {
+                "$type": "worldCommunityRegistryItem",
+                "communityAreaType": "Regular",
+                "communityId": {
+                  "$type": "gameCommunityID",
+                  "entityId": {
+                    "$type": "entEntityID",
+                    "hash": "982477135194481732"
+                  }
+                },
+                "entriesInitialState": [
+                  {
+                    "$type": "worldCommunityEntryInitialState",
+                    "entryActiveOnStart": 1,
+                    "entryName": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "judy"
+                    },
+                    "initialPhaseName": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "default"
+                    }
+                  }
+                ],
+                "template": {
+                  "HandleId": "1",
+                  "Data": {
+                    "$type": "communityCommunityTemplateData",
+                    "crowdEntries": [],
+                    "entries": [
+                      {
+                        "HandleId": "2",
+                        "Data": {
+                          "$type": "communitySpawnEntry",
+                          "characterRecordId": {
+                            "$type": "TweakDBID",
+                            "$storage": "string",
+                            "$value": "Character.Judy"
+                          },
+                          "entryName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "judy"
+                          },
+                          "initializers": [],
+                          "phases": [
+                            {
+                              "HandleId": "3",
+                              "Data": {
+                                "$type": "communitySpawnPhase",
+                                "alwaysSpawned": "default__false_",
+                                "appearances": [
+                                  {
+                                    "$type": "CName",
+                                    "$storage": "string",
+                                    "$value": "default"
+                                  }
+                                ],
+                                "phaseName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "default"
+                                },
+                                "prefetchAppearance": 0,
+                                "timePeriods": [
+                                  {
+                                    "$type": "communityPhaseTimePeriod",
+                                    "categories": [],
+                                    "hour": "Day",
+                                    "isSequence": 0,
+                                    "markings": [],
+                                    "quantity": 1,
+                                    "spotNodeRefs": [
+                                      {
+                                        "$type": "NodeRef",
+                                        "$storage": "string",
+                                        "$value": "$/mod/npcac/#npcac_spot"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "spawnInView": "default__true_"
+                        }
+                      }
+                    ],
+                    "spawnSetReference": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "None"
+                    }
+                  }
+                }
+              }
+            ],
+            "crowdCreationRegistry": null,
+            "debugName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "registry"
+            },
+            "isHostOnly": 0,
+            "isVisibleInGame": 1,
+            "proxyScale": null,
+            "representsCrowd": 0,
+            "sourcePrefabHash": "0",
+            "spawnSetNameToCommunityID": {
+              "$type": "gameCommunitySpawnSetNameToID",
+              "entries": []
+            },
+            "tag": "None",
+            "tagExt": "None",
+            "workspotsPersistentData": [
+              {
+                "$type": "AISpotPersistentData",
+                "globalNodeId": {
+                  "$type": "worldGlobalNodeID",
+                  "hash": "1141382493228110045"
+                },
+                "isEnabled": 1,
+                "worldPosition": {
+                  "$type": "WorldPosition",
+                  "x": {
+                    "$type": "FixedPoint",
+                    "Bits": -24193326
+                  },
+                  "y": {
+                    "$type": "FixedPoint",
+                    "Bits": -266870544
+                  },
+                  "z": {
+                    "$type": "FixedPoint",
+                    "Bits": 781930
+                  }
+                },
+                "yaw": -32.4500008
+              }
+            ]
+          }
+        }
+      ],
+      "persistentNodeIndex": 0,
+      "persistentNodes": [],
+      "variantIndices": [0
+      ],
+      "variantNodes": [],
+      "version": 62
+    },
+    "EmbeddedFiles": []
+  }
+}

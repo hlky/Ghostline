@@ -62,6 +62,10 @@ global Codex skills, so use the paths above as explicit references.
   interactions, animations, and related scene work.
 - `source/archive/mod/gq000/localization/en-us` contains quest subtitles,
   voiceover maps, and quest-specific onscreen localization.
+- `reference/journal` contains serialized base-game `.journal` reference
+  slices.
+- `reference/world` contains reference `.streamingblock` and
+  `.streamingsector` CR2W binaries plus their `.json` CR2W-JSON companions.
 
 ## Local Modding Docs
 
@@ -87,3 +91,4 @@ CR2W-JSON files into context:
 - `tools/explore_localization.py`
 - `tools/explore_ent_app.py`
 - `tools/explore_journal.py`
+- `tools/explore_world.py`

@@ -93,7 +93,7 @@ This file records the current project state and the next work needed to turn `gq
 
 - Added journal explorer tooling:
   - `tools/explore_journal.py`
-  - `py .\tools\explore_journal.py prefixes --with-types` summarizes one representative `.journal` file for each first-dot prefix in `journal_reference`.
+  - `py .\tools\explore_journal.py prefixes --with-types` summarizes one representative `.journal` file for each first-dot prefix in `reference/journal`.
 - Explored representative journal reference prefixes:
   - `briefings`: briefing folders plus `gameJournalBriefing*` sections.
   - `codex`: codex categories/groups/entries/descriptions.
@@ -118,6 +118,28 @@ This file records the current project state and the next work needed to turn `gq
   - `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
 - Quest onscreen localization uses ArchiveXL-style `primaryKey: "0"` entries with unique `gl_` secondary keys, and the journal fields reference those secondary keys directly.
 - Updated `gq000.questphase`, `gq000_patch_meet.questphase`, and `gq000_patch_meet.scene` raw and packed resources so journal references use full journal paths instead of bare leaf ids.
+
+### World reference assets
+
+- `reference/world` contains two deserialized reference sets:
+  - `000`: mq003 quest-sector references.
+  - `001`: Object Spawner-style streaming block, exterior sector, and always-loaded community registry sector.
+- Added world reference tooling:
+  - `tools/serialize_reference_world.ps1` serializes `.streamingblock` and `.streamingsector` CR2W binaries under `reference/world` into colocated CR2W-JSON.
+  - `tools/explore_world.py` summarizes streaming block descriptors, sector nodes, NodeRefs, trigger outlines, and community registry/area wiring.
+- `py .\tools\explore_world.py summary` reports:
+  - `reference/world/000/blocks/all.streamingblock.json`: 2 quest descriptors, both with `questPrefabNodeRef` values under the mq003 Santo Domingo prefab path.
+  - `reference/world/000/always_loaded_0.streamingsector.json`: 0 nodes, 4 `nodeData` entries, and 32 registered `nodeRefs`; this is a useful reference for alias registration separate from concrete node definitions.
+  - `reference/world/000/quest_606b61008df2ba6f.streamingsector.json`: 21 quest-sector nodes, including 11 `worldAISpotNode`, 6 `worldTriggerAreaNode`, 3 `worldSplineNode`, and 1 `worldVehicleForbiddenAreaNode`.
+  - `reference/world/001/world/all.streamingblock.json`: 1 `Exterior` descriptor for `mod\sectors\npcac.streamingsector` plus 1 `AlwaysLoaded` descriptor for `mod\sectors\mod_always_loaded.streamingsector`.
+  - `reference/world/001/sectors/npcac.streamingsector.json`: 1 `worldAISpotNode`, 1 `worldCompiledCommunityAreaNode_Streamable`, and 2 `worldTriggerAreaNode` nodes.
+  - `reference/world/001/sectors/mod_always_loaded.streamingsector.json`: 1 `worldCommunityRegistryNode`.
+- Community reference findings from `py .\tools\explore_world.py communities`:
+  - The registry sector maps entry `judy`, phase `default`, character `Character.Judy`, and source object id `982477135194481732` to spot NodeRef `$/mod/npcac/#npcac_spot`.
+  - The streamable community area sector uses the same entry, phase, and source object id, and maps it to spot id `1141382493228110045`.
+- Trigger reference findings from `py .\tools\explore_world.py nodes --type TriggerArea --limit 0`:
+  - mq003 quest triggers and Object Spawner trigger examples both use `worldTriggerAreaNode` with `AreaShapeOutline` height `2` and 4 points.
+  - The current Ghostline trigger names have direct mq003 analogs for engage, case mood, and someone-coming trigger patterns.
 
 ### Generated/editor support data
 
@@ -159,8 +181,10 @@ Docs checked:
 
 - `modding_docs/modding-guides/world-editing/README.md`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/the-whole-world-.streamingsector/README.md`
+- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/the-whole-world-.streamingsector/.streamingblock-sector-definitions-and-variants.md`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/the-whole-world-.streamingsector/noderefs.md`
 - `modding_docs/for-mod-creators-theory/references-lists-and-overviews/reference-world-sectors/reference-.streamingsector-node-types.md`
+- `modding_docs/modding-guides/world-editing/object-spawner/exporting-from-object-spawner.md`
 
 ### Patch community / AI spawn support
 
@@ -192,29 +216,56 @@ Current reference:
 - `#gq000_pr_patch_meet` in `gq000_patch_meet.questphase` root `phasePrefabs`
 - `#gq000_pr_patch_meet` in `gq000.questphase` phase node id `2` `phaseInstancePrefabs`
 
-Current understanding:
+Resolved understanding from `reference/world/000`:
 
 - Local quest docs say questphase `#` NodeRefs can be used to load prefabs for
   the phase.
 - Local streamingsector docs say NodeRef aliases are registered through sector
   `nodeRefs` and linked to node instances through `QuestPrefabRefHash`.
-- The docs checked so far do not explain the lifecycle difference between
-  root `phasePrefabs` and node-owned `phaseInstancePrefabs`.
+- `reference/world/000/blocks/all.streamingblock.json` shows the missing
+  world-side root binding: each quest sector descriptor has a
+  `questPrefabNodeRef` absolute NodeRef ending in the prefab root alias, e.g.
+  `$/03_night_city/.../#mq003_pr_homeless`.
+- `reference/world/000/quest_606b61008df2ba6f.streamingsector.json` registers
+  child refs under the same prefab root in `nodeRefs`, and each concrete node's
+  `nodeData.QuestPrefabRefHash` points at the corresponding absolute child
+  NodeRef, e.g. `.../#mq003_pr_homeless/#mq003_tr_engage_homeless`.
+- `phasePrefabs` is the questphase-level prefab dependency/declaration list.
+  Any questphase resource that directly uses `#gq000_pr_patch_meet` should list
+  it there.
+- `phaseInstancePrefabs` is the per-`questPhaseNodeDefinition` activation list
+  for inline phase nodes. In `gq000.questphase`, phase node id `2` directly
+  waits on `#gq000_01_tr_setup` and operates on `#gq000_01_com_patch_bridge`,
+  so its `phaseInstancePrefabs` should keep `#gq000_pr_patch_meet`.
+- Parent phase node id `3` only loads
+  `mod\gq000\phases\gq000_patch_meet.questphase`; it does not need a duplicate
+  `phaseInstancePrefabs` entry because the child questphase has its own root
+  `phasePrefabs`.
 
 Needed:
 
-- Check more base-game questphase files later, including the original `mq003`
-  files if available, to confirm how root `phasePrefabs` relates to node-owned
-  `phaseInstancePrefabs`.
-- Register or otherwise provide a Ghostline-owned `#gq000_pr_patch_meet` prefab
-  NodeRef in the custom streaming-sector setup if in-game testing confirms these
-  arrays are required.
+- When adding Ghostline world data, create a Ghostline-owned streaming block
+  descriptor whose `questPrefabNodeRef` is an absolute path ending in
+  `#gq000_pr_patch_meet`.
+- Put all phase/scene child refs under that prefab root in the custom sector
+  `nodeRefs` and matching `nodeData.QuestPrefabRefHash` values, including:
+  - `#gq000_01_sm_patch_bridge`
+  - `#gq000_01_tr_setup`
+  - `#gq000_01_tr_engage`
+  - `#gq000_01_tr_bridge_case_mood`
+  - `#gq000_01_tr_someone_coming`
+  - `#gq000_01_com_patch_bridge`
+- Keep current `phasePrefabs` and phase node id `2` `phaseInstancePrefabs`
+  entries unless in-game validation shows the parent root phase loads too much
+  too early.
 
 Completed 2026-04-28:
 
 - Removed the leftover `#mq003_pr_corpse` root prefab from `gq000.questphase`.
 - Replaced remaining `#mq003_pr_homeless` root prefab references with
   `#gq000_pr_patch_meet`.
+- Resolved the root-vs-instance prefab question using the deserialized
+  `reference/world/000` streaming block and quest sector.
 
 ## Next Milestones
 
@@ -243,6 +294,7 @@ Completed 2026-04-28:
 - Create a Ghostline-owned streaming sector and streaming block.
 - Add the marker, triggers, and Patch community/AI nodes referenced by the current phase and scene.
 - Register the streaming block in `Ghostline.archive.xl`.
+- Use `reference/world/000` as the quest NodeRef/trigger/AI spot pattern and `reference/world/001` as the split community registry plus streamable area pattern.
 
 ### 4. Extend the quest beyond acceptance
 
@@ -287,5 +339,10 @@ py .\tools\explore_ent_app.py refs --kind ResourcePath
 py .\tools\explore_journal.py prefixes --with-types
 py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json summary
 py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json tree --max-depth 6
+py .\tools\explore_world.py summary
+py .\tools\explore_world.py blocks
+py .\tools\explore_world.py nodes --type TriggerArea --limit 0
+py .\tools\explore_world.py communities
+.\tools\serialize_reference_world.ps1
 .\tools\convert_wavs_to_wem.ps1
 ```

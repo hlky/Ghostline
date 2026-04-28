@@ -31,8 +31,8 @@ from cr2w_helpers import (
 )
 
 
-DEFAULT_JOURNAL = Path("journal_reference/quests.minor_quest.mq003_orbitals.journal.json")
-DEFAULT_REFERENCE_DIR = Path("journal_reference")
+DEFAULT_JOURNAL = Path("reference/journal/quests.minor_quest.mq003_orbitals.journal.json")
+DEFAULT_REFERENCE_DIR = Path("reference/journal")
 
 
 @dataclass(frozen=True)

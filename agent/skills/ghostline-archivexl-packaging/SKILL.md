@@ -22,6 +22,8 @@ description: Use for Ghostline ArchiveXL registration, resource patching, locali
   with `primaryKey` left as `0` for ArchiveXL-generated keys.
 - Use `journal:` entries when adding custom journal resources.
 - Use `streaming: blocks:` entries when adding world streaming blocks.
+- Use `py .\tools\explore_world.py blocks` to inspect reference
+  `.streamingblock` descriptors before shaping custom world registrations.
 - Use `resource: patch:` for ArchiveXL resource patching instead of directly
   overwriting shared `.ent`, `.app`, or `.mesh` files when adding small changes
   to existing resources.
