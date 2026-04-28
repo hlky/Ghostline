@@ -167,7 +167,7 @@ onscreens_file = create_file(
     mod_path, "mod\\gq000\\localization\\en-us\\onscreens\\gq000_01.json", onscreen_type
 )
 scene_file = load_json(
-    Path("template.scene.json"), "mod\\gq000\\scenes\\gq000_01.scene"
+    Path("template.scene.json"), "mod\\gq000\\scenes\\gq000_patch_meet.scene"
 )
 
 
@@ -842,6 +842,6 @@ write_json(
 )
 
 write_json(
-    mod_path / "source" / "raw" / "mod\\gq000\\scenes\\gq000_01.scene.json",
+    mod_path / "source" / "raw" / "mod\\gq000\\scenes\\gq000_patch_meet.scene.json",
     scene_file,
 )

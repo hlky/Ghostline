@@ -314,7 +314,7 @@ Completed 2026-04-28:
 - Created `gq000` journal and quest onscreen localization resources in raw and packed form.
 - Registered both `journal:` and quest onscreens in `source/resources/Ghostline.archive.xl`.
 - Updated scene and questphase journal paths to full journal hierarchy paths.
-- Added `tools/explore_journal.py` and documented first-dot `.journal` reference prefixes in `AGENTS.md`.
+- Added `tools/explore_journal.py` and documented first-dot `.journal` reference prefixes in `agent/skills/ghostline-quest-journal-scene/SKILL.md`.
 - Docs checked:
   - `modding_docs/modding-guides/quest/how-to-add-new-text-messages-thread-to-cyberpunk-2077.md`
   - `modding_docs/modding-guides/quest/creating-custom-shards.md`

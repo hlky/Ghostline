@@ -48,7 +48,7 @@ global Codex skills, so use the paths above as explicit references.
 - `source/resources` contains WolvenKit loose resources, including ArchiveXL
   `.xl` files and TweakXL YAML files copied during packing.
 - `source/archive/base` may contain supporting base-game files. It currently
-  contains custom NPC template files.
+  contains base player-head mesh and morphtarget support resources.
 - `source/archive/mod` contains mod-owned packed resources.
 - `source/archive/mod/ghostline` contains generic Ghostline resources shared
   across the quest series, such as characters.
