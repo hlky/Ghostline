@@ -1,187 +1,89 @@
-# Ghostline Agent Notes
+# Ghostline Agent Guide
 
-## Project Shape
+Ghostline is a Cyberpunk 2077 WolvenKit quest-mod repo. Keep this file as the
+always-loaded routing layer; task-specific instructions live in repo-local
+skill-style files under `agent/skills`.
 
-- This is a Cyberpunk 2077 WolvenKit project. The packed/game-ready resources live under `source/archive`.
-- WolvenKit project resources live under `source/resources`; this includes ArchiveXL `.xl` files and TweakXL YAML files that are copied as loose resources when packing.
-- `modding_docs` is a git submodule containing `CDPR-Modding-Documentation/Cyberpunk-Modding-Docs`. Treat it as local reference material, not Ghostline-owned source, unless the task explicitly asks to edit the docs.
-- Files under `source/archive` are CR2W binaries, including paths ending in `.json` such as localization resources. Do not edit these as text.
-- Files under `source/raw` are editable JSON forms of CR2W resources, except `source/raw/gq000_01_manifest.json`, which is a plain generated manifest and is not serialized back to CR2W.
-- `GraphEditorStates` contains WolvenKit graph editor state JSON. Treat it as editor support data, not the packed asset source of truth.
-- `generated` contains older/generated JSON snapshots. Prefer `source/raw` when preparing CR2W assets for use.
+## First Rules
 
-## Roadmap
+- Work from the repository root unless a command says otherwise.
+- Read `ROADMAP.md` before broad quest, world, journal, scene, or packaging
+  work. Update it when work changes quest status, adds or removes resources,
+  resolves a listed gap, or discovers a new blocker.
+- Treat `modding_docs` as a local reference submodule, not Ghostline-owned
+  source, unless the task explicitly asks to edit those docs.
+- Before guessing at Cyberpunk-specific behavior, search or read
+  `modding_docs`.
+- Do not edit `source/archive` resources as text. They are CR2W binaries,
+  including resource paths ending in `.json`.
+- Edit `source/raw` CR2W-JSON when changing packed resources. The exception is
+  `source/raw/gq000_01_manifest.json`, which is a plain generated manifest and
+  is not serialized back to CR2W.
+- Prefer `source/raw` over `generated` when preparing CR2W assets for use.
+  `generated` contains older/generated snapshots.
+- Treat `GraphEditorStates` as WolvenKit editor support data, not packed asset
+  source of truth.
 
-- `ROADMAP.md` tracks current implementation status, unresolved references, and next milestones.
-- When work changes quest status, adds/removes resources, resolves a listed gap, or discovers a new blocker, update `ROADMAP.md` in the same change so it stays current.
-- Before starting broad quest, world, journal, scene, or packaging work, skim `ROADMAP.md` to avoid re-discovering known gaps.
+## Repo-Local Skill Files
+
+Read only the relevant file(s) for the task:
+
+- `agent/skills/ghostline-wolvenkit-cr2w/SKILL.md` - WolvenKit CLI,
+  CR2W/raw conversion, and verification.
+- `agent/skills/ghostline-quest-journal-scene/SKILL.md` - questphases,
+  scenes, journal paths, and `gq000` quest UI resources.
+- `agent/skills/ghostline-character-tweaks/SKILL.md` - Patch character
+  resources, `.ent`/`.app` structure, and TweakXL records.
+- `agent/skills/ghostline-localization-audio/SKILL.md` - subtitle/VO
+  alignment, generator behavior, voice design, and WEM conversion.
+- `agent/skills/ghostline-archivexl-packaging/SKILL.md` - ArchiveXL
+  registration, resource patching, streaming blocks, and load order.
+
+These are repo-local skill-style notes. They are not automatically installed
+global Codex skills, so use the paths above as explicit references.
+
+## Project Map
+
+- `source/archive` contains packed/game-ready CR2W resources.
+- `source/resources` contains WolvenKit loose resources, including ArchiveXL
+  `.xl` files and TweakXL YAML files copied during packing.
+- `source/archive/base` may contain supporting base-game files. It currently
+  contains custom NPC template files.
+- `source/archive/mod` contains mod-owned packed resources.
+- `source/archive/mod/ghostline` contains generic Ghostline resources shared
+  across the quest series, such as characters.
+- `source/archive/mod/ghostline/characters/patch` contains Patch's custom NPC
+  template set.
+- `source/archive/mod/gq000` contains the first Ghostline quest. `gq` means
+  Ghostline quest, and `000` identifies the first quest.
+- `source/archive/mod/gq000/phases` contains the main and stage questphase
+  resources.
+- `source/archive/mod/gq000/scenes` contains scene resources for dialogue,
+  interactions, animations, and related scene work.
+- `source/archive/mod/gq000/localization/en-us` contains quest subtitles,
+  voiceover maps, and quest-specific onscreen localization.
 
 ## Local Modding Docs
 
-- Before guessing at Cyberpunk-specific behavior, check `modding_docs` locally.
-- Useful starting points:
-  - `modding_docs/SUMMARY.md` for the docs map.
-  - `modding_docs/for-mod-creators-theory/modding-tools/wolvenkit.md` for WolvenKit context.
-  - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/quests-.scene-files` for quest and scene theory.
-  - `modding_docs/modding-guides/quest` for quest and scene workflows.
-  - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/entity-.ent-files` and `appearance-.app-files` for character/entity resource structure.
-  - `modding_docs/for-mod-creators-theory/files-and-what-they-do/audio-files.md` for voiceover and subtitle mapping.
-  - `modding_docs/for-mod-creators-theory/core-mods-explained/archivexl` for ArchiveXL `.xl` registration, resource patching, tags, resource links, dynamic appearances, and localization.
-  - `modding_docs/for-mod-creators-theory/core-mods-explained/tweakxl` for TweakXL/YAML records.
+Useful starting points:
 
-## Archive Layout
+- `modding_docs/SUMMARY.md`
+- `modding_docs/for-mod-creators-theory/modding-tools/wolvenkit.md`
+- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/quests-.scene-files`
+- `modding_docs/modding-guides/quest`
+- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/entity-.ent-files`
+- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/appearance-.app-files`
+- `modding_docs/for-mod-creators-theory/files-and-what-they-do/audio-files.md`
+- `modding_docs/for-mod-creators-theory/core-mods-explained/archivexl`
+- `modding_docs/for-mod-creators-theory/core-mods-explained/tweakxl`
 
-- `source/archive/base` may contain supporting base game files. It currently contains custom NPC template files.
-- `source/archive/mod` contains all mod-owned packed resources.
-- `source/archive/mod/ghostline` is for generic Ghostline files shared across the quest series, such as characters.
-- `source/archive/mod/ghostline/characters` contains Ghostline character resources.
-- `source/archive/mod/ghostline/characters/patch` contains the first custom character, Patch. The root `.ent` entity points to `.app` appearance file(s). Files under `body/` and `head/` are also part of the custom NPC template file set.
-- `source/archive/mod/ghostline/localization/en-us/onscreens/ghostline.json` contains generic Ghostline onscreen localization, including Patch's display name and the Ghostline faction name.
-- `source/archive/mod/gq000` contains the first Ghostline quest. `gq` means Ghostline quest, and `000` identifies the first quest.
-- `source/archive/mod/gq000/localization/en-us` contains quest subtitles and voiceover maps. Add quest-specific onscreens there when journal/objective/UI text needs it, then register them in `source/resources/Ghostline.archive.xl`.
-- `source/archive/mod/gq000/phases` contains questphase resources. `gq000.questphase` is the main questphase for the `gq000` quest, and `gq000_patch_meet.questphase` is the first stage where the player meets the quest giver.
-- `source/archive/mod/gq000/scenes` contains scene resources used for dialogue, interactions, animations, and related scene work. `gq000_patch_meet.scene` is part of `gq000_patch_meet.questphase`.
+## Helper Tools
 
-## Character Resources
+Use the explorer tools documented in `README.md` instead of dumping large
+CR2W-JSON files into context:
 
-- `.ent` files are top-level entity containers. For NPCs, the root `.ent` is the game entry point and lists appearances that resolve into `.app` files.
-- `.app` files hold appearance definitions and per-appearance components. Components on the root `.ent` are shared across appearances; components in the `.app` are appearance-specific.
-- For Patch, keep the root `.ent` and referenced `.app` appearance names in sync with the TweakDB `entityTemplatePath`/character record.
-
-## Quest and Scene Notes
-
-- `.questphase` resources are graph-style quest flow files. They can reference scenes and other resources through graph nodes, noderefs, sockets, and handlerefs. Use WolvenKit's graph editor for structural inspection.
-- Quest facts are signed integer state values. They default to `0` until explicitly set and are commonly read or written by `.questphase`, `.quest`, and `.scene` resources. Prefer `gq000_` prefixes for Ghostline quest facts.
-- For custom scenes built from scratch, include `performerDebugSymbols` in the scene `debugSymbols` array. Actor debug symbols are calculated as `actorID * 256 + 1`; prop debug symbols as `propID * 256 + 2`.
-- In scene sections, actors are referenced by `performerID`; in `screenplayStore -> lines`, dialogue lines are linked by `actorID`.
-- Scene `locstringIds`, subtitle entries, and voiceover map entries must stay aligned. The subtitle String ID is the stable link between on-screen text and the voiceover resource.
-
-## Journal Resources
-
-- `journal_reference` contains serialized `.journal` reference slices. Use `py .\tools\explore_journal.py prefixes --with-types` to inspect one representative file per first-dot prefix before creating or editing custom journal resources.
-- Known first-dot journal prefixes:
-  - `briefings`: briefing folders and `gameJournalBriefing` entries with video, paper doll, and map sections.
-  - `codex`: codex categories, groups, codex entries, and codex descriptions.
-  - `contacts`: phone/message contact entries.
-  - `internet_sites`: internet site and page entries.
-  - `onscreens`: onscreen groups and onscreen entries, including shards/email-style readable entries.
-  - `points_of_interest`: POI groups and `gameJournalPointOfInterestMappin` entries, usually linked back to a quest path.
-  - `quests`: quest folders, `gameJournalQuest`, `gameJournalQuestPhase`, objectives, descriptions, quest map pins, and codex links.
-  - `tarots`: tarot group and tarot card entries.
-- For quest UI work, keep `gameJournalPath.realPath` values aligned with the computed journal hierarchy, for example `quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch`, not only the leaf id.
-- Keep journal path ids separate from localization ids. For ArchiveXL-added onscreen localization, set `primaryKey` to `0`, use globally unique `secondaryKey` values, and reference those secondary keys directly from Ghostline journal localization fields. Do not invent numeric primary keys or add `LocKey#` prefixes unless a task explicitly requires primary-key lookups.
-- Current `gq000` journal source is `source/raw/mod/gq000/journal/gq000.journal.json`; its packed resource is `source/archive/mod/gq000/journal/gq000.journal`.
-- Current `gq000` quest onscreen localization source is `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`; its packed resource is `source/archive/mod/gq000/localization/en-us/onscreens/gq000.json`.
-
-## Tweak Resources
-
-- `source/resources/r6/tweaks` is also part of the mod.
-- `source/resources/r6/tweaks/ghostline/character_patch.yaml` defines the custom NPC.
-- `source/resources/r6/tweaks/ghostline/faction_ghostline.yaml` defines the custom Ghostline faction.
-- TweakXL loads `.yaml` or `.tweak` files from Cyberpunk's `r6/tweaks`; in this WolvenKit project, author them under `source/resources/r6/tweaks`.
-- Tweak YAML is indentation-sensitive. Use 2 spaces, not tabs.
-- Tweak record names must be unique. Do not base Ghostline records on generated `inlineX` records, because those names can shift between game updates.
-- When editing NPC tweak records, prefer copying structure from a working base-game example in WolvenKit's Tweak Browser. Important NPC fields include `entityTemplatePath`, `displayName`, `fullDisplayName`, `voiceTag`, `baseAttitudeGroup`, `archetypeData`, and `affiliation`.
-
-## ArchiveXL Resources
-
-- `source/resources/Ghostline.archive.xl` is the ArchiveXL registration file. Keep it in `source/resources`; WolvenKit packs it next to the mod archive so ArchiveXL can process it.
-- Use `quest: phases:` entries to attach Ghostline root questphases to the game, usually with `mod\gq000\phases\gq000.questphase` parented to `base\quest\cyberpunk2077.quest`. Add a Phantom Liberty standalone parent only when the quest is intended to initialize from PL standalone starts.
-- Use `localization: onscreens:` entries to register custom onscreen translation JSON files. Tweak fields like `displayName`, `fullDisplayName`, and faction `localizedName` should have matching globally unique `secondaryKey` entries, with `primaryKey` left as `0` for ArchiveXL-generated keys.
-- Use `journal:` entries when adding custom journal resources, and `streaming: blocks:` when adding world streaming blocks.
-- Use `resource: patch:` for ArchiveXL resource patching instead of directly overwriting shared `.ent`, `.app`, or `.mesh` files when adding small changes to existing resources.
-- Use `resource: link:` when multiple depot paths should resolve to the same resource, especially to avoid duplicate meshes for dynamic substitutions.
-- Custom ArchiveXL tags live under `overrides: tags:` in `.xl` files, not in TweakXL YAML. Tags are case-sensitive and component names should be unique.
-- Check `Cyberpunk 2077\red4ext\plugins\ArchiveXL\ArchiveXL.log` when `.xl` registrations, localization, journals, streaming, or resource patches do not appear in game.
-
-## Generator
-
-- Run `python .\create_files.py` from the repo root to generate the `gq000_01` conversation resources from `template.scene.json`.
-- The generator writes subtitles, VO map data, scene dialogue/options, section/choice node ids, and `source/raw/gq000_01_manifest.json`.
-- The generator expects WAV files in `source/archive/mod/gq000/localization/en-us/vo`. If a WAV named after a line key exists, it renames it to the hashed actor filename.
-- `create_files.py` uses random dialogue gaps when building section timing, so reruns can change generated scene timing even with the same dialogue.
-- The generator writes CR2W-JSON files, not game-ready CR2W binaries. Convert them before use.
-
-## Voice Generation
-
-- `voice_generate.py` is the voice design and voice clone process.
-- For the Player Character ("V"), use voice clone only.
-- For custom characters, design a voice first, then clone it for repeated usage.
-- Cyberpunk stores voiceovers as Wwise `.wem` resources in archives; voiceover `.json` resources map subtitle String IDs to voice files. Ghostline's generator starts from WAV inputs, then prepares the CR2W-JSON resources that must be converted before use.
-
-## Packing and Load Order
-
-- Cyberpunk loads legacy `.archive` mods from `Cyberpunk 2077/archive/pc/mod` in ASCII-alphabetical order by archive filename.
-- REDmods under `Cyberpunk 2077/mods` load after legacy archive mods and also use ASCII ordering by mod folder unless REDmod load order is explicitly supplied.
-- File conflicts are handled per resource path, and the first mod to change a file wins. Ghostline should avoid conflicts by using mod-owned paths unless intentionally overriding a base or dependency resource.
-
-## WolvenKit CLI
-
-Use the local console build:
-
-```powershell
-$wk = 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe'
-```
-
-WolvenKit command naming is easy to invert:
-
-- `convert serialize` means CR2W binary to JSON.
-- `convert deserialize` means JSON to CR2W binary.
-
-When converting more than one file, avoid a single flat output directory if assets share a basename. For example, subtitles and VO both output as `gq000_01.json.json`, so they must use separate output directories.
-
-WolvenKit CLI serialization expects the `-o` output directory to exist for newly added raw resource trees. Before serializing a file into a raw folder that has not been created yet, make it first, for example:
-
-```powershell
-New-Item -ItemType Directory -Force .\source\raw\mod\ghostline\characters\patch
-```
-
-## CR2W to Raw JSON
-
-Use this when a resource was changed in WolvenKit and the editable JSON needs to be refreshed.
-
-```powershell
-& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\subtitles\gq000_01.json -o .\source\raw\mod\gq000\localization\en-us\subtitles -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\vo\gq000_01.json -o .\source\raw\mod\gq000\localization\en-us\vo -v Minimal
-& $wk convert serialize .\source\archive\mod\ghostline\localization\en-us\onscreens\ghostline.json -o .\source\raw\mod\ghostline\localization\en-us\onscreens -v Minimal
-& $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.ent -o .\source\raw\mod\ghostline\characters\patch -v Minimal
-& $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.app -o .\source\raw\mod\ghostline\characters\patch -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\scenes\gq000_patch_meet.scene -o .\source\raw\mod\gq000\scenes -v Minimal
-```
-
-The expected raw outputs are:
-
-- `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json`
-- `source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json`
-- `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
-- `source/raw/mod/ghostline/characters/patch/patch.ent.json`
-- `source/raw/mod/ghostline/characters/patch/patch.app.json`
-- `source/raw/mod/gq000/phases/gq000.questphase.json`
-- `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
-- `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
-
-## Raw JSON to CR2W
-
-Use this before packing or testing the asset in game.
-
-```powershell
-& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json -o .\source\archive\mod\gq000\localization\en-us\subtitles -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json -o .\source\archive\mod\gq000\localization\en-us\vo -v Minimal
-& $wk convert deserialize .\source\raw\mod\ghostline\localization\en-us\onscreens\ghostline.json.json -o .\source\archive\mod\ghostline\localization\en-us\onscreens -v Minimal
-& $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.ent.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
-& $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.app.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_patch_meet.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json -o .\source\archive\mod\gq000\scenes -v Minimal
-```
-
-WolvenKit may print `Oodle couldn't be loaded. Using Kraken.dll instead could cause errors.` during JSON to CR2W conversion. That warning appeared during testing, but the round-tripped `gq000_patch_meet.scene` binary matched the original SHA256 hash.
-
-## Verification
-
-- A CR2W binary starts with `CR2W`; verify with `Format-Hex -Count 4`.
-- A raw CR2W-JSON file should begin with `{` and contain a `Header` and `Data` object.
-- For exact round-trip checks, compare hashes with `Get-FileHash`.
-- Keep `Header.ArchiveFileName` pointed at the intended `source/archive` target when editing raw JSON.
+- `tools/explore_questphase.py`
+- `tools/explore_scene.py`
+- `tools/explore_localization.py`
+- `tools/explore_ent_app.py`
+- `tools/explore_journal.py`
