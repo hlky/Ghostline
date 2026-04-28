@@ -184,17 +184,37 @@ Docs checked:
 - `modding_docs/modding-guides/quest/how-to-use-worldcommunityregistry-and-worldcompiledcommunity.md`
 - `modding_docs/modding-guides/world-editing/ai-and-npcs/creating-communities.md`
 
-### Borrowed/base NodeRef
+### Quest phase prefab NodeRef
 
 Current reference:
 
-- `#mq003_pr_homeless` in `gq000_patch_meet.questphase` phase prefab data and root `gq000.questphase` phase prefab data
-- `#mq003_pr_corpse` in root `gq000.questphase` phase prefab data
+- `#gq000_pr_patch_meet` in `gq000.questphase` root `phasePrefabs`
+- `#gq000_pr_patch_meet` in `gq000_patch_meet.questphase` root `phasePrefabs`
+- `#gq000_pr_patch_meet` in `gq000.questphase` phase node id `2` `phaseInstancePrefabs`
+
+Current understanding:
+
+- Local quest docs say questphase `#` NodeRefs can be used to load prefabs for
+  the phase.
+- Local streamingsector docs say NodeRef aliases are registered through sector
+  `nodeRefs` and linked to node instances through `QuestPrefabRefHash`.
+- The docs checked so far do not explain the lifecycle difference between
+  root `phasePrefabs` and node-owned `phaseInstancePrefabs`.
 
 Needed:
 
-- Confirm these are intentional base-game prefab references.
-- If they are only placeholders, replace them with Ghostline-owned prefabs or remove them once the custom streaming-sector setup owns the required markers/triggers.
+- Check more base-game questphase files later, including the original `mq003`
+  files if available, to confirm how root `phasePrefabs` relates to node-owned
+  `phaseInstancePrefabs`.
+- Register or otherwise provide a Ghostline-owned `#gq000_pr_patch_meet` prefab
+  NodeRef in the custom streaming-sector setup if in-game testing confirms these
+  arrays are required.
+
+Completed 2026-04-28:
+
+- Removed the leftover `#mq003_pr_corpse` root prefab from `gq000.questphase`.
+- Replaced remaining `#mq003_pr_homeless` root prefab references with
+  `#gq000_pr_patch_meet`.
 
 ## Next Milestones
 
@@ -229,7 +249,8 @@ Needed:
 - Add the next quest phase after `job_accept`.
 - Define facts with `gq000_` prefixes for accepted job state, cache acquired, cache delivered, and quest completion.
 - Add objective updates, mappin changes, and failure/completion branches.
-- Replace placeholder/base references with Ghostline-owned resources where needed.
+- Confirm prefab NodeRef lifecycle against base-game questphases and replace any
+  remaining placeholder/base references with Ghostline-owned resources where needed.
 
 ### 5. Validate audio packaging
 
