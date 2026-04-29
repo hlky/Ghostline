@@ -1,0 +1,122 @@
+{
+  "_note": "Production world spec for gq000 Patch meeting. Origin was captured as ToVector4{ x = -795.7447, y = 390.34177, z = 17.272781, w = 1 }. Yaw is provisional because the capture did not include actor heading; circular triggers keep quest trigger behavior independent of yaw until in-game facing is tuned.",
+  "name": "gq000",
+  "prefab_root": "$/mod/gq000/#gq000_pr_patch_meet",
+  "block_path": "mod\\gq000\\world\\gq000_patch_meet.streamingblock",
+  "quest_sector_path": "mod\\gq000\\world\\gq000_patch_meet.streamingsector",
+  "always_loaded_sector_path": "mod\\gq000\\world\\gq000_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -795.7447,
+    "y": 390.34177,
+    "z": 17.272781,
+    "yaw": 0
+  },
+  "markers": [
+    {
+      "ref": "#gq000_01_sm_patch_bridge",
+      "position": {
+        "from": "origin"
+      },
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gq000_01_tr_setup",
+      "position": {
+        "from": "origin"
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 90,
+        "segments": 16,
+        "height": 4
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gq000_01_tr_engage",
+      "position": {
+        "from": "origin"
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 4.5,
+        "segments": 12,
+        "height": 2.5
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq000_01_tr_bridge_case_mood",
+      "position": {
+        "from": "origin"
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 18,
+        "segments": 16,
+        "height": 3
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq000_01_tr_someone_coming",
+      "position": {
+        "from": "origin"
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 8,
+        "segments": 12,
+        "height": 2.5
+      },
+      "notifiers": [
+        "quest"
+      ]
+    }
+  ],
+  "community": {
+    "ref": "#gq000_01_com_patch_bridge",
+    "entry": "patch",
+    "phase": "default",
+    "period": "Day",
+    "character": "Character.GhostlinePatch",
+    "appearance": "default",
+    "source_object_id": "auto",
+    "active_on_start": 1,
+    "streaming_distance": 160,
+    "node_data": {
+      "max_streaming_distance": 280,
+      "streaming_distance": 240
+    },
+    "spot": {
+      "ref": "#gq000_01_spot_patch_bridge",
+      "position": {
+        "from": "origin",
+        "right": -1.25
+      },
+      "yaw": "origin",
+      "workspot": "base\\workspots\\common\\wall\\generic__stand_wall_lean_back_cigarette__smoke__01.workspot",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  }
+}

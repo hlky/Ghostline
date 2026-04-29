@@ -1,6 +1,6 @@
 # Ghostline Roadmap
 
-Last audited: 2026-04-28
+Last audited: 2026-04-29
 
 This file records the current project state and the next work needed to turn `gq000` from a dialogue prototype into a playable quest slice. It is based on the files under `source`, the helper explorers in `tools`, and local references in `modding_docs`.
 
@@ -13,7 +13,7 @@ This file records the current project state and the next work needed to turn `gq
   - `mod\ghostline\localization\en-us\onscreens\ghostline.json` for generic onscreen localization
   - `mod\gq000\journal\gq000.journal` for the first quest journal data
   - `mod\gq000\localization\en-us\onscreens\gq000.json` for quest-specific onscreen localization
-- The ArchiveXL file does not yet register any `streaming: blocks:` resources.
+  - `mod\gq000\world\gq000_patch_meet.streamingblock` for the Patch meeting world data
 
 ### Patch character
 
@@ -173,6 +173,50 @@ This file records the current project state and the next work needed to turn `gq
     in-game meter, with final HUD/objective-distance calibration still required
     in game.
 
+### World placement and community
+
+- Added production world spec `tools/gq000_patch_meet.world.json` using captured
+  origin `(-795.7447, 390.34177, 17.272781)`.
+- The spec keeps yaw at provisional `0` because the captured `ToVector4` did
+  not include actor heading. Trigger outlines are circular so quest progression
+  is not dependent on that yaw before in-game facing tuning.
+- The quest descriptor uses world-wide bounds during first validation, matching
+  the mq003 quest-sector reference pattern and avoiding a too-tight streaming
+  box while the location is still being tuned.
+- Generated raw and packed world resources:
+  - `source/raw/mod/gq000/world/gq000_patch_meet.streamingsector.json`
+  - `source/archive/mod/gq000/world/gq000_patch_meet.streamingsector`
+  - `source/raw/mod/gq000/world/gq000_always_loaded.streamingsector.json`
+  - `source/archive/mod/gq000/world/gq000_always_loaded.streamingsector`
+  - `source/raw/mod/gq000/world/gq000_patch_meet.streamingblock.json`
+  - `source/archive/mod/gq000/world/gq000_patch_meet.streamingblock`
+- `py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary`
+  reports one quest sector with 7 nodes:
+  - `worldStaticMarkerNode` for `#gq000_01_sm_patch_bridge`
+  - four `worldTriggerAreaNode` nodes for the current quest and scene trigger refs
+  - `worldAISpotNode` for `#gq000_01_spot_patch_bridge`
+  - `worldCompiledCommunityAreaNode_Streamable` for `#gq000_01_com_patch_bridge`
+- Trigger outline sizes in the current spec:
+  - `#gq000_01_tr_setup`: 90-unit radius, height 4
+  - `#gq000_01_tr_engage`: 4.5-unit radius, height 2.5
+  - `#gq000_01_tr_bridge_case_mood`: 18-unit radius, height 3
+  - `#gq000_01_tr_someone_coming`: 8-unit radius, height 2.5
+- The streaming block contains a Quest descriptor for
+  `mod\gq000\world\gq000_patch_meet.streamingsector` with
+  `questPrefabNodeRef: $/mod/gq000/#gq000_pr_patch_meet` and world-wide
+  bounds, plus an AlwaysLoaded descriptor for
+  `mod\gq000\world\gq000_always_loaded.streamingsector`.
+- The community registry maps `patch/default` to `Character.GhostlinePatch`,
+  source object id `7897875840529598144`, and spot NodeRef
+  `$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge`.
+- Packed generated world resources were deserialized with WolvenKit.CLI 8.17.4
+  and verified to start with `CR2W`.
+- Remaining in-game validation:
+  - Confirm ArchiveXL loads the streaming block.
+  - Confirm every quest/scene NodeRef resolves in game.
+  - Tune Patch facing, workspot placement, and trigger radii if the chosen
+    location geometry needs tighter volumes.
+
 ### Generated/editor support data
 
 - `generated` contains older generated snapshots. Prefer `source/raw` when changing CR2W assets.
@@ -184,71 +228,16 @@ This file records the current project state and the next work needed to turn `gq
   - `tools/explore_ent_app.py`
   - `tools/explore_journal.py`
 
-## Missing Or Unresolved References
-
-These are references found in current raw assets that do not have matching project-owned resources under `source`.
-
-### World placement, trigger areas, and scene marker
-
-Current references:
-
-- `#gq000_01_sm_patch_bridge`
-- `#gq000_01_tr_setup`
-- `#gq000_01_tr_engage`
-- `#gq000_01_tr_bridge_case_mood`
-- `#gq000_01_tr_someone_coming`
-
-Needed:
-
-- Pick the final Patch meeting location and record the coordinates.
-- Add a custom streaming sector containing the world nodes required by the quest:
-  - a static marker for `#gq000_01_sm_patch_bridge`
-  - trigger area nodes for the four `#gq000_01_tr_*` references
-  - any supporting collision/visibility markers needed for the scene setup
-- Add a streaming block that includes the sector.
-- Register the block in `source/resources/Ghostline.archive.xl` using `streaming: blocks:`.
-- Verify every NodeRef resolves in game before tuning quest graph timing.
-
-Docs checked:
-
-- `modding_docs/modding-guides/world-editing/README.md`
-- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/the-whole-world-.streamingsector/README.md`
-- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/the-whole-world-.streamingsector/.streamingblock-sector-definitions-and-variants.md`
-- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/the-whole-world-.streamingsector/noderefs.md`
-- `modding_docs/for-mod-creators-theory/references-lists-and-overviews/reference-world-sectors/reference-.streamingsector-node-types.md`
-- `modding_docs/modding-guides/world-editing/object-spawner/exporting-from-object-spawner.md`
-
-### Patch community / AI spawn support
-
-Current reference:
-
-- `#gq000_01_com_patch_bridge`
-
-Needed:
-
-- Add the community/AI spot setup that backs Patch's scene AI manager reference.
-- Do this through streaming-sector world nodes, not a standalone `.community` file. The local docs note that `.community` files are leftovers and that community registration happens in streaming sectors.
-- Expected world-sector pieces:
-  - `worldAiSpotNode` with a unique NodeRef
-  - `worldCompiledCommunityAreaNode` or `_Streamable` as appropriate for the sector
-  - `worldCommunityRegistryNode`
-  - matching entry/phase/spot IDs so quest nodes can activate or deactivate Patch cleanly
-
-Docs checked:
-
-- `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/.community-files.md`
-- `modding_docs/modding-guides/quest/how-to-use-worldcommunityregistry-and-worldcompiledcommunity.md`
-- `modding_docs/modding-guides/world-editing/ai-and-npcs/creating-communities.md`
+## Resolved World References
 
 ### Quest phase prefab NodeRef
 
-Current reference:
+The current `#gq000_pr_patch_meet` references in `gq000.questphase` and
+`gq000_patch_meet.questphase` are now backed by a Ghostline-owned streaming
+block and quest sector.
 
-- `#gq000_pr_patch_meet` in `gq000.questphase` root `phasePrefabs`
-- `#gq000_pr_patch_meet` in `gq000_patch_meet.questphase` root `phasePrefabs`
-- `#gq000_pr_patch_meet` in `gq000.questphase` phase node id `2` `phaseInstancePrefabs`
-
-Resolved understanding from `reference/world/000`:
+Resolved understanding from `reference/world/000` and the generated Ghostline
+world data:
 
 - Local quest docs say questphase `#` NodeRefs can be used to load prefabs for
   the phase.
@@ -273,19 +262,16 @@ Resolved understanding from `reference/world/000`:
   `mod\gq000\phases\gq000_patch_meet.questphase`; it does not need a duplicate
   `phaseInstancePrefabs` entry because the child questphase has its own root
   `phasePrefabs`.
-
-Needed:
-
-- When adding Ghostline world data, create a Ghostline-owned streaming block
-  descriptor whose `questPrefabNodeRef` is an absolute path ending in
-  `#gq000_pr_patch_meet`.
-- Put all phase/scene child refs under that prefab root in the custom sector
-  `nodeRefs` and matching `nodeData.QuestPrefabRefHash` values, including:
+- `gq000_patch_meet.streamingblock` creates the required world-side root
+  binding with `questPrefabNodeRef: $/mod/gq000/#gq000_pr_patch_meet`.
+- `gq000_patch_meet.streamingsector` registers these child refs under that
+  prefab root and assigns matching `nodeData.QuestPrefabRefHash` values:
   - `#gq000_01_sm_patch_bridge`
   - `#gq000_01_tr_setup`
   - `#gq000_01_tr_engage`
   - `#gq000_01_tr_bridge_case_mood`
   - `#gq000_01_tr_someone_coming`
+  - `#gq000_01_spot_patch_bridge`
   - `#gq000_01_com_patch_bridge`
 - Keep current `phasePrefabs` and phase node id `2` `phaseInstancePrefabs`
   entries unless in-game validation shows the parent root phase loads too much
@@ -298,6 +284,15 @@ Completed 2026-04-28:
   `#gq000_pr_patch_meet`.
 - Resolved the root-vs-instance prefab question using the deserialized
   `reference/world/000` streaming block and quest sector.
+
+Completed 2026-04-29:
+
+- Added the production `gq000_patch_meet` world spec, quest sector, always-loaded
+  registry sector, and streaming block.
+- Registered the block in `source/resources/Ghostline.archive.xl`.
+- Generated packed CR2W resources for the new world files.
+- Verified the generated raw world files with `tools/explore_world.py` and
+  confirmed packed world resources start with `CR2W`.
 
 ## Next Milestones
 
@@ -320,13 +315,14 @@ Completed 2026-04-28:
   - `modding_docs/modding-guides/quest/creating-custom-shards.md`
   - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/translation-files-.json.md`
 
-### 3. Add the meeting-location world data
+### 3. Validate the meeting-location world data
 
-- Decide the actual Patch bridge/meeting spot.
-- Create a Ghostline-owned streaming sector and streaming block.
-- Add the marker, triggers, and Patch community/AI nodes referenced by the current phase and scene.
-- Register the streaming block in `Ghostline.archive.xl`.
-- Use `reference/world/000` as the quest NodeRef/trigger/AI spot pattern and `reference/world/001` as the split community registry plus streamable area pattern.
+- Completed source/resource generation 2026-04-29.
+- Test in game that ArchiveXL registers `mod\gq000\world\gq000_patch_meet.streamingblock`.
+- Confirm the scene marker, setup trigger, engage trigger, case-mood trigger,
+  someone-coming trigger, and Patch community NodeRefs all resolve.
+- Tune Patch yaw/workspot offset and trigger radii against the real location
+  geometry after the first in-game pass.
 
 ### 4. Extend the quest beyond acceptance
 
