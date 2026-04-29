@@ -228,6 +228,21 @@ This file records the current project state and the next work needed to turn `gq
   - `tools/explore_ent_app.py`
   - `tools/explore_journal.py`
 
+### Packaging audit
+
+- Checked 2026-04-29: `WolvenKit.CLI build .` exits successfully but is not a
+  safe packaging command for this repo layout. It packed repo support paths such
+  as `reference`, `source/raw`, `generated`, `GraphEditorStates`, `tools`, and
+  `modding_docs` into the archive before the bad test artifact was deleted.
+- A scoped pack from `source/archive` produces a clean archive namespace with
+  only `base\...`, `mod\gq000\...`, and `mod\ghostline\...` depot paths:
+  `WolvenKit.CLI pack .\source\archive -o <out>`.
+- A minimal installable test layout still needs the scoped archive copied or
+  renamed to `Ghostline.archive` under
+  `Cyberpunk 2077\archive\pc\mod`, plus `Ghostline.archive.xl` copied to the
+  same directory. TweakXL YAML files from `source/resources\r6\tweaks` install
+  under `Cyberpunk 2077\r6\tweaks\Ghostline`.
+
 ## Resolved World References
 
 ### Quest phase prefab NodeRef
@@ -342,7 +357,11 @@ Completed 2026-04-29:
 
 - Deserialize updated raw CR2W-JSON into `source/archive`.
 - Confirm packed CR2W files start with `CR2W`.
-- Pack the WolvenKit project.
+- Pack from `source/archive`, not from the repo root, then copy
+  `source/resources\Ghostline.archive.xl` to
+  `Cyberpunk 2077\archive\pc\mod` and
+  `source/resources\r6\tweaks\ghostline` to
+  `Cyberpunk 2077\r6\tweaks\Ghostline`.
 - Check:
   - `Cyberpunk 2077\red4ext\plugins\ArchiveXL\ArchiveXL.log`
   - TweakXL load output
