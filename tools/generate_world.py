@@ -47,6 +47,7 @@ class Vec3:
 class Anchor:
     position: Vec3
     yaw: float
+    node_index: int | None = None
 
 
 @dataclass(frozen=True)
@@ -754,8 +755,13 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
     quest_sector_path = normalize_depot_path(spec.get("quest_sector_path", rf"mod\{spec.get('name', 'ghostline')}\world\quest.streamingsector"))
     block_path = normalize_depot_path(spec.get("block_path", rf"mod\{spec.get('name', 'ghostline')}\world\all.streamingblock"))
     community_spec = spec.get("community")
+    marker_specs = spec.get("markers", [])
+    always_loaded_ref_specs = spec.get("always_loaded_node_refs", [])
+    if always_loaded_ref_specs and not isinstance(always_loaded_ref_specs, list):
+        raise SystemExit("always_loaded_node_refs must be a list")
+    always_loaded_marker_specs = [item for item in marker_specs if item.get("sector") == "always_loaded"]
     always_loaded_path = None
-    if community_spec:
+    if community_spec or always_loaded_ref_specs or always_loaded_marker_specs:
         always_loaded_path = normalize_depot_path(
             spec.get("always_loaded_sector_path", rf"mod\{spec.get('name', 'ghostline')}\world\always_loaded.streamingsector")
         )
@@ -768,10 +774,15 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
     anchors: dict[str, Anchor] = {"origin": Anchor(origin, origin_yaw)}
 
     handles = HandleAllocator()
+    always_handles = HandleAllocator()
     nodes: list[dict[str, Any]] = []
     node_datas: list[dict[str, Any]] = []
     refs: list[str] = []
     positions: list[Vec3] = [origin]
+    always_loaded_nodes: list[dict[str, Any]] = []
+    always_loaded_node_datas: list[dict[str, Any]] = []
+    always_loaded_refs: list[str] = []
+    always_loaded_sector: dict[str, Any] | None = None
 
     def add_node(ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float, overrides: dict[str, Any] | None = None) -> None:
         full_ref = full_node_ref(prefab_root, ref_value)
@@ -780,14 +791,33 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         node_datas.append(node_data(index, full_ref, pos, yaw, overrides))
         refs.append(full_ref)
         positions.append(pos)
-        register_anchor(anchors, ref_value, Anchor(pos, yaw))
-        register_anchor(anchors, full_ref, Anchor(pos, yaw))
+        register_anchor(anchors, ref_value, Anchor(pos, yaw, index))
+        register_anchor(anchors, full_ref, Anchor(pos, yaw, index))
 
-    for item in spec.get("markers", []):
+    def add_always_loaded_node(
+        ref_value: str,
+        node: dict[str, Any],
+        pos: Vec3,
+        yaw: float,
+        overrides: dict[str, Any] | None = None,
+    ) -> None:
+        full_ref = full_node_ref(prefab_root, ref_value)
+        index = len(always_loaded_nodes)
+        always_loaded_nodes.append(node)
+        always_loaded_node_datas.append(node_data(index, full_ref, pos, yaw, overrides))
+        always_loaded_refs.append(full_ref)
+        positions.append(pos)
+        register_anchor(anchors, ref_value, Anchor(pos, yaw, index))
+        register_anchor(anchors, full_ref, Anchor(pos, yaw, index))
+
+    for item in marker_specs:
         ref_value = item["ref"]
         pos, anchor_yaw = resolve_position(item.get("position"), anchors, f"marker {ref_value}")
         yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
-        add_node(ref_value, marker_node(item, ref_value, handles), pos, yaw, item.get("node_data"))
+        if item.get("sector") == "always_loaded":
+            add_always_loaded_node(ref_value, marker_node(item, ref_value, always_handles), pos, yaw, item.get("node_data"))
+        else:
+            add_node(ref_value, marker_node(item, ref_value, handles), pos, yaw, item.get("node_data"))
 
     for item in spec.get("triggers", []):
         ref_value = item["ref"]
@@ -795,7 +825,6 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
         add_node(ref_value, trigger_node(item, ref_value, handles), pos, yaw, item.get("node_data"))
 
-    always_loaded_sector: dict[str, Any] | None = None
     if community_spec:
         spot_spec = community_spec.get("spot", {})
         spot_ref_value = spot_spec.get("ref", "#gq000_01_spot_patch_bridge")
@@ -820,7 +849,6 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
             community_spec.get("node_data"),
         )
 
-        registry_handles = HandleAllocator()
         registry_node = community_registry_node(
             community_spec,
             source_object_id,
@@ -828,16 +856,55 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
             spot_hash,
             spot_position,
             spot_yaw,
-            registry_handles,
+            always_handles,
         )
+        registry_index = len(always_loaded_nodes)
+        always_loaded_nodes.append(registry_node)
+        always_loaded_node_datas.append(
+            node_data(registry_index, int(source_object_id), Vec3(0, 0, 0), 0, {"max_streaming_distance": 17.320507, "streaming_distance": 100000000, "uk10": 32})
+        )
+
+    for ref_spec in always_loaded_ref_specs:
+        if isinstance(ref_spec, str):
+            ref_value = ref_spec
+            ref_data: dict[str, Any] = {}
+        elif isinstance(ref_spec, dict):
+            ref_value = str(ref_spec["ref"])
+            ref_data = ref_spec
+        else:
+            raise SystemExit("always_loaded_node_refs entries must be strings or objects")
+
+        full_ref = full_node_ref(prefab_root, ref_value)
+        position_spec = ref_data.get("position")
+        if position_spec is None:
+            anchor = lookup_anchor(anchors, full_ref)
+            pos = anchor.position
+            yaw = resolve_yaw(ref_data.get("yaw"), anchors, anchor.yaw)
+            source_node_index = anchor.node_index
+        else:
+            pos, anchor_yaw = resolve_position(position_spec, anchors, f"always-loaded ref {ref_value}")
+            yaw = resolve_yaw(ref_data.get("yaw"), anchors, anchor_yaw)
+            source_node_index = None
+
+        overrides = {
+            "max_streaming_distance": 9513.75586,
+            "streaming_distance": 512,
+            "uk10": 32,
+        }
+        overrides.update(ref_data.get("node_data", {}))
+        node_index = int(ref_data.get("node_index", source_node_index if source_node_index is not None else len(always_loaded_node_datas)))
+        always_loaded_node_datas.append(node_data(node_index, full_ref, pos, yaw, overrides))
+        always_loaded_refs.append(full_ref)
+
+    if always_loaded_path and (always_loaded_node_datas or always_loaded_nodes):
         registry_archive = depot_to_archive_path(archive_root, always_loaded_path)
         always_loaded_sector = streaming_sector(
             "AlwaysLoaded",
             int(spec.get("always_loaded_level", 1)),
             registry_archive,
-            [node_data(0, int(source_object_id), Vec3(0, 0, 0), 0, {"max_streaming_distance": 17.320507, "streaming_distance": 100000000, "uk10": 32})],
-            [],
-            [registry_node],
+            always_loaded_node_datas,
+            always_loaded_refs,
+            always_loaded_nodes,
         )
 
     quest_archive = depot_to_archive_path(archive_root, quest_sector_path)

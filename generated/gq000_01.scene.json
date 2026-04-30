@@ -15,12 +15,12 @@
       "actors": [
         {
           "$type": "scnActorDef",
-          "acquisitionPlan": "spawnDespawn",
+          "acquisitionPlan": "community",
           "actorId": {
             "$type": "scnActorId",
             "id": 0
           },
-          "actorName": "panam",
+          "actorName": "patch",
           "animSets": [],
           "bodyCinematicAnimSets": [
             {
@@ -105,13 +105,13 @@
             "entryName": {
               "$type": "CName",
               "$storage": "string",
-              "$value": "None"
+              "$value": "patch"
             },
             "forceMaxVisibility": 0,
             "reference": {
               "$type": "NodeRef",
-              "$storage": "uint64",
-              "$value": "0"
+              "$storage": "string",
+              "$value": "#gq000_01_com_patch_bridge"
             }
           },
           "cyberwareAnimSets": [],
@@ -182,16 +182,16 @@
           },
           "spawnDespawnParams": {
             "$type": "scnSpawnDespawnEntityParams",
-            "alwaysSpawned": 1,
+            "alwaysSpawned": 0,
             "appearance": {
               "$type": "CName",
               "$storage": "string",
-              "$value": "panam_default_scars"
+              "$value": "None"
             },
             "dynamicEntityUniqueName": {
               "$type": "CName",
               "$storage": "string",
-              "$value": "dialogtest_panam"
+              "$value": "None"
             },
             "findInWorld": 0,
             "forceMaxVisibility": 0,
@@ -209,10 +209,10 @@
             },
             "spawnMarkerNodeRef": {
               "$type": "NodeRef",
-              "$storage": "string",
-              "$value": "#dialogtest_sm"
+              "$storage": "uint64",
+              "$value": "0"
             },
-            "spawnMarkerType": "Global",
+            "spawnMarkerType": "Local",
             "spawnOffset": {
               "$type": "Transform",
               "orientation": {
@@ -233,8 +233,8 @@
             "spawnOnStart": 1,
             "specRecordId": {
               "$type": "TweakDBID",
-              "$storage": "string",
-              "$value": "Character.Panam"
+              "$storage": "uint64",
+              "$value": "0"
             },
             "validateSpawnPostion": 1
           },
@@ -289,13 +289,19 @@
               "dynamicEntityUniqueName": {
                 "$type": "CName",
                 "$storage": "string",
-                "$value": "dialogtest_panam"
+                "$value": "None"
               },
-              "names": [],
+              "names": [
+                {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "patch"
+                }
+              ],
               "reference": {
                 "$type": "NodeRef",
-                "$storage": "uint64",
-                "$value": "0"
+                "$storage": "string",
+                "$value": "#gq000_01_com_patch_bridge"
               },
               "sceneActorContextName": {
                 "$type": "CName",
@@ -2401,7 +2407,7 @@
               "DepotPath": {
                 "$type": "ResourcePath",
                 "$storage": "string",
-                "$value": "mod\\audiowaredialogtest\\localization\\en-us\\lipsync\\panam.anims"
+                "$value": "base\\animations\\facial\\generic\\interactive_scene\\generic_facial_lipsync_gestures.anims"
               },
               "Flags": "Soft"
             },
@@ -2420,7 +2426,7 @@
               "DepotPath": {
                 "$type": "ResourcePath",
                 "$storage": "string",
-                "$value": "mod\\audiowaredialogtest\\localization\\en-us\\lipsync\\v.anims"
+                "$value": "base\\animations\\facial\\generic\\interactive_scene\\generic_facial_lipsync_gestures.anims"
               },
               "Flags": "Soft"
             },

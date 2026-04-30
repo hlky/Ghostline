@@ -94,13 +94,14 @@ community workspot persistent data.
 | `prefab_root` | Yes | None | Root NodeRef for local refs. Local `#foo` refs become `<prefab_root>/#foo`. |
 | `block_path` | No | `mod\{name}\world\all.streamingblock` | Depot path for the generated streaming block. |
 | `quest_sector_path` | No | `mod\{name}\world\quest.streamingsector` | Depot path for the generated quest streaming sector. |
-| `always_loaded_sector_path` | No | `mod\{name}\world\always_loaded.streamingsector` | Depot path for the community registry sector. Used only when `community` is present. |
+| `always_loaded_sector_path` | No | `mod\{name}\world\always_loaded.streamingsector` | Depot path for the always-loaded sector. Used when `community`, `always_loaded_node_refs`, or an always-loaded marker is present. |
 | `origin` | Yes | None | Base coordinate and optional yaw. See position formats below. |
 | `yaw` | No | `0` | Origin yaw fallback if `origin` is an array or omits `yaw`. |
 | `streaming_box` | No | `world` | Quest descriptor bounds. See streaming box formats below. |
 | `quest_sector_level` | No | `255` | `level` written into the generated quest `.streamingsector`. The block descriptor remains level `0`. |
 | `always_loaded_level` | No | `1` | `level` written into the generated always-loaded `.streamingsector`. The block descriptor remains level `1`. |
 | `markers` | No | `[]` | Static marker nodes to create. |
+| `always_loaded_node_refs` | No | `[]` | Advanced: additional NodeRefs to register in the always-loaded sector without creating duplicate nodes. Prefer `markers[].sector = "always_loaded"` for journal/static mappin marker resolution. |
 | `triggers` | No | `[]` | Trigger area nodes to create. |
 | `community` | No | None | Optional Patch-style AI spot, streamable community area, and always-loaded registry. |
 
@@ -122,7 +123,7 @@ adding `#` if needed, then appended to `prefab_root`.
 Each generated node becomes an anchor after it is created. It can then be
 referenced by later nodes using its original ref, full NodeRef, local name, or
 `#local_name`. Order matters: markers are generated first, then triggers, then
-community spot and area.
+community spot and area, then always-loaded registration-only refs.
 
 ## Position Formats
 
@@ -229,6 +230,7 @@ Markers create `worldStaticMarkerNode` entries.
 ```json
 {
   "ref": "#gq000_01_sm_patch_bridge",
+  "sector": "always_loaded",
   "position": {
     "from": "origin"
   },
@@ -246,6 +248,7 @@ Markers create `worldStaticMarkerNode` entries.
 | Field | Required | Default | Description |
 | --- | --- | --- | --- |
 | `ref` | Yes | None | Marker NodeRef. |
+| `sector` | No | `quest` | Use `always_loaded` to create the marker in the always-loaded sector instead of the quest sector. This is preferred for journal/static mappin marker refs that must resolve before the quest sector streams. |
 | `position` | No | `origin` | Absolute or relative position. |
 | `yaw` | No | Position anchor yaw | Node yaw. |
 | `debug_name` | No | `{local_ref}` | `worldStaticMarkerNode.debugName`. |
@@ -469,11 +472,69 @@ The nested `community.spot` block controls the generated `worldAISpotNode`.
 | `snap_to_ground` | No | `0` | `AIActionSpot.snapToGround`. |
 | `use_clipping_space` | No | `0` | `AIActionSpot.useClippingSpace`. |
 
+## Always-Loaded NodeRef Registrations
+
+`always_loaded_node_refs` writes node-data entries and `nodeRefs` into the
+always-loaded sector without adding duplicate concrete nodes. This remains
+available for mirroring refs that already exist in another sector, but static
+marker refs for journal mappins should usually be created directly in the
+always-loaded sector with `markers[].sector = "always_loaded"`.
+
+Preferred marker form:
+
+```json
+{
+  "markers": [
+    {
+      "ref": "#gq000_01_sm_patch_bridge",
+      "sector": "always_loaded",
+      "position": {
+        "from": "origin"
+      }
+    }
+  ]
+}
+```
+
+The short form reuses the position and yaw from an already generated anchor:
+
+```json
+{
+  "always_loaded_node_refs": [
+    "#gq000_01_sm_patch_bridge"
+  ]
+}
+```
+
+The object form allows an explicit position, yaw, and node-data overrides:
+
+```json
+{
+  "always_loaded_node_refs": [
+    {
+      "ref": "#gq000_01_sm_patch_bridge",
+      "position": {
+        "from": "origin"
+      },
+      "node_data": {
+        "max_streaming_distance": 9513.75586,
+        "streaming_distance": 512,
+        "uk10": 32
+      }
+    }
+  ]
+}
+```
+
+If `node_data` is omitted, these registrations use mq003-style mappin defaults:
+`max_streaming_distance = 9513.75586`, `streaming_distance = 512`, and
+`uk10 = 32`.
+
 ## Node Data Overrides
 
-`node_data` can be used on markers, triggers, community areas, and community
-spots. Leave this out unless a reference sector shows you need to tune compiled
-node setup values.
+`node_data` can be used on markers, triggers, community areas, community spots,
+and always-loaded NodeRef registrations. Leave this out unless a reference
+sector shows you need to tune compiled node setup values.
 
 ```json
 {
@@ -516,7 +577,7 @@ Without `community`, the generator writes:
 - quest sector JSON at `<raw-root>/<quest_sector_path>.json`
 - streaming block JSON at `<raw-root>/<block_path>.json`
 
-With `community`, it also writes:
+With `community`, `always_loaded_node_refs`, or an always-loaded marker, it also writes:
 
 - always-loaded sector JSON at `<raw-root>/<always_loaded_sector_path>.json`
 
@@ -539,4 +600,3 @@ py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
 py .\tools\explore_world.py --file .\source\raw\mod\gq000\world nodes --type TriggerArea --limit 0
 py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
 ```
-
