@@ -83,7 +83,7 @@ Useful starting points:
 
 ## Helper Tools
 
-Use the explorer tools documented in `README.md` instead of dumping large
+Use the explorer tools documented in `docs/tooling.md` instead of dumping large
 CR2W-JSON files into context:
 
 - `tools/explore_questphase.py`

@@ -32,7 +32,7 @@ Generic Ghostline onscreen localization:
 - raw: `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
 - includes Patch's display name and the Ghostline faction name.
 
-Use `tools/explore_ent_app.py` from `README.md` to inspect entity and
+Use `tools/explore_ent_app.py` as documented in `docs/tooling.md` to inspect entity and
 appearance resources.
 
 ## TweakXL Resources

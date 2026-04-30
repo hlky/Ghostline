@@ -65,7 +65,8 @@ community workspot persistent data.
   },
   "markers": [
     {
-      "ref": "#gq000_01_sm_patch_bridge",
+      "ref": "#gq000_01_mp_patch_bridge",
+      "sector": "always_loaded",
       "position": {
         "from": "origin"
       }
@@ -147,7 +148,7 @@ Relative position from an anchor:
 
 ```json
 {
-  "from": "#gq000_01_sm_patch_bridge",
+  "from": "#gq000_01_mp_patch_bridge",
   "forward": 8,
   "right": -2,
   "up": 0.25
@@ -185,7 +186,7 @@ Node `yaw` can be:
 ```json
 -135
 "origin"
-"#gq000_01_sm_patch_bridge"
+"#gq000_01_mp_patch_bridge"
 ```
 
 A numeric yaw is used directly. `origin` and `anchor` mean the yaw resolved by
@@ -226,16 +227,27 @@ Use automatic bounds with padding around every generated position:
 ## Marker Spec
 
 Markers create `worldStaticMarkerNode` entries.
+Fresh `gq000` data should keep separate marker NodeRefs:
+
+- `#gq000_01_mp_patch_bridge` for quest map pin / POI static mappin
+  resolution.
+- `#gq000_01_sm_patch_bridge` for scene startup.
+
+Vanilla mq003 keeps the map-pin marker under the quest prefab root and nests
+the scene marker under a scene-prefab child path. Fresh tooling should support
+that hierarchy instead of treating scene and map-pin markers as sibling
+quest-root refs. Current Ghostline source still has a root-level scene marker;
+that is a mismatch to fix, not the target pattern.
 
 ```json
 {
-  "ref": "#gq000_01_sm_patch_bridge",
+  "ref": "#gq000_01_mp_patch_bridge",
   "sector": "always_loaded",
   "position": {
     "from": "origin"
   },
   "yaw": "origin",
-  "debug_name": "{gq000_01_sm_patch_bridge}",
+  "debug_name": "{gq000_01_mp_patch_bridge}",
   "tag": "None",
   "tag_ext": "None",
   "source_prefab_hash": "0",
@@ -486,7 +498,7 @@ Preferred marker form:
 {
   "markers": [
     {
-      "ref": "#gq000_01_sm_patch_bridge",
+      "ref": "#gq000_01_mp_patch_bridge",
       "sector": "always_loaded",
       "position": {
         "from": "origin"
@@ -501,7 +513,7 @@ The short form reuses the position and yaw from an already generated anchor:
 ```json
 {
   "always_loaded_node_refs": [
-    "#gq000_01_sm_patch_bridge"
+    "#gq000_01_mp_patch_bridge"
   ]
 }
 ```
@@ -512,7 +524,7 @@ The object form allows an explicit position, yaw, and node-data overrides:
 {
   "always_loaded_node_refs": [
     {
-      "ref": "#gq000_01_sm_patch_bridge",
+      "ref": "#gq000_01_mp_patch_bridge",
       "position": {
         "from": "origin"
       },

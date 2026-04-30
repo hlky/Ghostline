@@ -9,10 +9,12 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
 
 - Read `ROADMAP.md` before broad quest, world, journal, scene, or packaging
   work.
-- Use `README.md` explorer commands before loading full CR2W-JSON files into
+- Use `docs/tooling.md` explorer commands before loading full CR2W-JSON files into
   context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal
   behavior.
+- For fresh scene work, use `docs/scene-authoring-rules.md`. Vanilla patterns
+  override failed Ghostline probe results.
 
 Useful docs:
 
@@ -30,6 +32,10 @@ Useful docs:
   handlerefs. Use WolvenKit's graph editor for structural inspection.
 - Quest facts are signed integer state values. They default to `0` until set.
   Prefer `gq000_` prefixes for Ghostline quest facts.
+- Fresh `gq000` scene tooling should follow `docs/scene-authoring-rules.md`
+  rather than preserving generated-scene probe workarounds.
+- Emit editable scene resources under `source/raw` and use WolvenKit to produce
+  the matching packed `source/archive` resources.
 - For custom scenes built from scratch, include `performersDebugSymbols` in the
   scene `debugSymbols` array.
 - Actor debug symbols are `actorID * 256 + 1`; prop debug symbols are

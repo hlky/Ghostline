@@ -1,200 +1,41 @@
 # Ghostline
 
-Cyberpunk 2077 quest mod (WIP)
+Cyberpunk 2077 WolvenKit quest mod. The first playable slice is `gq000`,
+centered on meeting Patch and accepting the first Ghostline job.
 
-## Questphase Explorer
+## Working Docs
 
-Use `tools/explore_questphase.py` to inspect deserialized questphase JSON without
-dumping the whole CR2W-JSON file into context.
+- `ROADMAP.md` - current project state, blockers, and next milestones.
+- `docs/scene-authoring-rules.md` - vanilla-first target rules for fresh scene
+  creation tooling.
+- `docs/crash-investigation.md` - extracted runtime findings from the
+  2026-04-29/30 crash probe work.
+- `docs/world-references.md` - quest prefab, NodeRef, marker, trigger, and
+  community wiring notes.
+- `docs/tooling.md` - helper tool command usage.
+- `docs/packaging.md` - safe packaging, install layout, and runtime log checks.
+- `agent/skills/*/SKILL.md` - task-specific agent notes for CR2W conversion,
+  quest/scene/journal work, character tweaks, localization/audio, and
+  ArchiveXL packaging.
 
-The default target is
-`source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`:
+## Repository Layout
 
-```powershell
-py .\tools\explore_questphase.py summary
-py .\tools\explore_questphase.py nodes --sockets
-py .\tools\explore_questphase.py edges
-py .\tools\explore_questphase.py refs
-py .\tools\explore_questphase.py handles --type TriggerCondition
-py .\tools\explore_questphase.py search gq000_01_tr
-py .\tools\explore_questphase.py node id:11
-py .\tools\explore_questphase.py handle 13
-py .\tools\explore_questphase.py dot > questphase.dot
-```
+- `source/raw` is the editable CR2W-JSON source for packed resources.
+- `source/archive` is the packed/game-ready CR2W resource tree.
+- `source/resources` contains loose ArchiveXL and TweakXL resources.
+- `reference` contains serialized local reference assets used for comparison.
+- `tools` contains small repo helpers for inspecting and generating resources.
+- `generated` contains older generated snapshots. Prefer `source/raw` for
+  current work.
+- `GraphEditorStates` contains WolvenKit editor layout state only.
+- `modding_docs` is a local reference submodule, not Ghostline-owned source.
 
-Pass another raw questphase with `--file`:
+## Source Rules
 
-```powershell
-py .\tools\explore_questphase.py --file .\source\raw\mod\gq000\phases\other.questphase.json summary
-```
-
-Large lists are bounded by default. Use `--limit`, `--offset`, or `--limit 0`
-on list commands when you need more rows.
-
-## Scene Explorer
-
-Use `tools/explore_scene.py` to inspect deserialized `.scene` CR2W-JSON.
-
-The default target is `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`:
-
-```powershell
-py .\tools\explore_scene.py summary
-py .\tools\explore_scene.py actors
-py .\tools\explore_scene.py nodes
-py .\tools\explore_scene.py edges
-py .\tools\explore_scene.py events
-py .\tools\explore_scene.py lines
-py .\tools\explore_scene.py choices
-py .\tools\explore_scene.py refs --kind NodeRef
-py .\tools\explore_scene.py handles --type TriggerCondition
-py .\tools\explore_scene.py node 8
-py .\tools\explore_scene.py handle 41
-py .\tools\explore_scene.py search gq000_01_tr
-py .\tools\explore_scene.py dot > scene.dot
-```
-
-Pass another raw scene with `--file`:
-
-```powershell
-py .\tools\explore_scene.py --file .\source\raw\mod\gq000\scenes\other.scene.json summary
-```
-
-## Localization Explorer
-
-Use `tools/explore_localization.py` to inspect subtitle and VO-map CR2W-JSON.
-By default it loads the current `gq000_01` subtitle and VO raw JSON files
-together, then cross-checks entries by `stringId`.
-
-```powershell
-py .\tools\explore_localization.py summary
-py .\tools\explore_localization.py entries
-py .\tools\explore_localization.py check
-py .\tools\explore_localization.py search Arasaka
-py .\tools\explore_localization.py entry 6099223344158574223
-py .\tools\explore_localization.py refs
-py .\tools\explore_localization.py types
-```
-
-Pass one or more localization files with repeated `--file` arguments:
-
-```powershell
-py .\tools\explore_localization.py --file .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json --file .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json check
-```
-
-## Entity / Appearance Explorer
-
-Use `tools/explore_ent_app.py` to inspect deserialized `.ent` and `.app`
-CR2W-JSON. By default it loads Patch's root entity and app files together:
-
-```powershell
-py .\tools\explore_ent_app.py summary
-py .\tools\explore_ent_app.py appearances
-py .\tools\explore_ent_app.py components --resources-only
-py .\tools\explore_ent_app.py components --type SkinnedMesh
-py .\tools\explore_ent_app.py component c124
-py .\tools\explore_ent_app.py refs --kind ResourcePath
-py .\tools\explore_ent_app.py handles
-py .\tools\explore_ent_app.py search patch
-py .\tools\explore_ent_app.py types
-```
-
-Pass one or more raw entity/app files with repeated `--file` arguments:
-
-```powershell
-py .\tools\explore_ent_app.py --file .\source\raw\mod\ghostline\characters\patch\patch.ent.json --file .\source\raw\mod\ghostline\characters\patch\patch.app.json summary
-```
-
-## Journal Explorer
-
-Use `tools/explore_journal.py` to inspect deserialized `.journal` CR2W-JSON.
-By default it loads the mq003 quest journal reference from `reference/journal`:
-
-```powershell
-py .\tools\explore_journal.py summary
-py .\tools\explore_journal.py prefixes --with-types
-py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json tree --max-depth 6
-py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json refs
-```
-
-Pass a different reference directory to the prefix command with
-`--reference-dir`.
-
-## World Reference Explorer
-
-Use `tools/serialize_reference_world.ps1` to serialize CR2W binary world
-references under `reference/world` into CR2W-JSON companions:
-
-```powershell
-.\tools\serialize_reference_world.ps1
-```
-
-Use `tools/explore_world.py` to inspect deserialized `.streamingblock` and
-`.streamingsector` CR2W-JSON without dumping full world files:
-
-```powershell
-py .\tools\explore_world.py summary
-py .\tools\explore_world.py blocks
-py .\tools\explore_world.py nodes --type TriggerArea --limit 0
-py .\tools\explore_world.py nodes --type AISpot --limit 0
-py .\tools\explore_world.py noderefs --contains mq003_tr --limit 0
-py .\tools\explore_world.py communities
-py .\tools\explore_world.py search gq000
-```
-
-Pass one or more files or directories with repeated `--file` arguments:
-
-```powershell
-py .\tools\explore_world.py --file .\reference\world\001\sectors summary
-```
-
-## World Generator
-
-Use `tools/generate_world.py` to turn captured in-game coordinates into raw
-`.streamingsector.json` and `.streamingblock.json` files. The checked-in example
-spec uses placeholder/reference coordinates; copy it and replace the `origin`
-before generating real quest assets. The full spec reference lives in
-`tools/world_spec.md`.
-
-Distances in specs are world-coordinate units: local `forward`, `right`,
-`distance`, trigger widths/depths, and radii all use the same scale as captured
-CET/WolvenKit coordinates. Current reference-sector evidence points to roughly
-1 coordinate unit per in-game meter, but final placement still needs in-game
-validation against the HUD/objective distance display.
-
-```powershell
-py .\tools\generate_world.py example
-py .\tools\generate_world.py hash "$/mod/npcac/#npcac_spot"
-py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
-py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
-```
-
-When the spec is ready, generate raw files under `source/raw`, register the
-block in ArchiveXL, and deserialize to `source/archive`:
-
-```powershell
-py .\tools\generate_world.py generate --spec .\path\to\gq000_patch_meet.world.json --register --deserialize
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world noderefs --limit 0
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
-```
-
-## Voiceover WEM Conversion
-
-Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into
-Wwise `.wem` files. The script normalizes WAVs into
-`wwise_conversion\ExternalSources`, writes `external_sources.wsources`, runs
-Wwise external source conversion, and copies the resulting WEM files back into
-the VO folder without deleting the source WAVs.
-
-```powershell
-.\tools\convert_wavs_to_wem.ps1
-```
-
-By default it uses:
-
-```powershell
-C:\Audiokinetic\Wwise2025.1.7.9143\Authoring\x64\Release\bin\WwiseConsole.exe
-```
-
-Override that path with `-WwiseConsole` or the `WWISE_CONSOLE` environment
-variable if Wwise is installed somewhere else.
+- Work from the repository root.
+- Do not edit `source/archive` resources as text. They are CR2W binaries,
+  including paths ending in `.json`.
+- Edit `source/raw` CR2W-JSON when changing packed resources.
+- `source/raw/gq000_01_manifest.json` is a plain generated manifest and is not
+  serialized back to CR2W.
+- Search `modding_docs` before guessing at Cyberpunk-specific behavior.

@@ -1,6 +1,6 @@
 ---
 name: ghostline-localization-audio
-description: Use for Ghostline dialogue generation, subtitle and voiceover map alignment, voice design or cloning, WAV/WEM handling, localization JSON resources, and gq000_01 conversation regeneration.
+description: Use for Ghostline subtitle and voiceover map alignment, voice design or cloning, WAV/WEM handling, localization JSON resources, and gq000_01 dialogue localization maintenance.
 ---
 
 # Ghostline Localization And Audio Workflow
@@ -29,32 +29,34 @@ Quest-specific onscreens should live under
 `source/archive/mod/gq000/localization/en-us/onscreens` and be registered in
 `source/resources/Ghostline.archive.xl`.
 
-## Generator
+## Legacy Generator Status
 
-Run this from the repo root to generate the `gq000_01` conversation resources
-from `template.scene.json`:
+`create_files.py` and `template.scene.json` are legacy generation references.
+Do not use them to regenerate the current `gq000_patch_meet.scene` graph,
+dialogue sections, choice nodes, or scene timing. Scene graph tooling is being
+restarted from scratch, and the current crash investigation requires preserving
+known-good section and choice shapes deliberately.
 
-```powershell
-python .\create_files.py
-```
-
-The generator writes:
+The legacy generator previously wrote:
 
 - subtitles
 - VO map data
-- scene dialogue/options
-- section and choice node ids
 - `source/raw/gq000_01_manifest.json`
 
-The generator expects WAV files in
+It also wrote scene dialogue/options and section/choice node IDs, but that
+output is not safe for current scene work.
+
+The legacy generator expects WAV files in
 `source/archive/mod/gq000/localization/en-us/vo`. If a WAV named after a line
 key exists, it renames it to the hashed actor filename.
 
 `create_files.py` uses random dialogue gaps when building section timing, so
-reruns can change generated scene timing even with the same dialogue.
+reruns can change generated scene timing even with the same dialogue. Treat
+that as another reason not to use it for the active scene graph.
 
-The generator writes CR2W-JSON files, not game-ready CR2W binaries. Convert
-them before use with the WolvenKit workflow in
+For dialogue text or audio changes, keep subtitle entries, VO map entries,
+`source/raw/gq000_01_manifest.json`, and scene `locstringIds` aligned, then
+convert changed raw CR2W-JSON before use with the WolvenKit workflow in
 `agent/skills/ghostline-wolvenkit-cr2w/SKILL.md`.
 
 ## Voice Generation And WEM Conversion
@@ -64,8 +66,8 @@ them before use with the WolvenKit workflow in
 - For custom characters, design a voice first, then clone it for repeated use.
 - Cyberpunk stores voiceovers as Wwise `.wem` resources in archives.
 - Voiceover `.json` resources map subtitle String IDs to voice files.
-- Ghostline's generator starts from WAV inputs, then prepares CR2W-JSON
-  resources that must be converted before use.
+- Ghostline's legacy generator starts from WAV inputs, then prepares CR2W-JSON
+  localization resources that must be converted before use.
 
 Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into
 Wwise `.wem` files. The script normalizes WAVs into
