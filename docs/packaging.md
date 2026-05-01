@@ -73,6 +73,7 @@ Check these after each install:
 
 ## CR2W Verification
 
-After deserializing raw CR2W-JSON back into `source/archive`, verify packed
-resources start with the `CR2W` magic before packaging. The current generated
-world resources were verified this way with WolvenKit.CLI 8.17.4.
+After writing raw CR2W-JSON back into `source/archive` as CR2W resources,
+verify packed resources start with the `CR2W` magic before packaging. The
+current generated world resources were verified this way with WolvenKit.CLI
+8.17.4.

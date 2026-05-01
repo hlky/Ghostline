@@ -3,7 +3,7 @@
     "WolvenKitVersion": "8.17.4",
     "WKitJsonVersion": "0.0.9",
     "GameVersion": 2310,
-    "ExportedDateTime": "2026-04-27T21:11:23.9476139Z",
+    "ExportedDateTime": "2026-05-01T14:00:14.3502258Z",
     "DataType": "CR2W",
     "ArchiveFileName": "H:\\projects\\Ghostline\\source\\archive\\mod\\gq000\\phases\\gq000_patch_meet.questphase"
   },
@@ -173,31 +173,18 @@
                     "HandleId": "11",
                     "Data": {
                       "$type": "questSocketDefinition",
-                      "connections": [],
-                      "name": {
-                        "$type": "CName",
-                        "$storage": "string",
-                        "$value": "end"
-                      },
-                      "type": "Output"
-                    }
-                  },
-                  {
-                    "HandleId": "12",
-                    "Data": {
-                      "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "13",
+                          "HandleId": "12",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
-                              "HandleId": "14",
+                              "HandleId": "13",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "13"
+                                    "HandleRefId": "12"
                                   }
                                 ],
                                 "name": {
@@ -209,11 +196,24 @@
                               }
                             },
                             "source": {
-                              "HandleRefId": "12"
+                              "HandleRefId": "11"
                             }
                           }
                         }
                       ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "end"
+                      },
+                      "type": "Output"
+                    }
+                  },
+                  {
+                    "HandleId": "14",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
                       "name": {
                         "$type": "CName",
                         "$storage": "string",
@@ -587,24 +587,102 @@
                     "HandleRefId": "24"
                   },
                   {
-                    "HandleRefId": "10"
+                    "HandleId": "39",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "40",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "41",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "40"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "39"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
                   }
                 ]
               }
             },
             {
-              "HandleId": "39",
+              "HandleId": "42",
               "Data": {
-                "$type": "questOutputNodeDefinition",
-                "id": 257,
-                "socketName": {
-                  "$type": "CName",
-                  "$storage": "string",
-                  "$value": "None"
+                "$type": "questPauseConditionNodeDefinition",
+                "condition": {
+                  "HandleId": "43",
+                  "Data": {
+                    "$type": "questCharacterCondition",
+                    "type": {
+                      "HandleId": "44",
+                      "Data": {
+                        "$type": "questCharacterSpawned_ConditionType",
+                        "comparisonParams": {
+                          "HandleId": "45",
+                          "Data": {
+                            "$type": "questComparisonParam",
+                            "comparisonType": "Greater",
+                            "count": 0,
+                            "entireCommunity": 1
+                          }
+                        },
+                        "objectRef": {
+                          "$type": "gameEntityReference",
+                          "dynamicEntityUniqueName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "names": [],
+                          "reference": {
+                            "$type": "NodeRef",
+                            "$storage": "string",
+                            "$value": "#gq000_01_com_patch_bridge"
+                          },
+                          "sceneActorContextName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "slotName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "type": "EntityRef"
+                        }
+                      }
+                    }
+                  }
                 },
+                "id": 256,
                 "sockets": [
                   {
-                    "HandleId": "40",
+                    "HandleId": "46",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -617,7 +695,40 @@
                     }
                   },
                   {
-                    "HandleRefId": "14"
+                    "HandleRefId": "41"
+                  },
+                  {
+                    "HandleRefId": "10"
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "47",
+              "Data": {
+                "$type": "questOutputNodeDefinition",
+                "id": 257,
+                "socketName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "sockets": [
+                  {
+                    "HandleId": "48",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "13"
                   }
                 ],
                 "type": "Terminating"

@@ -1,6 +1,6 @@
 # Ghostline Roadmap
 
-Last audited: 2026-04-30
+Last audited: 2026-05-01
 
 This file tracks the current state and the next work needed to turn `gq000`
 from a dialogue prototype into a playable quest slice. Detailed command usage,
@@ -62,7 +62,11 @@ live in focused docs:
   - `mod\gq000\phases\gq000_patch_meet.questphase`
 - `gq000.questphase` is the root flow:
   `input -> setup/community/journal phase -> gq000_patch_meet phase ->
-  facts/logical branch -> final phase -> output`.
+  gq000_done fact -> output`.
+- Current crash-surface reduction state: the old `gq000_patch_meet` failed
+  output path through the logical hub and final fallback phase has been
+  disconnected. Those nodes remain in the resource, but they are not on the
+  active path.
 - The root setup phase now activates/deactivates community entry `patch` with
   phase `default`, matching the generated community registry and streamable
   community area.
@@ -71,34 +75,75 @@ live in focused docs:
   - waits for `#gq000_01_tr_setup`,
   - creates checkpoint `gq000_patch_meet`,
   - waits for `#gq000_01_tr_engage`,
+  - waits for the Patch community at `#gq000_01_com_patch_bridge` to report
+    `CharacterSpawned`,
   - starts `mod\gq000\scenes\gq000_patch_meet.scene` at
     `#gq000_01_sm_patch_bridge`,
-  - exits through scene socket `job_accept`.
+  - exits through scene socket `end`.
+- The scene node still has a `job_accept` socket, but the current reduced
+  questphase test route does not use it.
 - No post-accept gameplay phase/objective branch exists yet.
 
 ### Scene
 
 - Packed and raw scene resources exist at
   `mod\gq000\scenes\gq000_patch_meet.scene`.
-- The current scene has 18 graph nodes, 21 edges, 13 spoken lines, and 5
-  player choices.
+- The current scene is represented by
+  `tools/gq000_patch_meet.scene-spec.json` and `tools/generate_scene.py`,
+  including the reduced crash-surface routing.
+- The current scene is a 17-node full meeting dialogue with 18 connected
+  edges, 13 spoken lines, and 5 player choices.
+- Normal-speed approach no longer crashes after adding a pre-scene
+  `CharacterSpawned` gate for `#gq000_01_com_patch_bridge` in
+  `gq000_patch_meet.questphase`.
 - Patch is acquired from active community entry `patch` at
   `#gq000_01_com_patch_bridge` with the vanilla community actor pattern. V is
   found in context through `Character.Player_Puppet_Base`.
-- The current dialogue flow is Patch's intro line, optional `Ghostline?` and
-  `Why me?` choices, required `What's the job?`, optional `Who's behind it?`,
-  and required accept choice `I'm in.`.
-- Runtime crash isolation shows the world, community, trigger, scene startup,
-  actor acquisition, journal objective, mappin, and stable intro-choice setup
-  can work. The active crash surface is in generated scene section/choice
-  structure. Fresh scene tooling should follow `docs/scene-authoring-rules.md`;
-  probe workarounds in `docs/crash-investigation.md` are not target rules.
+- The current scene flow is:
+  `start -> puppet_ai / bridge_case_mood pause -> POI journal ->
+  someone_coming pause -> Patch intro -> objective journal -> description
+  journal -> intro choice hub`. The optional `Ghostline?` and
+  `Why me?` branches loop back to the intro choice hub; the required
+  `What's the job?` branch advances to the post-job choice hub. The optional
+  `Who's behind it?` branch loops back to that second hub; the required
+  `I'm in.` branch closes the scene through `end`.
+- Scene mappin node `n17` for `gq000_01_qmp_patch_bridge` is still present, but
+  is intentionally unconnected in the current crash-surface reduction build.
+  The journal description node `n16` now routes directly to choice node `n8`.
+- The intro choice probe currently sets `isSingleChoice: 0` on all three
+  options, with `type.properties: 0` for the two optional/info branches and
+  `type.properties: 1` for the main progression branch.
+- Scene journal paths now follow the journal file-entry index rule: the POI path
+  under `points_of_interest/minor_quests` uses `fileEntryIndex: 1`, while the
+  objective, description, and quest map pin under `quests/minor_quest/gq000`
+  use `fileEntryIndex: 2`.
+- The later `Who's behind it?` and `I'm in.` choice group is restored in the
+  generated scene.
+- The fresh generated shape now uses root `version: 5`, `PLATFORM_PC`,
+  `minorQuests`, vanilla spoken line IDs `1 + 256n`, choice option IDs
+  `2 + 256n`, padded choice sockets, deterministic event IDs, and embedded
+  vanilla-style `db_db`/`pl_pl`/`en_us` choice locStore coverage. Choice
+  locstrings now get two `db_db` descriptors, a blank fallback and a source text
+  payload, before the other locale blocks.
+- The scene spec pins `Header.ExportedDateTime` so generator and WolvenKit
+  deserialization output can be checked byte-for-byte across repeated runs.
+- The previous 18-node generated dialogue scene crashed on approach. The
+  10-node journal handoff probe was validated in game after fixing the quest
+  mappin `fileEntryIndex`. The later normal-speed approach crash was fixed by
+  adding the pre-scene `CharacterSpawned` gate in the questphase. The later
+  `Ghostline?` `Db-db` display issue was fixed by switching choice locStores to
+  the audited vanilla-style descriptor shape. The current reduced build removes
+  scene-local mappin execution and `job_accept` questphase routing from the
+  active path while crash isolation continues.
 
 ### Dialogue Localization And VO
 
 - Subtitle and VO map raw resources for `gq000_01` are aligned by string ID.
 - `source/raw/gq000_01_manifest.json` records generated line keys, string IDs,
   text, audio paths, and durations.
+- The `gq000_01` dialogue locstring IDs were regenerated across the manifest,
+  raw subtitles, raw VO map, and generated scene during the intro-choice
+  semantics probe.
 - The VO map points at `.wem` paths, and matching Wwise-generated `.wem` files
   exist alongside the authored `.wav` files.
 - A subtitle map resource now registers the subtitle entries with ArchiveXL.
@@ -163,10 +208,9 @@ live in focused docs:
 
 ## Open Blockers
 
-- Stabilize the non-intro scene response sections. Current evidence points at
-  section node state, completion/output handling, or hidden section/event
-  metadata rather than world streaming, actor lookup, VO/subtitle assets, or
-  player line payloads.
+- Validate the reduced crash-surface dialogue in game: scene `end` exit,
+  bypassed scene-local mappin node, second choice hub, optional client branch
+  loopback, and `I'm in.` close path.
 - Validate the dedicated always-loaded map-pin marker
   `#gq000_01_mp_patch_bridge` in game.
 - Rebuild the scene marker under a vanilla-style scene-prefab child path when
@@ -181,18 +225,17 @@ live in focused docs:
 
 ## Next Milestones
 
-### 1. Restart Meeting Scene Creation From Vanilla Rules
+### 1. Validate Fresh Meeting Scene
 
-- Treat `docs/scene-authoring-rules.md` as the target structure for fresh scene
-  tooling.
-- Generate editable scene CR2W-JSON under `source/raw`, then use WolvenKit to
-  produce packed `source/archive` resources.
-- Use vanilla scene root metadata, actor acquisition, screenplay item IDs,
-  section shapes, choice sockets, locStore coverage, and marker hierarchy.
-- Treat failed probes of vanilla patterns as bad Ghostline implementation
-  attempts, not as rules to preserve.
-- Leave the unstable generated response sections behind when fresh tooling is
-  ready.
+- Use `tools/generate_scene.py` and
+  `tools/gq000_patch_meet.scene-spec.json` as the source path for fresh scene
+  resources.
+- Validate the reduced full dialogue in game before restoring scene-local
+  mappin execution or `job_accept` acceptance routing.
+- If runtime issues remain, fix the generator/spec against vanilla reference
+  shapes rather than patching the packed scene manually.
+- Keep failed probe workarounds in `docs/crash-investigation.md` as historical
+  context only.
 
 ### 2. Validate Meeting-Location World Data
 

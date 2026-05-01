@@ -1,0 +1,348 @@
+{
+  "name": "gq000_patch_meet",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "source/raw/gq000_01_manifest.json",
+  "raw_path": "source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json",
+  "archive_path": "source/archive/mod/gq000/scenes/gq000_patch_meet.scene",
+  "exported_datetime": "2026-05-01T14:00:30.1316437Z",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "actors": [
+    {
+      "key": "patch",
+      "name": "patch",
+      "kind": "community",
+      "id": 0,
+      "entry": "patch",
+      "community_ref": "#gq000_01_com_patch_bridge",
+      "appearance": "default",
+      "lipsync": 0
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 1
+    }
+  ],
+  "spoken_line_order": [
+    "gq000_01_patch_intro_01",
+    "gq000_01_v_choice_ghostline_line",
+    "gq000_01_patch_rsp_ghostline_01",
+    "gq000_01_v_choice_whyyou_line",
+    "gq000_01_patch_rsp_whyyou_01",
+    "gq000_01_v_choice_job_line",
+    "gq000_01_patch_rsp_job_01",
+    "gq000_01_patch_rsp_job_02",
+    "gq000_01_v_choice_client_line",
+    "gq000_01_patch_rsp_client_01",
+    "gq000_01_v_choice_accept_line",
+    "gq000_01_patch_rsp_accept_01",
+    "gq000_01_patch_rsp_accept_02"
+  ],
+  "choice_line_order": [
+    "gq000_01_v_choice_ghostline_short",
+    "gq000_01_v_choice_whyyou_short",
+    "gq000_01_v_choice_job_short",
+    "gq000_01_v_choice_client_short",
+    "gq000_01_v_choice_accept_short"
+  ],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "end",
+      "node_id": 18
+    },
+    {
+      "name": "job_accept",
+      "node_id": 18
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 10,
+        "input_name": 0,
+        "input_ordinal": 1
+      },
+      {
+        "node_id": 11,
+        "input_name": 0,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "graph_order": [
+    1,
+    10,
+    11,
+    12,
+    13,
+    2,
+    15,
+    16,
+    17,
+    8,
+    3,
+    4,
+    5,
+    9,
+    6,
+    7,
+    18
+  ],
+  "sections": [
+    {
+      "key": "opening_line",
+      "node_id": 2,
+      "lines": [
+        "gq000_01_patch_intro_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 15,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "key": "optional_branch_ghostline",
+      "node_id": 3,
+      "lines": [
+        "gq000_01_v_choice_ghostline_line",
+        "gq000_01_patch_rsp_ghostline_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "optional_branch_why_you",
+      "node_id": 4,
+      "lines": [
+        "gq000_01_v_choice_whyyou_line",
+        "gq000_01_patch_rsp_whyyou_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "main_progression_job",
+      "node_id": 5,
+      "lines": [
+        "gq000_01_v_choice_job_line",
+        "gq000_01_patch_rsp_job_01",
+        "gq000_01_patch_rsp_job_02"
+      ],
+      "on_end": [
+        {
+          "node_id": 9
+        }
+      ]
+    },
+    {
+      "key": "optional_followup_client",
+      "node_id": 6,
+      "lines": [
+        "gq000_01_v_choice_client_line",
+        "gq000_01_patch_rsp_client_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 9
+        }
+      ]
+    },
+    {
+      "key": "main_close_accept",
+      "node_id": 7,
+      "lines": [
+        "gq000_01_v_choice_accept_line",
+        "gq000_01_patch_rsp_accept_01",
+        "gq000_01_patch_rsp_accept_02"
+      ],
+      "on_end": [
+        {
+          "node_id": 18
+        }
+      ]
+    }
+  ],
+  "choices": [
+    {
+      "key": "choice_group_intro",
+      "node_id": 8,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "gq000_01_v_choice_ghostline_short",
+          "caption": "Ghostline?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 3
+        },
+        {
+          "choice_key": "gq000_01_v_choice_whyyou_short",
+          "caption": "Why me?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 4
+        },
+        {
+          "choice_key": "gq000_01_v_choice_job_short",
+          "caption": "What's the job?",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 5
+        }
+      ]
+    },
+    {
+      "key": "choice_group_after_job",
+      "node_id": 9,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "gq000_01_v_choice_client_short",
+          "caption": "Who's behind it?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 6
+        },
+        {
+          "choice_key": "gq000_01_v_choice_accept_short",
+          "caption": "I'm in.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 7
+        }
+      ]
+    }
+  ],
+  "quest_nodes": [
+    {
+      "kind": "puppet_ai",
+      "node_id": 10,
+      "entity_ref": "#gq000_01_com_patch_bridge",
+      "entry": "patch",
+      "ai_tier": "Cinematic"
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 11,
+      "trigger_ref": "#gq000_01_tr_bridge_case_mood",
+      "require_player_not_in_combat": true,
+      "on_out": [
+        {
+          "node_id": 12,
+          "input_name": 0,
+          "input_ordinal": 2
+        }
+      ]
+    },
+    {
+      "kind": "journal",
+      "node_id": 12,
+      "inputs": [
+        "Active",
+        "Inactive"
+      ],
+      "journal_type": "entry",
+      "class_name": "gameJournalPointOfInterestMappin",
+      "path": "points_of_interest/minor_quests/gq000_01_poi_patch_bridge",
+      "file_entry_index": 1,
+      "send_notification": 1,
+      "on_out": [
+        {
+          "node_id": 13,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 13,
+      "trigger_ref": "#gq000_01_tr_someone_coming",
+      "on_out": [
+        {
+          "node_id": 2
+        }
+      ]
+    },
+    {
+      "kind": "journal",
+      "node_id": 15,
+      "inputs": [
+        "Active",
+        "Inactive",
+        "Succeeded",
+        "Failed"
+      ],
+      "journal_type": "quest_entry",
+      "class_name": "gameJournalQuestObjective",
+      "path": "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch",
+      "file_entry_index": 2,
+      "send_notification": 1,
+      "track_quest": 0,
+      "version": "Initial",
+      "on_out": [
+        {
+          "node_id": 16,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "kind": "journal",
+      "node_id": 16,
+      "inputs": [
+        "Active",
+        "Inactive"
+      ],
+      "journal_type": "entry",
+      "class_name": "gameJournalQuestDescription",
+      "path": "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_desc_meet_patch",
+      "file_entry_index": 2,
+      "send_notification": 1,
+      "on_out": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "kind": "mappin",
+      "node_id": 17,
+      "class_name": "gameJournalQuestMapPin",
+      "path": "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge",
+      "file_entry_index": 2,
+      "disable_previous_mappins": 0,
+      "on_out": []
+    }
+  ],
+  "xor_nodes": [],
+  "end_node": {
+    "node_id": 18
+  }
+}

@@ -59,6 +59,28 @@ Pass another raw scene with `--file`:
 py .\tools\explore_scene.py --file .\source\raw\mod\gq000\scenes\other.scene.json summary
 ```
 
+## Scene Generator
+
+`tools/generate_scene.py` creates fresh `.scene` CR2W-JSON from a compact JSON
+spec. The production fixture is
+`tools/gq000_patch_meet.scene-spec.json`, and the spec reference is
+`tools/scene_spec.md`.
+
+```powershell
+py .\tools\generate_scene.py example
+py .\tools\generate_scene.py audit --spec .\tools\gq000_patch_meet.scene-spec.json
+py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --dry-run
+py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --deserialize
+py .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\tools\gq000_patch_meet.scene-spec.json
+```
+
+The generator uses audited vanilla shells under `reference/vanilla_extract_json`
+and local WolvenKit source assumptions. It does not use `template.scene.json`,
+`generated`, or `GraphEditorStates` as scene source of truth. V1 covers
+dialogue sections, padded choice nodes, actor acquisition, embedded choice
+locStore coverage, and the scene-local quest wrappers used by
+`gq000_patch_meet`.
+
 ## Localization Explorer
 
 `tools/explore_localization.py` inspects subtitle and VO-map CR2W-JSON. By

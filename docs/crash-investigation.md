@@ -10,15 +10,41 @@ in a probe, assume the Ghostline implementation was incomplete or malformed.
 
 ## Current Read
 
-The remaining runtime crash is in `gq000_patch_meet.scene`, specifically in
-non-intro response sections or their hidden section/event/output metadata.
-World streaming, community registry wiring, trigger activation, actor
-acquisition, basic scene startup, localization assets, and response line
-audio/text payloads have each been ruled out as the primary cause.
+The restored intro choice scene worked when approached slowly but crashed on a
+normal-speed approach. Adding a pre-scene `CharacterSpawned` gate for the Patch
+community fixed the fast-approach crash in game.
+
+Vanilla reference scenes and `modding_docs` use `questCharacterSpawned`
+`PauseCondition` gates before letting conversations proceed. Ghostline now uses
+the same immediate pre-scene gate in `gq000_patch_meet.questphase`:
+
+```text
+#gq000_01_tr_engage -> CharacterSpawned #gq000_01_com_patch_bridge -> scene start
+```
+
+The older conclusion that actor acquisition and scene startup were fully ruled
+out is now too broad. The direct start-to-end probe only proved that the scene
+resource can enter and exit when startup timing is favorable.
 
 The temporary crash-isolation setup uses `Character.Judy` in the `patch/default`
 community entry. That keeps the world/community path independent of Patch's
 custom entity while the scene path is being stabilized.
+
+The current packed/raw questphase and scene resources are a reduced
+crash-surface build refreshed from WolvenKit-edited CR2W on 2026-05-01:
+
+- root `gq000.questphase` routes successful `gq000_patch_meet` completion
+  directly to `gq000_done` and output;
+- the previous failed-output route through the logical hub and fallback phase is
+  disconnected;
+- `gq000_patch_meet.questphase` exits on scene socket `end` instead of
+  `job_accept`;
+- scene journal description node `n16` routes directly to first choice node
+  `n8`;
+- scene mappin node `n17` remains present but has no incoming or outgoing
+  connection.
+
+This is an isolation shape, not yet the final target scene/quest structure.
 
 ## Useful Findings
 
@@ -42,14 +68,26 @@ custom entity while the scene path is being stabilized.
   area, and AI spot as functional.
 - Rewiring `#gq000_01_tr_engage` directly to phase output avoided the crash.
   The world/community/trigger path before scene startup is therefore safe.
-- Rewiring the scene start directly to scene end also worked. Actor acquisition
-  and scene startup are not the active crash point.
+- Rewiring the scene start directly to scene end worked. That proves the scene
+  resource can enter and exit, but it does not prove community actor readiness
+  is stable under a fast approach.
 - Direct-dialogue crashes continued after VO registration and after subtitle
   map registration was corrected. The active crash is not missing subtitle/VO
   registration.
 - Response line text and VO can play when a response payload is routed through
   the known-good intro section shell. This rules out response locstring/VO
   payloads as the main fault.
+- Fast approach crashing while slow approach worked was consistent with a
+  spawn-readiness race. Waiting on `questCharacterSpawned_ConditionType` for the
+  community NodeRef immediately before scene start fixed the issue.
+- `Ghostline?` displaying as `Db-db` was caused by the generated compact
+  locStore shape, not by `scnChoiceNodeOption.caption`. Vanilla-style choice
+  locStores use locale blocks and two `db_db` descriptors per choice: a blank
+  fallback and a source text payload.
+- The current reduced build deliberately removes scene-local mappin execution
+  and acceptance-socket branching from the active path. Treat any resulting
+  stability as evidence about those surfaces before restoring them one at a
+  time.
 
 ## Discarded Probe Conclusions
 
