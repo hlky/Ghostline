@@ -37,7 +37,8 @@ and local WolvenKit source assumptions. It does not use `template.scene.json`,
 | `choices` | No | Choice nodes and options. |
 | `quest_nodes` | No | Scene-local quest wrapper nodes for journal, mappin, trigger, or AI setup. |
 | `xor_nodes` | No | Xor nodes for vanilla-compatible branch joins. |
-| `end_node` | Yes | Terminal `scnEndNode` id. |
+| `end_node` | Yes | Terminal `scnEndNode` id. Used when `end_nodes` is omitted. |
+| `end_nodes` | No | Multiple terminal `scnEndNode` ids for scenes that need distinct exit point nodes. |
 
 ## Destinations
 

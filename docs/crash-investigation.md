@@ -14,6 +14,11 @@ The restored intro choice scene worked when approached slowly but crashed on a
 normal-speed approach. Adding a pre-scene `CharacterSpawned` gate for the Patch
 community fixed the fast-approach crash in game.
 
+Later bridge testing found the meeting trigger volumes were vertically too
+shallow for the bridge's varying height. Raising all four meeting triggers to
+12-unit volumes and centering them around the captured bridge origin resolved
+the remaining bridge approach crash path.
+
 Vanilla reference scenes and `modding_docs` use `questCharacterSpawned`
 `PauseCondition` gates before letting conversations proceed. Ghostline now uses
 the same immediate pre-scene gate in `gq000_patch_meet.questphase`:

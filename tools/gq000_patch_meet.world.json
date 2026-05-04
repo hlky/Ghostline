@@ -36,19 +36,34 @@
         "max_streaming_distance": 280,
         "streaming_distance": 240
       }
+    },
+    {
+      "ref": "#gq000_02_mp_cache",
+      "sector": "always_loaded",
+      "position": {
+        "from": "origin",
+        "distance": 300,
+        "bearing": 45
+      },
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 360,
+        "streaming_distance": 320
+      }
     }
   ],
   "triggers": [
     {
       "ref": "#gq000_01_tr_setup",
       "position": {
-        "from": "origin"
+        "from": "origin",
+        "up": -6
       },
       "outline": {
         "type": "circle",
         "radius": 90,
         "segments": 16,
-        "height": 4
+        "height": 12
       },
       "notifiers": [
         "quest"
@@ -61,13 +76,14 @@
     {
       "ref": "#gq000_01_tr_engage",
       "position": {
-        "from": "origin"
+        "from": "origin",
+        "up": -6
       },
       "outline": {
         "type": "circle",
         "radius": 4.5,
         "segments": 12,
-        "height": 2.5
+        "height": 12
       },
       "notifiers": [
         "quest"
@@ -76,13 +92,14 @@
     {
       "ref": "#gq000_01_tr_bridge_case_mood",
       "position": {
-        "from": "origin"
+        "from": "origin",
+        "up": -6
       },
       "outline": {
         "type": "circle",
         "radius": 18,
         "segments": 16,
-        "height": 3
+        "height": 12
       },
       "notifiers": [
         "quest"
@@ -91,13 +108,14 @@
     {
       "ref": "#gq000_01_tr_someone_coming",
       "position": {
-        "from": "origin"
+        "from": "origin",
+        "up": -6
       },
       "outline": {
         "type": "circle",
         "radius": 8,
         "segments": 12,
-        "height": 2.5
+        "height": 12
       },
       "notifiers": [
         "quest"

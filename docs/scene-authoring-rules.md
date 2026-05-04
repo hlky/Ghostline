@@ -185,6 +185,11 @@ Fresh tooling should generate the same multi-locale descriptor shape for choice
 locstrings. Do not replace `db_db` with `en_us`; add the correct vanilla-style
 locale coverage.
 
+Keep generated scene locstring IDs and locStore variant IDs inside the signed
+63-bit range (`0` through `9223372036854775807`). Runtime testing showed a
+choice node could validate structurally while options with oversized IDs still
+displayed blank in game.
+
 ## Xor And Hub Nodes
 
 Vanilla `mq003_01_homeless.scene` uses `scnXorNode` and `scnHubNode`.

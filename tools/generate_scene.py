@@ -28,6 +28,7 @@ MAX_INT64 = "9223372036854775807"
 FNV64_OFFSET = 0xCBF29CE484222325
 FNV64_PRIME = 0x100000001B3
 UINT64_MASK = (1 << 64) - 1
+INT63_MASK = (1 << 63) - 1
 
 
 @dataclass(frozen=True)
@@ -63,20 +64,20 @@ def fnv1a64(value: str) -> int:
 
 
 def deterministic_event_id(*parts: object) -> str:
-    value = fnv1a64(":".join(str(part) for part in parts))
+    value = fnv1a64(":".join(str(part) for part in parts)) & INT63_MASK
     if str(value) == MAX_INT64:
-        value = (value + 1) & UINT64_MASK
+        value = (value + 1) & INT63_MASK
     return str(value)
 
 
 def deterministic_reserved_ruid(parts: tuple[object, ...], reserved: set[str]) -> str:
-    value = fnv1a64(":".join(str(part) for part in parts))
+    value = fnv1a64(":".join(str(part) for part in parts)) & INT63_MASK
     for _ in range(1024):
         candidate = str(value)
         if candidate != MAX_INT64 and candidate not in reserved:
             reserved.add(candidate)
             return candidate
-        value = (value + 1) & UINT64_MASK
+        value = (value + 1) & INT63_MASK
     raise SceneBuildError(f"Could not allocate unique ruid for {':'.join(str(part) for part in parts)}")
 
 

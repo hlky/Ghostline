@@ -8,7 +8,6 @@
   "exported_datetime": "2026-05-01T14:00:30.1316437Z",
   "choice_locales": [
     "db_db",
-    "pl_pl",
     "en_us"
   ],
   "section_tail_padding_ms": 400,
@@ -67,7 +66,7 @@
     },
     {
       "name": "job_accept",
-      "node_id": 18
+      "node_id": 19
     }
   ],
   "start_node": {
@@ -89,12 +88,8 @@
     1,
     10,
     11,
-    12,
     13,
     2,
-    15,
-    16,
-    17,
     8,
     3,
     4,
@@ -102,7 +97,8 @@
     9,
     6,
     7,
-    18
+    18,
+    19
   ],
   "sections": [
     {
@@ -113,9 +109,7 @@
       ],
       "on_end": [
         {
-          "node_id": 15,
-          "input_name": 0,
-          "input_ordinal": 1
+          "node_id": 8
         }
       ]
     },
@@ -182,7 +176,7 @@
       ],
       "on_end": [
         {
-          "node_id": 18
+          "node_id": 19
         }
       ]
     }
@@ -253,26 +247,6 @@
       "require_player_not_in_combat": true,
       "on_out": [
         {
-          "node_id": 12,
-          "input_name": 0,
-          "input_ordinal": 2
-        }
-      ]
-    },
-    {
-      "kind": "journal",
-      "node_id": 12,
-      "inputs": [
-        "Active",
-        "Inactive"
-      ],
-      "journal_type": "entry",
-      "class_name": "gameJournalPointOfInterestMappin",
-      "path": "points_of_interest/minor_quests/gq000_01_poi_patch_bridge",
-      "file_entry_index": 1,
-      "send_notification": 1,
-      "on_out": [
-        {
           "node_id": 13,
           "input_name": 0,
           "input_ordinal": 1
@@ -288,61 +262,18 @@
           "node_id": 2
         }
       ]
-    },
-    {
-      "kind": "journal",
-      "node_id": 15,
-      "inputs": [
-        "Active",
-        "Inactive",
-        "Succeeded",
-        "Failed"
-      ],
-      "journal_type": "quest_entry",
-      "class_name": "gameJournalQuestObjective",
-      "path": "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch",
-      "file_entry_index": 2,
-      "send_notification": 1,
-      "track_quest": 0,
-      "version": "Initial",
-      "on_out": [
-        {
-          "node_id": 16,
-          "input_name": 0,
-          "input_ordinal": 1
-        }
-      ]
-    },
-    {
-      "kind": "journal",
-      "node_id": 16,
-      "inputs": [
-        "Active",
-        "Inactive"
-      ],
-      "journal_type": "entry",
-      "class_name": "gameJournalQuestDescription",
-      "path": "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_desc_meet_patch",
-      "file_entry_index": 2,
-      "send_notification": 1,
-      "on_out": [
-        {
-          "node_id": 8
-        }
-      ]
-    },
-    {
-      "kind": "mappin",
-      "node_id": 17,
-      "class_name": "gameJournalQuestMapPin",
-      "path": "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge",
-      "file_entry_index": 2,
-      "disable_previous_mappins": 0,
-      "on_out": []
     }
   ],
   "xor_nodes": [],
   "end_node": {
     "node_id": 18
-  }
+  },
+  "end_nodes": [
+    {
+      "node_id": 18
+    },
+    {
+      "node_id": 19
+    }
+  ]
 }

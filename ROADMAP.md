@@ -8,6 +8,7 @@ runtime crash conclusions, world-reference notes, and packaging instructions now
 live in focused docs:
 
 - `docs/tooling.md`
+- `docs/testing.md`
 - `docs/scene-authoring-rules.md`
 - `docs/crash-investigation.md`
 - `docs/world-references.md`
@@ -60,18 +61,19 @@ live in focused docs:
 - Packed and raw questphase resources exist for:
   - `mod\gq000\phases\gq000.questphase`
   - `mod\gq000\phases\gq000_patch_meet.questphase`
-- `gq000.questphase` is the root flow:
-  `input -> setup/community/journal phase -> gq000_patch_meet phase ->
-  gq000_done fact -> output`.
-- Current crash-surface reduction state: the old `gq000_patch_meet` failed
-  output path through the logical hub and final fallback phase has been
-  disconnected. Those nodes remain in the resource, but they are not on the
-  active path.
-- The root setup phase now activates/deactivates community entry `patch` with
-  phase `default`, matching the generated community registry and streamable
-  community area.
+  - `mod\gq000\phases\gq000_post_accept.questphase`
+- `gq000.questphase` is now the staged root flow:
+  `input -> phone start guard -> Patch phone message -> phone choice group ->
+  wait for On my way reply -> meet objective/description/mappin ->
+  gq000_patch_meet phase -> accepted-state check -> gq000_post_accept phase`.
+- The root phase no longer starts the meeting objective from the bridge trigger
+  and no longer sets `gq000_done`. Current staged facts include
+  `gq000_phone_start_sent`, `gq000_phone_reply_on_my_way`,
+  `gq000_job_accepted`, and `gq000_02_started`.
+- The Patch phone message has been confirmed to trigger in game when tested
+  from a fresh save.
 - `gq000_patch_meet.questphase` currently:
-  - starts the POI journal entry,
+  - activates the `patch/default` community entry,
   - waits for `#gq000_01_tr_setup`,
   - creates checkpoint `gq000_patch_meet`,
   - waits for `#gq000_01_tr_engage`,
@@ -79,10 +81,13 @@ live in focused docs:
     `CharacterSpawned`,
   - starts `mod\gq000\scenes\gq000_patch_meet.scene` at
     `#gq000_01_sm_patch_bridge`,
-  - exits through scene socket `end`.
-- The scene node still has a `job_accept` socket, but the current reduced
-  questphase test route does not use it.
-- No post-accept gameplay phase/objective branch exists yet.
+  - exits through scene socket `end` as a non-accept fallback,
+  - exits through scene socket `job_accept` by succeeding
+    `gq000_01_obj_meet_patch`, disabling `gq000_01_qmp_patch_bridge`, setting
+    `gq000_job_accepted`, and returning to the root phase.
+- `gq000_post_accept.questphase` is a minimal skeleton that activates/tracks
+  `gq000_02_obj_reach_cache`, activates its description and
+  `gq000_02_qmp_cache`, then sets `gq000_02_started`.
 
 ### Scene
 
@@ -90,35 +95,37 @@ live in focused docs:
   `mod\gq000\scenes\gq000_patch_meet.scene`.
 - The current scene is represented by
   `tools/gq000_patch_meet.scene-spec.json` and `tools/generate_scene.py`,
-  including the reduced crash-surface routing.
-- The current scene is a 17-node full meeting dialogue with 18 connected
+  including the staged acceptance routing.
+- The current scene is a 14-node full meeting dialogue with 15 connected
   edges, 13 spoken lines, and 5 player choices.
 - Normal-speed approach no longer crashes after adding a pre-scene
   `CharacterSpawned` gate for `#gq000_01_com_patch_bridge` in
-  `gq000_patch_meet.questphase`.
+  `gq000_patch_meet.questphase` and after raising/centering the bridge trigger
+  volumes to cover the meeting bridge's varying height.
 - Patch is acquired from active community entry `patch` at
   `#gq000_01_com_patch_bridge` with the vanilla community actor pattern. V is
   found in context through `Character.Player_Puppet_Base`.
 - The current scene flow is:
-  `start -> puppet_ai / bridge_case_mood pause -> POI journal ->
-  someone_coming pause -> Patch intro -> objective journal -> description
-  journal -> intro choice hub`. The optional `Ghostline?` and
-  `Why me?` branches loop back to the intro choice hub; the required
-  `What's the job?` branch advances to the post-job choice hub. The optional
+  `start -> puppet_ai / bridge_case_mood pause -> someone_coming pause ->
+  Patch intro -> intro choice hub`. The optional `Ghostline?` and `Why me?`
+  branches loop back to the intro choice hub; the required `What's the job?`
+  branch advances to the post-job choice hub. The optional
   `Who's behind it?` branch loops back to that second hub; the required
-  `I'm in.` branch closes the scene through `end`.
-- Scene mappin node `n17` for `gq000_01_qmp_patch_bridge` is still present, but
-  is intentionally unconnected in the current crash-surface reduction build.
-  The journal description node `n16` now routes directly to choice node `n8`.
+  `I'm in.` branch closes the scene through dedicated exit `job_accept`.
+- Scene-local journal/objective/mappin creation has been removed from the
+  active meeting path. Quest state is now owned by the questphase flow.
 - The intro choice probe currently sets `isSingleChoice: 0` on all three
   options, with `type.properties: 0` for the two optional/info branches and
   `type.properties: 1` for the main progression branch.
-- Scene journal paths now follow the journal file-entry index rule: the POI path
-  under `points_of_interest/minor_quests` uses `fileEntryIndex: 1`, while the
-  objective, description, and quest map pin under `quests/minor_quest/gq000`
-  use `fileEntryIndex: 2`.
+- Questphase journal paths now follow the journal file-entry index rule: phone
+  contact paths use `fileEntryIndex: 1`, while quest objective, description,
+  and quest map pin paths under `quests/minor_quest/gq000` use
+  `fileEntryIndex: 2`.
 - The later `Who's behind it?` and `I'm in.` choice group is restored in the
   generated scene.
+- `tools/generate_scene.py` now supports multiple end nodes via `end_nodes`;
+  `gq000_patch_meet.scene-spec.json` routes only the acceptance branch to the
+  `job_accept` exit.
 - The fresh generated shape now uses root `version: 5`, `PLATFORM_PC`,
   `minorQuests`, vanilla spoken line IDs `1 + 256n`, choice option IDs
   `2 + 256n`, padded choice sockets, deterministic event IDs, and embedded
@@ -132,9 +139,9 @@ live in focused docs:
   mappin `fileEntryIndex`. The later normal-speed approach crash was fixed by
   adding the pre-scene `CharacterSpawned` gate in the questphase. The later
   `Ghostline?` `Db-db` display issue was fixed by switching choice locStores to
-  the audited vanilla-style descriptor shape. The current reduced build removes
-  scene-local mappin execution and `job_accept` questphase routing from the
-  active path while crash isolation continues.
+  the audited vanilla-style descriptor shape. The current staged build removes
+  scene-local quest UI execution and restores `job_accept` routing through the
+  meeting questphase.
 
 ### Dialogue Localization And VO
 
@@ -164,6 +171,15 @@ live in focused docs:
     `quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge`
   - point of interest
     `points_of_interest/minor_quests/gq000_01_poi_patch_bridge`
+  - phase `quests/minor_quest/gq000/gq000_02`
+  - objective `quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache`
+  - description
+    `quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache/gq000_02_desc_reach_cache`
+  - quest map pin
+    `quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache/gq000_02_qmp_cache`
+  - Patch contact thread `contacts/patch/gq000_01_start` with message
+    `01_msg_patch_bridge`, choice group `02_ch_meet_patch`, and reply choice
+    `02a_ch_on_my_way`
 - Quest onscreen localization exists at
   `mod\gq000\localization\en-us\onscreens\gq000.json`.
 - Journal references in the questphase and scene use full journal paths rather
@@ -172,6 +188,8 @@ live in focused docs:
   marker `#gq000_01_mp_patch_bridge`. Vanilla files confirm this must stay
   separate from scene marker `#gq000_01_sm_patch_bridge`; runtime validation is
   still pending.
+- The placeholder next objective uses Ghostline-owned always-loaded marker
+  `#gq000_02_mp_cache`, roughly 300 units northeast of the bridge origin.
 
 ### World Placement And Community
 
@@ -187,8 +205,12 @@ live in focused docs:
   binds `questPrefabNodeRef: $/mod/gq000/#gq000_pr_patch_meet`.
 - The quest sector contains four trigger areas, one AI spot, and one streamable
   community area.
+- The four meeting trigger areas use taller 12-unit trigger volumes centered
+  around the captured bridge origin to cover the bridge's varying deck height.
+  Runtime testing confirmed this resolved the bridge approach crash path.
 - The always-loaded sector contains the community registry and concrete marker
-  nodes needed for early NodeRef resolution.
+  nodes needed for early NodeRef resolution: `#gq000_01_sm_patch_bridge`,
+  `#gq000_01_mp_patch_bridge`, and `#gq000_02_mp_cache`.
 - The community registry maps entry `patch/default` to source object id
   `7897875840529598144` and spot NodeRef
   `$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge`.
@@ -208,11 +230,14 @@ live in focused docs:
 
 ## Open Blockers
 
-- Validate the reduced crash-surface dialogue in game: scene `end` exit,
-  bypassed scene-local mappin node, second choice hub, optional client branch
-  loopback, and `I'm in.` close path.
-- Validate the dedicated always-loaded map-pin marker
-  `#gq000_01_mp_patch_bridge` in game.
+- Validate the regenerated 63-bit scene locstring IDs in game. Previous testing
+  confirmed the full questphase/scene sequence works, but the second and third
+  options on the first choice node displayed blank before the locstring probe.
+- Validate the dedicated always-loaded map-pin markers
+  `#gq000_01_mp_patch_bridge` and `#gq000_02_mp_cache` in game.
+- Validate post-accept progression: meet objective succeeds, bridge mappin
+  disables, `gq000_job_accepted` is set, and the placeholder cache
+  objective/mappin appears.
 - Rebuild the scene marker under a vanilla-style scene-prefab child path when
   fresh world/scene tooling replaces the current generated shape.
 - Revert the temporary Judy community registry entry to `Character.GhostlinePatch`
@@ -230,8 +255,8 @@ live in focused docs:
 - Use `tools/generate_scene.py` and
   `tools/gq000_patch_meet.scene-spec.json` as the source path for fresh scene
   resources.
-- Validate the reduced full dialogue in game before restoring scene-local
-  mappin execution or `job_accept` acceptance routing.
+- Validate the staged full dialogue in game, especially the non-accept `end`
+  fallback and `job_accept` acceptance route.
 - If runtime issues remain, fix the generator/spec against vanilla reference
   shapes rather than patching the packed scene manually.
 - Keep failed probe workarounds in `docs/crash-investigation.md` as historical
@@ -255,7 +280,7 @@ live in focused docs:
 
 ### 4. Extend The Quest Beyond Acceptance
 
-- Add the next quest phase after `job_accept`.
+- Expand the placeholder post-accept phase after `job_accept`.
 - Define `gq000_` facts for accepted job state, cache acquired, cache
   delivered, and quest completion.
 - Add objective updates, mappin changes, failure branches, and completion
