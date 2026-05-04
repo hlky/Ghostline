@@ -28,7 +28,6 @@ MAX_INT64 = "9223372036854775807"
 FNV64_OFFSET = 0xCBF29CE484222325
 FNV64_PRIME = 0x100000001B3
 UINT64_MASK = (1 << 64) - 1
-INT63_MASK = (1 << 63) - 1
 
 
 @dataclass(frozen=True)
@@ -64,20 +63,20 @@ def fnv1a64(value: str) -> int:
 
 
 def deterministic_event_id(*parts: object) -> str:
-    value = fnv1a64(":".join(str(part) for part in parts)) & INT63_MASK
+    value = fnv1a64(":".join(str(part) for part in parts)) & UINT64_MASK
     if str(value) == MAX_INT64:
-        value = (value + 1) & INT63_MASK
+        value = (value + 1) & UINT64_MASK
     return str(value)
 
 
 def deterministic_reserved_ruid(parts: tuple[object, ...], reserved: set[str]) -> str:
-    value = fnv1a64(":".join(str(part) for part in parts)) & INT63_MASK
+    value = fnv1a64(":".join(str(part) for part in parts)) & UINT64_MASK
     for _ in range(1024):
         candidate = str(value)
         if candidate != MAX_INT64 and candidate not in reserved:
             reserved.add(candidate)
             return candidate
-        value = (value + 1) & INT63_MASK
+        value = (value + 1) & UINT64_MASK
     raise SceneBuildError(f"Could not allocate unique ruid for {':'.join(str(part) for part in parts)}")
 
 
@@ -837,7 +836,9 @@ def build_graph(
         graph.append(build_quest_node(quest_spec, alloc))
     for xor_spec in spec.get("xor_nodes", []):
         graph.append(build_xor_node(int(xor_spec["node_id"]), xor_spec.get("on_out", []), alloc))
-    graph.append(build_end_node(int(spec["end_node"]["node_id"]), alloc))
+    end_specs = spec.get("end_nodes") or [spec["end_node"]]
+    for end_spec in end_specs:
+        graph.append(build_end_node(int(end_spec["node_id"]), alloc))
     if "graph_order" in spec:
         graph = order_graph_by_spec(graph, [int(node_id) for node_id in spec["graph_order"]])
     else:
@@ -1024,6 +1025,8 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
             errors.append(f"Choice locstring {loc} missing locales: {sorted(required_locales - locales)}")
         if "db_db" in required_locales and (len(db_db_payloads[loc]) < 2 or "" not in db_db_payloads[loc]):
             errors.append(f"Choice locstring {loc} must include blank and source db_db variants")
+        elif "db_db" in required_locales and db_db_payloads[loc][0] != "":
+            errors.append(f"Choice locstring {loc} must put the blank db_db variant before the source variant")
 
     for node_spec in spec.get("quest_nodes", []):
         if node_spec.get("kind") not in {"journal", "mappin"}:

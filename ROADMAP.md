@@ -1,6 +1,6 @@
 # Ghostline Roadmap
 
-Last audited: 2026-05-01
+Last audited: 2026-05-04
 
 This file tracks the current state and the next work needed to turn `gq000`
 from a dialogue prototype into a playable quest slice. Detailed command usage,
@@ -134,6 +134,15 @@ live in focused docs:
   payload, before the other locale blocks.
 - The scene spec pins `Header.ExportedDateTime` so generator and WolvenKit
   deserialization output can be checked byte-for-byte across repeated runs.
+- On 2026-05-04, the packed/raw scene was regenerated after normalizing choice
+  locStore coverage to vanilla-style `db_db`, `pl_pl`, and `en_us` blocks. Each
+  choice now has a blank `db_db` fallback before the source-text `db_db`
+  payload, followed by `pl_pl` and `en_us` payloads. `tools/generate_scene.py`
+  now emits all configured `end_nodes` and validates the blank-first `db_db`
+  order.
+- Runtime testing confirmed the previous `INT63_MASK` probe was the approach
+  crash source. Scene event RUIDs and locStore variant IDs must keep the full
+  unsigned 64-bit FNV output; do not mask them down to signed 63-bit values.
 - The previous 18-node generated dialogue scene crashed on approach. The
   10-node journal handoff probe was validated in game after fixing the quest
   mappin `fileEntryIndex`. The later normal-speed approach crash was fixed by
@@ -230,7 +239,7 @@ live in focused docs:
 
 ## Open Blockers
 
-- Validate the regenerated 63-bit scene locstring IDs in game. Previous testing
+- Validate the 2026-05-04 regenerated scene locStore in game. Previous testing
   confirmed the full questphase/scene sequence works, but the second and third
   options on the first choice node displayed blank before the locstring probe.
 - Validate the dedicated always-loaded map-pin markers
