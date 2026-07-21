@@ -1,9 +1,11 @@
 # Ghostline Roadmap
 
-Last audited: 2026-05-04
+Last audited: 2026-07-21
 
 This file tracks the current state and the next work needed to turn `gq000`
-from a dialogue prototype into a playable quest slice. Detailed command usage,
+from a dialogue prototype into a playable quest slice. The 2026-07-21 test
+baseline deliberately follows the newest `source/raw` resources even where the
+scene generator/spec and older tests have not caught up. Detailed command usage,
 runtime crash conclusions, world-reference notes, and packaging instructions now
 live in focused docs:
 
@@ -15,6 +17,36 @@ live in focused docs:
 - `docs/packaging.md`
 
 ## Current Status
+
+### Synchronized Test Baseline
+
+- The pre-build worktree was captured in commit `5b8449d`, then all 15 raw
+  CR2W-JSON resources were deserialized into `source/archive` with WolvenKit
+  8.17.4. The plain generated `source/raw/gq000_01_manifest.json` was correctly
+  excluded from CR2W conversion.
+- The rebuilt archive contains 173 verified entries from 176 files under
+  `source/archive`. The only exclusions are the Patch `.tmp` file and the two
+  Patch head readmes that WolvenKit does not pack.
+- The candidate archive, repo package, and installed game archive all have
+  SHA-256
+  `4833BE432CCD685591CDFAE56D47ED9AE163E120D32B1A96B678360EBFC4E42F`.
+  `Ghostline.zip` was rebuilt from the six-file `packed` tree and every ZIP
+  payload was checked against its source file.
+- The previous repo package, installed archive, and ZIP are retained at
+  `H:\Ghostline-backups\stabilize-5b8449d-sync-20260721-214058` until the
+  in-game test succeeds.
+- This is a synchronized current-raw test build, not a fully green production
+  build. The current raw scene has intentional/unreconciled drift from
+  `tools/gq000_patch_meet.scene-spec.json`, and four unit tests still describe
+  an older scene shape.
+- The archive currently contains 93 `base\...` global overrides and 80
+  `mod\...` assets. The global overrides remain a packaging risk pending
+  validation. It also carries 26 valid WEM files while the VO map references
+  13 of them.
+- The local game install has ArchiveXL but no TweakXL plugin. The temporary
+  `Character.Judy` world entry avoids the custom Patch TweakDB record for this
+  scene-isolation test, but Patch itself cannot be validated until TweakXL is
+  installed or the dependency is otherwise removed.
 
 ### Project Registration
 
@@ -72,19 +104,17 @@ live in focused docs:
   `gq000_job_accepted`, and `gq000_02_started`.
 - The Patch phone message has been confirmed to trigger in game when tested
   from a fresh save.
-- `gq000_patch_meet.questphase` currently:
-  - activates the `patch/default` community entry,
-  - waits for `#gq000_01_tr_setup`,
-  - creates checkpoint `gq000_patch_meet`,
-  - waits for `#gq000_01_tr_engage`,
-  - waits for the Patch community at `#gq000_01_com_patch_bridge` to report
-    `CharacterSpawned`,
-  - starts `mod\gq000\scenes\gq000_patch_meet.scene` at
-    `#gq000_01_sm_patch_bridge`,
-  - exits through scene socket `end` as a non-accept fallback,
-  - exits through scene socket `job_accept` by succeeding
-    `gq000_01_obj_meet_patch`, disabling `gq000_01_qmp_patch_bridge`, setting
-    `gq000_job_accepted`, and returning to the root phase.
+- The current raw `gq000_patch_meet.questphase` is a seven-node, six-edge
+  linear acceptance path: input -> wait for `#gq000_01_tr_setup` -> start
+  `mod\gq000\scenes\gq000_patch_meet.scene` at
+  `#gq000_01_sm_patch_bridge` -> on `job_accept`, succeed
+  `gq000_01_obj_meet_patch` -> disable `gq000_01_qmp_patch_bridge` -> set the
+  acceptance fact -> terminating output.
+- The current meeting phase has no non-accept `end` route and no phase-level
+  community activation, `CharacterSpawned`, engage-trigger, or checkpoint
+  nodes. Spawn and approach gating currently live inside the raw scene. This
+  differs from the generator/spec-era flow described in older tests and must
+  be validated as part of this baseline.
 - `gq000_post_accept.questphase` is a minimal skeleton that activates/tracks
   `gq000_02_obj_reach_cache`, activates its description and
   `gq000_02_qmp_cache`, then sets `gq000_02_started`.
@@ -93,64 +123,41 @@ live in focused docs:
 
 - Packed and raw scene resources exist at
   `mod\gq000\scenes\gq000_patch_meet.scene`.
-- The current scene is represented by
-  `tools/gq000_patch_meet.scene-spec.json` and `tools/generate_scene.py`,
-  including the staged acceptance routing.
-- The current scene is a 14-node full meeting dialogue with 15 connected
-  edges, 13 spoken lines, and 5 player choices.
-- Normal-speed approach no longer crashes after adding a pre-scene
-  `CharacterSpawned` gate for `#gq000_01_com_patch_bridge` in
-  `gq000_patch_meet.questphase` and after raising/centering the bridge trigger
-  volumes to cover the meeting bridge's varying height.
-- Patch is acquired from active community entry `patch` at
-  `#gq000_01_com_patch_bridge` with the vanilla community actor pattern. V is
-  found in context through `Character.Player_Puppet_Base`.
-- The current scene flow is:
-  `start -> puppet_ai / bridge_case_mood pause -> someone_coming pause ->
-  Patch intro -> intro choice hub`. The optional `Ghostline?` and `Why me?`
-  branches loop back to the intro choice hub; the required `What's the job?`
-  branch advances to the post-job choice hub. The optional
-  `Who's behind it?` branch loops back to that second hub; the required
-  `I'm in.` branch closes the scene through dedicated exit `job_accept`.
-- Scene-local journal/objective/mappin creation has been removed from the
-  active meeting path. Quest state is now owned by the questphase flow.
-- The intro choice probe currently sets `isSingleChoice: 0` on all three
-  options, with `type.properties: 0` for the two optional/info branches and
-  `type.properties: 1` for the main progression branch.
-- Questphase journal paths now follow the journal file-entry index rule: phone
+- The current raw scene, exported 2026-05-08, is the source of truth for this
+  test build. It contains 17 graph nodes, 18 edges, 13 spoken lines, two choice
+  nodes, two end nodes, and six scene-local quest nodes.
+- The active dialogue still presents five choices: `What's the job?`,
+  `Ghostline?`, `Why me?`, `I'm in.`, and `Who's behind it?`. The raw
+  screenplay store contains eight options, leaving three orphaned options that
+  are not connected to choice nodes.
+- The scene embeds the bridge-case-mood pause, community spawn manager,
+  `CharacterSpawned` pause, Puppet AI setup, someone-coming pause, and engage
+  pause before/around the dialogue. That logic is not present in the current
+  meeting questphase.
+- Only end node 19 is connected, and the only declared exit point is
+  `job_accept`. End node 18 is orphaned, so the generator/spec's non-accept
+  `end` fallback is absent from the current raw baseline.
+- `tools/gq000_patch_meet.scene-spec.json` and `tools/generate_scene.py`
+  describe a newer intended 14-node/15-edge scene with five stored options,
+  phase-owned quest flow, and `db_db`/`pl_pl`/`en_us` locStore coverage. The
+  generator audit passes, but validating the current raw scene against that
+  spec reports 19 drift errors.
+- All five active raw choices are missing part of the expected vanilla-style
+  locStore descriptor coverage. The earlier blank/`Db-db` label risk is
+  therefore still present in this exact build and must be checked in game.
+- Questphase journal paths follow the journal file-entry index rule: phone
   contact paths use `fileEntryIndex: 1`, while quest objective, description,
   and quest map pin paths under `quests/minor_quest/gq000` use
   `fileEntryIndex: 2`.
-- The later `Who's behind it?` and `I'm in.` choice group is restored in the
-  generated scene.
-- `tools/generate_scene.py` now supports multiple end nodes via `end_nodes`;
-  `gq000_patch_meet.scene-spec.json` routes only the acceptance branch to the
-  `job_accept` exit.
-- The fresh generated shape now uses root `version: 5`, `PLATFORM_PC`,
-  `minorQuests`, vanilla spoken line IDs `1 + 256n`, choice option IDs
-  `2 + 256n`, padded choice sockets, deterministic event IDs, and embedded
-  vanilla-style `db_db`/`pl_pl`/`en_us` choice locStore coverage. Choice
-  locstrings now get two `db_db` descriptors, a blank fallback and a source text
-  payload, before the other locale blocks.
-- The scene spec pins `Header.ExportedDateTime` so generator and WolvenKit
-  deserialization output can be checked byte-for-byte across repeated runs.
-- On 2026-05-04, the packed/raw scene was regenerated after normalizing choice
-  locStore coverage to vanilla-style `db_db`, `pl_pl`, and `en_us` blocks. Each
-  choice now has a blank `db_db` fallback before the source-text `db_db`
-  payload, followed by `pl_pl` and `en_us` payloads. `tools/generate_scene.py`
-  now emits all configured `end_nodes` and validates the blank-first `db_db`
-  order.
+- The generator/spec pins `Header.ExportedDateTime`, emits multiple configured
+  end nodes, uses full unsigned 64-bit FNV output for event and locStore IDs,
+  and remains the intended repair path after this baseline is tested.
 - Runtime testing confirmed the previous `INT63_MASK` probe was the approach
   crash source. Scene event RUIDs and locStore variant IDs must keep the full
   unsigned 64-bit FNV output; do not mask them down to signed 63-bit values.
-- The previous 18-node generated dialogue scene crashed on approach. The
-  10-node journal handoff probe was validated in game after fixing the quest
-  mappin `fileEntryIndex`. The later normal-speed approach crash was fixed by
-  adding the pre-scene `CharacterSpawned` gate in the questphase. The later
-  `Ghostline?` `Db-db` display issue was fixed by switching choice locStores to
-  the audited vanilla-style descriptor shape. The current staged build removes
-  scene-local quest UI execution and restores `job_accept` routing through the
-  meeting questphase.
+- Previous test conclusions about the 14-node generated scene and its
+  phase-level `CharacterSpawned` gate remain useful history, but do not
+  describe the 17-node current-raw build being tested now.
 
 ### Dialogue Localization And VO
 
@@ -214,9 +221,12 @@ live in focused docs:
   binds `questPrefabNodeRef: $/mod/gq000/#gq000_pr_patch_meet`.
 - The quest sector contains four trigger areas, one AI spot, and one streamable
   community area.
-- The four meeting trigger areas use taller 12-unit trigger volumes centered
-  around the captured bridge origin to cover the bridge's varying deck height.
-  Runtime testing confirmed this resolved the bridge approach crash path.
+- The four meeting trigger areas use 12-unit-tall volumes centered around the
+  captured bridge origin. Their current approximate footprint radii are 150
+  for setup, 100 for engage, 25 for bridge-case mood, and 20 for
+  someone-coming. Prior testing showed that raising/centering these volumes
+  helped the bridge approach path; the current scene-owned gating sequence
+  still needs a fresh runtime test.
 - The always-loaded sector contains the community registry and concrete marker
   nodes needed for early NodeRef resolution: `#gq000_01_sm_patch_bridge`,
   `#gq000_01_mp_patch_bridge`, and `#gq000_02_mp_cache`.
@@ -239,9 +249,18 @@ live in focused docs:
 
 ## Open Blockers
 
-- Validate the 2026-05-04 regenerated scene locStore in game. Previous testing
-  confirmed the full questphase/scene sequence works, but the second and third
-  options on the first choice node displayed blank before the locstring probe.
+- Test the synchronized 2026-07-21 current-raw build before reconciling it with
+  the generator/spec. Record which trigger, spawn, dialogue, exit, journal,
+  mappin, subtitle, and VO behaviors actually work.
+- Reconcile the 17-node raw scene with the intended 14-node generator/spec
+  after runtime results identify which flow should be preserved. Four unit
+  tests currently assert an older 17-node wrapper fixture and need updating as
+  part of that reconciliation.
+- Repair and validate the five active choice locStores. Current raw validation
+  shows incomplete `db_db`/`pl_pl`/`en_us` coverage, so blank or `Db-db`
+  choice labels remain a known risk.
+- Decide whether the orphaned end node and absent non-accept `end` exit are
+  intentional; only `job_accept` currently returns to the meeting questphase.
 - Validate the dedicated always-loaded map-pin markers
   `#gq000_01_mp_patch_bridge` and `#gq000_02_mp_cache` in game.
 - Validate post-accept progression: meet objective succeeds, bridge mappin
@@ -249,11 +268,14 @@ live in focused docs:
   objective/mappin appears.
 - Rebuild the scene marker under a vanilla-style scene-prefab child path when
   fresh world/scene tooling replaces the current generated shape.
-- Revert the temporary Judy community registry entry to `Character.GhostlinePatch`
-  and re-test Patch spawn after the scene path is stable.
+- Install TweakXL before reverting the temporary Judy community registry entry
+  to `Character.GhostlinePatch`, then re-test Patch spawn after the scene path
+  is stable.
 - Decide whether `source/archive/base` resources are still required. They
   should be excluded from normal install archives unless their impact is
   validated.
+- Remove or document the 13 WEM files that are packaged but not referenced by
+  the current VO map.
 - Audit remaining `ep1\...` animation/effect dependencies in Patch's entity or
   explicitly require Phantom Liberty if Patch still crashes when streamed.
 
@@ -261,13 +283,15 @@ live in focused docs:
 
 ### 1. Validate Fresh Meeting Scene
 
+- Test the synchronized current-raw scene first and capture precise runtime
+  observations.
 - Use `tools/generate_scene.py` and
-  `tools/gq000_patch_meet.scene-spec.json` as the source path for fresh scene
-  resources.
-- Validate the staged full dialogue in game, especially the non-accept `end`
-  fallback and `job_accept` acceptance route.
-- If runtime issues remain, fix the generator/spec against vanilla reference
-  shapes rather than patching the packed scene manually.
+  `tools/gq000_patch_meet.scene-spec.json` as the repair path once the desired
+  behavior is selected.
+- Validate the staged full dialogue in game, especially the missing
+  non-accept `end` fallback and the active `job_accept` acceptance route.
+- Fix the generator/spec against vanilla reference shapes rather than patching
+  the packed scene manually.
 - Keep failed probe workarounds in `docs/crash-investigation.md` as historical
   context only.
 
@@ -306,9 +330,10 @@ live in focused docs:
 
 ### 6. Pack And Test In Game
 
-- Deserialize updated raw CR2W-JSON into `source/archive`.
-- Verify packed CR2W resources.
-- Build an install package from the scoped archive tree, not from the repo
-  root.
-- Check ArchiveXL, TweakXL, Patch spawn, trigger progression, journal/mappin
-  visibility, subtitles, and voice playback.
+- The 2026-07-21 current-raw baseline has been deserialized, packed, extracted,
+  hash-verified, installed, and wrapped in a verified six-file ZIP.
+- Test ArchiveXL loading, trigger progression, Judy community spawn, dialogue
+  choices, `job_accept`, journal/mappin visibility, subtitles, and voice
+  playback from this exact baseline.
+- Install TweakXL before testing the custom Patch character and its TweakDB
+  records.
