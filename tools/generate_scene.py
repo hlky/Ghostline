@@ -447,11 +447,17 @@ def build_loc_store(
             }
         )
 
-    # Vanilla choice locStores are grouped by locale, not by option. They also
-    # carry two db_db descriptors per choice: one blank fallback and one source
-    # text payload.
+    # Vanilla choice locStores are grouped by locale, not by option, and each
+    # locale block is sorted numerically by locstringId. The engine performs an
+    # ordered lookup over vdEntries, so dialogue/spec order is not safe here.
+    # Vanilla scenes also carry two db_db descriptors per choice: one blank
+    # fallback and one source text payload.
+    ordered_choice_keys = sorted(
+        spec["choice_line_order"],
+        key=lambda choice_key: (int(choice_manifest[choice_key]["string_id"]), str(choice_key)),
+    )
     for locale in locales:
-        for choice_key in spec["choice_line_order"]:
+        for choice_key in ordered_choice_keys:
             choice = choice_manifest[choice_key]
             loc_id = int(choice["string_id"])
             text = str(choice["text"])
@@ -1010,7 +1016,31 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
     loc_entries: dict[str, set[str]] = {loc: set() for loc in choice_locstrings}
     db_db_payloads: dict[str, list[str]] = {loc: [] for loc in choice_locstrings}
     vp_entries = root.get("locStore", {}).get("vpEntries", [])
-    for entry in root.get("locStore", {}).get("vdEntries", []):
+    vd_entries = root.get("locStore", {}).get("vdEntries", [])
+    choice_descriptors = [
+        entry
+        for entry in vd_entries
+        if str(entry.get("locstringId", {}).get("ruid", "")) in choice_locstrings
+    ]
+    locale_blocks: list[str] = []
+    for entry in choice_descriptors:
+        locale = str(entry.get("localeId", ""))
+        if not locale_blocks or locale_blocks[-1] != locale:
+            locale_blocks.append(locale)
+    if choice_locstrings:
+        expected_locale_blocks = [str(locale) for locale in spec.get("choice_locales", ["db_db", "pl_pl", "en_us"])]
+        if locale_blocks != expected_locale_blocks:
+            errors.append(f"Choice locStore locale blocks mismatch: {locale_blocks} != {expected_locale_blocks}")
+        for locale in expected_locale_blocks:
+            locale_locstring_ids = [
+                int(entry.get("locstringId", {}).get("ruid", 0))
+                for entry in choice_descriptors
+                if str(entry.get("localeId", "")) == locale
+            ]
+            if locale_locstring_ids != sorted(locale_locstring_ids):
+                errors.append(f"{locale} choice locStore descriptors must be sorted by locstringId")
+
+    for entry in vd_entries:
         loc = str(entry.get("locstringId", {}).get("ruid", ""))
         if loc in loc_entries:
             locale_id = str(entry.get("localeId", ""))

@@ -110,10 +110,10 @@ location is still being tuned.
 
 The quest sector contains:
 
-- `#gq000_01_tr_setup`: 90-unit radius, height 4.
-- `#gq000_01_tr_engage`: 4.5-unit radius, height 2.5.
-- `#gq000_01_tr_bridge_case_mood`: 18-unit radius, height 3.
-- `#gq000_01_tr_someone_coming`: 8-unit radius, height 2.5.
+- `#gq000_01_tr_setup`: 90-unit radius, height 12.
+- `#gq000_01_tr_engage`: 10-unit radius, height 12.
+- `#gq000_01_tr_bridge_case_mood`: 60-unit radius, height 12.
+- `#gq000_01_tr_someone_coming`: 20-unit radius, height 12.
 - `#gq000_01_spot_patch_bridge`: Patch community AI spot.
 - `#gq000_01_com_patch_bridge`: streamable community area.
 
@@ -123,6 +123,12 @@ The community registry maps `patch/default` to:
 - spot NodeRef
   `$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge`;
 - currently, temporary runtime isolation character `Character.Judy`.
+
+The community area's NodeRef hash, its `sourceObjectId`, and the registry
+item's `communityId` intentionally share `7897875840529598144`. The separate
+always-loaded registry node must have a different global identity. It now uses
+`7571954536596633334`, derived from the synthetic full ref
+`$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_com_patch_bridge_registry`.
 
 After scene stabilization, the registry character should return to
 `Character.GhostlinePatch`.
@@ -141,6 +147,10 @@ After scene stabilization, the registry character should return to
   `hash` command is plain FNV1A and does not produce these values.
 - Generated AI spot, streamable community area, always-loaded community
   registry, and matching streaming block all deserialize to CR2W.
+- `community.registry_node_id` defaults to a deterministic hash of the full
+  community area ref with `_registry` appended. Generation fails if that ID is
+  zero or collides with the community/source ID, spot ID, or an emitted world
+  NodeRef.
 - CET player coordinates are usable directly by WolvenKit sector search and
   streaming-sector grid math.
 - `WorldPosition` fixed-point values store coordinates as

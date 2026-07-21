@@ -8,11 +8,135 @@ For target scene structure, use `docs/scene-authoring-rules.md`. Vanilla
 patterns override failed Ghostline probe results. If a vanilla pattern crashed
 in a probe, assume the Ghostline implementation was incomplete or malformed.
 
-## Current Read
+## 2026-07-21 Fast-Travel Crash
 
-The restored intro choice scene worked when approached slowly but crashed on a
-normal-speed approach. Adding a pre-scene `CharacterSpawned` gate for the Patch
-community fixed the fast-approach crash in game.
+The synchronized current-raw build crashed after this sequence:
+
+```text
+load clean save -> receive phone message -> accept job -> fast travel near bridge -> crash
+```
+
+The dump recorded `Loading world`, resource throttling in `Flood`, a roughly
+990-unit teleport, and an invalid allocator pointer on background dispatcher
+thread `redDispatcher20`. ArchiveXL successfully merged the streaming block,
+quest phase, journal, localization, and mappin; no plugin log named a failed
+Ghostline resource.
+
+The recorded observer position was about 101.5 horizontal units from the
+bridge origin. That position was inside the then-current 150-unit setup trigger
+and inside community streaming range, but would have remained outside the last
+working 90-unit setup trigger.
+
+Two coupled defects were found:
+
+- the current-raw meeting phase started the scene from setup before the
+  previously proven phase-level engage and `CharacterSpawned` gates;
+- the always-loaded `worldCommunityRegistryNode` reused global node ID
+  `7897875840529598144`, already owned by the streamed community area. The
+  community area's `sourceObjectId` and registry item's `communityId` should
+  share that value, but the separate registry node identity should not.
+
+The stability repair restores the `5debf03` phase-owned spawn-readiness flow,
+regenerates its matching 14-node scene, restores horizontal trigger radii
+`90/10/60/20` while retaining 12-unit height, and assigns the registry node
+distinct global ID `7571954536596633334`. The crashing archive is retained at
+`H:\Ghostline-backups\pre-stability-fix-20260721-224252`.
+
+## 2026-07-21 Engage-Boundary Approach Crash
+
+The repaired world build completed the nearby fast travel, then crashed on a
+normal bridge approach. A second attempt paused on the bridge and approached
+more slowly, but failed at the same activation point. The two reports are:
+
+- `Cyberpunk2077-20260721-225818-16196-15872`
+- `Cyberpunk2077-20260721-230126-18020-10252`
+
+Both dumps fail at `Cyberpunk2077+0x1d173be` on dispatcher threads, at about
+10.8 and 10.4 horizontal units from the meeting origin. Loading had finished,
+the throttler state was `Stream`, and the dialogue visualizer count was zero.
+This is a deterministic scene-start failure at the engage boundary, distinct
+from the earlier `Cyberpunk2077+0x19088d0` fast-travel/loading-world crash.
+
+The faulting code reads element 1 from a REDengine dynamic array whose size and
+capacity are both 1, copies a shared handle, then faults while incrementing its
+garbage reference count. The runtime object contains depot hash
+`0x355d4ccf4a70a25f`, the FNV-1a 64 hash of
+`mod\gq000\scenes\gq000_patch_meet.scene`, which ties this crash directly to
+scene activation. It does not by itself identify which internal array is bad.
+
+Fresh `mq003` comparison exposed the strongest lifecycle mismatch:
+
+- `mq003` activates and validates its whole community before the approach;
+- its child phase starts the scene at a broad setup trigger;
+- the already-running scene performs setup, then waits internally through
+  progressively narrower mood, awareness, and engage gates.
+
+The restored Ghostline flow instead waited until the 10-unit engage trigger to
+start the scene. Its 60- and 20-unit scene conditions were therefore already
+true, allowing scene setup, Puppet AI, and the opening dialogue path to cascade
+in the same startup tick. The identical crash position on both approaches
+makes this ordering a stronger lead than trigger geometry.
+
+The mq003-sequenced isolation build now uses:
+
+```text
+phase: activate -> CharacterSpawned -> setup -> checkpoint -> scene start
+scene: PuppetAI || case-mood -> someone-coming -> opening line -> engage -> choices
+```
+
+Trigger geometry and audio are intentionally unchanged so the next test
+isolates sequencing. A separate audit confirmed all 13 referenced WEMs are
+valid mono 48 kHz Wwise Vorbis, decode fully, and fall within the bitrate range
+seen in mono `mq003` dialogue. Audio filename cleanup remains worthwhile but is
+not part of this crash-isolation build.
+
+The verified installed archive for this test has SHA-256
+`177500B67B2A6B975A597DF5D582797F006643BA6BC975E1D9CFBC66BC498BFD`.
+Relative to the replaced installed build, only the meeting phase and scene
+payloads changed. The replaced build is backed up at
+`H:\Ghostline-backups\pre-mq003-sequence-20260721-233546`.
+
+## 2026-07-21 Setup-Boundary Scene Crash
+
+The mq003-sequenced build moved scene launch from the 10-unit engage trigger to
+the 90-unit setup trigger. Report
+`Cyberpunk2077-20260721-234436-30228-24592` then crashed at 89.27 horizontal
+units from the meeting origin with the same
+`Cyberpunk2077+0x1d173be` fault. Loading had finished, the throttler was in
+`Stream`, and no dialogue visualizer existed. Moving the crash with the launch
+condition shows that the trigger radius is not the cause; scene initialization
+is exercising the bad lookup.
+
+The dump requests index `1` from a 16-byte-handle runtime array whose size and
+capacity are both `1`. The adjacent out-of-bounds memory contains unrelated
+world-node text and is subsequently treated as a reference-count pointer. The
+scene's strongest matching cardinality defect is its lipsync table:
+
+- Patch used lipsync resource ID `0` and V used ID `1`;
+- raw CR2W-JSON emitted two lipsync rows with the same generic depot path;
+- the packed scene has only one distinct import for that resource;
+- runtime exposed one handle before requesting index `1`.
+
+The current isolation changes only V's lipsync ID from `1` to `0` and reduces
+the lipsync resource array from two duplicate rows to one. Scene graph,
+dialogue, timing, questphase, triggers, world resources, and audio remain
+unchanged. Shared slot `0` is deliberately diagnostic; final scene authoring
+should return to distinct, valid NPC and V lipsync resources if this removes
+the crash.
+
+The verified installed archive has SHA-256
+`87956AFFE3C7CD66E16AD8531D0784689B01A24DCA629FAF41C2291C6E70E40D`.
+Build evidence is at
+`H:\Ghostline-builds\lipsync-slot0-20260722-000338`, and the replaced archive
+is backed up at
+`H:\Ghostline-backups\pre-lipsync-slot0-20260722-000338`.
+
+## Earlier Runtime Read
+
+An earlier probe of the intro choice scene worked when approached slowly but
+crashed on a normal-speed approach. At that stage, adding a pre-scene
+`CharacterSpawned` gate for the Patch community appeared to fix the
+fast-approach crash.
 
 Later bridge testing found the meeting trigger volumes were vertically too
 shallow for the bridge's varying height. Raising all four meeting triggers to
@@ -20,8 +144,8 @@ shallow for the bridge's varying height. Raising all four meeting triggers to
 the remaining bridge approach crash path.
 
 Vanilla reference scenes and `modding_docs` use `questCharacterSpawned`
-`PauseCondition` gates before letting conversations proceed. Ghostline now uses
-the same immediate pre-scene gate in `gq000_patch_meet.questphase`:
+`PauseCondition` gates before letting conversations proceed. The restored
+14-node build placed that gate immediately before scene start:
 
 ```text
 #gq000_01_tr_engage -> CharacterSpawned #gq000_01_com_patch_bridge -> scene start
@@ -35,8 +159,8 @@ The temporary crash-isolation setup uses `Character.Judy` in the `patch/default`
 community entry. That keeps the world/community path independent of Patch's
 custom entity while the scene path is being stabilized.
 
-The current packed/raw questphase and scene resources are a reduced
-crash-surface build refreshed from WolvenKit-edited CR2W on 2026-05-01:
+The following reduced crash-surface shape was tested historically from
+WolvenKit-edited CR2W on 2026-05-01:
 
 - root `gq000.questphase` routes successful `gq000_patch_meet` completion
   directly to `gq000_done` and output;
@@ -49,7 +173,8 @@ crash-surface build refreshed from WolvenKit-edited CR2W on 2026-05-01:
 - scene mappin node `n17` remains present but has no incoming or outgoing
   connection.
 
-This is an isolation shape, not yet the final target scene/quest structure.
+That was an isolation shape, not the current stability baseline or final target
+scene/quest structure.
 
 ## Useful Findings
 
@@ -89,10 +214,18 @@ This is an isolation shape, not yet the final target scene/quest structure.
   locStore shape, not by `scnChoiceNodeOption.caption`. Vanilla-style choice
   locStores use locale blocks and two `db_db` descriptors per choice: a blank
   fallback and a source text payload.
-- The current reduced build deliberately removes scene-local mappin execution
-  and acceptance-socket branching from the active path. Treat any resulting
-  stability as evidence about those surfaces before restoring them one at a
-  time.
+- The shared-lipsync-slot build completed the full phone, fast-travel,
+  approach, dialogue, acceptance, and cache-objective route without a crash.
+  This strongly confirms the scene-start failure was the slot-1 lookup against
+  a one-entry runtime lipsync table.
+- Runtime screenshots exposed a second ordered-table issue: two first-group
+  choices were blank and `Who's behind it?` resolved as stale `Why me?` text.
+  Ghostline's locale blocks were grouped but not sorted by `locstringId`; all
+  four audited vanilla scenes sort every locale block numerically. The scene
+  generator and validator now enforce that invariant.
+- The May reduced probe deliberately removed scene-local mappin execution and
+  acceptance-socket branching from the active path. Its results remain useful
+  evidence about those surfaces, but do not describe the current build.
 
 ## Discarded Probe Conclusions
 

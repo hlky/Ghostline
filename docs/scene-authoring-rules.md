@@ -79,10 +79,8 @@ Current implementation:
 - Do not inherit unrelated template resource references. Resource tables should
   contain only resources actually referenced by actors/events in the scene.
 
-Current Ghostline mismatch to fix in fresh tooling:
-
-- `gq000_patch_meet.scene` currently has `version: 0`,
-  `cookingPlatform: PLATFORM_None`, and `sceneCategoryTag: sideQuests`.
+Current Ghostline generated scene follows these root values: `version: 5`,
+`cookingPlatform: PLATFORM_PC`, and `sceneCategoryTag: minorQuests`.
 
 ## Actors
 
@@ -94,10 +92,29 @@ Current Ghostline mismatch to fix in fresh tooling:
   actor until a `questCharacterSpawned_ConditionType` pause condition has
   passed for that actor/community NodeRef. For multiple required actors, use
   parallel spawn waits and an `And` rendezvous, matching vanilla scene patterns.
+- For proximity conversations, follow the `mq003` lifecycle: activate and
+  validate the community before proximity, start the scene from the broad setup
+  trigger, and keep narrower mood/awareness/engage waits inside the already
+  running scene. Do not launch a scene only after every narrower concentric
+  trigger is already true; that collapses setup and dialogue into one startup
+  tick.
 - Player actors should use `findInContext` with
   `Character.Player_Puppet_Base`.
 - Keep actor IDs, `performerID` references in sections, and
   `screenplayStore.lines.actorID` references aligned.
+
+## Lipsync Resource References
+
+- An actor's `lipsyncAnimSet.id` indexes
+  `resouresReferences.lipsyncAnimSets`; every referenced ID must exist at
+  runtime.
+- Audited two-performer vanilla scenes normally use separate NPC and V lipsync
+  `.anims` resources. Do not create two logical slots by repeating one depot
+  path unless a matching cooked vanilla case proves the runtime table remains
+  addressable.
+- Ghostline's shared slot `0` configuration is a crash-isolation probe. If it
+  stabilizes scene startup, replace it with distinct valid NPC/V resources for
+  final presentation.
 
 ## Screenplay IDs
 
@@ -110,9 +127,7 @@ Fresh tooling should emit that pattern. If changing Ghostline line item `0` to
 `1` crashes, treat that as a surrounding scene/section/event mismatch, not as
 evidence against the vanilla item ID pattern.
 
-Current Ghostline mismatch to fix in fresh tooling:
-
-- Spoken line IDs currently use `0 + 256n`.
+Current Ghostline generated scene uses the `1 + 256n` spoken-line pattern.
 
 ## Dialogue Events
 
@@ -178,12 +193,15 @@ Current Ghostline choice probe shape:
 
 Audited vanilla choice locstrings include embedded locStore descriptor variants
 for `db_db`, `pl_pl`, and `en_us`. Choice locStores are grouped by locale block,
-not by option, and `db_db` usually has two descriptors per choice: a blank
-fallback payload and a source text payload.
+not by option. Within each locale block, descriptor entries must be numerically
+sorted by unsigned `locstringId`; REDengine performs an ordered lookup and can
+return blank or stale labels when that invariant is broken. `db_db` usually has
+two descriptors per choice: a blank fallback payload and a source text payload.
 
 Fresh tooling should generate the same multi-locale descriptor shape for choice
 locstrings. Do not replace `db_db` with `en_us`; add the correct vanilla-style
-locale coverage.
+locale coverage. Validate the checked-in raw scene as well as an in-memory
+generator fixture so stale unsorted CR2W-JSON cannot pass the build tests.
 
 Do not truncate generated scene event RUIDs or locStore variant IDs to the
 signed 63-bit range. Runtime testing showed `INT63_MASK`-generated scenes crash

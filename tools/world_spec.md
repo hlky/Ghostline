@@ -416,6 +416,7 @@ The `community` block creates three pieces:
     "character": "Character.GhostlinePatch",
     "appearance": "default",
     "source_object_id": "auto",
+    "registry_node_id": "auto",
     "active_on_start": 1,
     "spot": {
       "ref": "#gq000_01_spot_patch_bridge",
@@ -441,6 +442,7 @@ The `community` block creates three pieces:
 | `period` | No | `Day` | Time period name. |
 | `is_sequence` | No | `0` | Written to area and registry time-period data. |
 | `source_object_id` | No | `auto` | Numeric entity hash. `auto` hashes the full community area NodeRef. |
+| `registry_node_id` | No | `auto` | Distinct global ID for the always-loaded registry node. `auto` hashes the full community area NodeRef with a `_registry` suffix. Must not collide with the community/source ID, spot ID, or an emitted world NodeRef. |
 | `source_prefab_hash` | No | `0` | Community area `sourcePrefabHash`. |
 | `streaming_distance` | No | `0` | Community area `streamingDistance`. |
 | `tag` | No | `None` | Community area tag. |
@@ -580,7 +582,10 @@ sector shows you need to tune compiled node setup values.
 
 The always-loaded community registry node uses a fixed internal node-data setup:
 `max_streaming_distance = 17.320507`, `streaming_distance = 100000000`, and
-`uk10 = 32`.
+`uk10 = 32`. Its `QuestPrefabRefHash` comes from `community.registry_node_id`
+and must be distinct from the streamable community area's global ID. The
+community area's `sourceObjectId` and the registry item's `communityId` still
+match each other.
 
 ## Generated Outputs
 

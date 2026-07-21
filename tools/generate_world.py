@@ -783,6 +783,7 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
     always_loaded_node_datas: list[dict[str, Any]] = []
     always_loaded_refs: list[str] = []
     always_loaded_sector: dict[str, Any] | None = None
+    registry_node_id: int | None = None
 
     def add_node(ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float, overrides: dict[str, Any] | None = None) -> None:
         full_ref = full_node_ref(prefab_root, ref_value)
@@ -836,6 +837,22 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         if source_object_id == "auto":
             source_object_id = str(node_ref_hash(full_node_ref(prefab_root, community_spec["ref"])))
 
+        registry_node_id_value = community_spec.get("registry_node_id", "auto")
+        if registry_node_id_value == "auto":
+            registry_seed_ref = full_node_ref(prefab_root, community_spec["ref"]) + "_registry"
+            registry_node_id = node_ref_hash(registry_seed_ref)
+        else:
+            try:
+                registry_node_id = int(registry_node_id_value)
+            except (TypeError, ValueError) as exc:
+                raise SystemExit("community.registry_node_id must be 'auto' or an unsigned 64-bit integer") from exc
+        if not 0 < registry_node_id <= UINT64_MASK:
+            raise SystemExit("community.registry_node_id must be between 1 and 18446744073709551615")
+        if registry_node_id == int(source_object_id):
+            raise SystemExit("community.registry_node_id must differ from community.source_object_id")
+        if registry_node_id == spot_hash:
+            raise SystemExit("community.registry_node_id must differ from community.spot.global_node_id")
+
         add_node(spot_ref_value, ai_spot_node(spot_spec, spot_ref_value, handles), spot_position, spot_yaw, spot_spec.get("node_data"))
 
         area_ref = community_spec["ref"]
@@ -861,7 +878,7 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         registry_index = len(always_loaded_nodes)
         always_loaded_nodes.append(registry_node)
         always_loaded_node_datas.append(
-            node_data(registry_index, int(source_object_id), Vec3(0, 0, 0), 0, {"max_streaming_distance": 17.320507, "streaming_distance": 100000000, "uk10": 32})
+            node_data(registry_index, registry_node_id, Vec3(0, 0, 0), 0, {"max_streaming_distance": 17.320507, "streaming_distance": 100000000, "uk10": 32})
         )
 
     for ref_spec in always_loaded_ref_specs:
@@ -895,6 +912,15 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         node_index = int(ref_data.get("node_index", source_node_index if source_node_index is not None else len(always_loaded_node_datas)))
         always_loaded_node_datas.append(node_data(node_index, full_ref, pos, yaw, overrides))
         always_loaded_refs.append(full_ref)
+
+    if registry_node_id is not None:
+        emitted_ref_hashes = {node_ref_hash(ref): ref for ref in [*refs, *always_loaded_refs]}
+        colliding_ref = emitted_ref_hashes.get(registry_node_id)
+        if colliding_ref is not None:
+            raise SystemExit(
+                "community.registry_node_id must differ from emitted world node refs; "
+                f"it collides with {colliding_ref}"
+            )
 
     if always_loaded_path and (always_loaded_node_datas or always_loaded_nodes):
         registry_archive = depot_to_archive_path(archive_root, always_loaded_path)

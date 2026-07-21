@@ -31,7 +31,7 @@
       "id": 1,
       "record": "Character.Player_Puppet_Base",
       "appearance": "default",
-      "lipsync": 1
+      "lipsync": 0
     }
   ],
   "spoken_line_order": [
@@ -91,6 +91,7 @@
     11,
     13,
     2,
+    22,
     8,
     3,
     4,
@@ -110,7 +111,9 @@
       ],
       "on_end": [
         {
-          "node_id": 8
+          "node_id": 22,
+          "input_name": 0,
+          "input_ordinal": 1
         }
       ]
     },
@@ -261,6 +264,16 @@
       "on_out": [
         {
           "node_id": 2
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 22,
+      "trigger_ref": "#gq000_01_tr_engage",
+      "on_out": [
+        {
+          "node_id": 8
         }
       ]
     }

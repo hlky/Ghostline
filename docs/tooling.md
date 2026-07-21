@@ -4,6 +4,21 @@ This document keeps helper command usage out of `README.md` and `ROADMAP.md`.
 Use these tools to inspect focused slices of CR2W-JSON instead of loading large
 files into context.
 
+Run the regression suite after changing the production scene, meeting phase,
+world spec, or world generator:
+
+```powershell
+py -B -m unittest discover -s tests -v
+```
+
+The suite covers the 15-node scene contract, phase-owned community activation
+and spawn-readiness gate, the scene-local engage gate, restored trigger radii,
+distinct community registry node identity, numerically sorted choice locStore
+descriptor blocks, and synchronization between the generated fixture and the
+checked-in raw scene.
+It also rejects forward `HandleRefId` use in the meeting phase because
+WolvenKit's CR2W-JSON resolver requires a handle definition to appear first.
+
 ## Questphase Explorer
 
 `tools/explore_questphase.py` inspects deserialized questphase JSON. The

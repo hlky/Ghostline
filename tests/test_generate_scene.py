@@ -27,25 +27,38 @@ class GenerateSceneTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.spec = generate_scene.load_json(TOOLS / "gq000_patch_meet.scene-spec.json")
         cls.scene = generate_scene.build_scene(cls.spec)
+        cls.raw_scene = generate_scene.load_json(ROOT / cls.spec["raw_path"])
         cls.root = cls.scene["Data"]["RootChunk"]
+
+    def test_checked_in_raw_scene_matches_generator(self) -> None:
+        self.assertEqual(self.raw_scene, self.scene)
+        self.assertEqual(generate_scene.validate_scene(self.raw_scene, self.spec), [])
 
     def test_fixture_shape(self) -> None:
         self.assertEqual(self.scene["Header"]["ExportedDateTime"], self.spec["exported_datetime"])
         self.assertEqual(len(self.root["actors"]), 1)
         self.assertEqual(len(self.root["playerActors"]), 1)
-        self.assertEqual(len(self.root["sceneGraph"]["Data"]["graph"]), 17)
+        self.assertEqual(len(self.root["sceneGraph"]["Data"]["graph"]), 15)
         edge_count = sum(len(socket.get("destinations", [])) for node in self.root["sceneGraph"]["Data"]["graph"] for socket in node["Data"].get("outputSockets", []))
-        self.assertEqual(edge_count, 18)
+        self.assertEqual(edge_count, 16)
         self.assertEqual(len(self.root["screenplayStore"]["lines"]), 13)
         self.assertEqual(len(self.root["screenplayStore"]["options"]), 5)
         self.assertTrue(any(point["name"]["$value"] == "start" for point in self.root["entryPoints"]))
         self.assertTrue(any(point["name"]["$value"] == "job_accept" for point in self.root["exitPoints"]))
 
-    def test_fixture_graph_matches_reduced_scene_order(self) -> None:
-        node_ids = [node["Data"]["nodeId"]["id"] for node in self.root["sceneGraph"]["Data"]["graph"]]
-        self.assertEqual(node_ids, [1, 10, 11, 12, 13, 2, 15, 16, 17, 8, 3, 4, 5, 9, 6, 7, 18])
+    def test_fixture_uses_one_shared_lipsync_slot_for_crash_isolation(self) -> None:
+        patch_lipsync = self.root["actors"][0]["lipsyncAnimSet"]["id"]
+        player_lipsync = self.root["playerActors"][0]["lipsyncAnimSet"]["id"]
+        lipsync_refs = self.root["resouresReferences"]["lipsyncAnimSets"]
 
-    def test_fixture_poi_is_deactivated_before_objective_activation(self) -> None:
+        self.assertEqual((patch_lipsync, player_lipsync), (0, 0))
+        self.assertEqual(len(lipsync_refs), 1)
+
+    def test_fixture_graph_matches_mq003_shaped_scene_order(self) -> None:
+        node_ids = [node["Data"]["nodeId"]["id"] for node in self.root["sceneGraph"]["Data"]["graph"]]
+        self.assertEqual(node_ids, [1, 10, 11, 13, 2, 22, 8, 3, 4, 5, 9, 6, 7, 18, 19])
+
+    def test_fixture_dialogue_flow_edges(self) -> None:
         edges = []
         for node in self.root["sceneGraph"]["Data"]["graph"]:
             source = node["Data"]["nodeId"]["id"]
@@ -58,20 +71,40 @@ class GenerateSceneTests(unittest.TestCase):
                             destination["isockStamp"]["ordinal"],
                         )
                     )
-        self.assertIn((11, 12, 2), edges)
-        self.assertIn((2, 15, 1), edges)
-        self.assertIn((15, 16, 1), edges)
-        self.assertIn((16, 8, 0), edges)
-        self.assertNotIn((16, 17, 1), edges)
-        self.assertNotIn((17, 8, 0), edges)
-        self.assertEqual([edge for edge in edges if edge[0] == 17 or edge[1] == 17], [])
-        self.assertIn((3, 8, 0), edges)
-        self.assertIn((4, 8, 0), edges)
-        self.assertIn((5, 9, 0), edges)
-        self.assertIn((9, 6, 0), edges)
-        self.assertIn((9, 7, 0), edges)
-        self.assertIn((6, 9, 0), edges)
-        self.assertIn((7, 18, 0), edges)
+        self.assertEqual(
+            edges,
+            [
+                (1, 10, 1),
+                (1, 11, 1),
+                (11, 13, 1),
+                (13, 2, 0),
+                (2, 22, 1),
+                (22, 8, 0),
+                (8, 3, 0),
+                (8, 4, 0),
+                (8, 5, 0),
+                (3, 8, 0),
+                (4, 8, 0),
+                (5, 9, 0),
+                (9, 6, 0),
+                (9, 7, 0),
+                (6, 9, 0),
+                (7, 19, 0),
+            ],
+        )
+
+    def test_fixture_keeps_engage_as_scene_local_final_gate(self) -> None:
+        engage = next(
+            node["Data"]
+            for node in self.root["sceneGraph"]["Data"]["graph"]
+            if node["Data"]["nodeId"]["id"] == 22
+        )
+        quest_node = engage["questNode"]["Data"]
+        condition = quest_node["condition"]["Data"]
+
+        self.assertEqual(quest_node["$type"], "questPauseConditionNodeDefinition")
+        self.assertEqual(condition["$type"], "questTriggerCondition")
+        self.assertEqual(condition["triggerAreaRef"]["$value"], "#gq000_01_tr_engage")
 
     def test_screenplay_ids_use_vanilla_pattern(self) -> None:
         line_ids = [line["itemId"]["id"] for line in self.root["screenplayStore"]["lines"]]
@@ -102,6 +135,17 @@ class GenerateSceneTests(unittest.TestCase):
         ]
         self.assertEqual([entry["localeId"] for entry in first_choice_rows], ["db_db", "db_db", "pl_pl", "en_us"])
         self.assertEqual(self.root["locStore"]["vpEntries"][first_choice_rows[0]["vpeIndex"]]["content"], "")
+
+    def test_fixture_choice_locstore_ids_are_sorted_within_locale_blocks(self) -> None:
+        descriptors = self.root["locStore"]["vdEntries"]
+
+        for locale in self.spec["choice_locales"]:
+            locstring_ids = [
+                int(entry["locstringId"]["ruid"])
+                for entry in descriptors
+                if entry["localeId"] == locale
+            ]
+            self.assertEqual(locstring_ids, sorted(locstring_ids), locale)
 
     def test_validation_passes_and_event_ids_are_not_placeholders(self) -> None:
         self.assertEqual(generate_scene.validate_scene(self.scene, self.spec), [])
@@ -190,18 +234,25 @@ class GenerateSceneTests(unittest.TestCase):
 
         self.assertTrue(any("locStore variant ids collide with screenplay locstrings" in error for error in errors))
 
-    def test_validation_rejects_wrong_journal_file_entry_index(self) -> None:
+    def test_validation_rejects_unsorted_choice_locstore_descriptors(self) -> None:
         scene = copy.deepcopy(self.scene)
-        root = scene["Data"]["RootChunk"]
-        for journal_path in generate_scene.iter_journal_paths(root):
-            if journal_path.get("realPath", "").endswith("gq000_01_qmp_patch_bridge"):
-                journal_path["fileEntryIndex"] = 1
+        descriptors = scene["Data"]["RootChunk"]["locStore"]["vdEntries"]
+        en_us_indexes = [index for index, entry in enumerate(descriptors) if entry["localeId"] == "en_us"]
+        descriptors[en_us_indexes[0]], descriptors[en_us_indexes[-1]] = (
+            descriptors[en_us_indexes[-1]],
+            descriptors[en_us_indexes[0]],
+        )
 
         errors = generate_scene.validate_scene(scene, self.spec)
 
-        self.assertTrue(
-            any("gq000_01_qmp_patch_bridge" in error and "expected 2" in error for error in errors)
-        )
+        self.assertTrue(any("en_us choice locStore descriptors must be sorted" in error for error in errors))
+
+    def test_fixture_keeps_spawn_and_journal_flow_in_questphase(self) -> None:
+        serialized = json.dumps(self.root)
+
+        self.assertNotIn("questSpawnManagerNodeDefinition", serialized)
+        self.assertNotIn("questCharacterSpawned_ConditionType", serialized)
+        self.assertEqual(list(generate_scene.iter_journal_paths(self.root)), [])
 
     def test_validation_rejects_graph_order_drift(self) -> None:
         scene = copy.deepcopy(self.scene)
