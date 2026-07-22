@@ -19,6 +19,121 @@ checked-in raw scene.
 It also rejects forward `HandleRefId` use in the meeting phase because
 WolvenKit's CR2W-JSON resolver requires a handle definition to appear first.
 
+## Character Builder And UI
+
+`tools/character_builder.py` is the shared engine for the schema-v1 character
+manifest and local UI. It writes only to the output directory supplied by the
+caller. Validate and generate Patch's reviewed design with:
+
+```powershell
+py -B .\tools\character_builder.py validate
+py -B .\tools\character_builder.py generate --out .\converted\characters\patch
+py -B .\tools\character_builder.py compare --generated .\converted\characters\patch
+```
+
+The final `compare` is expected to report all four documents as equivalent to
+their applied shipping source paths. Patch's immutable original appearance is
+kept at `source/characters/templates/patch-original.app.json`, and its original
+catalog selections' semantic equivalence remains covered by
+`tests/test_character_builder.py`.
+
+Patch's checked-in manifest intentionally leaves its five head-shape values
+unset because the original preset is unknown. Check the head toolchain without
+building by supplying temporary values:
+
+```powershell
+py -B .\tools\character_builder.py head `
+  --workspace .\converted\characters\patch\head-build `
+  --dry-run `
+  --shape eyes=21 --shape nose=21 --shape mouth=21 `
+  --shape jaw=21 --shape ears=21
+```
+
+Remove `--dry-run` to run the complete selected-morphtarget export, background
+Blender shape application, GLB export, and WolvenKit CR2W mesh rebuild. Outputs
+remain isolated under the chosen workspace. Do not apply temporary shape values
+to Patch's checked-in meshes.
+
+The current male head GLBs contain Basis plus named target variants `h01`
+through `h20`. That makes creator values 1 through 21 mechanically available:
+value 1 is Basis, and values 2 through 21 map to those named targets. Although
+the character-creator cheat sheet documents value 22, the exported GLBs have no
+`h21` target. The builder blocks 22 until the offset is resolved; the earlier
+shape-22 smoke run was a successful toolchain pass but a geometry no-op.
+
+Prepare the morph-preserving browser source without running Blender:
+
+```powershell
+py -B .\tools\character_builder.py preview `
+  --out .\converted\characters\patch\preview
+```
+
+Add `--all-head-parts` only when testing overlays. The default exports the
+25.7-MiB core head; all 13 current layers are roughly 109 MiB and are not needed
+to select the five facial shapes.
+
+Generate the installed-game asset index with:
+
+```powershell
+py -B .\tools\character_asset_index.py
+```
+
+The default pass queries `basegame_4_appearance.archive` and
+`ep1_2_gamedata.archive`, writes ignored
+`converted/character-index/assets.json`, and currently yields 4,965 head, body,
+hair, clothing, and player-item records. It records source archive, expansion,
+slot, family, body-frame tokens, resource role, and preview warnings. Use
+`--archive` repeatedly or `--regex` to change the scope.
+
+Start the local creator with:
+
+```powershell
+npm install --prefix .\tools\character_ui --ignore-scripts
+py -B .\tools\character_ui.py --open
+```
+
+The UI and CLI use `source/characters/patch.character.json` and
+`source/characters/catalog.json`. UI generation and head builds are isolated
+under ignored `converted/characters`. The pinned Three.js dependency stays
+local to `tools/character_ui/node_modules`. The browser renders the real
+morph-target head, updates facial shapes client-side, searches the generated
+installed-game index, and uncooks a selected `.mesh` to an isolated GLB on
+demand. Supported PMA primary meshes in the `torso`, `legs`, and `feet` slots
+also expose the real appearance names read from the cooked mesh: choose an
+appearance and click `Use in outfit`. The selection is stored under
+`appearance.indexed_overrides`, summarized above the curated controls, and
+applied during source generation. Use the `Head` toolbar button to return from
+an asset preview.
+
+The server intentionally accepts loopback hosts only. Browser requests may
+change identity, selections, and head values, but template paths, source roots,
+morphtarget lists, output definitions, WolvenKit, Blender, and game paths are
+reloaded from the reviewed server-side manifest. Build/index operations are
+serialized and JSON reports are replaced atomically.
+
+Preview caches are fingerprinted. Head entries include the source CR2W hash and
+tool/game identities; installed meshes include their provider-archive identity,
+tool/game identities, depot path, and exporter settings. A source, game, or
+tool update therefore regenerates the selected GLB instead of silently serving
+an old preview. Mesh refreshes and CR2W metadata serialization run in a fresh
+staging directory and replace cache files only after both commands and metadata
+shape validation succeed. Assignment compatibility uses frame tokens from the
+mesh filename; path-wide tokens remain discovery metadata and cannot make a
+PWA mesh assignable merely because a parent folder contains `pma`.
+
+The curated catalog remains deliberately small: Patch's original visible
+hair/clothing bundles, the complete `hh_146` dread-undercut topology, and their
+disable choices. Catalog hair bindings can rebuild component type, skinning,
+parent transforms, animgraph, rig, and NPC shadow in both CR2W component copies;
+new handle IDs are allocated above the template's existing maximum. An indexed torso/legs/feet
+selection replaces only the primary mesh in the corresponding curated bundle,
+in both the normal and `compiledData` copies, while retaining its existing
+cuff/shadow companion. This makes index rows usable now but is not a complete
+NPC bundle resolver. Browser materials are currently neutral, the appearance
+dropdown does not recolor the GLB yet, and exact RED materials, component
+dependencies, garment behavior, and runtime fit still require separate
+validation. Other indexed categories remain preview-only.
+
 ## Questphase Explorer
 
 `tools/explore_questphase.py` inspects deserialized questphase JSON. The

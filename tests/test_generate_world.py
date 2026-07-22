@@ -81,6 +81,29 @@ class GenerateWorldTests(unittest.TestCase):
         self.assertEqual(registry_node_ref["$value"], "7571954536596633334")
         self.assertNotEqual(registry_node_ref["$value"], source_object_id)
 
+    def test_production_registry_spawns_the_custom_patch_record(self) -> None:
+        _, always_loaded_sector = self.build_production_world()
+        registry = next(
+            node["Data"]
+            for node in always_loaded_sector["Data"]["RootChunk"]["nodes"]
+            if node["Data"]["$type"] == "worldCommunityRegistryNode"
+        )
+        character_record = registry["communitiesData"][0]["template"]["Data"]["entries"][0][
+            "Data"
+        ]["characterRecordId"]
+
+        self.assertEqual(self.spec["community"]["character"], "Character.GhostlinePatch")
+        self.assertEqual(character_record["$type"], "TweakDBID")
+        self.assertEqual(character_record["$storage"], "string")
+        self.assertEqual(character_record["$value"], "Character.GhostlinePatch")
+
+        phase = registry["communitiesData"][0]["template"]["Data"]["entries"][0][
+            "Data"
+        ]["phases"][0]["Data"]
+        appearances = [item["$value"] for item in phase["appearances"]]
+        self.assertEqual(self.spec["community"]["appearance"], "ghostline_patch_default")
+        self.assertEqual(appearances, ["ghostline_patch_default"])
+
     def test_registry_node_rejects_community_source_id_collision(self) -> None:
         spec = copy.deepcopy(self.spec)
         spec["community"]["registry_node_id"] = "7897875840529598144"

@@ -11,9 +11,16 @@ Use this document for the overall runtime model. Use
 `docs/crash-investigation.md` for the evidence behind failed probes.
 
 `patch` is the logical scene actor and community-entry name. The current world
-registry maps that entry to `Character.Judy` for runtime isolation. The stable
-route therefore validates Judy with the Ghostline lifecycle; the custom
-`Character.GhostlinePatch` record and resources remain unvalidated.
+registry maps that entry to `Character.GhostlinePatch`. The preceding Judy
+isolation run validated the Ghostline lifecycle; the custom record, entity,
+appearance, faction, and dependencies are the variables in the current
+installed test candidate.
+
+The community phase must request exposed root appearance
+`ghostline_patch_default`. The root mapping then selects internal `.app`
+definition `default`. The first custom run used `default` at the community
+layer, producing an invisible puppet that the scene could still acquire and
+label as Patch.
 
 ## Runtime Ownership
 
@@ -28,7 +35,7 @@ the main lesson from the stable meeting build.
 | Scene | Actor acquisition, cinematic AI tier, inner approach timing, dialogue, choices, and a named exit signal. |
 | Post-accept questphase | Cache objective, description, mappin, and started-fact skeleton. |
 
-The scene acquires the logical Patch-role actor (currently Judy) from an already
+The scene acquires the logical Patch-role actor from an already
 active and validated community. It does not own community spawning. Conversely,
 proximity-dependent presentation belongs in the running scene rather than in a
 chain of questphase gates before scene launch.

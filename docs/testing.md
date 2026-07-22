@@ -21,6 +21,76 @@ These reduce accidental save contamination, but they do not clean an already
 contaminated save. Keep a known-good pre-Ghostline manual save and return to it
 for each start-flow validation pass.
 
+## 2026-07-22 Patch Root-Appearance Fix
+
+Installed archive SHA-256:
+`40148CE9F102C5CF77BEA31C1D9043FB20F53B8937873235BDBE3D1A82EF6786`.
+
+Repo `Ghostline.zip` SHA-256:
+`890166AA958650A537BCCA32B9B91214E139C3C4FBDF51AC431EF965668D7162`.
+
+The first custom Patch run reached dialogue, displayed Patch's localized name,
+and showed all three repaired first-menu labels, but the character was
+invisible. TweakXL imported both Ghostline records without errors. The world
+requested `default`, which is the internal definition inside `patch.app`, while
+the root entity exposes `ghostline_patch_default` to spawners. Patch's root
+`defaultAppearance` also used the internal name.
+
+This build changes exactly two archive payloads relative to that run:
+
+- `patch.ent` now defaults to `ghostline_patch_default`;
+- the always-loaded community phase now requests
+  `ghostline_patch_default`.
+
+Runtime retest confirmed that Patch is visible before dialogue, the reviewed
+hair/clothing render, and the first choice group displays all three labels.
+The remaining focused checks are the second choice group and completion of the
+accept-to-cache handoff on this exact custom-character build.
+
+Build evidence is retained at
+`H:\Ghostline-builds\patch-appearance-name-fix-20260722-130000`. The exact
+invisible-actor install is backed up at
+`H:\Ghostline-backups\pre-patch-appearance-name-fix-20260722-130000`.
+
+## 2026-07-22 Custom Patch Shipping Build
+
+Installed archive SHA-256:
+`6B9456AE74DF057869A61E79B965EE8D98EACCE1369CD9C9BA469F2C8875B566`.
+
+Repo `Ghostline.zip` SHA-256:
+`1361CC10E31A620F77674C3BA74CA9643D4A64FF522584231FEC3719FBA1089D`.
+
+This candidate adds the custom character to the preceding sorted-locStore
+build. Exactly two archive payloads changed:
+
+- `mod\ghostline\characters\patch\patch.app` applies the reviewed `hh_146`
+  dread-undercut, grey high-collar shirt, black computer cargos, black/red
+  boots, and existing face details;
+- `mod\gq000\world\gq000_always_loaded.streamingsector` restores the
+  `patch/default` community entry to `Character.GhostlinePatch`.
+
+The quest phases, scene, triggers, localization, VO, and audio remain
+byte-identical to the preceding candidate. TweakXL 1.11.3 is installed under
+`red4ext\plugins\TweakXL`; because the game has not been launched since that
+install, its runtime registration still needs confirmation.
+
+Use a fresh pre-Ghostline save and run the complete route:
+
+1. Confirm TweakXL loads and the Ghostline TweakDB records report no error.
+2. Accept `On my way`, fast travel nearby, and approach normally.
+3. Confirm Patch spawns instead of Judy and inspect hair, clothing, clipping,
+   animation, LOD changes, and stream-out/in behavior.
+4. Confirm the first choice group shows `Ghostline?`, `Why me?`, and
+   `What's the job?`.
+5. Confirm the second group shows `Who's behind it?` and `I'm in.`.
+6. Confirm subtitles and VO remain aligned, then select `I'm in.` and verify
+   the cache objective and marker activate.
+
+Build and extraction evidence is retained at
+`H:\Ghostline-builds\patch-ship-20260722-122203`. The previous six installed
+Ghostline files are backed up with game-relative paths at
+`H:\Ghostline-backups\pre-patch-ship-20260722-123307`.
+
 ## 2026-07-22 Sorted Choice-LocStore Build
 
 Installed archive SHA-256:

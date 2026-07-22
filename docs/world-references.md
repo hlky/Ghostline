@@ -122,7 +122,9 @@ The community registry maps `patch/default` to:
 - source object id `7897875840529598144`;
 - spot NodeRef
   `$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge`;
-- currently, temporary runtime isolation character `Character.Judy`.
+- current runtime character `Character.GhostlinePatch`;
+- current runtime appearance `ghostline_patch_default`, which is the exposed
+  root `.ent` mapping name rather than internal `.app` definition `default`.
 
 The community area's NodeRef hash, its `sourceObjectId`, and the registry
 item's `communityId` intentionally share `7897875840529598144`. The separate
@@ -130,9 +132,11 @@ always-loaded registry node must have a different global identity. It now uses
 `7571954536596633334`, derived from the synthetic full ref
 `$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_com_patch_bridge_registry`.
 
-After the sorted-locStore candidate passes its focused regression and TweakXL
-is installed, the registry character can return to
-`Character.GhostlinePatch` for Patch-specific validation.
+The 2026-07-22 Patch shipping candidate restored
+`Character.GhostlinePatch` after installing TweakXL 1.11.3. Its first runtime
+pass must validate the custom record and appearance while repeating the
+sorted-locStore label regression. The preceding Judy mapping remains the
+known-good lifecycle baseline.
 
 ## Generator Findings
 

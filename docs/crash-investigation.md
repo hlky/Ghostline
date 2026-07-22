@@ -190,11 +190,11 @@ The older conclusion that actor acquisition and scene startup were fully ruled
 out is now too broad. The direct start-to-end probe only proved that the scene
 resource can enter and exit when startup timing is favorable.
 
-The setup originally introduced for crash isolation still uses
-`Character.Judy` in the `patch/default` community entry. The scene-start fault
-has since been isolated, but keeping Judy in place preserves the runtime-proven
-world/community baseline until the sorted-label regression passes, TweakXL is
-installed, and custom Patch validation begins.
+The setup originally introduced for crash isolation used `Character.Judy` in
+the `patch/default` community entry. That historical run remains the
+runtime-proven world/community baseline. The 2026-07-22 shipping candidate
+restores `Character.GhostlinePatch` after installing TweakXL, so any new fault
+should be compared against this Judy baseline before changing scene lifecycle.
 
 The following reduced crash-surface shape was tested historically from
 WolvenKit-edited CR2W on 2026-05-01:

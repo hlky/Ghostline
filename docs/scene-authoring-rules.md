@@ -274,10 +274,11 @@ Current Ghostline mismatch to fix in fresh tooling:
 ## Community Lifecycle
 
 The Object Spawner-style reference uses `entryActiveOnStart: 1`. Ghostline uses
-`entryActiveOnStart: 0`; runtime testing confirmed that the meeting phase can
-activate the Judy isolation entry, wait for the same community to spawn, and
-complete the full route. That result does not by itself make the registry shape
-vanilla or validate the custom Patch character.
+`entryActiveOnStart: 0`; historical runtime testing confirmed that the meeting
+phase can activate the Judy isolation entry, wait for the same community to
+spawn, and complete the full route. The current registry restores custom Patch;
+the Judy result does not by itself make the registry shape vanilla or validate
+the custom character.
 
 Fresh tooling should copy a complete vanilla-compatible lifecycle:
 

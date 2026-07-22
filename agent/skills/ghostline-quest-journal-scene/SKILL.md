@@ -77,8 +77,9 @@ Useful docs:
 - Current stage relationship:
   - `gq000.questphase` is the main questphase for `gq000`.
   - `gq000_patch_meet.questphase` is the first stage where the player meets
-    the logical Patch-role community actor. The current isolation record
-    resolves that entry to Judy; Patch itself is not yet validated.
+    the logical Patch-role community actor. The current registry resolves that
+    entry to `Character.GhostlinePatch`; the preceding Judy run is the stable
+    lifecycle baseline and Patch itself still needs runtime validation.
   - `gq000_patch_meet.scene` is part of `gq000_patch_meet.questphase`.
   - Scene exit `job_accept` sets the accepted state; the root then starts
     `gq000_post_accept.questphase`, which currently activates only the cache

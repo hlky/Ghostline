@@ -128,7 +128,9 @@ staged source before distributing it.
 - ArchiveXL is required for questphase, journal, localization, and streaming
   registration.
 - TweakXL is required for `Character.GhostlinePatch` and the Ghostline faction
-  records. The current Judy isolation build does not exercise those records.
+  records. The current Patch shipping candidate exercises those records; the
+  local test install has TweakXL 1.11.3, but its runtime log is pending the
+  next game launch.
 - Patch still has unvalidated `ep1\...` dependencies; Phantom Liberty may
   become a hard requirement if those are retained.
 

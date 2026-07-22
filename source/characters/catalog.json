@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "id": "ghostline-curated-v1",
+  "categories": {
+    "hair": {
+      "label": "Hair",
+      "options": {
+        "patch_dual_braids": {
+          "label": "Dual braids 48",
+          "description": "Patch's current hair, dangle graph, and NPC shadow bundle.",
+          "component_names": [
+            "hh_048_ma__dual_braids8777",
+            "hair_dangle",
+            "hh_048_ma__dual_braids_shadow_npc"
+          ],
+          "changes": []
+        },
+        "patch_dread_undercut": {
+          "label": "Dread undercut 146 — black carbon",
+          "description": "Asymmetrical dread undercut with its vanilla animation graph, dangle rig, bindings, and NPC shadow.",
+          "component_names": [
+            "hh_048_ma__dual_braids8777",
+            "hair_dangle",
+            "hh_048_ma__dual_braids_shadow_npc"
+          ],
+          "bindings": [
+            {
+              "component": "hh_048_ma__dual_braids8777",
+              "field": "parentTransform",
+              "type": "entHardTransformBinding",
+              "bind_name": "Component",
+              "slot_name": "None"
+            },
+            {
+              "component": "hh_048_ma__dual_braids8777",
+              "field": "skinning",
+              "type": "entSkinningBinding",
+              "bind_name": "Component"
+            },
+            {
+              "component": "hair_dangle",
+              "field": "parentTransform",
+              "type": "entHardTransformBinding",
+              "bind_name": "Component",
+              "slot_name": "None"
+            }
+          ],
+          "changes": [
+            {
+              "component": "hh_048_ma__dual_braids8777",
+              "path": "$type",
+              "value": "entGarmentSkinnedMeshComponent"
+            },
+            {
+              "component": "hh_048_ma__dual_braids8777",
+              "path": "name.$value",
+              "value": "hh_146_ma__dread_undercut7563"
+            },
+            {
+              "component": "hh_048_ma__dual_braids8777",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\hh_146_ma__dread_undercut\\hh_146_ma__dread_undercut.mesh"
+            },
+            {
+              "component": "hh_048_ma__dual_braids8777",
+              "path": "meshAppearance.$value",
+              "value": "black_carbon"
+            },
+            {
+              "component": "hair_dangle",
+              "path": "graph.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\hh_146_ma__dread_undercut\\hh_146_ma__dread_undercut.animgraph"
+            },
+            {
+              "component": "hair_dangle",
+              "path": "rig.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\hh_146_ma__dread_undercut\\hh_146_ma__dread_undercut_dangle_skeleton.rig"
+            },
+            {
+              "component": "hh_048_ma__dual_braids_shadow_npc",
+              "path": "name.$value",
+              "value": "hh_146_ma__dread_undercut_shadow_npc"
+            },
+            {
+              "component": "hh_048_ma__dual_braids_shadow_npc",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\shadow_meshes\\hh_146_ma__dread_undercut_shadow_npc.mesh"
+            }
+          ]
+        },
+        "none": {
+          "label": "No hair",
+          "description": "Disables Patch's complete hair bundle.",
+          "disable_components": [
+            "hh_048_ma__dual_braids8777",
+            "hair_dangle",
+            "hh_048_ma__dual_braids_shadow_npc"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "inner_torso": {
+      "label": "Inner torso",
+      "indexed_override": {
+        "asset_slot": "torso",
+        "frame_token": "pma",
+        "component": "t1_004_pma_tshirt__longsleeve5383",
+        "anchor_option": "patch_longsleeve"
+      },
+      "options": {
+        "patch_longsleeve": {
+          "label": "Long-sleeve psycho shirt",
+          "description": "Patch's current shirt and cuff bundle.",
+          "component_names": [
+            "t1_004_pma_tshirt__longsleeve5383",
+            "t1_004_pma_tshirt__longsleeve_cuff"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No inner torso",
+          "disable_components": [
+            "t1_004_pma_tshirt__longsleeve5383",
+            "t1_004_pma_tshirt__longsleeve_cuff"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "legs": {
+      "label": "Legs",
+      "indexed_override": {
+        "asset_slot": "legs",
+        "frame_token": "pma",
+        "component": "l1_034_pma_pants__scavenger6036",
+        "anchor_option": "patch_scavenger_pants"
+      },
+      "options": {
+        "patch_scavenger_pants": {
+          "label": "Black toxic scavenger pants",
+          "description": "Patch's current trousers and shadow bundle.",
+          "component_names": [
+            "l1_034_pma_pants__scavenger6036",
+            "l1_pma_pants__medium_shadow"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No leg garment",
+          "disable_components": [
+            "l1_034_pma_pants__scavenger6036",
+            "l1_pma_pants__medium_shadow"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "feet": {
+      "label": "Feet",
+      "indexed_override": {
+        "asset_slot": "feet",
+        "frame_token": "pma",
+        "component": "s1_053_pma_boot__military3700",
+        "anchor_option": "patch_military_boots"
+      },
+      "options": {
+        "patch_military_boots": {
+          "label": "Black/red military boots",
+          "description": "Patch's current boots and ankle-shadow bundle.",
+          "component_names": [
+            "s1_053_pma_boot__military3700",
+            "s1_pma_boots__ankle_shadow"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No shoes",
+          "disable_components": [
+            "s1_053_pma_boot__military3700",
+            "s1_pma_boots__ankle_shadow"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "face_accessory": {
+      "label": "Face accessory",
+      "options": {
+        "patch_braindance_specs": {
+          "label": "Metal red/black braindance specs",
+          "component_names": [
+            "h1_033_pma_specs__braindance0241"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No face accessory",
+          "disable_components": [
+            "h1_033_pma_specs__braindance0241"
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+}

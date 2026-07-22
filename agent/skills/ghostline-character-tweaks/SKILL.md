@@ -7,19 +7,24 @@ description: Use for Ghostline character resources, Patch NPC work, entity and a
 
 ## Current Runtime State
 
-The production world spec still names the logical community entry
-`patch/default`, but its temporary runtime character record is
-`Character.Judy`. That Judy route is the crash-free scene/world baseline; it
-does not validate Patch's custom entity, appearance, TweakDB record, faction,
-or dependencies.
+The production world spec names logical community entry `patch/default` and
+maps it to `Character.GhostlinePatch`. The preceding Judy route is the
+crash-free scene/world baseline; the current installed candidate changes only
+the Patch appearance and community character relative to that candidate, so
+custom entity, appearance, TweakDB, faction, and dependency behavior remain
+isolated runtime variables.
 
-The local game install audited on 2026-07-22 has ArchiveXL but not TweakXL.
-Install TweakXL and complete the sorted-choice-label regression before changing
-`tools/gq000_patch_meet.world.json` back to `Character.GhostlinePatch`. Test the
-custom character as a separate variable from the already proven meeting
-lifecycle.
+The local game install audited on 2026-07-22 has ArchiveXL and TweakXL 1.11.3.
+The TweakXL plugin was installed immediately before the Patch candidate and has
+not yet produced a launch-time log. Confirm it loads before interpreting a
+missing or failed Patch spawn as a character-resource defect.
 
 ## Character Resources
+
+Read `docs/character-creation-pipeline.md` before building or restructuring a
+player-derived NPC. It records the audited NPV template relationship, proposed
+character manifest/catalog boundary, headless Blender path, validation contract,
+and Patch migration order.
 
 - `.ent` files are top-level entity containers.
 - For NPCs, the root `.ent` is the game entry point and lists appearances that
@@ -29,6 +34,11 @@ lifecycle.
 - Components in the `.app` are appearance-specific.
 - For Patch, keep the root `.ent` and referenced `.app` appearance names in
   sync with the TweakDB `entityTemplatePath` and character record.
+- Keep the two appearance namespaces distinct: communities/spawners and
+  `defaultAppearance` use the root mapping `name`
+  (`ghostline_patch_default`), while `appearanceName` selects the internal
+  `.app` definition (`default`). Using the internal name in the community can
+  spawn a scene-acquirable but invisible puppet.
 
 Patch resources:
 
@@ -40,7 +50,9 @@ Patch resources:
   `source/archive/mod/ghostline/characters/patch/body` and
   `source/archive/mod/ghostline/characters/patch/head`.
 - Patch still references some `ep1\...` resources, so Phantom Liberty may be a
-  runtime dependency unless those references are replaced.
+  runtime dependency unless those references are replaced. The downloaded male
+  NPV template has the same 17 `ep1\...` string occurrences in its root entity,
+  so address this in the reusable root template rather than Patch's appearance.
 - `source/archive/base` contains copied player-head support resources. They are
   global overrides and remain a shipping risk; do not infer that they are safe
   merely because the Judy isolation route works.
@@ -53,6 +65,76 @@ Generic Ghostline onscreen localization:
 
 Use `tools/explore_ent_app.py` as documented in `docs/tooling.md` to inspect entity and
 appearance resources.
+
+Patch's root entity was compared with the downloaded NPV male template on
+2026-07-22. Both contain 110 root components. After excluding appearance
+mappings, export timestamp, and the intentional `defaultAppearance` value, the
+serialized documents are identical. Clone a pinned and validated root template;
+do not reconstruct that component graph per character.
+
+The local NPV `head_import.blend` embeds import, shape-key application, and
+export scripts. Blender 5.1 has Cyberpunk IO Suite 1.8.0 installed, while the
+local Blender 4.4 does not. `tools/character_builder.py head` now performs the
+complete selected-morphtarget export, background Blender shape application,
+GLB export, and WolvenKit CR2W rebuild. A 13-mesh Patch-subset smoke test passed
+through the toolchain, but the later GLB audit proved that temporary shape value
+22 selected no target: the files contain Basis plus `h01` through `h20`, not
+`h21`. The builder now permits the mechanically verified range 1 through 21 and
+blocks 22 until the documented offset is resolved. The smoke run also emitted
+WolvenKit garment-support warnings; do not apply those temporary meshes to
+Patch or treat the warning as resolved without runtime validation.
+
+Character authoring inputs:
+
+- `source/characters/patch.character.json`
+- `source/characters/catalog.json`
+- `tools/character_builder.py`
+- `tools/character_asset_index.py`
+- `tools/character_ui.py` and `tools/character_ui/*`
+
+The current generator produces `.ent`, `.app`, TweakXL, and localization in an
+isolated output tree. Patch's immutable original appearance template lives at
+`source/characters/templates/patch-original.app.json`. The reviewed design
+manifest has been applied to the shipping raw/packed `.app`; `compare` now
+checks generated output against the applied source paths and reports all four
+documents equivalent. Keep new UI generation isolated under
+`converted/characters` until it is explicitly reviewed and applied.
+
+The local UI uses a pinned Three.js runtime to render the real morph-target GLB
+and applies creator values as browser morph influences. The
+`character_builder.py preview` command prepares that GLB without Blender.
+`character_asset_index.py` derives
+searchable candidates from the current installed archives and can uncook a
+selected mesh for a neutral-material preview. It also serializes the exact
+cooked mesh to ignored CR2W-JSON so the UI can enumerate real
+`meshMeshAppearance` names. PMA primary meshes in `torso`, `legs`, and `feet`
+may be assigned through `appearance.indexed_overrides`; the server re-resolves
+them against its installed index and the generator replaces the primary
+component in both normal and `compiledData` copies. The corresponding curated
+bundle's cuff/shadow companion is retained provisionally.
+
+Curated hair options may describe binding topology as well as resource paths.
+The `patch_dread_undercut` option changes the primary component class, rewires
+skinning, adds parent transforms, and carries the matching animgraph, dangle
+rig, and NPC shadow. The builder must apply those changes to both component
+copies and allocate new CR2W handle IDs above the template's existing maximum;
+never paste handle IDs from the source vanilla `.ent` into Patch.
+
+For indexed assignment, derive body-frame compatibility from the final mesh
+filename, not every directory token: current archives contain PWA meshes below
+folders whose names include `pma`. Preview refreshes must stay staged and may
+replace cached GLB/cooked/metadata files only after WolvenKit succeeds and the
+serialized CR2W metadata shape validates.
+
+Treat index rows as discovery records, not complete appearance bundles: hair
+and clothing commonly need control entities, animated components, shadows,
+cuffs, chunk masks, visual tags, and other companion data. Indexed head, hair,
+arms, player-item resources, material-accurate previews, and complete bundle
+resolution are not implemented yet.
+
+Player garment support is transaction/equipment behavior and is not
+automatically equivalent for NPC appearance components. Browser fit and a
+successful GLB export do not prove in-game deformation or clipping.
 
 ## TweakXL Resources
 

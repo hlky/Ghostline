@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ghostline Character Forge</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/node_modules/three/build/three.module.js",
+          "three/addons/": "/node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">GHOSTLINE // LOCAL TOOLCHAIN</p>
+        <h1>Character Forge</h1>
+        <p class="lede">One manifest. Repeatable CR2W sources. No routine Blender clicking.</p>
+      </div>
+      <div id="connection" class="status-chip">Connecting</div>
+    </header>
+
+    <main>
+      <section class="panel identity-panel">
+        <div class="panel-heading">
+          <span>01</span>
+          <div><h2>Identity</h2><p>Depot paths, TweakDB identity, and display data.</p></div>
+        </div>
+        <div class="field-grid">
+          <label>Character ID<input id="character-id" pattern="[a-z][a-z0-9_]+"></label>
+          <label>Display name<input id="display-name"></label>
+          <label>Namespace<input id="namespace"></label>
+          <label>Tweak record<input id="tweak-record"></label>
+          <label>Voice tag<input id="voice-tag"></label>
+          <label>Affiliation<input id="affiliation"></label>
+        </div>
+      </section>
+
+      <section class="panel head-panel">
+        <div class="panel-heading">
+          <span>02</span>
+          <div><h2>Live head geometry</h2><p>Character-creator indices drive the same named morph targets used by the final Blender build.</p></div>
+        </div>
+        <div class="head-workspace">
+          <div class="shape-controls">
+            <div id="shape-fields" class="shape-grid"></div>
+            <p class="hint">The current GLB exposes Basis as 1 and named targets 2–21. The documented option 22 has no matching target and stays blocked until its offset is resolved. Empty values preserve the current head and block regeneration.</p>
+            <div class="preview-actions">
+              <button data-action="preview-prepare" class="primary">Prepare live preview</button>
+              <label class="check-field"><input id="preview-all-parts" type="checkbox"> Load all head layers</label>
+            </div>
+          </div>
+          <div class="viewport-shell">
+            <div id="character-viewport" class="character-viewport" aria-label="Interactive 3D character preview"></div>
+            <div class="viewport-toolbar">
+              <span id="viewport-status">Preview not prepared</span>
+              <button id="viewport-head" type="button">Head</button>
+              <button id="viewport-reset" type="button">Reset view</button>
+              <button id="viewport-wireframe" type="button" aria-pressed="false">Wireframe</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <span>03</span>
+          <div><h2>Appearance bundles</h2><p>Each option includes its required companion components.</p></div>
+        </div>
+        <div id="catalog-fields" class="catalog-grid"></div>
+        <div class="selected-overrides-panel">
+          <div>
+            <h3>Selected indexed clothing</h3>
+            <p>These replace the primary mesh in a curated Patch slot. Existing cuff and shadow companions stay in place until bundle resolution is added.</p>
+          </div>
+          <div id="selected-overrides" class="selected-overrides"></div>
+        </div>
+        <div class="asset-browser">
+          <div class="asset-browser-heading">
+            <div>
+              <h3>Installed-game asset index</h3>
+              <p>Search current archives by slot, frame, family, and depot path. Preview a PMA torso, legs, or feet primary mesh to choose one of its real in-game appearances, then add it to the outfit. The current neutral geometry preview does not render appearance/material changes yet.</p>
+            </div>
+            <button data-action="asset-index">Rebuild game index</button>
+          </div>
+          <div class="asset-filters">
+            <label>Search<input id="asset-query" type="search" placeholder="military boot, braid, jacket…"></label>
+            <label>Category<select id="asset-category">
+              <option value="clothing">Clothing</option>
+              <option value="hair">Hair</option>
+              <option value="head">Head</option>
+              <option value="body">Body</option>
+              <option value="clothing_appearance">Item appearances</option>
+              <option value="">All indexed</option>
+            </select></label>
+            <label>Slot<select id="asset-slot">
+              <option value="">All slots</option>
+              <option value="head">Head</option>
+              <option value="torso">Torso</option>
+              <option value="arms">Arms</option>
+              <option value="legs">Legs</option>
+              <option value="feet">Feet</option>
+              <option value="item">Items</option>
+            </select></label>
+            <label>Frame<select id="asset-frame">
+              <option value="">All frames</option>
+              <option value="pma">Player male average</option>
+              <option value="pwa">Player female average</option>
+              <option value="ma">Male average</option>
+              <option value="wa">Female average</option>
+            </select></label>
+          </div>
+          <div id="asset-index-summary" class="asset-index-summary">Index status unknown</div>
+          <div id="asset-results" class="asset-results"></div>
+        </div>
+      </section>
+
+      <section class="panel actions-panel">
+        <div class="panel-heading">
+          <span>04</span>
+          <div><h2>Validate and build</h2><p>All writes stay under the ignored converted/characters tree.</p></div>
+        </div>
+        <div class="actions">
+          <button data-action="validate">Validate</button>
+          <button data-action="generate" class="primary">Generate sources</button>
+          <button data-action="head-plan">Check head build</button>
+          <button data-action="head-build" class="danger">Build head resources</button>
+          <button data-action="download">Download manifest</button>
+        </div>
+        <div class="output-meta"><span>Output</span><code id="output-base">—</code></div>
+        <pre id="result" aria-live="polite">Loading manifest…</pre>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

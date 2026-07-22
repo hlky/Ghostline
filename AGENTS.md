@@ -54,6 +54,9 @@ global Codex skills, so use the paths above as explicit references.
   `.xl`, TweakXL YAML, REDscript, and engine config files. Project
   builds/staging copy them, but a manual scoped `pack source/archive` command
   does not.
+- `source/characters` contains plain character manifests and curated component
+  catalogs consumed by `tools/character_builder.py` and the local character UI.
+  They are authoring inputs, not directly packed game resources.
 - `source/archive/base` may contain supporting base-game files. It currently
   contains base player-head mesh and morphtarget support resources. Treat them
   as unvalidated global overrides, not normal shipping content.

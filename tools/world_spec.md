@@ -9,7 +9,9 @@ resources and deserialize them with WolvenKit.
 The production `gq000` meeting source of truth is
 `tools/gq000_patch_meet.world.json`. It currently describes the tested
 `90/10/60/20`-radius, 12-unit-high trigger layout, an inactive-on-start
-`patch/default` community, and the temporary `Character.Judy` runtime actor.
+`patch/default` community, and the `Character.GhostlinePatch` runtime actor.
+The preceding `Character.Judy` mapping remains the historical crash-isolation
+baseline.
 The checked-in `tools/gq000_world_spec.example.json` uses reference coordinates
 and is tutorial input only.
 
@@ -464,6 +466,10 @@ The `community` block creates three pieces:
 | `appearances` | No | `[appearance]` | String or array of appearances. Overrides `appearance` when present. |
 | `always_spawned` | No | `default__false_` | Registry spawn phase flag. |
 | `prefetch_appearance` | No | `0` | Registry spawn phase flag. |
+
+Community appearance values are root entity mapping names, not internal
+definitions from the referenced `.app`. For Patch this must be
+`ghostline_patch_default`; `default` is only the internal `.app` name.
 | `quantity` | No | `1` | Spawn quantity for the time period. |
 | `spawn_in_view` | No | `default__true_` | Registry spawn entry flag. |
 | `spawn_set_reference` | No | `None` | Registry spawn-set reference. |
