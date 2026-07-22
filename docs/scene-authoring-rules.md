@@ -4,6 +4,9 @@ These are the target rules for fresh `gq000` scene creation tooling. They are
 based on local vanilla extracts under `reference/vanilla_extract_json` and
 world/journal references under `reference/world` and `reference/journal`.
 
+For the concrete Ghostline root phase, meeting phase, scene, trigger, exit, and
+localization handoff, read `docs/quest-scene-flow.md` first.
+
 If a vanilla pattern crashes in a Ghostline probe, assume the Ghostline
 implementation was incomplete or malformed. Do not replace a vanilla pattern
 with a workaround from a bad probe unless a matching vanilla counterexample has
@@ -44,10 +47,14 @@ vanilla-shaped scene resource with:
 - screenplay lines and options using vanilla item ID patterns;
 - section events and timing copied from coherent vanilla section shells;
 - choice locStore descriptors with vanilla multi-locale coverage;
-- journal/mappin scene-node references that point at valid journal paths and
-  world NodeRefs;
+- valid journal paths and world NodeRefs for any optional scene-local
+  journal/mappin nodes;
 - raw output under `source/raw`, followed by WolvenKit deserialization to
   `source/archive`.
+
+The current production meeting scene intentionally contains no journal or
+mappin nodes. Acceptance objective, mappin, and fact side effects belong to the
+meeting questphase after the named `job_accept` exit.
 
 The generator should fail closed when a required vanilla-shaped structure is
 unknown. Do not fill unknown structural fields with placeholders just to make a
@@ -112,9 +119,11 @@ Current Ghostline generated scene follows these root values: `version: 5`,
   `.anims` resources. Do not create two logical slots by repeating one depot
   path unless a matching cooked vanilla case proves the runtime table remains
   addressable.
-- Ghostline's shared slot `0` configuration is a crash-isolation probe. If it
-  stabilizes scene startup, replace it with distinct valid NPC/V resources for
-  final presentation.
+- Runtime testing confirmed that Ghostline's shared slot `0` configuration
+  stabilizes scene startup and completes the full meeting route. It remains a
+  crash-isolation baseline, not final presentation. Replace it with distinct,
+  valid NPC/V resources only when both runtime slots remain independently
+  addressable after cooking.
 
 ## Screenplay IDs
 
@@ -181,11 +190,11 @@ Vanilla counterexamples exist:
 For new tooling, copy the choice semantics from the closest vanilla case rather
 than deriving color, optionality, or progression from one field in isolation.
 
-Current Ghostline choice probe shape:
+Current Ghostline production choice shape:
 
 - Choice nodes include six trailing dummy sockets.
-- Choice locStore coverage includes `db_db`, `en_us`, and `pl_pl`.
-- The intro choice probe uses `isSingleChoice: 0` for all three options,
+- Choice locStore coverage includes `db_db`, `pl_pl`, and `en_us`.
+- The first choice group uses `isSingleChoice: 0` for all three options,
   `type.properties: 0` for optional/info branches, and `type.properties: 1`
   for the main progression branch.
 
@@ -193,15 +202,22 @@ Current Ghostline choice probe shape:
 
 Audited vanilla choice locstrings include embedded locStore descriptor variants
 for `db_db`, `pl_pl`, and `en_us`. Choice locStores are grouped by locale block,
-not by option. Within each locale block, descriptor entries must be numerically
-sorted by unsigned `locstringId`; REDengine performs an ordered lookup and can
-return blank or stale labels when that invariant is broken. `db_db` usually has
-two descriptors per choice: a blank fallback payload and a source text payload.
+not by option, and all four audited scenes sort each block by unsigned numeric
+`locstringId`. Ghostline's unsorted build displayed blank and stale labels, so
+the current tooling treats numeric block order as required. The sorted
+candidate still needs runtime confirmation before that causality is considered
+fully isolated. `db_db` usually has two descriptors per choice: a blank
+fallback payload and a source text payload.
 
 Fresh tooling should generate the same multi-locale descriptor shape for choice
 locstrings. Do not replace `db_db` with `en_us`; add the correct vanilla-style
 locale coverage. Validate the checked-in raw scene as well as an in-memory
 generator fixture so stale unsorted CR2W-JSON cannot pass the build tests.
+
+`scnChoiceNodeOption.caption` is an authoring/debug label, not the authoritative
+display text. The full option-to-payload lookup chain, descriptor/payload
+relationship, ID domains, and current sorted Ghostline IDs are documented in
+`docs/quest-scene-flow.md`.
 
 Do not truncate generated scene event RUIDs or locStore variant IDs to the
 signed 63-bit range. Runtime testing showed `INT63_MASK`-generated scenes crash
@@ -257,18 +273,23 @@ Current Ghostline mismatch to fix in fresh tooling:
 
 ## Community Lifecycle
 
-The current Object Spawner-style community registry reference uses
-`entryActiveOnStart: 1`. Ghostline's `entryActiveOnStart: 0` probe showed the
-root quest SpawnManager path can activate the entry, but that does not by
-itself prove a vanilla quest lifecycle.
+The Object Spawner-style reference uses `entryActiveOnStart: 1`. Ghostline uses
+`entryActiveOnStart: 0`; runtime testing confirmed that the meeting phase can
+activate the Judy isolation entry, wait for the same community to spawn, and
+complete the full route. That result does not by itself make the registry shape
+vanilla or validate the custom Patch character.
 
 Fresh tooling should copy a complete vanilla-compatible lifecycle:
 
 - always-loaded registry,
 - streamable community area,
 - AI spot,
-- questphase SpawnManager activation/deactivation,
+- an explicit questphase decision for activation and eventual
+  deactivation/retention,
 - scene actor community acquisition.
 
 Do not label `entryActiveOnStart: 0` as vanilla until a matching vanilla quest
 registry and activation pair has been extracted and compared.
+
+The current meeting phase has no explicit `Deactivate` action. Final quest
+design must decide when the Patch community should be released or retained.

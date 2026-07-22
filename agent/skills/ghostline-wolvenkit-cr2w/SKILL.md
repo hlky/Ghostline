@@ -42,8 +42,21 @@ to be refreshed.
 & $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.app -o .\source\raw\mod\ghostline\characters\patch -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\phases\gq000.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase -o .\source\raw\mod\gq000\phases -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\phases\gq000_post_accept.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\scenes\gq000_patch_meet.scene -o .\source\raw\mod\gq000\scenes -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\journal\gq000.journal -o .\source\raw\mod\gq000\journal -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json -o .\source\raw\mod\gq000\localization\en-us\onscreens -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json -o .\source\raw\mod\gq000\localization\en-us\subtitles -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\world\gq000_patch_meet.streamingblock -o .\source\raw\mod\gq000\world -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\world\gq000_patch_meet.streamingsector -o .\source\raw\mod\gq000\world -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\world\gq000_always_loaded.streamingsector -o .\source\raw\mod\gq000\world -v Minimal
 ```
+
+These commands are an inventory of the current editable CR2W resources, not an
+instruction to overwrite generated raw sources after every build. The meeting
+scene and world resources are authored through their checked-in specs; only
+serialize their packed binaries back into `source/raw` when deliberately
+importing a WolvenKit/editor change.
 
 For reference world resources under `reference/world`, use the helper script so
 duplicate basenames such as `all.streamingblock` are serialized beside their
@@ -62,7 +75,14 @@ Expected raw outputs:
 - `source/raw/mod/ghostline/characters/patch/patch.app.json`
 - `source/raw/mod/gq000/phases/gq000.questphase.json`
 - `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
+- `source/raw/mod/gq000/phases/gq000_post_accept.questphase.json`
 - `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
+- `source/raw/mod/gq000/journal/gq000.journal.json`
+- `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
+- `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json.json`
+- `source/raw/mod/gq000/world/gq000_patch_meet.streamingblock.json`
+- `source/raw/mod/gq000/world/gq000_patch_meet.streamingsector.json`
+- `source/raw/mod/gq000/world/gq000_always_loaded.streamingsector.json`
 - `reference/world/**/<name>.streamingsector.json`
 - `reference/world/**/<name>.streamingblock.json`
 
@@ -78,8 +98,20 @@ Use this before packing or testing the asset in game.
 & $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.app.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\phases\gq000.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_patch_meet.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_post_accept.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json -o .\source\archive\mod\gq000\scenes -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\journal\gq000.journal.json -o .\source\archive\mod\gq000\journal -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\onscreens\gq000.json.json -o .\source\archive\mod\gq000\localization\en-us\onscreens -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json.json -o .\source\archive\mod\gq000\localization\en-us\subtitles -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\world\gq000_patch_meet.streamingblock.json -o .\source\archive\mod\gq000\world -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\world\gq000_patch_meet.streamingsector.json -o .\source\archive\mod\gq000\world -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\world\gq000_always_loaded.streamingsector.json -o .\source\archive\mod\gq000\world -v Minimal
 ```
+
+Before deserializing a generated scene or world change, run its audit/dry-run,
+validator, explorer checks, and the Python regression suite documented in
+`docs/tooling.md`. Do not use a successful CR2W conversion as a substitute for
+graph, handle, NodeRef, or locStore validation.
 
 WolvenKit may print `Oodle couldn't be loaded. Using Kraken.dll instead could
 cause errors.` during JSON to CR2W conversion. This warning appeared during
@@ -93,3 +125,5 @@ original SHA256 hash.
 - For exact round-trip checks, compare hashes with `Get-FileHash`.
 - Keep `Header.ArchiveFileName` pointed at the intended `source/archive`
   target when editing raw JSON.
+- Follow `docs/packaging.md` for isolated round-trip directories, scoped archive
+  packing, extraction, and payload verification.

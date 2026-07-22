@@ -13,6 +13,8 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
   context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal
   behavior.
+- Read `docs/quest-scene-flow.md` before changing the root/child phase handoff,
+  meeting lifecycle, trigger ownership, scene exits, or choice localization.
 - For fresh scene work, use `docs/scene-authoring-rules.md`. Vanilla patterns
   override failed Ghostline probe results.
 
@@ -42,9 +44,21 @@ Useful docs:
   `propID * 256 + 2`.
 - In scene sections, actors are referenced by `performerID`.
 - In `screenplayStore -> lines`, dialogue lines are linked by `actorID`.
-- Scene `locstringIds`, subtitle entries, and voiceover map entries must stay
-  aligned. The subtitle String ID is the stable link between on-screen text and
-  the voiceover resource.
+- Spoken scene-line `locstringIds`, subtitle entries, and voiceover map entries
+  must stay aligned. The subtitle String ID is the stable link between spoken
+  on-screen text and the voiceover resource.
+- Spoken lines and choice labels use different localization paths. Spoken
+  lines resolve through subtitle/VO resources; choices resolve through the
+  scene's embedded `locStore`. See `docs/quest-scene-flow.md` for the complete
+  lookup chains and ID domains.
+- Keep the mq003-derived lifecycle boundary: the meeting questphase activates
+  the community, waits for `CharacterSpawned`, and starts the scene at the
+  broad setup gate; the running scene owns the narrower mood, awareness, and
+  engage gates.
+- A scene outcome is only persistent when the questphase handles its named
+  exit. The current `job_accept` route succeeds the meeting objective, clears
+  its mappin, and sets `gq000_job_accepted`; the declared `end` route does none
+  of those things.
 
 ## Current gq000 Resources
 
@@ -54,14 +68,21 @@ Useful docs:
 - Patch meet phase:
   - raw: `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
   - packed: `source/archive/mod/gq000/phases/gq000_patch_meet.questphase`
+- Post-accept phase:
+  - raw: `source/raw/mod/gq000/phases/gq000_post_accept.questphase.json`
+  - packed: `source/archive/mod/gq000/phases/gq000_post_accept.questphase`
 - Patch meet scene:
   - raw: `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
   - packed: `source/archive/mod/gq000/scenes/gq000_patch_meet.scene`
 - Current stage relationship:
   - `gq000.questphase` is the main questphase for `gq000`.
   - `gq000_patch_meet.questphase` is the first stage where the player meets
-    Patch.
+    the logical Patch-role community actor. The current isolation record
+    resolves that entry to Judy; Patch itself is not yet validated.
   - `gq000_patch_meet.scene` is part of `gq000_patch_meet.questphase`.
+  - Scene exit `job_accept` sets the accepted state; the root then starts
+    `gq000_post_accept.questphase`, which currently activates only the cache
+    objective/description/mappin skeleton and `gq000_02_started`.
 
 ## Journal Resources
 

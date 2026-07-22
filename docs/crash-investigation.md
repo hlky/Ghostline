@@ -1,20 +1,25 @@
 # Crash Investigation Findings
 
-Extracted from the 2026-04-29/30 probe work. This file preserves useful
-runtime observations only. It is not the target specification for fresh scene
-creation tooling.
+This file preserves dated runtime evidence from the April probes through the
+July 2026 stability work. It is an investigation history, not the target
+specification or a description of the current candidate unless a section says
+so explicitly.
 
-For target scene structure, use `docs/scene-authoring-rules.md`. Vanilla
-patterns override failed Ghostline probe results. If a vanilla pattern crashed
-in a probe, assume the Ghostline implementation was incomplete or malformed.
+For the current runtime model, use `docs/quest-scene-flow.md`; for target scene
+structure, use `docs/scene-authoring-rules.md`. Vanilla patterns override failed
+Ghostline probe results. If a vanilla pattern crashed in a probe, assume the
+Ghostline implementation was incomplete or malformed.
 
 ## 2026-07-21 Fast-Travel Crash
 
 The synchronized current-raw build crashed after this sequence:
 
 ```text
-load clean save -> receive phone message -> accept job -> fast travel near bridge -> crash
+load clean save -> receive phone message -> select On my way -> fast travel near bridge -> crash
 ```
+
+`On my way` accepted the meeting and activated its tracker; job acceptance
+would have occurred later through the scene's `job_accept` exit.
 
 The dump recorded `Loading world`, resource throttling in `Flood`, a roughly
 990-unit teleport, and an invalid allocator pointer on background dispatcher
@@ -27,7 +32,7 @@ bridge origin. That position was inside the then-current 150-unit setup trigger
 and inside community streaming range, but would have remained outside the last
 working 90-unit setup trigger.
 
-Two coupled defects were found:
+Two coupled defects were present in that build:
 
 - the current-raw meeting phase started the scene from setup before the
   previously proven phase-level engage and `CharacterSpawned` gates;
@@ -36,10 +41,12 @@ Two coupled defects were found:
   community area's `sourceObjectId` and registry item's `communityId` should
   share that value, but the separate registry node identity should not.
 
-The stability repair restores the `5debf03` phase-owned spawn-readiness flow,
-regenerates its matching 14-node scene, restores horizontal trigger radii
-`90/10/60/20` while retaining 12-unit height, and assigns the registry node
-distinct global ID `7571954536596633334`. The crashing archive is retained at
+The next repair changed both surfaces: it restored the `5debf03` phase-owned
+spawn-readiness flow and matching 14-node scene, restored horizontal trigger
+radii `90/10/60/20` while retaining 12-unit height, and assigned the registry
+node distinct global ID `7571954536596633334`. Fast travel then completed, but
+because those changes landed together this loading-world crash was not
+attributed to one defect in isolation. The crashing archive is retained at
 `H:\Ghostline-backups\pre-stability-fix-20260721-224252`.
 
 ## 2026-07-21 Engage-Boundary Approach Crash
@@ -77,15 +84,15 @@ true, allowing scene setup, Puppet AI, and the opening dialogue path to cascade
 in the same startup tick. The identical crash position on both approaches
 makes this ordering a stronger lead than trigger geometry.
 
-The mq003-sequenced isolation build now uses:
+That mq003-sequenced isolation build used:
 
 ```text
 phase: activate -> CharacterSpawned -> setup -> checkpoint -> scene start
 scene: PuppetAI || case-mood -> someone-coming -> opening line -> engage -> choices
 ```
 
-Trigger geometry and audio are intentionally unchanged so the next test
-isolates sequencing. A separate audit confirmed all 13 referenced WEMs are
+Trigger geometry and audio were intentionally unchanged so the then-next test
+isolated sequencing. A separate audit confirmed all 13 referenced WEMs are
 valid mono 48 kHz Wwise Vorbis, decode fully, and fall within the bitrate range
 seen in mono `mq003` dialogue. Audio filename cleanup remains worthwhile but is
 not part of this crash-isolation build.
@@ -117,12 +124,12 @@ scene's strongest matching cardinality defect is its lipsync table:
 - the packed scene has only one distinct import for that resource;
 - runtime exposed one handle before requesting index `1`.
 
-The current isolation changes only V's lipsync ID from `1` to `0` and reduces
+That slot-0 isolation changed only V's lipsync ID from `1` to `0` and reduced
 the lipsync resource array from two duplicate rows to one. Scene graph,
-dialogue, timing, questphase, triggers, world resources, and audio remain
-unchanged. Shared slot `0` is deliberately diagnostic; final scene authoring
-should return to distinct, valid NPC and V lipsync resources if this removes
-the crash.
+dialogue, timing, questphase, triggers, world resources, and audio remained
+unchanged. Shared slot `0` was deliberately diagnostic; final scene authoring
+should return to distinct, valid NPC and V lipsync resources if separate
+resources can be made addressable and verified.
 
 The verified installed archive has SHA-256
 `87956AFFE3C7CD66E16AD8531D0784689B01A24DCA629FAF41C2291C6E70E40D`.
@@ -130,6 +137,34 @@ Build evidence is at
 `H:\Ghostline-builds\lipsync-slot0-20260722-000338`, and the replaced archive
 is backed up at
 `H:\Ghostline-backups\pre-lipsync-slot0-20260722-000338`.
+
+## 2026-07-22 Scene-Crash Resolution And Choice-Label Diagnosis
+
+The shared-slot build completed the full route without a crash: phone message,
+nearby fast travel, normal approach, all 13 spoken lines with subtitles and VO,
+`job_accept`, meeting objective/mappin cleanup, and the cache objective and
+marker. This strongly confirms that the remaining setup-boundary crash was the
+slot-1 lookup against a one-entry cooked lipsync table.
+
+That run exposed a separate non-crashing ordered-table defect. Two labels in
+the first choice group were blank and `Who's behind it?` resolved as stale
+`Why me?`. The scene contained every expected payload, but each locale block in
+`locStore.vdEntries` retained manifest order instead of ascending numeric
+`locstringId` order. All four audited vanilla scenes use sorted locale blocks.
+
+Together, the current generator, validator, and checked-in-raw equality
+regression protect:
+
+- contiguous `db_db`, `pl_pl`, and `en_us` blocks;
+- unsigned numeric `locstringId` order inside each block;
+- the generated adjacent blank-then-source `db_db` mapping (the validator
+  checks at least two payloads and a blank payload first);
+- full unsigned 64-bit locStore variant and scene event IDs.
+
+The installed sorted-locStore archive changes only the meeting scene from the
+successful slot-0 runtime baseline. All-five-label confirmation is still
+pending; see `docs/testing.md` for the exact test route and
+`docs/quest-scene-flow.md` for the concrete current flow and lookup model.
 
 ## Earlier Runtime Read
 
@@ -155,9 +190,11 @@ The older conclusion that actor acquisition and scene startup were fully ruled
 out is now too broad. The direct start-to-end probe only proved that the scene
 resource can enter and exit when startup timing is favorable.
 
-The temporary crash-isolation setup uses `Character.Judy` in the `patch/default`
-community entry. That keeps the world/community path independent of Patch's
-custom entity while the scene path is being stabilized.
+The setup originally introduced for crash isolation still uses
+`Character.Judy` in the `patch/default` community entry. The scene-start fault
+has since been isolated, but keeping Judy in place preserves the runtime-proven
+world/community baseline until the sorted-label regression passes, TweakXL is
+installed, and custom Patch validation begins.
 
 The following reduced crash-surface shape was tested historically from
 WolvenKit-edited CR2W on 2026-05-01:
@@ -179,8 +216,8 @@ scene/quest structure.
 ## Useful Findings
 
 - Excluding `source/archive/base` did not stop the crash. Base-path overrides
-  are still a shipping risk, but they are not the sole cause of the current
-  runtime crash.
+  are still a shipping risk, but they were not the sole cause of that
+  historical runtime crash.
 - Earlier `Engine/LoadExports` hashes resolved to built-in always-loaded
   sectors, pointing back at the always-loaded streaming merge shape rather than
   only at copied base character files.
@@ -202,14 +239,16 @@ scene/quest structure.
   resource can enter and exit, but it does not prove community actor readiness
   is stable under a fast approach.
 - Direct-dialogue crashes continued after VO registration and after subtitle
-  map registration was corrected. The active crash is not missing subtitle/VO
-  registration.
+  map registration was corrected. The crash active at that stage was not
+  missing subtitle/VO registration.
 - Response line text and VO can play when a response payload is routed through
   the known-good intro section shell. This rules out response locstring/VO
   payloads as the main fault.
 - Fast approach crashing while slow approach worked was consistent with a
   spawn-readiness race. Waiting on `questCharacterSpawned_ConditionType` for the
-  community NodeRef immediately before scene start fixed the issue.
+  community NodeRef repaired that lifecycle gap, but it did not resolve the
+  later deterministic scene-start crash; the remaining fault was the lipsync
+  slot cardinality mismatch described above.
 - `Ghostline?` displaying as `Db-db` was caused by the generated compact
   locStore shape, not by `scnChoiceNodeOption.caption`. Vanilla-style choice
   locStores use locale blocks and two `db_db` descriptors per choice: a blank

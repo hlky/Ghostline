@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$VoiceDir = 'source\archive\mod\gq000\localization\en-us\vo',
+    [string]$SourceDir = 'generated',
+    [string]$DestinationDir = 'source\archive\mod\gq000\localization\en-us\vo',
+    [string]$Manifest = 'source\raw\gq000_01_manifest.json',
     [string]$WwiseProject = 'wwise_conversion\wwise_conversion.wproj',
     [string]$WwiseConsole = $(if ($env:WWISE_CONSOLE) { $env:WWISE_CONSOLE } else { 'C:\Audiokinetic\Wwise2025.1.7.9143\Authoring\x64\Release\bin\WwiseConsole.exe' }),
     [string]$OutputDir = 'converted',
@@ -31,7 +33,12 @@ function Escape-Xml {
     return [System.Security.SecurityElement]::Escape($Value)
 }
 
-$voiceDirFull = Resolve-RepoPath $VoiceDir
+$sourceDirFull = Resolve-RepoPath $SourceDir
+$destinationDirFull = Resolve-RepoPath $DestinationDir
+if ([string]::IsNullOrWhiteSpace($Manifest)) {
+    throw 'A nonempty dialogue manifest path is required.'
+}
+$manifestFull = Resolve-RepoPath $Manifest
 $projectFull = Resolve-RepoPath $WwiseProject
 $wwiseConsoleFull = Resolve-RepoPath $WwiseConsole
 $outputDirFull = Resolve-RepoPath $OutputDir
@@ -46,19 +53,52 @@ if (-not (Test-Path -LiteralPath $projectFull -PathType Leaf)) {
     throw "Wwise project not found: $projectFull"
 }
 
-if (-not (Test-Path -LiteralPath $voiceDirFull -PathType Container)) {
-    throw "Voice directory not found: $voiceDirFull"
+if (-not (Test-Path -LiteralPath $sourceDirFull -PathType Container)) {
+    throw "WAV source directory not found: $sourceDirFull"
 }
 
-$wavFiles = @(Get-ChildItem -LiteralPath $voiceDirFull -Filter '*.wav' -File | Sort-Object Name)
+$allWavFiles = @(Get-ChildItem -LiteralPath $sourceDirFull -Filter '*.wav' -File | Sort-Object Name)
+if (-not (Test-Path -LiteralPath $manifestFull -PathType Leaf)) {
+    throw "Dialogue manifest not found: $manifestFull"
+}
+
+$manifestData = Get-Content -LiteralPath $manifestFull -Raw | ConvertFrom-Json
+$referencedNames = @(
+    $manifestData.spoken_lines |
+        ForEach-Object {
+            if ($_.audio_path) {
+                [System.IO.Path]::ChangeExtension(
+                    [System.IO.Path]::GetFileName([string]$_.audio_path),
+                    '.wav'
+                )
+            }
+        } |
+        Sort-Object -Unique
+)
+if ($referencedNames.Count -eq 0) {
+    throw "Dialogue manifest contains no spoken-line audio paths: $manifestFull"
+}
+
+$wavByName = @{}
+foreach ($wav in $allWavFiles) {
+    $wavByName[$wav.Name] = $wav
+}
+
+$missingSources = @($referencedNames | Where-Object { -not $wavByName.ContainsKey($_) })
+if ($missingSources.Count -gt 0) {
+    throw "Missing manifest-referenced WAV file(s) in ${sourceDirFull}: $($missingSources -join ', ')"
+}
+
+$wavFiles = @($referencedNames | ForEach-Object { $wavByName[$_] })
+
 if ($wavFiles.Count -eq 0) {
-    throw "No WAV files found in $voiceDirFull"
+    throw "No WAV files found in $sourceDirFull"
 }
 
 New-Item -ItemType Directory -Force -Path $outputDirFull | Out-Null
 
 if ($SkipNormalize) {
-    $sourceRoot = $voiceDirFull
+    $sourceRoot = $sourceDirFull
     $sourceFiles = $wavFiles
 } else {
     $ffmpeg = Get-Command ffmpeg -ErrorAction SilentlyContinue
@@ -103,6 +143,8 @@ if ($NoCopy) {
     exit 0
 }
 
+New-Item -ItemType Directory -Force -Path $destinationDirFull | Out-Null
+
 $copied = 0
 $missing = @()
 
@@ -115,7 +157,7 @@ foreach ($wav in $wavFiles) {
         continue
     }
 
-    Copy-Item -LiteralPath $converted.FullName -Destination (Join-Path $voiceDirFull $wemName) -Force
+    Copy-Item -LiteralPath $converted.FullName -Destination (Join-Path $destinationDirFull $wemName) -Force
     $copied++
 }
 
@@ -123,5 +165,5 @@ if ($missing.Count -gt 0) {
     throw "Missing converted WEM file(s): $($missing -join ', ')"
 }
 
-Write-Host "Converted and copied $copied WEM file(s) to $voiceDirFull."
-Write-Host "Original WAV files were left in place."
+Write-Host "Converted and copied $copied WEM file(s) to $destinationDirFull."
+Write-Host "Original WAV files were left in $sourceDirFull."

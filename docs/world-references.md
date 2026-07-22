@@ -40,13 +40,12 @@ Resolved model:
   Any questphase that directly uses `#gq000_pr_patch_meet` should list it.
 - `phaseInstancePrefabs` is the per-`questPhaseNodeDefinition` activation list
   for inline phase nodes.
-- In `gq000.questphase`, phase node id `2` directly waits on
-  `#gq000_01_tr_setup` and operates on `#gq000_01_com_patch_bridge`, so it
-  should keep `#gq000_pr_patch_meet` in `phaseInstancePrefabs`.
-- Parent phase node id `3` only loads
-  `mod\gq000\phases\gq000_patch_meet.questphase`; it does not need a duplicate
-  `phaseInstancePrefabs` entry because the child questphase has its own root
-  `phasePrefabs`.
+- The current root, meeting, and post-accept questphases each list
+  `#gq000_pr_patch_meet` in root `phasePrefabs` because their journal/mappin or
+  lifecycle graphs depend on world references under that prefab.
+- Root phase nodes `30` and `32` load the meeting and post-accept resources.
+  Their `phaseInstancePrefabs` arrays are empty because each child resource
+  declares its own root `phasePrefabs`.
 
 Ghostline world binding:
 
@@ -54,7 +53,6 @@ Ghostline world binding:
   `questPrefabNodeRef: $/mod/gq000/#gq000_pr_patch_meet`.
 - `gq000_patch_meet.streamingsector` registers quest-sector child refs under
   that prefab root and assigns matching `nodeData.QuestPrefabRefHash` values:
-  - `#gq000_01_sm_patch_bridge`
   - `#gq000_01_tr_setup`
   - `#gq000_01_tr_engage`
   - `#gq000_01_tr_bridge_case_mood`
@@ -62,7 +60,8 @@ Ghostline world binding:
   - `#gq000_01_spot_patch_bridge`
   - `#gq000_01_com_patch_bridge`
 - `gq000_always_loaded.streamingsector` registers concrete always-loaded marker
-  nodes for `#gq000_01_sm_patch_bridge` and `#gq000_01_mp_patch_bridge`.
+  nodes for `#gq000_01_sm_patch_bridge`, `#gq000_01_mp_patch_bridge`, and
+  `#gq000_02_mp_cache`.
 - Vanilla mq003 nests the scene marker under a scene prefab child path while
   keeping the map-pin marker directly under the quest prefab root. Current
   Ghostline source still registers `#gq000_01_sm_patch_bridge` directly under
@@ -103,8 +102,9 @@ location is still being tuned.
   `15587754031372558371`. That was a historical validation of always-loaded
   marker registration before the dedicated map-pin marker was split out; it is
   not the current mappin target.
-- Runtime validation is still needed for the current dedicated map-pin marker
-  `#gq000_01_mp_patch_bridge`.
+- Runtime testing confirmed the dedicated meeting tracker/mappin path and its
+  cleanup after `job_accept`, plus the post-accept cache marker. Explicit
+  map-screen and POI presentation remain separate validation surfaces.
 
 ## Community And Triggers
 
@@ -130,8 +130,9 @@ always-loaded registry node must have a different global identity. It now uses
 `7571954536596633334`, derived from the synthetic full ref
 `$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_com_patch_bridge_registry`.
 
-After scene stabilization, the registry character should return to
-`Character.GhostlinePatch`.
+After the sorted-locStore candidate passes its focused regression and TweakXL
+is installed, the registry character can return to
+`Character.GhostlinePatch` for Patch-specific validation.
 
 ## Generator Findings
 
@@ -172,13 +173,21 @@ After scene stabilization, the registry character should return to
 - Generated packed CR2W resources for the world files.
 - Added always-loaded marker support so marker nodes can be emitted directly
   into the always-loaded sector.
+- Completed the full Judy isolation route through community activation, all
+  four approach gates, scene placement, meeting mappin cleanup, and cache
+  mappin activation. This confirms the active streaming block and NodeRef path;
+  it does not validate the custom Patch character.
 
 ## Remaining Validation
 
-- Confirm ArchiveXL loads the streaming block in game.
-- Confirm every quest/scene NodeRef resolves in game.
-- Confirm the dedicated map-pin marker appears on the map.
-- Tune Patch facing, workspot placement, and trigger radii.
+- Validate explicit map-screen and POI behavior for the dedicated meeting
+  marker.
+- Rebuild and validate the scene marker under a vanilla-style nested scene
+  prefab path.
+- Restore `Character.GhostlinePatch`, then validate Patch-specific streaming,
+  facing, and workspot placement.
+- Tune trigger footprints only if real-location testing exposes presentation
+  issues; keep the proven 90/60/20/10 radii and 12-unit height as the baseline.
 - If Patch still crashes when streamed, audit or replace remaining `ep1\...`
   animation/effect dependencies in `mod\ghostline\characters\patch\patch.ent`
   or explicitly require Phantom Liberty.

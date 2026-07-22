@@ -6,8 +6,12 @@ designed for a capture workflow: record coordinates in game, define local
 offsets and trigger shapes in JSON, dry-run the output, then generate raw
 resources and deserialize them with WolvenKit.
 
-The checked-in example is `tools/gq000_world_spec.example.json`. It uses
-reference coordinates and should be copied before producing real quest assets.
+The production `gq000` meeting source of truth is
+`tools/gq000_patch_meet.world.json`. It currently describes the tested
+`90/10/60/20`-radius, 12-unit-high trigger layout, an inactive-on-start
+`patch/default` community, and the temporary `Character.Judy` runtime actor.
+The checked-in `tools/gq000_world_spec.example.json` uses reference coordinates
+and is tutorial input only.
 
 ## Commands
 
@@ -16,12 +20,17 @@ py .\tools\generate_world.py example
 py .\tools\generate_world.py hash "$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge"
 py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
 py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
+py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --dry-run
 ```
 
-When the spec is ready for use:
+For an intentional production update, write and inspect raw output before the
+final registration/deserialization pass:
 
 ```powershell
-py .\tools\generate_world.py generate --spec .\path\to\gq000_patch_meet.world.json --register --deserialize
+py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json
+py -B -m unittest discover -s tests -v
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
+py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --register --deserialize
 ```
 
 `--register` adds the generated block path to `source/resources/Ghostline.archive.xl`.
@@ -602,13 +611,14 @@ Archive targets mirror the depot paths under `source/archive`.
 
 ## Validation Workflow
 
-1. Copy `tools/gq000_world_spec.example.json` to a quest-specific spec.
-2. Replace `origin` with coordinates captured in game.
+1. Start from `tools/gq000_world_spec.example.json` for a new quest, or edit the
+   existing production spec for an intentional `gq000` world change.
+2. Replace or confirm `origin` with coordinates captured in game.
 3. Use `measure` to compare captured points and planned offsets.
 4. Run `generate --dry-run`.
-5. Generate to a temporary raw/archive root if you want a clean deserialization test.
-6. Run `generate --register --deserialize` only when ready to write project assets.
-7. Inspect generated raw files with `tools/explore_world.py`.
+5. Generate raw output and inspect it with `tools/explore_world.py`.
+6. Run the regression suite.
+7. Use `--register --deserialize` only when ready to update project assets.
 
 Useful checks:
 

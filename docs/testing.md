@@ -1,5 +1,9 @@
 # Ghostline Testing
 
+The first dated section is the current installed candidate and required next
+test. Later sections preserve the exact historical baselines that isolated the
+scene-lifecycle and lipsync failures.
+
 Use a fresh save when validating questphase, scene, journal, or world-trigger
 changes. Prefer a manual save made before any version of Ghostline was
 installed or registered.
@@ -55,13 +59,13 @@ The previous mq003-sequenced build is backed up at
 `H:\Ghostline-backups\pre-lipsync-slot0-20260722-000338`.
 
 This build changes only the meeting scene relative to the previous installed
-archive. Patch and V both use lipsync resource ID `0`, and the scene contains
-one generic lipsync resource row. Use the same route that reproduced the
-setup-boundary crash:
+archive. The Patch-role actor (Judy at runtime) and V both use lipsync resource
+ID `0`, and the scene contains one generic lipsync resource row. Use the same
+route that reproduced the setup-boundary crash:
 
 1. Load the known-good pre-Ghostline manual save.
-2. Confirm the Patch phone message appears, accept the job, and confirm the
-   bridge objective/tracker appears.
+2. Confirm the Patch phone message appears, select `On my way` to accept the
+   meeting, and confirm the bridge objective/tracker appears.
 3. Fast travel to the same nearby point and let world loading finish.
 4. Approach the bridge at normal speed. Record whether crossing the 90-unit
    scene setup boundary—roughly 80-90 metres on the tracker—still crashes.
@@ -87,7 +91,8 @@ Repeat the route that crashed the synchronized current-raw build:
 
 1. Load the known-good pre-Ghostline manual save.
 2. Confirm the Patch phone message appears.
-3. Accept the job and confirm the bridge objective/tracker appears.
+3. Select `On my way` to accept the meeting and confirm the bridge
+   objective/tracker appears.
 4. Fast travel to the same nearby point used in the crash report.
 5. Confirm the game finishes world loading without a crash.
 6. Approach the bridge at normal speed. Confirm Judy is already spawned before

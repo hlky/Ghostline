@@ -5,6 +5,20 @@ description: Use for Ghostline character resources, Patch NPC work, entity and a
 
 # Ghostline Character And Tweak Workflow
 
+## Current Runtime State
+
+The production world spec still names the logical community entry
+`patch/default`, but its temporary runtime character record is
+`Character.Judy`. That Judy route is the crash-free scene/world baseline; it
+does not validate Patch's custom entity, appearance, TweakDB record, faction,
+or dependencies.
+
+The local game install audited on 2026-07-22 has ArchiveXL but not TweakXL.
+Install TweakXL and complete the sorted-choice-label regression before changing
+`tools/gq000_patch_meet.world.json` back to `Character.GhostlinePatch`. Test the
+custom character as a separate variable from the already proven meeting
+lifecycle.
+
 ## Character Resources
 
 - `.ent` files are top-level entity containers.
@@ -25,6 +39,11 @@ Patch resources:
 - supporting body/head files live under
   `source/archive/mod/ghostline/characters/patch/body` and
   `source/archive/mod/ghostline/characters/patch/head`.
+- Patch still references some `ep1\...` resources, so Phantom Liberty may be a
+  runtime dependency unless those references are replaced.
+- `source/archive/base` contains copied player-head support resources. They are
+  global overrides and remain a shipping risk; do not infer that they are safe
+  merely because the Judy isolation route works.
 
 Generic Ghostline onscreen localization:
 
@@ -63,6 +82,8 @@ Important NPC fields include:
 
 Useful docs:
 
+- `ROADMAP.md`
+- `docs/packaging.md`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/entity-.ent-files`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/appearance-.app-files`
 - `modding_docs/for-mod-creators-theory/core-mods-explained/tweakxl`

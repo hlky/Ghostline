@@ -10,6 +10,9 @@ skill-style files under `agent/skills`.
 - Read `ROADMAP.md` before broad quest, world, journal, scene, or packaging
   work. Update it when work changes quest status, adds or removes resources,
   resolves a listed gap, or discovers a new blocker.
+- Read `docs/quest-scene-flow.md` before changing the current root/child phase
+  handoff, meeting lifecycle, scene exits, triggers, or localization lookup
+  paths.
 - Treat `modding_docs` as a local reference submodule, not Ghostline-owned
   source, unless the task explicitly asks to edit those docs.
 - Before guessing at Cyberpunk-specific behavior, search or read
@@ -20,7 +23,9 @@ skill-style files under `agent/skills`.
   `source/raw/gq000_01_manifest.json`, which is a plain generated manifest and
   is not serialized back to CR2W.
 - Prefer `source/raw` over `generated` when preparing CR2W assets for use.
-  `generated` contains older/generated snapshots.
+  `generated` contains older/generated CR2W snapshots. The current authored
+  WAV bank is a temporary exception; follow the manifest-filtered workflow in
+  `agent/skills/ghostline-localization-audio/SKILL.md`.
 - Treat `GraphEditorStates` as WolvenKit editor support data, not packed asset
   source of truth.
 
@@ -46,9 +51,12 @@ global Codex skills, so use the paths above as explicit references.
 
 - `source/archive` contains packed/game-ready CR2W resources.
 - `source/resources` contains WolvenKit loose resources, including ArchiveXL
-  `.xl` files and TweakXL YAML files copied during packing.
+  `.xl`, TweakXL YAML, REDscript, and engine config files. Project
+  builds/staging copy them, but a manual scoped `pack source/archive` command
+  does not.
 - `source/archive/base` may contain supporting base-game files. It currently
-  contains base player-head mesh and morphtarget support resources.
+  contains base player-head mesh and morphtarget support resources. Treat them
+  as unvalidated global overrides, not normal shipping content.
 - `source/archive/mod` contains mod-owned packed resources.
 - `source/archive/mod/ghostline` contains generic Ghostline resources shared
   across the quest series, such as characters.
@@ -66,6 +74,8 @@ global Codex skills, so use the paths above as explicit references.
   slices.
 - `reference/world` contains reference `.streamingblock` and
   `.streamingsector` CR2W binaries plus their `.json` CR2W-JSON companions.
+- `packed` is ignored generated install/ZIP staging. Rebuild it from
+  `source/archive` and `source/resources`; do not treat it as source of truth.
 
 ## Local Modding Docs
 

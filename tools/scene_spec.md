@@ -6,8 +6,10 @@ CR2W-JSON for `.scene` resources. The checked-in production fixture is:
 ```powershell
 py .\tools\generate_scene.py audit --spec .\tools\gq000_patch_meet.scene-spec.json
 py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --dry-run
-py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --deserialize
+py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json
 py .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\tools\gq000_patch_meet.scene-spec.json
+py -B -m unittest discover -s tests -v
+py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --deserialize
 ```
 
 The generator uses vanilla scene shells from `reference/vanilla_extract_json`
@@ -25,6 +27,7 @@ and local WolvenKit source assumptions. It does not use `template.scene.json`,
 | `raw_path` | Yes | Generated raw CR2W-JSON destination under `source/raw`. |
 | `archive_path` | Yes | Packed CR2W target path used in `Header.ArchiveFileName`. |
 | `exported_datetime` | No | Stable `Header.ExportedDateTime`; defaults to `1970-01-01T00:00:00Z` for reproducible output. |
+| `lipsync_animset` | No | Shared depot path used for emitted lipsync resource rows. The current generator cannot assign a different path per slot. |
 | `actors` | Yes | Scene actors, currently `community` NPCs and `player` actors. |
 | `spoken_line_order` | Yes | Manifest keys assigned screenplay IDs `1 + 256n`. |
 | `choice_line_order` | Yes | Manifest keys assigned option IDs `2 + 256n`. |
@@ -37,8 +40,8 @@ and local WolvenKit source assumptions. It does not use `template.scene.json`,
 | `choices` | No | Choice nodes and options. |
 | `quest_nodes` | No | Scene-local quest wrapper nodes for journal, mappin, trigger, or AI setup. |
 | `xor_nodes` | No | Xor nodes for vanilla-compatible branch joins. |
-| `end_node` | Yes | Terminal `scnEndNode` id. Used when `end_nodes` is omitted. |
-| `end_nodes` | No | Multiple terminal `scnEndNode` ids for scenes that need distinct exit point nodes. |
+| `end_node` | Conditional | Terminal `scnEndNode` id. Required when `end_nodes` is omitted. |
+| `end_nodes` | Conditional | Multiple terminal `scnEndNode` ids for distinct exits. Required when `end_node` is omitted. |
 
 ## Destinations
 
@@ -56,10 +59,10 @@ Destinations use scene socket coordinates:
 connections can be written as only `{"node_id": 8}`.
 
 `graph_order` is optional and should normally be omitted. Use it when the
-runtime/editor shape intentionally keeps an unconnected graph node in a specific
-position, such as the reduced `gq000_patch_meet` scene keeping mappin node `n17`
-present but disconnected. When present, it must list every generated graph node
-exactly once, and validation checks that raw scenes keep that order.
+runtime/editor shape intentionally keeps an unreachable graph node in a
+specific position, such as the current fallback end node `18`, which has no
+incoming scene-graph edge. When present, it must list every generated graph
+node exactly once, and validation checks that raw scenes keep that order.
 
 ## Actors
 
@@ -87,11 +90,20 @@ Player actors use `findInContext`:
   "kind": "player",
   "id": 1,
   "record": "Character.Player_Puppet_Base",
-  "lipsync": 1
+  "lipsync": 0
 }
 ```
 
 Actor performer debug symbols are generated as `actorID * 256 + 1`.
+
+`lipsync` is an index into `resouresReferences.lipsyncAnimSets`, not an actor
+ID. Every referenced index must remain addressable after CR2W cooking. The
+current production fixture deliberately gives the Patch-role actor and V slot
+`0` and emits one generic row: an earlier two-slot fixture repeated the same
+depot path, cooked to one runtime import, and crashed when V requested slot
+`1`. Do not use
+multiple indexes until the generator supports distinct valid per-slot resource
+paths and the packed table has been verified.
 
 ## Sections And Choices
 
@@ -109,7 +121,7 @@ simple timing:
   ],
   "on_end": [
     {
-      "node_id": 18
+      "node_id": 19
     }
   ]
 }
@@ -138,7 +150,14 @@ option plus six dummy sockets named `1` through `6`:
 Every choice option gets embedded locStore descriptors for all configured
 locales. The default order is vanilla-style `db_db`, `pl_pl`, then `en_us`;
 `db_db` emits two descriptors per choice, a blank fallback payload followed by
-the source text payload.
+the source text payload. Within every locale block, descriptors are sorted by
+the unsigned numeric value of `locstringId`, not by manifest order or decimal
+string order. Duplicate `db_db` descriptors stay adjacent.
+
+The option `caption` is an authoring/debug label. Player-visible text resolves
+from `screenplayStore.options[].locstringId` through the embedded `locStore`.
+See `docs/quest-scene-flow.md` for the complete lookup chain and the separate
+scene ID domains.
 
 `single_choice` is written directly to `isSingleChoice`; do not use it to infer
 whether an option is optional or progression-critical. Use `choice_type` for the
@@ -183,7 +202,10 @@ and validation fails if a known path uses a mismatched index.
 - actor debug symbols must match WolvenKit performer ID formulas;
 - spoken and choice screenplay IDs must follow vanilla item ID patterns;
 - choice sockets must include the six dummy sockets;
-- choice locStore entries must cover the configured locales;
+- choice locStore entries must form the configured contiguous locale blocks;
+- every locale block must be sorted by unsigned numeric `locstringId`;
+- each `db_db` choice must have at least two payloads and put a blank payload
+  first;
 - graph destinations must point at existing nodes;
 - journal path `fileEntryIndex` values must match known journal namespaces;
 - scene event IDs must be unique and cannot be the max-int placeholder.

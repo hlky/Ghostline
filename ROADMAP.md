@@ -3,12 +3,14 @@
 Last audited: 2026-07-22
 
 This file tracks the current state and the next work needed to turn `gq000`
-from a dialogue prototype into a playable quest slice. The 2026-07-21
-mq003-sequenced isolation build keeps the repaired world and newer phone/cache
-progression while changing only the meeting phase/scene lifecycle. Detailed
-command usage, runtime crash conclusions, world-reference notes, and packaging
-instructions now live in focused docs:
+from a dialogue prototype into a playable quest slice. The current 2026-07-22
+sorted-locStore candidate is based on the runtime-proven repaired world,
+mq003-sequenced meeting lifecycle, and shared-lipsync-slot baseline. It changes
+only the meeting scene's embedded choice lookup order and still needs a focused
+runtime regression. Detailed command usage, runtime flow, crash conclusions,
+world-reference notes, and packaging instructions now live in focused docs:
 
+- `docs/quest-scene-flow.md`
 - `docs/tooling.md`
 - `docs/testing.md`
 - `docs/scene-authoring-rules.md`
@@ -18,12 +20,13 @@ instructions now live in focused docs:
 
 ## Current Status
 
-### MQ003-Sequenced Test Build
+### Current Sorted-LocStore Candidate
 
-- The first synchronized current-raw build crashed after accepting the job and
-  fast travelling near the bridge. The dump recorded `Loading world`, resource
-  throttling in `Flood`, and an invalid allocator pointer on `redDispatcher20`;
-  plugin logs showed no Ghostline registration or merge error.
+- The first synchronized current-raw build crashed after accepting the meeting
+  with `On my way` and fast travelling near the bridge. The dump recorded
+  `Loading world`, resource throttling in `Flood`, and an invalid allocator
+  pointer on `redDispatcher20`; plugin logs showed no Ghostline registration or
+  merge error.
 - The first repair allowed the nearby fast travel to finish, but both a normal
   approach and a deliberately slow retry then crashed at the 10-unit engage
   boundary while the game was fully loaded. Both dumps failed at
@@ -32,14 +35,14 @@ instructions now live in focused docs:
   `Cyberpunk2077+0x1d173be` failure to 89.27 horizontal units from the scene
   origin. This rules out the engage trigger itself and ties the failure to
   scene initialization.
-- The current isolation build follows the audited `mq003` lifecycle instead of
+- The current candidate inherits the audited `mq003` lifecycle instead of
   launching the scene at engage range: activate and validate the community
   first, launch the scene from the broad setup gate, then let the running scene
   progress through case-mood, someone-coming, opening line, and engage gates.
-  It additionally assigns both Patch and V to lipsync slot `0` and emits one
-  generic lipsync reference. This is a diagnostic cardinality probe, not the
-  intended final lipsync design. The newer root phone flow and post-accept
-  cache phase remain unchanged.
+  It additionally assigns both the Patch-role actor (Judy at runtime) and V to
+  lipsync slot `0` and emits one generic lipsync reference. This is a
+  diagnostic cardinality probe, not the intended final lipsync design. The
+  newer root phone flow and post-accept cache phase remain unchanged.
 - Runtime testing of that slot-0 build completed the full route without a
   crash: phone message, nearby fast travel, normal bridge approach, all spoken
   dialogue/subtitles/VO, `job_accept`, meet-objective cleanup, and activation
@@ -197,29 +200,40 @@ instructions now live in focused docs:
 - Runtime testing confirmed the previous `INT63_MASK` probe was the approach
   crash source. Scene event RUIDs and locStore variant IDs must keep the full
   unsigned 64-bit FNV output; do not mask them down to signed 63-bit values.
-- The current crash-isolation scene assigns both Patch and V
-  `lipsyncAnimSet.id: 0` and contains exactly one generic lipsync resource
-  reference. The previous scene assigned V slot `1` while both raw slots used
+- The current shared-slot diagnostic scene assigns both the Patch-role actor
+  (Judy at runtime) and V `lipsyncAnimSet.id: 0` and contains exactly one
+  generic lipsync resource reference. The previous scene assigned V slot `1`
+  while both raw slots used
   the same depot path; its packed import table and runtime lookup exposed only
   one distinct resource before the engine requested index `1`. The shared-slot
   build completed the full meeting route without a crash, strongly confirming
   that cardinality mismatch as the scene-start failure.
 - The previous installed 14-node scene and late-gated meeting phase remain
-  recoverable from the pre-sequence backup recorded in the stability section.
+  recoverable from
+  `H:\Ghostline-backups\pre-mq003-sequence-20260721-233546`; see
+  `docs/testing.md` for the historical baseline.
 
 ### Dialogue Localization And VO
 
 - Subtitle and VO map raw resources for `gq000_01` are aligned by string ID.
-- `source/raw/gq000_01_manifest.json` records generated line keys, string IDs,
-  text, audio paths, and durations.
-- The `gq000_01` dialogue locstring IDs were regenerated across the manifest,
-  raw subtitles, raw VO map, and generated scene during the intro-choice
-  semantics probe.
-- The VO map points at `.wem` paths, and matching Wwise-generated `.wem` files
-  exist alongside the authored `.wav` files.
+- `source/raw/gq000_01_manifest.json` contains 13 spoken records with key,
+  string ID, speaker/addressee, text, audio path, and duration, plus five choice
+  records with key, string ID, and text only.
+- The `gq000_01` spoken locstring IDs were regenerated across the manifest, raw
+  subtitles, raw VO map, and generated scene during the intro-choice semantics
+  probe. Choice locstring IDs remain scene-embedded and do not belong in the
+  subtitle or VO maps.
+- The VO map points at 13 current `.wem` paths under `source/archive`.
+  `generated` retains those 13 authored WAVs plus 13 byte-identical legacy
+  hash-name duplicates; the manifest-filtered converter selects only the
+  current basenames.
 - A subtitle map resource now registers the subtitle entries with ArchiveXL.
 - Runtime testing confirmed every spoken subtitle and VO line in the meeting
   scene plays correctly.
+- The manifest-filtered Wwise 2025.1.7 conversion pass processes exactly 13
+  active WAVs; a `-NoCopy` verification regenerated all 13 current WEMs
+  byte-identically. It intentionally does not remove the 13 legacy WEM names
+  retained for candidate-archive parity.
 - The scene still uses a base generic facial lipsync animset as a placeholder;
   Ghostline-owned lipsync `.anims` files have not been integrated.
 
@@ -252,8 +266,9 @@ instructions now live in focused docs:
   than bare leaf IDs.
 - The quest map pin and POI mappin have been moved to dedicated always-loaded
   marker `#gq000_01_mp_patch_bridge`. Vanilla files confirm this must stay
-  separate from scene marker `#gq000_01_sm_patch_bridge`; runtime validation is
-  still pending.
+  separate from scene marker `#gq000_01_sm_patch_bridge`. Runtime testing
+  confirmed the meeting tracker/mappin path and its cleanup; explicit map-screen
+  and POI presentation still need focused validation.
 - The placeholder next objective uses Ghostline-owned always-loaded marker
   `#gq000_02_mp_cache`, roughly 300 units northeast of the bridge origin.
 - Runtime testing confirmed acceptance clears the meeting flow, activates
@@ -291,16 +306,18 @@ instructions now live in focused docs:
   area's global/source ID `7897875840529598144`; generator tests reject any
   future collision.
 - Temporary runtime isolation state: the active world spec uses
-  `Character.Judy` for the `patch/default` entry while scene crashes are being
-  isolated. Revert it to `Character.GhostlinePatch` after the scene path is
-  stable.
+  `Character.Judy` for the `patch/default` entry. The Judy route is now stable,
+  but the isolation remains until the sorted-locStore regression passes and
+  TweakXL is installed for `Character.GhostlinePatch`.
 - See `docs/world-references.md` for the resolved prefab/NodeRef model and
   current world findings.
 
 ### Generated And Editor Support Data
 
 - Prefer `source/raw` over `generated` when preparing CR2W assets for use.
-- `generated` contains older generated snapshots.
+- `generated` contains older generated CR2W snapshots. Its temporary exception
+  is the tracked authored WAV bank: use the current manifest and conversion
+  helper rather than treating every WAV there as active.
 - `GraphEditorStates` contains WolvenKit editor support data only. Do not
   treat it as packed asset source of truth.
 
@@ -314,14 +331,15 @@ instructions now live in focused docs:
   dialogue progression currently reaches only `job_accept`.
 - Rebuild the scene marker under a vanilla-style scene-prefab child path when
   fresh world/scene tooling replaces the current generated shape.
-- Install TweakXL before reverting the temporary Judy community registry entry
-  to `Character.GhostlinePatch`, then re-test Patch spawn after the scene path
-  is stable.
+- Complete the sorted-locStore regression and install TweakXL before reverting
+  the temporary Judy community registry entry to `Character.GhostlinePatch`,
+  then test Patch-specific spawning and dependencies.
 - Decide whether `source/archive/base` resources are still required. They
   should be excluded from normal install archives unless their impact is
   validated.
-- Remove or document the 13 WEM files that are packaged but not referenced by
-  the current VO map.
+- Move the 13 current authored WAVs to an explicit source-audio directory, then
+  retire the 13 legacy hash-name WAV/WEM duplicates. Until then, the converter
+  must keep filtering through `source/raw/gq000_01_manifest.json`.
 - Audit remaining `ep1\...` animation/effect dependencies in Patch's entity or
   explicitly require Phantom Liberty if Patch still crashes when streamed.
 
@@ -329,10 +347,13 @@ instructions now live in focused docs:
 
 ### 1. Validate Fresh Meeting Scene
 
-- Test the installed mq003-sequenced archive from a clean save and capture precise
-  trigger, spawn, dialogue, exit, journal, mappin, subtitle, and VO behavior.
-- Validate the staged full dialogue, especially repaired choice labels, the
-  active `job_accept` route, and whether a non-accept `end` branch is needed.
+- Retest the installed 2026-07-22 sorted-locStore archive from a clean save.
+  The preceding slot-0 baseline already confirmed trigger progression, Judy
+  spawn, dialogue/VO/subtitles, `job_accept`, journal cleanup, and the cache
+  marker; the changed surface is embedded choice-label lookup order.
+- Validate the staged full dialogue, especially the expected choice-label
+  repair, the active `job_accept` route, and whether a non-accept `end` branch
+  is needed.
 - Continue using `tools/generate_scene.py` and the audited scene spec as source
   of truth rather than patching packed scene CR2W manually.
 - Keep failed probe workarounds in `docs/crash-investigation.md` as historical
@@ -340,17 +361,21 @@ instructions now live in focused docs:
 
 ### 2. Validate Meeting-Location World Data
 
-- Confirm ArchiveXL loads `mod\gq000\world\gq000_patch_meet.streamingblock`.
-- Confirm scene marker, setup trigger, engage trigger, case-mood trigger,
-  someone-coming trigger, Patch community, and map-pin NodeRefs all resolve.
+- The full Judy route confirmed that ArchiveXL loads the streaming block and
+  that the active community, scene marker, four triggers, meeting mappin, and
+  cache mappin resolve in game.
+- Validate explicit map-screen/POI presentation and the future nested
+  scene-marker hierarchy separately from the already working HUD route.
 - Tune Patch yaw, workspot placement, and trigger radii against the real
   location geometry.
 
 ### 3. Restore Patch As The Community Character
 
 - Switch the temporary `Character.Judy` registry record back to
-  `Character.GhostlinePatch`.
-- Test Patch spawn and approach after the scene startup path is stable.
+  `Character.GhostlinePatch` after the choice-label regression passes and
+  TweakXL is installed.
+- Test Patch spawn and approach independently from the already stable Judy
+  lifecycle.
 - Continue custom-pathing or replacing Patch dependencies only if missing
   resource hashes change or Patch-specific crashes remain.
 
@@ -366,8 +391,9 @@ instructions now live in focused docs:
 
 ### 5. Validate Audio Packaging
 
-- Validate in game that subtitles, VO map, and `.wem` assets remain aligned
-  after scene edits.
+- All 13 current subtitles, VO-map entries, and `.wem` assets played correctly
+  in the stable meeting route. Revalidate that alignment after future dialogue,
+  scene-line, or audio-map edits.
 - Add Ghostline-owned lipsync resources if the final scene presentation needs
   them.
 

@@ -40,7 +40,7 @@ py .\tools\explore_questphase.py dot > questphase.dot
 Pass another raw questphase with `--file`:
 
 ```powershell
-py .\tools\explore_questphase.py --file .\source\raw\mod\gq000\phases\other.questphase.json summary
+py .\tools\explore_questphase.py --file .\source\raw\mod\gq000\phases\gq000.questphase.json summary
 ```
 
 Large lists are bounded by default. Use `--limit`, `--offset`, or `--limit 0`
@@ -71,7 +71,7 @@ py .\tools\explore_scene.py dot > scene.dot
 Pass another raw scene with `--file`:
 
 ```powershell
-py .\tools\explore_scene.py --file .\source\raw\mod\gq000\scenes\other.scene.json summary
+py .\tools\explore_scene.py --file .\reference\vanilla_extract_json\mq007\mq007_01_gun_found.scene.json summary
 ```
 
 ## Scene Generator
@@ -85,8 +85,10 @@ spec. The production fixture is
 py .\tools\generate_scene.py example
 py .\tools\generate_scene.py audit --spec .\tools\gq000_patch_meet.scene-spec.json
 py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --dry-run
-py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --deserialize
+py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json
 py .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\tools\gq000_patch_meet.scene-spec.json
+py -B -m unittest discover -s tests -v
+py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --deserialize
 ```
 
 The generator uses audited vanilla shells under `reference/vanilla_extract_json`
@@ -107,7 +109,7 @@ py .\tools\explore_localization.py summary
 py .\tools\explore_localization.py entries
 py .\tools\explore_localization.py check
 py .\tools\explore_localization.py search Arasaka
-py .\tools\explore_localization.py entry 6099223344158574223
+py .\tools\explore_localization.py entry 67568872890781206
 py .\tools\explore_localization.py refs
 py .\tools\explore_localization.py types
 ```
@@ -190,10 +192,10 @@ py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
 ## World Generator
 
 `tools/generate_world.py` turns captured in-game coordinates into raw
-`.streamingsector.json` and `.streamingblock.json` files. The checked-in
-example spec uses placeholder/reference coordinates. Copy it and replace the
-`origin` before generating real quest assets. The full spec reference is
-`tools/world_spec.md`.
+`.streamingsector.json` and `.streamingblock.json` files. The production
+meeting source is `tools/gq000_patch_meet.world.json`. The checked-in
+`tools/gq000_world_spec.example.json` uses placeholder/reference coordinates
+and is tutorial input only. The full spec reference is `tools/world_spec.md`.
 
 Distances in specs are world-coordinate units: local `forward`, `right`,
 `distance`, trigger widths/depths, and radii all use the same scale as captured
@@ -206,26 +208,41 @@ py .\tools\generate_world.py example
 py .\tools\generate_world.py hash "$/mod/npcac/#npcac_spot"
 py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
 py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
+py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --dry-run
 ```
 
-When a spec is ready, generate raw files under `source/raw`, register the block
-in ArchiveXL, and deserialize to `source/archive`:
+For an intentional production update, generate the raw files first, run the
+regression suite, inspect the generated world, then register and deserialize
+the same reviewed spec:
 
 ```powershell
-py .\tools\generate_world.py generate --spec .\path\to\gq000_patch_meet.world.json --register --deserialize
+py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json
+py -B -m unittest discover -s tests -v
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
+py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --register --deserialize
 ```
 
 ## Voiceover WEM Conversion
 
-`tools/convert_wavs_to_wem.ps1` converts quest WAV voiceover files into Wwise
-`.wem` files. The script normalizes WAVs into
+`tools/convert_wavs_to_wem.ps1` converts the current quest WAV voiceover files
+into Wwise `.wem` files. The authored WAVs presently live in `generated`
+alongside legacy duplicates; the script reads `source/raw/gq000_01_manifest.json`
+and selects only the 13 referenced basenames. It normalizes those WAVs into
 `wwise_conversion\ExternalSources`, writes `external_sources.wsources`, runs
-Wwise external source conversion, and copies WEM files back into the VO folder
-without deleting source WAVs.
+Wwise external-source conversion, and copies the results to
+`source/archive/mod/gq000/localization/en-us/vo` without deleting the WAVs.
 
 ```powershell
-.\tools\convert_wavs_to_wem.ps1
+.\tools\convert_wavs_to_wem.ps1 -NoCopy
 ```
+
+Inspect the conversion output and compare it with the runtime-proven WEMs. Run
+the command without `-NoCopy` only when intentionally replacing the 13 active
+files under `source/archive`. Use `-SourceDir`, `-DestinationDir`, and
+`-Manifest` only when deliberately working on a different dialogue set. A
+nonempty manifest is mandatory. Its filter converts and copies only the 13
+referenced files; it does not prune the 13 unreferenced WEMs already retained
+for archive-baseline parity.
 
 By default it uses:
 
