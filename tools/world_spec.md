@@ -106,7 +106,8 @@ community workspot persistent data.
 | `prefab_root` | Yes | None | Root NodeRef for local refs. Local `#foo` refs become `<prefab_root>/#foo`. |
 | `block_path` | No | `mod\{name}\world\all.streamingblock` | Depot path for the generated streaming block. |
 | `quest_sector_path` | No | `mod\{name}\world\quest.streamingsector` | Depot path for the generated quest streaming sector. |
-| `always_loaded_sector_path` | No | `mod\{name}\world\always_loaded.streamingsector` | Depot path for the always-loaded sector. Used when `community`, `always_loaded_node_refs`, or an always-loaded marker is present. |
+| `always_loaded_sector_path` | No | `mod\{name}\world\always_loaded.streamingsector` | Depot path for the always-loaded sector. Used when `community`, `communities`, `always_loaded_node_refs`, or an always-loaded marker is present. |
+| `device_registry_path` | No | `mod\{name}\world\custom_devices.devices` | Sparse device registry emitted when `devices` is non-empty. Registering the world with `--register` also ArchiveXL-patches this resource into Night City's global `.devices` registry. |
 | `origin` | Yes | None | Base coordinate and optional yaw. See position formats below. |
 | `yaw` | No | `0` | Origin yaw fallback if `origin` is an array or omits `yaw`. |
 | `streaming_box` | No | `world` | Quest descriptor bounds. See streaming box formats below. |
@@ -115,7 +116,9 @@ community workspot persistent data.
 | `markers` | No | `[]` | Static marker nodes to create. |
 | `always_loaded_node_refs` | No | `[]` | Advanced: additional NodeRefs to register in the always-loaded sector without creating duplicate nodes. Prefer `markers[].sector = "always_loaded"` for journal/static mappin marker resolution. |
 | `triggers` | No | `[]` | Trigger area nodes to create. |
-| `community` | No | None | Optional Patch-style AI spot, streamable community area, and always-loaded registry. |
+| `devices` | No | `[]` | Player-facing world devices. The current supported kind is `access_point`. |
+| `community` | No | None | Backward-compatible single-community form. |
+| `communities` | No | `[]` | Additional communities. Each can contain multiple entries and spots. |
 
 Depot paths may use `/` or `\`; the generator normalizes them to backslashes.
 
@@ -135,7 +138,8 @@ adding `#` if needed, then appended to `prefab_root`.
 Each generated node becomes an anchor after it is created. It can then be
 referenced by later nodes using its original ref, full NodeRef, local name, or
 `#local_name`. Order matters: markers are generated first, then triggers, then
-community spot and area, then always-loaded registration-only refs.
+devices, community spots and areas, and finally always-loaded registration-only
+refs.
 
 ## Position Formats
 
@@ -409,9 +413,71 @@ Raw CR2W notifier data can be inserted for cases the generator does not know:
 }
 ```
 
+## Device Spec
+
+The current device generator creates a native `worldDeviceNode` backed by the
+vanilla access-point entity. Its `AccessPointControllerPS`, personal-link
+workspot, interaction, and breach minigame come from the entity template; do
+not add a duplicate controller to the streaming sector's persistent nodes.
+
+```json
+{
+  "devices": [
+    {
+      "ref": "#gq000_02_ap_cache",
+      "kind": "access_point",
+      "position": { "from": "#gq000_02_mp_cache" },
+      "yaw": "#gq000_02_mp_cache",
+      "appearance": "access_point_access_point_socket_f_neomil",
+      "buffer_id": 1,
+      "content_scale": "DeviceContentAssignment.Autoscaling",
+      "initial_state": "OFF",
+      "network_name": "QUIET SPINE RELAY",
+      "controller_class": "AccessPointControllerPS"
+    }
+  ]
+}
+```
+
+| Field | Required | Default | Description |
+| --- | --- | --- | --- |
+| `ref` | Yes | None | Stable device NodeRef used by quest device-manager nodes and conditions. |
+| `kind` | No | `access_point` | Device builder. Other kinds currently fail generation. |
+| `position` | No | `origin` | Device position or anchor-relative position. |
+| `yaw` | No | Position anchor yaw | Rotates both the socket visual and its personal-link workspot. |
+| `appearance` | No | `access_point_access_point_socket_f_neomil` | Outer `.ent` appearance mapping. Do not use the shorter inner `.app` name. |
+| `entity_template` | No | `base\gameplay\devices\masters\access_points\accesspoint.ent` | Device entity template. |
+| `instance_data` | No | `1` | Set to `0` for template defaults; the normal generated override starts dormant. |
+| `buffer_id` | No | `1` | File-unique RedPackage buffer ID. It must not reuse sector node-data buffer `0` or another device buffer. |
+| `content_scale` | No | `DeviceContentAssignment.Autoscaling` | Access-point content scaling record. |
+| `initial_state` | No | `OFF` | Initial device state. Enable it from the owning questphase. |
+| `network_name` | No | `Local Network 1` | Device network label. |
+| `controller_class` | No | `AccessPointControllerPS` | Persistent-state controller class recorded in the generated sparse `.devices` registry. |
+| `device_class_name` | No | `None` | World-node class-name override; normally leave the controller to the entity. |
+| `alpha_hack_streaming_distance_override` | No | `0` | World device alpha-hack streaming override. |
+| `entity_lod` | No | `0` | Entity LOD field. |
+| `io_priority` | No | `Immediate` | Entity streaming priority. |
+| `source_prefab_hash` | No | `0` | Source prefab hash. Mod-owned placements should normally remain `0`. |
+| `tag`, `tag_ext` | No | `None` | Optional world tags. |
+| `node_data` | No | Defaults | Placement streaming-distance overrides. |
+
+Every generated instance package needs a distinct nonzero `buffer_id`. The
+generator's default is sufficient for one device; set explicit IDs when a
+sector contains more than one.
+
+For each device, the generator also records its full NodeRef hash, controller
+class, and position in the mod-owned `device_registry_path`. Use `--register`
+so `Ghostline.archive.xl` merges that sparse resource into
+`base\worlds\03_night_city\_compiled\default\03_night_city.devices`; the
+streamed `worldDeviceNode` alone is not a reliable quest-controller lookup.
+World Builder can additionally emit a `.psrep` persistence patch, but that is
+optional and should be added only when runtime testing proves the `.devices`
+registration insufficient.
+
 ## Community Spec
 
-The `community` block creates three pieces:
+The legacy `community` object and each item in `communities` create three
+pieces:
 
 - `worldAISpotNode` in the quest sector
 - `worldCompiledCommunityAreaNode_Streamable` in the quest sector
@@ -442,6 +508,36 @@ The `community` block creates three pieces:
 }
 ```
 
+For several actors in one community, use `entries`. Each entry may own one or
+more `spots`; entry-level values override community defaults:
+
+```json
+{
+  "communities": [
+    {
+      "ref": "#gq000_02_com_cache_guards",
+      "phase": "A",
+      "period": "Day",
+      "active_on_start": 0,
+      "entries": [
+        {
+          "entry": "guard_ranged",
+          "character": "Character.kab_tyger_claws_gangster2_ranged2_sidewinder_ma",
+          "spots": [
+            {
+              "ref": "#gq000_02_spot_guard_ranged",
+              "position": { "x": -1003.8, "y": 1485.0, "z": 6.9581 },
+              "yaw": 15,
+              "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__01.workspot"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 | Field | Required | Default | Description |
 | --- | --- | --- | --- |
 | `ref` | Yes | None | Community area NodeRef. Also used to derive `source_object_id` when set to `auto`. |
@@ -466,20 +562,24 @@ The `community` block creates three pieces:
 | `appearances` | No | `[appearance]` | String or array of appearances. Overrides `appearance` when present. |
 | `always_spawned` | No | `default__false_` | Registry spawn phase flag. |
 | `prefetch_appearance` | No | `0` | Registry spawn phase flag. |
-
-Community appearance values are root entity mapping names, not internal
-definitions from the referenced `.app`. For Patch this must be
-`ghostline_patch_default`; `default` is only the internal `.app` name.
 | `quantity` | No | `1` | Spawn quantity for the time period. |
 | `spawn_in_view` | No | `default__true_` | Registry spawn entry flag. |
 | `spawn_set_reference` | No | `None` | Registry spawn-set reference. |
 | `registry_debug_name` | No | `registry` | Always-loaded registry node debug name. |
 | `registry_source_prefab_hash` | No | `0` | Registry node `sourcePrefabHash`. |
 | `spot` | No | Defaults | AI spot settings. Provide this explicitly for real specs. |
+| `entries` | No | One entry inherited from the community object | Multiple spawn entries. Each accepts the entry-level fields above. |
+| `spots` | No | Entry/community `spot` | One or more AI spots for an entry. Quantity defaults to the number of spots only when not explicitly provided. |
+
+Community appearance values are root entity mapping names, not internal
+definitions from the referenced `.app`. For Patch this must be
+`ghostline_patch_default`; `default` is only the internal `.app` name.
 
 ### Community Spot
 
-The nested `community.spot` block controls the generated `worldAISpotNode`.
+The nested `community.spot`, `communities[].entries[].spot`, or
+`communities[].entries[].spots[]` block controls each generated
+`worldAISpotNode`.
 
 | Field | Required | Default | Description |
 | --- | --- | --- | --- |
@@ -604,12 +704,12 @@ match each other.
 
 ## Generated Outputs
 
-Without `community`, the generator writes:
+Without a community or always-loaded marker, the generator writes:
 
 - quest sector JSON at `<raw-root>/<quest_sector_path>.json`
 - streaming block JSON at `<raw-root>/<block_path>.json`
 
-With `community`, `always_loaded_node_refs`, or an always-loaded marker, it also writes:
+With `community`, `communities`, `always_loaded_node_refs`, or an always-loaded marker, it also writes:
 
 - always-loaded sector JSON at `<raw-root>/<always_loaded_sector_path>.json`
 

@@ -3,6 +3,7 @@ import { CharacterViewer } from "/viewer.js";
 const state = {
   manifest: null,
   catalog: null,
+  frameProfile: null,
   headPreviewUrl: null,
   assetIndex: null,
   assetResults: [],
@@ -186,7 +187,7 @@ function renderSelectedOverrides() {
   const entries = Object.entries(overrides);
   if (!entries.length) {
     container.replaceChildren(Object.assign(document.createElement("p"), {
-      textContent: "No indexed clothing selected; curated Patch bundles are active.",
+      textContent: "No indexed clothing selected; curated template bundles are active.",
     }));
     return;
   }
@@ -228,19 +229,39 @@ function collectManifest() {
   return manifest;
 }
 
+function requireFrameProfile(data) {
+  const profile = data?.frame_profile;
+  if (!profile
+      || !["pma", "pwa"].includes(profile.player_token)
+      || !Number.isInteger(profile.head_shape_max)) {
+    throw new Error(
+      "Character creator server is older than this UI. Restart tools/character_ui.py and reload the page.",
+    );
+  }
+  return profile;
+}
+
 function render(data) {
+  const frameProfile = requireFrameProfile(data);
   state.manifest = data.manifest;
   state.catalog = data.catalog;
+  state.frameProfile = frameProfile;
   state.assetIndex = data.asset_index;
   state.headPreviewUrl = data.preview_url;
   state.manifest.appearance.indexed_overrides ||= {};
   byId("character-id").value = state.manifest.id;
   byId("display-name").value = state.manifest.display_name;
+  byId("character-frame").value = state.manifest.frame;
   byId("namespace").value = state.manifest.namespace;
   byId("tweak-record").value = state.manifest.tweak.record;
   byId("voice-tag").value = state.manifest.tweak.voice_tag;
   byId("affiliation").value = state.manifest.tweak.affiliation;
   byId("output-base").textContent = data.output_base;
+  byId("asset-frame").value = frameProfile.player_token;
+  const unresolved = frameProfile.unresolved_documented_values || [];
+  byId("shape-range-hint").textContent = unresolved.length
+    ? `This frame supports creator values 1–${frameProfile.head_shape_max}. Documented value ${unresolved.join(", ")} has no matching morph target for this profile. Empty values preserve the current head and block regeneration.`
+    : `This frame supports creator values 1–${frameProfile.head_shape_max}. Empty values preserve the current head and block regeneration.`;
 
   const shapes = byId("shape-fields");
   shapes.replaceChildren(...shapeNames.map((name) => {
@@ -249,7 +270,7 @@ function render(data) {
     const input = document.createElement("input");
     input.type = "number";
     input.min = "1";
-    input.max = "21";
+    input.max = String(frameProfile.head_shape_max);
     input.id = `shape-${name}`;
     input.value = state.manifest.head.shapes[name] ?? "";
     input.addEventListener("input", () => viewer.setShapes(currentShapes()));
@@ -385,6 +406,8 @@ fetch("/api/bootstrap")
   .then((response) => response.json())
   .then(render)
   .catch((error) => {
-    byId("connection").textContent = "Offline";
+    byId("connection").textContent = String(error).includes("Restart tools/character_ui.py")
+      ? "Restart required"
+      : "Offline";
     setResult(String(error), true);
   });

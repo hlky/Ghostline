@@ -5,14 +5,18 @@ small character specification. Patch is the first migration target. The goal
 is to make normal character creation a select-and-build operation, with no
 interactive Blender work required for an ordinary player-derived head.
 
-The schema-v1 generator, curated Patch catalog, headless head build, live WebGL
-head preview, installed-game asset index, and local web UI now exist. Patch's
-reviewed design manifest has been applied to the shipping raw/packed appearance
-and installed for focused runtime validation. The immutable original template
-and original catalog selections remain available as a semantic regression
-baseline. The temporary
-shape-22 head smoke test proved the toolchain but was later shown to be a
-geometry no-op rather than Patch's intended face.
+The schema-v1 generator now has explicit male-average and female-average frame
+profiles, separate vetted roots and catalogs, a headless head build, live WebGL
+head preview, installed-game asset index, and local web UI. Patch's reviewed
+design manifest has been applied to the shipping raw/packed appearance and
+installed for focused runtime validation. A checked female example can clone
+the tutorial's dedicated female root and appearance, stage its referenced
+assets under a character-owned namespace, and build the PWA head. Patch's
+immutable original template and original catalog selections remain available
+as a semantic regression baseline. The temporary male shape-22 smoke test
+proved the toolchain but was later shown to be a geometry no-op rather than
+Patch's intended face; shape 22 is present and supported by the female PWA
+morphtargets.
 
 ## Current Reference Set
 
@@ -47,6 +51,13 @@ have 110 root components. After ignoring the appearance list, export timestamp,
 and intended `defaultAppearance` change (`random` to `default`), their
 serialized data is identical.
 
+The female `_your_female_character.ent` is a separate 116-component root, not a
+male root with a different appearance. Its `.app` declares
+`baseEntityType: WomanAverage`; the `casual` appearance selected by the checked
+female example contains 35 components. The builder therefore selects a root,
+NPC entity type, player-frame token, preview core, and head range through one
+frame profile and rejects cross-frame templates and catalogs.
+
 This makes the root entity a versioned template, not character-authored data.
 The generator should clone a vetted male or female root, replace its appearance
 entries and paths, and leave the engine-facing component graph intact.
@@ -66,10 +77,10 @@ internal `.app` definition name `default`. Requesting the internal name from a
 community creates a logical puppet that scenes can acquire, but leaves it with
 no renderable appearance.
 
-The downloaded male template exposes `casual` and `business` from the root and
-contains `naked`, `casual`, and `business` definitions in its `.app`. The
-generator must make the root list, `.app` names, TweakDB record, and requested
-world appearance agree.
+Both downloaded roots expose `casual` and `business` and contain `naked`,
+`casual`, and `business` definitions in their `.app` files. The generator must
+make the root list, `.app` names, TweakDB record, and requested world appearance
+agree.
 
 ### Appearance
 
@@ -119,6 +130,12 @@ select those targets and value 1 leaves Basis. Documented value 22 requests
 missing `h21` and therefore also leaves Basis. Ghostline blocks 22 and derives
 the browser's available target map from each GLB's `extras.targetNames`; it must
 not infer success from Blender's process exit code.
+
+The female PWA core exports 105 named targets: 21 variants for each of the five
+facial regions, including the `h21` variants requested by creator value 22.
+Female-average manifests therefore permit values 1 through 22, while
+male-average manifests remain limited to the mechanically verified range 1
+through 21. The bounds are frame data, not a global UI constant.
 
 ## Source Of Truth: Character Manifest
 
@@ -203,7 +220,10 @@ distinctive face details carrying most of the color:
   animation graph, dangle rig, bindings, and NPC shadow;
 - muted `quest005_grey` high-collar fitted shirt;
 - `camo_black` computer cargo trousers;
-- the existing black/red military boots and red/black braindance specs; and
+- the existing black/red military boots and red/black braindance specs;
+- the `genitals: none` body option, which disables the player-derived
+  `t0_peen` and `t0_pubic_hair` components in both appearance copies for this
+  permanently clothed NPC; and
 - the existing spiral eyes, magenta brows, rose beard, gold earring, black/gold
   nails, and other authored face details.
 
@@ -215,6 +235,11 @@ cuff and trouser shadow companions remain until rich bundle resolution can
 replace them. This reviewed design is now the installed test candidate. Keep
 future generated variants isolated until the hair animation, garment fit,
 scene participation, LODs, and stream-out/in behavior pass in-game tests.
+
+The immutable player-derived appearance template deliberately keeps its nude
+components enabled. Clothed NPC manifests must select `genitals: none`;
+relying on player equipment tags or trouser chunk masks is incorrect for
+standalone genital components in a fixed NPC appearance.
 
 ## Build Stages
 
@@ -242,18 +267,22 @@ apply step so a failed build cannot leave half a character in the project.
 Current implementation:
 
 - `tools/character_builder.py` validates manifests, generates isolated source
-  files, compares Patch with its handwritten baseline, and runs the complete
-  WolvenKit -> Blender -> WolvenKit head build;
+  files, stages template-owned assets, compares Patch with its handwritten
+  baseline, and runs the complete WolvenKit -> Blender -> WolvenKit head build;
 - `tools/character_head_blender.py` executes the template's embedded scripts in
   background Blender and injects manifest shape values without editing the
   `.blend` file;
-- `source/characters/patch.character.json` is Patch's schema-v1 manifest;
-- `source/characters/catalog.json` is the first curated bundle catalog; and
+- `source/characters/patch.character.json` and
+  `source/characters/female-example.character.json` are the checked male and
+  female schema-v1 manifests;
+- `source/characters/catalog.json` and
+  `source/characters/female-catalog.json` are frame-declared curated catalogs;
 - `tools/character_asset_index.py` derives searchable installed-game assets,
-  real mesh appearances, and isolated mesh previews; and
+  real mesh appearances, frame compatibility, and isolated mesh previews; and
 - `tools/character_ui.py` serves the local UI from `tools/character_ui`, wires
-  indexed PMA clothing selection into the same generator, and keeps generated
-  files under ignored `converted/characters` output.
+  frame-compatible indexed clothing selection into the same generator, accepts
+  a reviewed manifest through `--manifest`, and keeps generated files under
+  ignored `converted/characters` output.
 
 ## Catalogs
 
@@ -304,8 +333,11 @@ that can be previewed. The JSON lives under ignored
 source.
 
 PMA primary clothing meshes in the indexed `torso`, `legs`, and `feet` slots
-are now directly selectable. Preview preparation serializes the exact cooked
-`.mesh` to ignored CR2W-JSON metadata, reads its real
+are directly selectable for Patch. PWA `torso` and `legs` meshes are selectable
+for the female example. Female indexed feet remain preview-only because the
+tutorial boot is an NPC-skinned component rather than a reviewed garment anchor.
+Preview preparation serializes the exact cooked `.mesh` to ignored CR2W-JSON
+metadata, reads its real
 `meshMeshAppearance.name` values, and lets the user assign one of those values
 to the outfit. Generation updates the slot's primary component in both the
 normal and `compiledData` appearance copies. It deliberately keeps the curated
@@ -366,9 +398,10 @@ the reviewed face into import-ready game meshes.
 
 The UI also searches the generated installed-game index and can uncook a
 selected `.mesh` into an isolated GLB preview cache. For supported PMA torso,
-legs, and feet primary meshes it presents the appearances read from that exact
-resource and provides `Use in outfit`; the selected override appears in the
-outfit summary and is consumed by both validation and generation. Those item
+legs, and feet or PWA torso and legs primary meshes it presents the appearances
+read from that exact resource and provides `Use in outfit`; the selected
+override appears in the outfit summary and is consumed by both validation and
+generation. Those item
 previews use a neutral material today, and changing the selected mesh
 appearance does not yet recolor the isolated GLB. Exact skin, hair, and
 multilayer garment presentation requires RED material extraction/conversion or
@@ -382,11 +415,11 @@ serializes mutation jobs, serves generated files only from a character-specific
 allowlisted root, and writes reports atomically. Preview cache fingerprints
 include source/provider, tool, game, and exporter identities so upgrades cannot
 silently retain stale geometry. Indexed assignments are re-resolved against the
-server-owned installed-game index; category, PMA frame, primary-mesh role,
-depot path, and appearance membership are checked again before the manifest is
-accepted. PMA compatibility is taken from the final mesh filename rather than
-parent-directory tokens, and failed cache refreshes cannot promote old geometry
-or appearance metadata under a new fingerprint.
+server-owned installed-game index; category, active player-frame token,
+primary-mesh role, depot path, and appearance membership are checked again
+before the manifest is accepted. Frame compatibility is taken from the final
+mesh filename rather than parent-directory tokens, and failed cache refreshes
+cannot promote old geometry or appearance metadata under a new fingerprint.
 
 In-engine validation remains mandatory for clipping, garment behavior, facial
 animation, materials, LODs, and streaming.
@@ -439,9 +472,11 @@ Patch should prove the pipeline without changing the stable quest lifecycle:
 
 ## First Implementation Slice
 
-The first slice is complete:
+The first male/female slice is complete:
 
-1. Schema version 1 supports a male-average character with one appearance.
+1. Schema version 1 supports male-average and female-average characters with one
+   appearance and rejects incompatible templates, catalogs, head ranges, and
+   indexed mesh frames.
 2. The curated catalog contains Patch's current hair, inner torso, legs, feet,
    and face-accessory bundles plus safe disable choices. It also contains the
    reviewed `hh_146` dread-undercut bundle with its complete binding topology.
@@ -477,6 +512,14 @@ The first slice is complete:
    six `CruidDict` values are regenerated by WolvenKit on each `.app`
    deserialize/serialize pass, so validate this resource structurally rather
    than requiring byte-identical `.app` round trips.
+9. The female example clones the dedicated 116-component root and the
+   35-component `casual` appearance with `WomanAverage`, rewrites all 18 opaque
+   tutorial mesh hashes to explicit character-owned depot paths, and stages
+   those meshes plus four referenced texture dependencies. Its 105-target PWA
+   core preview exposes creator values 1 through 22 with no unresolved targets.
+   A complete build rebuilt the four selected female head meshes as valid CR2W,
+   and the generated `.ent` and `.app` passed WolvenKit
+   deserialize/serialize validation with only the 18 known target-path hashes.
 
 The next slice is typed catalog enrichment and whole-character composition:
 replace the provisional primary-mesh-plus-curated-companion model with full
@@ -487,6 +530,12 @@ new identity. Indexed hair, head, arms, and player-item appearance resources
 remain discovery/preview-only; reviewed hair options can already be added as
 complete curated bundles. Patch's actual five shape values and the documented
 option-22 mismatch must be resolved before replacing his current head meshes.
+The female example is an authoring/validation fixture, not a shipping NPC: it
+still needs in-game appearance, animation, LOD, and deformation testing. Its
+full-body mesh retains internal references to the tutorial texture namespace,
+so those dependencies are staged at that source path for now; custom-pathing
+them requires patching the mesh's internal resource references. Female indexed
+feet also remain preview-only until a valid PWA garment anchor is reviewed.
 
 ## References
 

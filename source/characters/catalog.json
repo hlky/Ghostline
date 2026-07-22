@@ -1,7 +1,33 @@
 {
   "schema_version": 1,
   "id": "ghostline-curated-v1",
+  "frames": [
+    "male_average"
+  ],
   "categories": {
+    "genitals": {
+      "label": "Genitals",
+      "options": {
+        "template_enabled": {
+          "label": "Template genital meshes",
+          "description": "Retains the player-derived genital and pubic-hair meshes for a deliberately nude appearance.",
+          "component_names": [
+            "t0_pubic_hair",
+            "t0_peen"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No genital meshes",
+          "description": "Disables inherited genital and pubic-hair meshes for a permanently clothed NPC.",
+          "disable_components": [
+            "t0_pubic_hair",
+            "t0_peen"
+          ],
+          "changes": []
+        }
+      }
+    },
     "hair": {
       "label": "Hair",
       "options": {

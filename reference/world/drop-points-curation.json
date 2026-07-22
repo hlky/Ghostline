@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "fallback_nodes": [
+    {
+      "node_ref": "$/03_night_city/#c_city_center/corpo_plaza/corpo_plaza_drop_points_prefabXUE62AA/drop_point_003_prefabXWGYJHY",
+      "debug_name": "drop_point_003",
+      "sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-21_-1_0_0.streamingsector",
+      "node_index": null,
+      "position": {
+        "x": -1294.3252,
+        "y": -54.6758728,
+        "z": 2.15011501
+      },
+      "orientation": null,
+      "yaw_degrees": null,
+      "entity_template": "base\\gameplay\\devices\\drop_points\\drop_point.ent",
+      "appearance": "default",
+      "region": "city_center",
+      "area": "corpo_plaza",
+      "serialization_fallback": "WolvenKit 8.17.4 cannot serialize this sector because WindowBlindersControllerPS.windowBlindersSkillChecks has an unrelated RTTI mismatch. The NodeRef is present in the binary string table and the exact position is present in the canonical cooked multi-mappin data."
+    }
+  ],
+  "annotations": {
+    "$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y": {
+      "accessibility": "verified",
+      "runtime_map_label": "verified",
+      "notes": "Public Kabuki kiosk verified in game and in World Inspector on 2026-07-22. Use as the current Ghostline delivery target."
+    },
+    "$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_004_prefabBIYNP3Y": {
+      "accessibility": "rejected",
+      "runtime_map_label": "unvetted",
+      "notes": "Rejected for quest selection after the delivery marker led into inaccessible building geometry during the 2026-07-22 test."
+    }
+  },
+  "warnings": [
+    "A native DropPoint entity and cooked mappin evidence do not prove street accessibility. Keep random selection restricted to accessibility=verified."
+  ]
+}

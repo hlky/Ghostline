@@ -24,6 +24,8 @@ Before packing a changed scene, phase, world resource, or localization map:
 py -B -m unittest discover -s tests -v
 py -B .\tools\generate_scene.py audit --spec .\tools\gq000_patch_meet.scene-spec.json
 py -B .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\tools\gq000_patch_meet.scene-spec.json
+py -B .\tools\generate_cache_phase.py --dry-run
+py -B .\tools\generate_delivery_phase.py --dry-run
 py -B .\tools\explore_localization.py check
 ```
 
@@ -107,6 +109,7 @@ packed\
   archive\pc\mod\Ghostline.archive.xl
   r6\tweaks\ghostline\character_patch.yaml
   r6\tweaks\ghostline\faction_ghostline.yaml
+  r6\tweaks\ghostline\gq000_shards.yaml
   engine\config\base\user.ini
   r6\scripts\Tduality\autosave_is_Not_included.reds
 ```
@@ -126,11 +129,14 @@ staged source before distributing it.
 ## Runtime Dependencies
 
 - ArchiveXL is required for questphase, journal, localization, and streaming
-  registration.
-- TweakXL is required for `Character.GhostlinePatch` and the Ghostline faction
-  records. The current Patch shipping candidate exercises those records; the
-  local test install has TweakXL 1.11.3, but its runtime log is pending the
-  next game launch.
+  registration. It also patches
+  `mod\gq000\world\gq000_custom_devices.devices` into Night City's global
+  `03_night_city.devices` registry; the custom access point must not rely on
+  sector placement alone for controller lookup.
+- TweakXL is required for `Character.GhostlinePatch`, the Ghostline faction,
+  both readable Quiet Spine shard records, the separate datacache delivery
+  package, and `QuestRewards.gq000_completion` in `gq000_shards.yaml`. The
+  local test install uses TweakXL 1.11.3.
 - Patch still has unvalidated `ep1\...` dependencies; Phantom Liberty may
   become a hard requirement if those are retained.
 
@@ -152,12 +158,15 @@ safe to ship.
 After installing the staged tree, verify:
 
 - `red4ext\plugins\ArchiveXL\ArchiveXL.log` registers the root questphase,
-  journal, onscreen localization, subtitle map, VO map, and streaming block;
-- TweakXL load output is present before testing `Character.GhostlinePatch`;
+  journal, onscreen localization, subtitle map, VO map, streaming block, and
+  custom `.devices` resource patch;
+- TweakXL load output is present before testing `Character.GhostlinePatch`,
+  either `Items.GhostlineQuietSpine*` record, `Items.gq000_datacache`, or the
+  completion reward;
 - `r6\logs\redscript_rCURRENT.log` contains no new test-script errors;
-- the community actor, trigger progression, journal/mappin state, subtitles,
-  VO, scene exit, and next objective match the focused route in
-  `docs/testing.md`.
+- the community actors, trigger progression, journal/mappin state, subtitles,
+  VO, scene exit, cache breach, datacache deposit, Morrow thread, reward, and
+  quest completion match the focused route in `docs/testing.md`.
 
 Use a clean pre-Ghostline save for lifecycle tests. An archive/install hash
 match cannot reset quest facts, journal visited state, checkpoints, or a scene

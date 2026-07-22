@@ -5,6 +5,7 @@
   "block_path": "mod\\gq000\\world\\gq000_patch_meet.streamingblock",
   "quest_sector_path": "mod\\gq000\\world\\gq000_patch_meet.streamingsector",
   "always_loaded_sector_path": "mod\\gq000\\world\\gq000_always_loaded.streamingsector",
+  "device_registry_path": "mod\\gq000\\world\\gq000_custom_devices.devices",
   "streaming_box": "world",
   "origin": {
     "x": -795.7447,
@@ -41,11 +42,25 @@
       "ref": "#gq000_02_mp_cache",
       "sector": "always_loaded",
       "position": {
-        "from": "origin",
-        "distance": 300,
-        "bearing": 45
+        "x": -1000.02,
+        "y": 1497.2208,
+        "z": 8.3
       },
-      "yaw": "origin",
+      "yaw": 88.6,
+      "node_data": {
+        "max_streaming_distance": 360,
+        "streaming_distance": 320
+      }
+    },
+    {
+      "ref": "#gq000_03_mp_drop_point",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1168.66333,
+        "y": 1309.51709,
+        "z": 19.9768238
+      },
+      "yaw": 175,
       "node_data": {
         "max_streaming_distance": 360,
         "streaming_distance": 320
@@ -120,6 +135,66 @@
       "notifiers": [
         "quest"
       ]
+    },
+    {
+      "ref": "#gq000_02_tr_cache_arrive",
+      "position": {
+        "from": "#gq000_02_mp_cache",
+        "up": -6
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 25,
+        "segments": 16,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gq000_02_tr_cache_cleanup",
+      "position": {
+        "from": "#gq000_02_mp_cache",
+        "up": -8
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 75,
+        "segments": 20,
+        "height": 16
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 360,
+        "streaming_distance": 320
+      }
+    }
+  ],
+  "devices": [
+    {
+      "ref": "#gq000_02_ap_cache",
+      "kind": "access_point",
+      "position": {
+        "from": "#gq000_02_mp_cache"
+      },
+      "yaw": 178.6,
+      "appearance": "access_point_access_point_socket_f_neomil",
+      "buffer_id": 1,
+      "content_scale": "DeviceContentAssignment.Autoscaling",
+      "initial_state": "OFF",
+      "network_name": "QUIET SPINE RELAY",
+      "controller_class": "AccessPointControllerPS",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
     }
   ],
   "community": {
@@ -150,5 +225,111 @@
         "streaming_distance": 240
       }
     }
-  }
+  },
+  "communities": [
+    {
+      "ref": "#gq000_02_com_cache_guards",
+      "position": {
+        "from": "#gq000_02_mp_cache",
+        "up": -1.343
+      },
+      "yaw": 0,
+      "phase": "A",
+      "period": "Day",
+      "source_object_id": "auto",
+      "registry_node_id": "auto",
+      "registry_debug_name": "gq000_cache_guards_registry",
+      "active_on_start": 0,
+      "streaming_distance": 160,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "entries": [
+        {
+          "entry": "guard_ranged_m",
+          "character": "Character.jpn_tyger_claws_gangster2_ranged2_sidewinder_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "is_sequence": 1,
+          "spots": [
+            {
+              "ref": "#gq000_02_spot_guard_ranged_m",
+              "position": {
+                "x": -1004.0,
+                "y": 1493.2,
+                "z": 6.9581
+              },
+              "yaw": 90,
+              "workspot": "base\\workspots\\patrolling\\guard_stand.workspot",
+              "is_workspot_infinite": 0,
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            },
+            {
+              "ref": "#gq000_02_spot_guard_ranged_m_patrol_02",
+              "position": {
+                "x": -1005.5,
+                "y": 1493.2,
+                "z": 6.9581
+              },
+              "yaw": -90,
+              "workspot": "base\\workspots\\patrolling\\guard_stand.workspot",
+              "is_workspot_infinite": 0,
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            }
+          ]
+        },
+        {
+          "entry": "guard_ranged_f",
+          "character": "Character.jpn_tyger_claws_biker2_ranged2_copperhead_wa",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq000_02_spot_guard_ranged_f",
+              "position": {
+                "x": -1004.8,
+                "y": 1496.4,
+                "z": 6.957
+              },
+              "yaw": 45,
+              "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__02.workspot",
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            }
+          ]
+        },
+        {
+          "entry": "guard_melee",
+          "character": "Character.jpn_tyger_claws_biker1_melee1_baseball_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq000_02_spot_guard_melee",
+              "position": {
+                "x": -1002.4,
+                "y": 1491.0,
+                "z": 6.957
+              },
+              "yaw": 20,
+              "workspot": "base\\workspots\\master\\master_generic__stand_ground__guard__01.workspot",
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

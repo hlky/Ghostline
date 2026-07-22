@@ -37,6 +37,24 @@ kept at `source/characters/templates/patch-original.app.json`, and its original
 catalog selections' semantic equivalence remains covered by
 `tests/test_character_builder.py`.
 
+Validate and generate the checked female-average example with the tutorial path
+recorded in its reviewed manifest:
+
+```powershell
+py -B .\tools\character_builder.py `
+  --manifest .\source\characters\female-example.character.json validate
+py -B .\tools\character_builder.py `
+  --manifest .\source\characters\female-example.character.json generate `
+  --out .\converted\characters\female_example
+```
+
+Generation rewrites the female tutorial's 18 numeric mesh resource IDs to
+explicit `mod\ghostline\characters\female_example\...` paths and stages only
+the referenced meshes. Four body/head texture dependencies are also staged at
+their existing tutorial depot paths because those paths are embedded inside the
+source meshes. The manifest currently declares Phantom Liberty because the
+female root retains EP1 references.
+
 Patch's checked-in manifest intentionally leaves its five head-shape values
 unset because the original preset is unknown. Check the head toolchain without
 building by supplying temporary values:
@@ -61,11 +79,34 @@ the character-creator cheat sheet documents value 22, the exported GLBs have no
 `h21` target. The builder blocks 22 until the offset is resolved; the earlier
 shape-22 smoke run was a successful toolchain pass but a geometry no-op.
 
+The female PWA core contains 21 named variants for each of five facial regions,
+including `h21`; female-average creator values 1 through 22 are therefore
+available. For example, this checks the female shape-22 build without invoking
+Blender:
+
+```powershell
+py -B .\tools\character_builder.py `
+  --manifest .\source\characters\female-example.character.json head `
+  --workspace .\converted\characters\female_example\head-build `
+  --dry-run `
+  --shape eyes=22 --shape nose=22 --shape mouth=22 `
+  --shape jaw=22 --shape ears=22
+```
+
 Prepare the morph-preserving browser source without running Blender:
 
 ```powershell
 py -B .\tools\character_builder.py preview `
   --out .\converted\characters\patch\preview
+```
+
+Use the same command with `--manifest` before `preview` for the female PWA
+source:
+
+```powershell
+py -B .\tools\character_builder.py `
+  --manifest .\source\characters\female-example.character.json preview `
+  --out .\converted\characters\female_example\preview
 ```
 
 Add `--all-head-parts` only when testing overlays. The default exports the
@@ -90,26 +131,38 @@ Start the local creator with:
 ```powershell
 npm install --prefix .\tools\character_ui --ignore-scripts
 py -B .\tools\character_ui.py --open
+py -B .\tools\character_ui.py `
+  --manifest .\source\characters\female-example.character.json --open
 ```
 
-The UI and CLI use `source/characters/patch.character.json` and
-`source/characters/catalog.json`. UI generation and head builds are isolated
-under ignored `converted/characters`. The pinned Three.js dependency stays
-local to `tools/character_ui/node_modules`. The browser renders the real
-morph-target head, updates facial shapes client-side, searches the generated
-installed-game index, and uncooks a selected `.mesh` to an isolated GLB on
-demand. Supported PMA primary meshes in the `torso`, `legs`, and `feet` slots
-also expose the real appearance names read from the cooked mesh: choose an
+Without `--manifest`, the UI and CLI use
+`source/characters/patch.character.json` and `source/characters/catalog.json`.
+The manifest option switches the trusted server-side manifest and its declared
+catalog; client requests cannot replace either path. UI generation and head
+builds are isolated under ignored `converted/characters`. The pinned Three.js
+dependency stays local to `tools/character_ui/node_modules`. The browser
+renders the real frame-specific morph-target head, updates facial shapes
+client-side, searches the generated installed-game index, and uncooks a
+selected `.mesh` to an isolated GLB on demand. Supported PMA primary meshes in
+the `torso`, `legs`, and `feet` slots and PWA primary meshes in `torso` and
+`legs` expose the real appearance names read from the cooked mesh: choose an
 appearance and click `Use in outfit`. The selection is stored under
 `appearance.indexed_overrides`, summarized above the curated controls, and
-applied during source generation. Use the `Head` toolbar button to return from
-an asset preview.
+applied during source generation. PWA feet remain preview-only until the female
+catalog has a reviewed garment anchor. Use the `Head` toolbar button to return
+from an asset preview.
 
 The server intentionally accepts loopback hosts only. Browser requests may
 change identity, selections, and head values, but template paths, source roots,
 morphtarget lists, output definitions, WolvenKit, Blender, and game paths are
 reloaded from the reviewed server-side manifest. Build/index operations are
 serialized and JSON reports are replaced atomically.
+
+The Python server does not hot-reload backend changes. After updating the
+character tooling, stop and restart `tools/character_ui.py` before reloading the
+page; otherwise a newer frontend can be paired with an older bootstrap API. The
+UI detects that mismatch and reports `Restart required` instead of failing with
+a JavaScript property-access error.
 
 Preview caches are fingerprinted. Head entries include the source CR2W hash and
 tool/game identities; installed meshes include their provider-archive identity,
@@ -121,11 +174,12 @@ shape validation succeed. Assignment compatibility uses frame tokens from the
 mesh filename; path-wide tokens remain discovery metadata and cannot make a
 PWA mesh assignable merely because a parent folder contains `pma`.
 
-The curated catalog remains deliberately small: Patch's original visible
-hair/clothing bundles, the complete `hh_146` dread-undercut topology, and their
-disable choices. Catalog hair bindings can rebuild component type, skinning,
-parent transforms, animgraph, rig, and NPC shadow in both CR2W component copies;
-new handle IDs are allocated above the template's existing maximum. An indexed torso/legs/feet
+The curated catalogs remain deliberately small: Patch's original visible
+hair/clothing bundles, the complete `hh_146` dread-undercut topology, and the
+female tutorial's casual hair/torso/legs/boots anchors, with disable choices.
+Catalog hair bindings can rebuild component type, skinning, parent transforms,
+animgraph, rig, and NPC shadow in both CR2W component copies; new handle IDs are
+allocated above the template's existing maximum. An indexed supported-slot
 selection replaces only the primary mesh in the corresponding curated bundle,
 in both the normal and `compiledData` copies, while retaining its existing
 cuff/shadow companion. This makes index rows usable now but is not a complete
@@ -160,6 +214,47 @@ py .\tools\explore_questphase.py --file .\source\raw\mod\gq000\phases\gq000.ques
 
 Large lists are bounded by default. Use `--limit`, `--offset`, or `--limit 0`
 when more rows are needed.
+
+### Post-Accept Cache Phase Generator
+
+`tools/generate_cache_phase.py` is the source of truth for
+`gq000_post_accept.questphase.json`. It deterministically emits the current
+linear cache flow and validates handle definitions, references, unique quest
+IDs, the prefab root, and node count.
+
+```powershell
+py -B .\tools\generate_cache_phase.py --dry-run
+py -B .\tools\generate_cache_phase.py
+py -B -m unittest tests.test_generate_cache_phase -v
+py -B .\tools\explore_questphase.py `
+  --file .\source\raw\mod\gq000\phases\gq000_post_accept.questphase.json `
+  summary
+```
+
+Do not hand-patch the generated raw phase. Change the generator and its focused
+tests, regenerate, then run the WolvenKit deserialize/serialize round trip.
+
+### Delivery Phase Generator
+
+`tools/generate_delivery_phase.py` is the source of truth for
+`gq000_delivery.questphase.json`. It emits the native drop-point reservation,
+deposit-fact gate, Morrow phone branches, completion reward, and quest success
+flow. Validation covers deterministic output, graph topology, the exact live
+Kabuki NodeRef, item/fact names, journal path classes and file indexes, both
+phone replies, reward record, and handle resolution.
+
+```powershell
+py -B .\tools\generate_delivery_phase.py --dry-run
+py -B .\tools\generate_delivery_phase.py
+py -B -m unittest tests.test_generate_delivery_phase -v
+py -B .\tools\explore_questphase.py `
+  -f .\source\raw\mod\gq000\phases\gq000_delivery.questphase.json `
+  summary
+```
+
+The reserve event is intentionally a side branch after the package inventory
+gate. Do not put the deposit fact wait behind the EventManager output: the
+vanilla delivery graphs do not consume that output.
 
 ## Scene Explorer
 
@@ -282,6 +377,19 @@ under `reference/world` into CR2W-JSON companions.
 .\tools\serialize_reference_world.ps1
 ```
 
+`tools/index_drop_points.py` queries the checked 103-device native drop-point
+catalog and defaults to the separately reviewed safe pool:
+
+```powershell
+py -B .\tools\index_drop_points.py list
+py -B .\tools\index_drop_points.py choose --seed gq001
+py -B .\tools\index_drop_points.py list `
+  --include-unvetted --region watson --area kabuki
+```
+
+See `docs/drop-points.md` for rebuild provenance, curation rules, and the
+runtime-branching requirement.
+
 `tools/explore_world.py` inspects deserialized `.streamingblock` and
 `.streamingsector` CR2W-JSON.
 
@@ -304,6 +412,25 @@ py .\tools\explore_world.py --file .\source\raw\mod\gq000\world noderefs --limit
 py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
 ```
 
+`tools/find_collision_instances.py` fingerprints a World Inspector collision
+actor by its shape hash and lists matching actors in a serialized sector. This
+is useful when the selected object is baked into a composite collision node
+rather than represented by a standalone mesh or entity node. Actor indices are
+zero-based.
+
+```powershell
+py .\tools\find_collision_instances.py `
+  --file H:\Ghostline-analysis\gq000-cache-20260722\node-cabinet-raw\exterior_-8_11_0_1.streamingsector.json `
+  --debug-name NormalCollisionNode_087 `
+  --actor 36 `
+  --source-prefab-hash 8325780084261042030
+
+py .\tools\find_collision_instances.py `
+  --file .\another.streamingsector.json `
+  --shape-hash 12135205187229491652 `
+  --json
+```
+
 ## World Generator
 
 `tools/generate_world.py` turns captured in-game coordinates into raw
@@ -311,6 +438,12 @@ py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
 meeting source is `tools/gq000_patch_meet.world.json`. The checked-in
 `tools/gq000_world_spec.example.json` uses placeholder/reference coordinates
 and is tutorial input only. The full spec reference is `tools/world_spec.md`.
+
+The generator now supports several communities, several entries/spots per
+community, and native access-point devices. The production spec uses those
+features for three inactive Tyger Claw guards and the dormant Quiet Spine
+relay. Access-point entity-instance buffers must use a nonzero ID distinct
+from the sector node-data buffer; the production device reserves buffer `1`.
 
 Distances in specs are world-coordinate units: local `forward`, `right`,
 `distance`, trigger widths/depths, and radii all use the same scale as captured
@@ -334,6 +467,8 @@ the same reviewed spec:
 py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json
 py -B -m unittest discover -s tests -v
 py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world nodes --type Device --limit 0
+py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
 py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --register --deserialize
 ```
 

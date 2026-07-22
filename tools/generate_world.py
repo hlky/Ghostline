@@ -64,6 +64,30 @@ class MeasurePoint:
     position: Vec3
 
 
+@dataclass(frozen=True)
+class CommunitySpot:
+    spec: dict[str, Any]
+    ref: str
+    full_ref: str
+    global_node_id: int
+    position: Vec3
+    yaw: float
+
+
+@dataclass(frozen=True)
+class CommunityEntry:
+    spec: dict[str, Any]
+    spots: tuple[CommunitySpot, ...]
+
+
+@dataclass(frozen=True)
+class DeviceRegistryEntry:
+    node_ref: str
+    node_hash: int
+    controller_class: str
+    position: Vec3
+
+
 class HandleAllocator:
     def __init__(self) -> None:
         self.next_id = 0
@@ -428,6 +452,119 @@ def trigger_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> di
     }
 
 
+def access_point_instance_data(spec: dict[str, Any], handles: HandleAllocator) -> dict[str, Any] | None:
+    if not int(spec.get("instance_data", 1)):
+        return None
+    return {
+        "HandleId": handles.take(),
+        "Data": {
+            "$type": "entEntityInstanceData",
+            "buffer": {
+                # Buffer 0 belongs to the sector's main node-data buffer.
+                # Instance packages need a different file-unique buffer ID.
+                "BufferId": str(spec.get("buffer_id", "1")),
+                "Flags": 4063232,
+                "Type": "WolvenKit.RED4.Archive.Buffer.RedPackage, WolvenKit.RED4, Version=8.17.4.0, Culture=neutral, PublicKeyToken=null",
+                "Data": {
+                    "Version": 4,
+                    "Sections": 6,
+                    "CruidIndex": 0,
+                    "CruidDict": {"0": "0"},
+                    "Chunks": [
+                        {
+                            "$type": "AccessPoint",
+                            "contentScale": tweakdbid(spec.get("content_scale", "DeviceContentAssignment.Autoscaling")),
+                            "controllerTypeName": cname("AccessPointController"),
+                            "deviceState": spec.get("initial_state", "OFF"),
+                            "displayDescription": {"unk1": "0", "value": ""},
+                            "displayName": {"unk1": "0", "value": ""},
+                            "networkName": spec.get("network_name", "Local Network 1"),
+                            "tags": {"$type": "redTagList", "tags": []},
+                        }
+                    ],
+                },
+            },
+        },
+    }
+
+
+def device_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dict[str, Any]:
+    kind = str(spec.get("kind", "access_point")).lower()
+    if kind != "access_point":
+        raise SystemExit(f"Unsupported device kind '{kind}' for {ref}")
+    return {
+        "HandleId": handles.take(),
+        "Data": {
+            "$type": "worldDeviceNode",
+            "alphaHackStreamingDistanceOverride": float(spec.get("alpha_hack_streaming_distance_override", 0)),
+            "appearanceName": cname(spec.get("appearance", "access_point_access_point_socket_f_neomil")),
+            "debugName": cname(debug_name(ref, spec.get("debug_name"))),
+            "deviceClassName": cname(spec.get("device_class_name", "None")),
+            "deviceConnections": [],
+            "entityLod": int(spec.get("entity_lod", 0)),
+            "entityTemplate": resource_path(
+                normalize_depot_path(
+                    spec.get("entity_template", r"base\gameplay\devices\masters\access_points\accesspoint.ent")
+                )
+            ),
+            "instanceData": access_point_instance_data(spec, handles),
+            "ioPriority": spec.get("io_priority", "Immediate"),
+            "isHostOnly": 0,
+            "isVisibleInGame": 1,
+            "proxyScale": None,
+            "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
+            "tag": spec.get("tag", "None"),
+            "tagExt": spec.get("tag_ext", "None"),
+        },
+    }
+
+
+def device_registry(archive_path: Path, entries: list[DeviceRegistryEntry]) -> dict[str, Any]:
+    """Build the sparse device registry emitted by WolvenKit World Builder.
+
+    ArchiveXL merges this mod-owned resource into Night City's global device
+    registry. Without that merge, a worldDeviceNode can render and expose its
+    interaction while quest device-manager conditions still fail to resolve
+    its persistent controller reliably.
+    """
+
+    return {
+        "Header": {
+            "WolvenKitVersion": "8.17.4",
+            "WKitJsonVersion": "0.0.9",
+            "GameVersion": 2310,
+            "ExportedDateTime": now_utc(),
+            "DataType": "CR2W",
+            "ArchiveFileName": str(archive_path.resolve()),
+        },
+        "Data": {
+            "Version": 195,
+            "BuildVersion": 0,
+            "RootChunk": {
+                "$type": "gameDeviceResource",
+                "data": {
+                    "Data": {
+                        "$type": "gameDeviceResourceData",
+                        "unk1": [
+                            {
+                                "$type": "gameDeviceResourceData_Cls1",
+                                "children": [],
+                                "className": cname(entry.controller_class),
+                                "hash": str(entry.node_hash),
+                                "nodePosition": vector3(entry.position),
+                                "parents": [],
+                            }
+                            for entry in entries
+                        ],
+                        "version": 2,
+                    }
+                },
+            },
+            "EmbeddedFiles": [],
+        },
+    }
+
+
 def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dict[str, Any]:
     workspot = spec.get(
         "workspot",
@@ -472,10 +609,40 @@ def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> di
     }
 
 
-def community_area_node(spec: dict[str, Any], source_object_id: str, spot_hash: int, handles: HandleAllocator) -> dict[str, Any]:
-    entry = spec.get("entry", "patch")
-    phase = spec.get("phase", "default")
-    period = spec.get("period", "Day")
+def community_area_node(
+    spec: dict[str, Any],
+    source_object_id: str,
+    entries: list[CommunityEntry],
+    handles: HandleAllocator,
+) -> dict[str, Any]:
+    entries_data = []
+    for entry in entries:
+        entry_name = entry.spec.get("entry", "patch")
+        phase = entry.spec.get("phase", "default")
+        period = entry.spec.get("period", "Day")
+        entries_data.append(
+            {
+                "$type": "communityCommunityEntrySpotsData",
+                "entryName": cname(entry_name),
+                "phasesData": [
+                    {
+                        "$type": "communityCommunityEntryPhaseSpotsData",
+                        "entryPhaseName": cname(phase),
+                        "timePeriodsData": [
+                            {
+                                "$type": "communityCommunityEntryPhaseTimePeriodData",
+                                "isSequence": int(entry.spec.get("is_sequence", 0)),
+                                "periodName": cname(period),
+                                "spotNodeIds": [
+                                    {"$type": "worldGlobalNodeID", "hash": str(spot.global_node_id)}
+                                    for spot in entry.spots
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
     return {
         "HandleId": handles.take(),
         "Data": {
@@ -484,26 +651,7 @@ def community_area_node(spec: dict[str, Any], source_object_id: str, spot_hash: 
                 "HandleId": handles.take(),
                 "Data": {
                     "$type": "communityArea",
-                    "entriesData": [
-                        {
-                            "$type": "communityCommunityEntrySpotsData",
-                            "entryName": cname(entry),
-                            "phasesData": [
-                                {
-                                    "$type": "communityCommunityEntryPhaseSpotsData",
-                                    "entryPhaseName": cname(phase),
-                                    "timePeriodsData": [
-                                        {
-                                            "$type": "communityCommunityEntryPhaseTimePeriodData",
-                                            "isSequence": int(spec.get("is_sequence", 0)),
-                                            "periodName": cname(period),
-                                            "spotNodeIds": [{"$type": "worldGlobalNodeID", "hash": str(spot_hash)}],
-                                        }
-                                    ],
-                                }
-                            ],
-                        }
-                    ],
+                    "entriesData": entries_data,
                 },
             },
             "debugName": cname(debug_name(spec["ref"], spec.get("debug_name"))),
@@ -522,20 +670,81 @@ def community_area_node(spec: dict[str, Any], source_object_id: str, spot_hash: 
 def community_registry_node(
     spec: dict[str, Any],
     source_object_id: str,
-    spot_ref: str,
-    spot_hash: int,
-    spot_position: Vec3,
-    spot_yaw: float,
+    entries: list[CommunityEntry],
     handles: HandleAllocator,
 ) -> dict[str, Any]:
-    entry = spec.get("entry", "patch")
-    phase = spec.get("phase", "default")
-    period = spec.get("period", "Day")
-    appearances = spec.get("appearances", [spec.get("appearance", "default")])
-    if not isinstance(appearances, list):
-        appearances = [appearances]
+    registry_handle = handles.take()
+    template_handle = handles.take()
+    initial_states = []
+    spawn_entries = []
+    persistent_spots = []
+    for entry in entries:
+        entry_name = entry.spec.get("entry", "patch")
+        phase = entry.spec.get("phase", "default")
+        period = entry.spec.get("period", "Day")
+        appearances = entry.spec.get("appearances", [entry.spec.get("appearance", "default")])
+        if not isinstance(appearances, list):
+            appearances = [appearances]
+        initial_states.append(
+            {
+                "$type": "worldCommunityEntryInitialState",
+                "entryActiveOnStart": int(entry.spec.get("active_on_start", 1)),
+                "entryName": cname(entry_name),
+                "initialPhaseName": cname(phase),
+            }
+        )
+        spawn_entries.append(
+            {
+                "HandleId": handles.take(),
+                "Data": {
+                    "$type": "communitySpawnEntry",
+                    "characterRecordId": tweakdbid(entry.spec.get("character", "Character.GhostlinePatch")),
+                    "entryName": cname(entry_name),
+                    "initializers": [],
+                    "phases": [
+                        {
+                            "HandleId": handles.take(),
+                            "Data": {
+                                "$type": "communitySpawnPhase",
+                                "alwaysSpawned": entry.spec.get("always_spawned", "default__false_"),
+                                "appearances": [cname(value) for value in appearances],
+                                "phaseName": cname(phase),
+                                "prefetchAppearance": int(entry.spec.get("prefetch_appearance", 0)),
+                                "timePeriods": [
+                                    {
+                                        "$type": "communityPhaseTimePeriod",
+                                        "categories": [],
+                                        "hour": period,
+                                        "isSequence": int(entry.spec.get("is_sequence", 0)),
+                                        "markings": [],
+                                        "quantity": int(entry.spec.get("quantity", len(entry.spots))),
+                                        "spotNodeRefs": [node_ref(spot.full_ref) for spot in entry.spots],
+                                    }
+                                ],
+                            },
+                        }
+                    ],
+                    "spawnInView": entry.spec.get("spawn_in_view", "default__true_"),
+                },
+            }
+        )
+        for spot in entry.spots:
+            persistent_spots.append(
+                {
+                    "$type": "AISpotPersistentData",
+                    "globalNodeId": {"$type": "worldGlobalNodeID", "hash": str(spot.global_node_id)},
+                    "isEnabled": 1,
+                    "worldPosition": {
+                        "$type": "WorldPosition",
+                        "x": fixed_point(spot.position.x),
+                        "y": fixed_point(spot.position.y),
+                        "z": fixed_point(spot.position.z),
+                    },
+                    "yaw": spot.yaw,
+                }
+            )
     return {
-        "HandleId": handles.take(),
+        "HandleId": registry_handle,
         "Data": {
             "$type": "worldCommunityRegistryNode",
             "communitiesData": [
@@ -543,54 +752,13 @@ def community_registry_node(
                     "$type": "worldCommunityRegistryItem",
                     "communityAreaType": spec.get("community_area_type", "Regular"),
                     "communityId": {"$type": "gameCommunityID", "entityId": {"$type": "entEntityID", "hash": str(source_object_id)}},
-                    "entriesInitialState": [
-                        {
-                            "$type": "worldCommunityEntryInitialState",
-                            "entryActiveOnStart": int(spec.get("active_on_start", 1)),
-                            "entryName": cname(entry),
-                            "initialPhaseName": cname(phase),
-                        }
-                    ],
+                    "entriesInitialState": initial_states,
                     "template": {
-                        "HandleId": handles.take(),
+                        "HandleId": template_handle,
                         "Data": {
                             "$type": "communityCommunityTemplateData",
                             "crowdEntries": [],
-                            "entries": [
-                                {
-                                    "HandleId": handles.take(),
-                                    "Data": {
-                                        "$type": "communitySpawnEntry",
-                                        "characterRecordId": tweakdbid(spec.get("character", "Character.GhostlinePatch")),
-                                        "entryName": cname(entry),
-                                        "initializers": [],
-                                        "phases": [
-                                            {
-                                                "HandleId": handles.take(),
-                                                "Data": {
-                                                    "$type": "communitySpawnPhase",
-                                                    "alwaysSpawned": spec.get("always_spawned", "default__false_"),
-                                                    "appearances": [cname(value) for value in appearances],
-                                                    "phaseName": cname(phase),
-                                                    "prefetchAppearance": int(spec.get("prefetch_appearance", 0)),
-                                                    "timePeriods": [
-                                                        {
-                                                            "$type": "communityPhaseTimePeriod",
-                                                            "categories": [],
-                                                            "hour": period,
-                                                            "isSequence": int(spec.get("is_sequence", 0)),
-                                                            "markings": [],
-                                                            "quantity": int(spec.get("quantity", 1)),
-                                                            "spotNodeRefs": [node_ref(spot_ref)],
-                                                        }
-                                                    ],
-                                                },
-                                            }
-                                        ],
-                                        "spawnInView": spec.get("spawn_in_view", "default__true_"),
-                                    },
-                                }
-                            ],
+                            "entries": spawn_entries,
                             "spawnSetReference": cname(spec.get("spawn_set_reference", "None")),
                         },
                     },
@@ -606,20 +774,7 @@ def community_registry_node(
             "spawnSetNameToCommunityID": {"$type": "gameCommunitySpawnSetNameToID", "entries": []},
             "tag": "None",
             "tagExt": "None",
-            "workspotsPersistentData": [
-                {
-                    "$type": "AISpotPersistentData",
-                    "globalNodeId": {"$type": "worldGlobalNodeID", "hash": str(spot_hash)},
-                    "isEnabled": 1,
-                    "worldPosition": {
-                        "$type": "WorldPosition",
-                        "x": fixed_point(spot_position.x),
-                        "y": fixed_point(spot_position.y),
-                        "z": fixed_point(spot_position.z),
-                    },
-                    "yaw": spot_yaw,
-                }
-            ],
+            "workspotsPersistentData": persistent_spots,
         },
     }
 
@@ -754,14 +909,46 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
     prefab_root = str(spec["prefab_root"])
     quest_sector_path = normalize_depot_path(spec.get("quest_sector_path", rf"mod\{spec.get('name', 'ghostline')}\world\quest.streamingsector"))
     block_path = normalize_depot_path(spec.get("block_path", rf"mod\{spec.get('name', 'ghostline')}\world\all.streamingblock"))
-    community_spec = spec.get("community")
+    community_specs: list[dict[str, Any]] = []
+    if spec.get("community"):
+        community_specs.append(spec["community"])
+    extra_communities = spec.get("communities", [])
+    if not isinstance(extra_communities, list):
+        raise SystemExit("communities must be a list")
+    community_specs.extend(extra_communities)
     marker_specs = spec.get("markers", [])
+    device_specs = spec.get("devices", [])
+    if not isinstance(device_specs, list):
+        raise SystemExit("devices must be a list")
+    device_registry_path = None
+    if device_specs:
+        device_registry_path = normalize_depot_path(
+            spec.get(
+                "device_registry_path",
+                rf"mod\{spec.get('name', 'ghostline')}\world\custom_devices.devices",
+            )
+        )
+    device_buffer_ids: set[int] = set()
+    for device_index, device_spec in enumerate(device_specs):
+        if not isinstance(device_spec, dict):
+            raise SystemExit(f"devices[{device_index}] must be an object")
+        if not int(device_spec.get("instance_data", 1)):
+            continue
+        try:
+            buffer_id = int(device_spec.get("buffer_id", 1))
+        except (TypeError, ValueError) as exc:
+            raise SystemExit(f"devices[{device_index}].buffer_id must be a positive integer") from exc
+        if buffer_id <= 0:
+            raise SystemExit(f"devices[{device_index}].buffer_id must not reuse sector buffer 0")
+        if buffer_id in device_buffer_ids:
+            raise SystemExit(f"devices[{device_index}].buffer_id must be unique within the sector")
+        device_buffer_ids.add(buffer_id)
     always_loaded_ref_specs = spec.get("always_loaded_node_refs", [])
     if always_loaded_ref_specs and not isinstance(always_loaded_ref_specs, list):
         raise SystemExit("always_loaded_node_refs must be a list")
     always_loaded_marker_specs = [item for item in marker_specs if item.get("sector") == "always_loaded"]
     always_loaded_path = None
-    if community_spec or always_loaded_ref_specs or always_loaded_marker_specs:
+    if community_specs or always_loaded_ref_specs or always_loaded_marker_specs:
         always_loaded_path = normalize_depot_path(
             spec.get("always_loaded_sector_path", rf"mod\{spec.get('name', 'ghostline')}\world\always_loaded.streamingsector")
         )
@@ -783,7 +970,8 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
     always_loaded_node_datas: list[dict[str, Any]] = []
     always_loaded_refs: list[str] = []
     always_loaded_sector: dict[str, Any] | None = None
-    registry_node_id: int | None = None
+    registry_node_ids: list[int] = []
+    device_registry_entries: list[DeviceRegistryEntry] = []
 
     def add_node(ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float, overrides: dict[str, Any] | None = None) -> None:
         full_ref = full_node_ref(prefab_root, ref_value)
@@ -826,20 +1014,88 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
         add_node(ref_value, trigger_node(item, ref_value, handles), pos, yaw, item.get("node_data"))
 
-    if community_spec:
-        spot_spec = community_spec.get("spot", {})
-        spot_ref_value = spot_spec.get("ref", "#gq000_01_spot_patch_bridge")
-        spot_ref = full_node_ref(prefab_root, spot_ref_value)
-        spot_position, spot_anchor_yaw = resolve_position(spot_spec.get("position"), anchors, f"community spot {spot_ref_value}")
-        spot_yaw = resolve_yaw(spot_spec.get("yaw"), anchors, spot_anchor_yaw)
-        spot_hash = int(spot_spec.get("global_node_id", node_ref_hash(spot_ref)))
+    for item in device_specs:
+        ref_value = item["ref"]
+        pos, anchor_yaw = resolve_position(item.get("position"), anchors, f"device {ref_value}")
+        yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
+        add_node(ref_value, device_node(item, ref_value, handles), pos, yaw, item.get("node_data"))
+        full_ref = full_node_ref(prefab_root, ref_value)
+        device_registry_entries.append(
+            DeviceRegistryEntry(
+                node_ref=full_ref,
+                node_hash=node_ref_hash(full_ref),
+                controller_class=str(item.get("controller_class", "AccessPointControllerPS")),
+                position=pos,
+            )
+        )
+
+    for community_index, community_spec in enumerate(community_specs):
+        if not isinstance(community_spec, dict):
+            raise SystemExit(f"communities[{community_index}] must be an object")
+        area_ref = community_spec["ref"]
         source_object_id = str(community_spec.get("source_object_id", "auto"))
         if source_object_id == "auto":
-            source_object_id = str(node_ref_hash(full_node_ref(prefab_root, community_spec["ref"])))
+            source_object_id = str(node_ref_hash(full_node_ref(prefab_root, area_ref)))
+
+        raw_entries = community_spec.get("entries")
+        if raw_entries is None:
+            raw_entries = [community_spec]
+        if not isinstance(raw_entries, list) or not raw_entries:
+            raise SystemExit(f"community {area_ref} entries must be a non-empty list")
+
+        resolved_entries: list[CommunityEntry] = []
+        for entry_index, raw_entry in enumerate(raw_entries):
+            if not isinstance(raw_entry, dict):
+                raise SystemExit(f"community {area_ref} entries[{entry_index}] must be an object")
+            entry_spec = dict(community_spec)
+            entry_spec.pop("entries", None)
+            entry_spec.update(raw_entry)
+            entry_name = str(entry_spec.get("entry", f"entry_{entry_index + 1}"))
+
+            raw_spots = raw_entry.get("spots")
+            if raw_spots is None:
+                raw_spots = entry_spec.get("spots")
+            if raw_spots is None:
+                raw_spots = [raw_entry.get("spot", community_spec.get("spot", {}))]
+            if not isinstance(raw_spots, list) or not raw_spots:
+                raise SystemExit(f"community {area_ref} entry {entry_name} spots must be a non-empty list")
+
+            resolved_spots: list[CommunitySpot] = []
+            inherited_spot = community_spec.get("spot", {})
+            for spot_index, raw_spot in enumerate(raw_spots):
+                if not isinstance(raw_spot, dict):
+                    raise SystemExit(f"community {area_ref} entry {entry_name} spot {spot_index} must be an object")
+                spot_spec = dict(inherited_spot)
+                spot_spec.update(raw_spot)
+                default_spot_ref = (
+                    "#gq000_01_spot_patch_bridge"
+                    if len(community_specs) == 1 and len(raw_entries) == 1 and len(raw_spots) == 1
+                    else f"#{local_ref_name(area_ref)}_{entry_name}_spot_{spot_index + 1}"
+                )
+                spot_ref_value = str(spot_spec.get("ref", default_spot_ref))
+                spot_ref = full_node_ref(prefab_root, spot_ref_value)
+                spot_position, spot_anchor_yaw = resolve_position(
+                    spot_spec.get("position"), anchors, f"community spot {spot_ref_value}"
+                )
+                spot_yaw = resolve_yaw(spot_spec.get("yaw"), anchors, spot_anchor_yaw)
+                spot_hash = int(spot_spec.get("global_node_id", node_ref_hash(spot_ref)))
+                if not 0 < spot_hash <= UINT64_MASK:
+                    raise SystemExit(f"community spot {spot_ref_value} global_node_id must be an unsigned 64-bit integer")
+                add_node(
+                    spot_ref_value,
+                    ai_spot_node(spot_spec, spot_ref_value, handles),
+                    spot_position,
+                    spot_yaw,
+                    spot_spec.get("node_data"),
+                )
+                resolved_spots.append(
+                    CommunitySpot(spot_spec, spot_ref_value, spot_ref, spot_hash, spot_position, spot_yaw)
+                )
+            resolved_entries.append(CommunityEntry(entry_spec, tuple(resolved_spots)))
 
         registry_node_id_value = community_spec.get("registry_node_id", "auto")
         if registry_node_id_value == "auto":
-            registry_seed_ref = full_node_ref(prefab_root, community_spec["ref"]) + "_registry"
+            registry_seed_ref = full_node_ref(prefab_root, area_ref) + "_registry"
             registry_node_id = node_ref_hash(registry_seed_ref)
         else:
             try:
@@ -850,17 +1106,17 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
             raise SystemExit("community.registry_node_id must be between 1 and 18446744073709551615")
         if registry_node_id == int(source_object_id):
             raise SystemExit("community.registry_node_id must differ from community.source_object_id")
-        if registry_node_id == spot_hash:
+        if any(registry_node_id == spot.global_node_id for entry in resolved_entries for spot in entry.spots):
             raise SystemExit("community.registry_node_id must differ from community.spot.global_node_id")
+        if registry_node_id in registry_node_ids:
+            raise SystemExit("community.registry_node_id values must be unique")
+        registry_node_ids.append(registry_node_id)
 
-        add_node(spot_ref_value, ai_spot_node(spot_spec, spot_ref_value, handles), spot_position, spot_yaw, spot_spec.get("node_data"))
-
-        area_ref = community_spec["ref"]
         area_position, area_anchor_yaw = resolve_position(community_spec.get("position"), anchors, f"community {area_ref}")
         area_yaw = resolve_yaw(community_spec.get("yaw"), anchors, area_anchor_yaw)
         add_node(
             area_ref,
-            community_area_node(community_spec, source_object_id, spot_hash, handles),
+            community_area_node(community_spec, source_object_id, resolved_entries, handles),
             area_position,
             area_yaw,
             community_spec.get("node_data"),
@@ -869,10 +1125,7 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         registry_node = community_registry_node(
             community_spec,
             source_object_id,
-            spot_ref,
-            spot_hash,
-            spot_position,
-            spot_yaw,
+            resolved_entries,
             always_handles,
         )
         registry_index = len(always_loaded_nodes)
@@ -913,14 +1166,15 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         always_loaded_node_datas.append(node_data(node_index, full_ref, pos, yaw, overrides))
         always_loaded_refs.append(full_ref)
 
-    if registry_node_id is not None:
+    if registry_node_ids:
         emitted_ref_hashes = {node_ref_hash(ref): ref for ref in [*refs, *always_loaded_refs]}
-        colliding_ref = emitted_ref_hashes.get(registry_node_id)
-        if colliding_ref is not None:
-            raise SystemExit(
-                "community.registry_node_id must differ from emitted world node refs; "
-                f"it collides with {colliding_ref}"
-            )
+        for registry_node_id in registry_node_ids:
+            colliding_ref = emitted_ref_hashes.get(registry_node_id)
+            if colliding_ref is not None:
+                raise SystemExit(
+                    "community.registry_node_id must differ from emitted world node refs; "
+                    f"it collides with {colliding_ref}"
+                )
 
     if always_loaded_path and (always_loaded_node_datas or always_loaded_nodes):
         registry_archive = depot_to_archive_path(archive_root, always_loaded_path)
@@ -962,12 +1216,33 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         always_archive = depot_to_archive_path(archive_root, always_loaded_path)
         write_json(always_raw, always_loaded_sector, dry_run)
         generated.append(GeneratedFile("always_loaded_sector", always_loaded_path, always_raw, always_archive))
+    if device_registry_path:
+        device_registry_raw = depot_to_raw_path(raw_root, device_registry_path)
+        device_registry_archive = depot_to_archive_path(archive_root, device_registry_path)
+        write_json(
+            device_registry_raw,
+            device_registry(device_registry_archive, device_registry_entries),
+            dry_run,
+        )
+        generated.append(
+            GeneratedFile(
+                "device_registry",
+                device_registry_path,
+                device_registry_raw,
+                device_registry_archive,
+            )
+        )
     write_json(block_raw, block, dry_run)
     generated.append(GeneratedFile("streaming_block", block_path, block_raw, block_archive))
     return generated
 
 
-def register_archive_xl(archive_xl: Path, block_path: str, dry_run: bool) -> None:
+def register_archive_xl(
+    archive_xl: Path,
+    block_path: str,
+    dry_run: bool,
+    device_registry_path: str | None = None,
+) -> None:
     try:
         import yaml
     except ImportError as exc:
@@ -988,6 +1263,19 @@ def register_archive_xl(archive_xl: Path, block_path: str, dry_run: bool) -> Non
         raise SystemExit("ArchiveXL 'streaming.blocks' entry exists but is not a list")
     if block_path not in blocks:
         blocks.append(block_path)
+    if device_registry_path:
+        resource = data.setdefault("resource", {})
+        if not isinstance(resource, dict):
+            raise SystemExit("ArchiveXL 'resource' entry exists but is not a mapping")
+        patches = resource.setdefault("patch", {})
+        if not isinstance(patches, dict):
+            raise SystemExit("ArchiveXL 'resource.patch' entry exists but is not a mapping")
+        targets = patches.setdefault(device_registry_path, [])
+        if not isinstance(targets, list):
+            raise SystemExit(f"ArchiveXL resource patch entry for {device_registry_path} is not a list")
+        global_devices = r"base\worlds\03_night_city\_compiled\default\03_night_city.devices"
+        if global_devices not in targets:
+            targets.append(global_devices)
     if dry_run:
         return
     archive_xl.parent.mkdir(parents=True, exist_ok=True)
@@ -1019,7 +1307,13 @@ def command_generate(args: argparse.Namespace) -> None:
     generated = build_world(spec, args.raw_root, args.archive_root, dry_run=args.dry_run)
     if args.register:
         block = next(item for item in generated if item.kind == "streaming_block")
-        register_archive_xl(args.archive_xl, block.depot_path, args.dry_run)
+        registry = next((item for item in generated if item.kind == "device_registry"), None)
+        register_archive_xl(
+            args.archive_xl,
+            block.depot_path,
+            args.dry_run,
+            registry.depot_path if registry else None,
+        )
     if args.deserialize and not args.dry_run:
         deserialize(generated, args.wolvenkit)
     rows = [

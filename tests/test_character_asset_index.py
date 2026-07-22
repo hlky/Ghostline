@@ -131,6 +131,21 @@ class CharacterAssetIndexTests(unittest.TestCase):
         self.assertEqual(support["manifest_category"], "feet")
         self.assertEqual(assignment["override"]["mesh_appearance"], "black_red")
 
+    def test_pwa_primary_clothing_is_assignable_only_to_female_frame(self) -> None:
+        asset = character_asset_index.classify_asset(
+            r"base\characters\garment\player_equipment\torso\shirt\t1_001_pwa_shirt.mesh",
+            "base",
+        )
+        female_support = character_asset_index.selection_support(asset, "pwa")
+        assignment = character_asset_index.canonical_indexed_override(
+            asset, "default", ["default"], "pwa"
+        )
+
+        self.assertTrue(female_support["supported"], female_support["reasons"])
+        self.assertEqual(female_support["required_frame"], "pwa")
+        self.assertEqual(assignment["manifest_category"], "inner_torso")
+        self.assertFalse(character_asset_index.selection_support(asset, "pma")["supported"])
+
     def test_assignment_rejects_wrong_frame_companion_and_unknown_appearance(self) -> None:
         wrong_frame = character_asset_index.classify_asset(
             r"base\characters\garment\player_equipment\feet\boots\s1_001_pwa_boots.mesh",

@@ -12,9 +12,10 @@ Use this document for the overall runtime model. Use
 
 `patch` is the logical scene actor and community-entry name. The current world
 registry maps that entry to `Character.GhostlinePatch`. The preceding Judy
-isolation run validated the Ghostline lifecycle; the custom record, entity,
-appearance, faction, and dependencies are the variables in the current
-installed test candidate.
+isolation run validated the Ghostline lifecycle, and subsequent runtime tests
+confirmed the custom record, entity, appearance, faction, animation, and
+streaming. The active candidate changes only the post-meeting cache-to-delivery
+route; it preserves the working Patch lifecycle.
 
 The community phase must request exposed root appearance
 `ghostline_patch_default`. The root mapping then selects internal `.app`
@@ -33,7 +34,8 @@ the main lesson from the stable meeting build.
 | Root questphase | Phone and journal staging, phone state facts, child-phase sequencing, and the accepted-state branch. |
 | Meeting questphase | Community activation, spawn readiness, the broad setup gate, checkpoint, scene launch, and scene-exit side effects. |
 | Scene | Actor acquisition, cinematic AI tier, inner approach timing, dialogue, choices, and a named exit signal. |
-| Post-accept questphase | Cache objective, description, mappin, and started-fact skeleton. |
+| Post-accept questphase | Guard activation and hostility, cache objectives and mappins, native breach, shard/package grants, leave-area beat, and encounter cleanup. |
+| Delivery questphase | Datacache inventory gate, native drop-point reservation and deposit fact, delivery UI, Morrow phone branch, reward, completion fact, and quest success. |
 
 The scene acquires the logical Patch-role actor from an already
 active and validated community. It does not own community spawning. Conversely,
@@ -49,7 +51,9 @@ flowchart LR
     Scene["gq000_patch_meet.scene<br/>approach timing and dialogue"]
     Accept["job_accept<br/>objective cleanup and accepted fact"]
     Gate["root accepted-state check"]
-    Post["gq000_post_accept.questphase<br/>cache objective and marker"]
+    Post["gq000_post_accept.questphase<br/>guards, breach, shards, and cleanup"]
+    Delivery["gq000_delivery.questphase<br/>drop-point reservation and deposit"]
+    Morrow["Morrow: Quiet Spine<br/>choice reply, reward, and quest success"]
     End["terminate"]
 
     Root --> Meet
@@ -59,7 +63,9 @@ flowchart LR
     Accept --> Gate
     Gate -->|gq000_job_accepted = 1| Post
     Gate -->|gq000_job_accepted = 0| End
-    Post --> End
+    Post --> Delivery
+    Delivery --> Morrow
+    Morrow --> End
 ```
 
 ### Root Questphase
@@ -86,6 +92,7 @@ input
   -> run gq000_patch_meet.questphase
   -> if gq000_job_accepted == 1:
        run gq000_post_accept.questphase
+       run gq000_delivery.questphase
      else:
        terminate
 ```
@@ -171,18 +178,105 @@ questphase scene node. A scene end node is not enough by itself; an
 
 ### Post-Accept Questphase
 
-The current `gq000_post_accept.questphase` is deliberately small:
+The generated `gq000_post_accept.questphase` owns the complete first cache
+slice:
 
 ```text
 activate and track Reach Cache objective
   -> activate cache description
   -> activate cache mappin
   -> set gq000_02_started = 1
+  -> force-disable #gq000_02_ap_cache
+  -> activate the whole #gq000_02_com_cache_guards community
+  -> wait for CharacterSpawned > 0 across the entire guard community
+  -> wait for V inside #gq000_02_tr_cache_arrive
+     +-> succeed Reach Cache and hide its mappin
+     |   -> continue the extraction/shard/cleanup flow below
+     +-> for each named guard: neutral attitude group -> hostile attitude group
+         -> join all three transitions
+         -> for each named guard: set immediate combat target to V
+         -> explicitly inject V as that guard's combat threat
+  -> activate and track Extract Cache objective and description
+  -> activate the terminal-specific mappin on #gq000_02_ap_cache/UI_Interaction
+  -> force-enable #gq000_02_ap_cache
+  -> wait for WasHackingMinigameSucceeded
+  -> set gq000_cache_acquired = 1
+  -> wait one real-time second for the hacking presentation to close
+  -> force-disable #gq000_02_ap_cache
+  -> succeed Extract Cache
+  -> hide the terminal-specific extract mappin
+  -> activate quiet_spine_01 and quiet_spine_02
+  -> grant Items.gq000_datacache plus both Items.GhostlineQuietSpine* shards with notifications
+  -> activate and track `Leave the relay area.` and its description
+  -> wait for V outside #gq000_02_tr_cache_cleanup
+  -> succeed Leave Relay Area
+  -> deactivate the whole guard community
   -> terminate
 ```
 
-This is a UI/progression skeleton. It does not detect reaching, acquiring, or
-delivering the cache and does not complete the quest.
+The guard community does not block the breach: no kill condition exists, so V
+can fight, evade, or breach under pressure. Runtime proved that the arrival
+condition fired—the objective changed to extraction—but the original
+Badlands-border-patrol threat pulse left all three guards passive. Its implicit
+target was valid only for units that already had a current threat. The active
+phase instead copies the stronger per-entry setup from vanilla
+`mq022_combat.questphase`: `neutral -> hostile`, immediate combat target V, and
+`AIInjectCombatThreatCommandParams` with explicit `#player` target and
+`dontForceHostileAttitude = 0`. This branch runs beside, rather than in front
+of, the objective chain, so a dead or unresolved guard cannot stall the quest.
+Cleanup happens only after acquisition and after V leaves the larger site
+radius, avoiding visible despawns. This phase acquires the cache, puts the
+distinct delivery package in V's inventory, and hands off to the sibling
+delivery phase after guard cleanup.
+
+### Delivery Questphase
+
+The generated `gq000_delivery.questphase` keeps drop-point and phone state out
+of the already runtime-proven cache encounter:
+
+```text
+activate and track Deliver Datacache objective and description
+  -> activate its mappin while clearing previous GPS/mappin state
+  -> wait until V owns Items.gq000_datacache
+     +-> fire ReserveItemToThisDropPoint at live Kabuki drop_point_009
+     +-> wait for gq000_datacache > 0
+  -> set gq000_cache_delivered = 1
+  -> succeed delivery objective and hide its mappin
+  -> wait one real-time second
+  -> activate Morrow's authentication and route messages
+  -> activate the two-choice response group
+     +-> pay choice Succeeded -> activate payment reply --+
+     +-> route choice Succeeded -> activate route reply ---+-> final message
+  -> wait until Morrow's final message is visited
+  -> grant QuestRewards.gq000_completion
+  -> set gq000_completed = 1
+  -> succeed quests/minor_quest/gq000
+  -> terminate
+```
+
+The reserve event is fire-and-forget, matching vanilla delivery phases; its
+output is deliberately not a progression gate. This fan-out matches the
+`sts_wat_kab_05` fixer delivery: `ReserveItemToThisDropPoint` reaches the live
+device through `DropPointManager`/`DropPointControllerPS`, and the controller
+increments the reserved item's `friendlyName`. Accordingly,
+`Items.gq000_datacache` explicitly owns `friendlyName: gq000_datacache`. The
+authored semantic fact is set only after that engine-facing deposit fact fires.
+
+The live target is
+`$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y`.
+The journal mappin deliberately does not use that cross-world NodeRef: an
+ArchiveXL runtime log showed the cooked mappin position could not be resolved.
+Instead it targets always-loaded static marker `#gq000_03_mp_drop_point` at the
+same coordinates and uses yellow `DefaultQuestVariant`. The native machine
+still owns the deposit interaction, so no custom drop-point device or device-
+registry entry is required.
+
+The delivery mappin activation sets `disablePreviousMappins: 1`. Runtime
+testing showed that merely inactivating earlier journal pins could leave a
+second dotted GPS leg pointing back toward the bridge even though the short
+solid route already reached the correct drop point. The delivery deactivation
+node keeps the normal value `0`; only a transition that establishes the new
+tracked destination clears prior state.
 
 ## Persistent State And Journal Paths
 
@@ -195,16 +289,32 @@ set. The current staging facts are:
 | `gq000_phone_reply_on_my_way` | Root questphase | The meeting reply was visited; this is not job acceptance. |
 | `gq000_job_accepted` | Meeting questphase after `job_accept` | The dialogue acceptance route completed and the root may start post-accept. |
 | `gq000_02_started` | Post-accept questphase | The cache objective, description, and mappin were activated. |
+| `gq000_cache_acquired` | Post-accept questphase immediately after a successful native breach | The device success event fired; the phase may now finish presentation, grant both readable shards, and start the leave-area beat. |
+| `gq000_datacache` | Vanilla drop-point controller | The reserved package was deposited; this name comes from the item's `friendlyName`. |
+| `gq000_cache_delivered` | Delivery questphase | The native deposit fact fired and the delivery objective may close. |
+| `gq000_completed` | Delivery questphase after Morrow's final message is visited | The debrief and reward finished and the quest may be marked Succeeded. |
 
 Journal nodes must use the full `gameJournalPath.realPath`. Their
 `fileEntryIndex` is the zero-based path-component index of the containing
 `gameJournalFileEntry`, not the leaf index and not a CR2W handle:
 
 - phone paths under `contacts/patch/...` use `fileEntryIndex: 1` for `patch`;
+- phone paths under `contacts/morrow/...` use `fileEntryIndex: 1` for `morrow`;
 - quest paths under `quests/minor_quest/gq000/...` use `fileEntryIndex: 2` for
   `gq000`;
 - POI paths under `points_of_interest/minor_quests/...` use
   `fileEntryIndex: 1` for `minor_quests`.
+- archived-conversation paths under
+  `onscreens/emails/quests/minor_quest/gq000/shards/...` use
+  `fileEntryIndex: 5` for `shards`.
+
+Activating a `gameJournalOnscreen` entry makes it available to the journal but
+does not itself provide an obvious pickup notification. The cache phase also
+grants two `ItemType.Gen_Readable` TweakXL items. Each item's secondary `Read`
+action points back to the matching onscreen path, so the player receives a
+visible item acquisition and can open either archived conversation later from
+the Journal. Both items are added automatically after a successful breach;
+there is no separate world pickup.
 
 Journal entry IDs and paths are not localization IDs. Journal fields refer to
 onscreen localization by secondary key as described below.
@@ -230,6 +340,10 @@ Other active references are:
 | `#gq000_01_sm_patch_bridge` | Scene placement marker. |
 | `#gq000_01_mp_patch_bridge` | Meeting journal/POI map-pin marker. |
 | `#gq000_02_mp_cache` | Post-accept cache map-pin marker. |
+| `#gq000_02_tr_cache_arrive` | 25-unit arrival gate that swaps Reach Cache for Extract Cache. |
+| `#gq000_02_tr_cache_cleanup` | 75-unit delayed guard-cleanup boundary. |
+| `#gq000_02_ap_cache` | Native Ghostline-owned access point; starts disabled and is phase-controlled. |
+| `#gq000_02_com_cache_guards` | Inactive-on-start three-entry Tyger Claw community. |
 
 The trigger volumes, AI spot, and community area live in the streamed Quest
 sector. The concrete scene/map marker nodes and community registry live in the
@@ -277,11 +391,12 @@ one-entry table.
 
 The current scene assigns both performers to slot `0` and emits one generic
 lipsync resource. The otherwise-identical pre-sort shared-slot baseline
-completed the full meeting route; the current sorted-locStore candidate
-preserves that diagnostic configuration but still needs its focused runtime
-regression. This is not the desired final facial-animation setup. A final
-two-slot design must provide two distinct, valid NPC/V resources and confirm
-that both remain addressable after cooking.
+completed the full meeting route, and the sorted-locStore build subsequently
+confirmed Patch, all five choice labels, dialogue, subtitles, VO, and scene
+exit together. The shared slot remains a diagnostic configuration rather than
+the desired final facial-animation setup. A final two-slot design must provide
+two distinct, valid NPC/V resources and confirm that both remain addressable
+after cooking.
 
 Other required invariants:
 
@@ -429,8 +544,8 @@ Ghostline generator contract, not a universal vanilla rule; audited vanilla
 scenes also contain source-before-blank pairs. The generator plus checked-in
 raw equality regression preserve the exact descriptor/payload mapping. The
 validator separately checks locale blocks, numeric ordering, at least two
-`db_db` payloads, and a blank payload first. Runtime confirmation of the
-intended five-label repair is still pending for the sorted-locStore build.
+`db_db` payloads, and a blank payload first. Runtime testing confirms that this
+ordering displays all five intended choice labels correctly.
 
 ## ID Domains
 
@@ -464,6 +579,10 @@ The current sources of truth are:
 - generated raw scene:
   `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`;
 - packed scene: `source/archive/mod/gq000/scenes/gq000_patch_meet.scene`.
+- cache-phase generator: `tools/generate_cache_phase.py`;
+- delivery-phase generator: `tools/generate_delivery_phase.py`;
+- generated delivery phase:
+  `source/raw/mod/gq000/phases/gq000_delivery.questphase.json`.
 
 Do not edit the packed scene as text. Change the manifest/spec or generator,
 regenerate raw CR2W-JSON, validate the checked-in raw artifact, then use
@@ -486,6 +605,8 @@ py -B .\tools\generate_scene.py audit --spec .\tools\gq000_patch_meet.scene-spec
 py -B .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --dry-run
 py -B .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json
 py -B .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\tools\gq000_patch_meet.scene-spec.json
+py -B .\tools\generate_cache_phase.py --dry-run
+py -B .\tools\generate_delivery_phase.py --dry-run
 py -B -m unittest discover -s tests -v
 ```
 
@@ -507,6 +628,9 @@ The primary scene references are:
 - `reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json`
 - `reference/vanilla_extract_json/mq007/mq007_01_gun_found.scene.json`
 - `reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json`
+- `mq022_combat.questphase` for the per-entry
+  `neutral -> hostile -> CombatTarget(#player) -> InjectCombatThreat(#player)`
+  escalation sequence
 
 The local public modding documentation is incomplete for full quest/scene
 creation. Treat the vanilla extracts and tested Ghostline invariants as the

@@ -27,8 +27,27 @@ BLENDER_RUNNER = Path(__file__).with_name("character_head_blender.py")
 SHAPE_NAMES = ("eyes", "nose", "mouth", "jaw", "ears")
 SHAPE_PART_DIGITS = {"eyes": "1", "nose": "2", "mouth": "3", "jaw": "4", "ears": "5"}
 HEAD_SHAPE_MIN = 1
-HEAD_SHAPE_MAX = 21
-DEFAULT_PREVIEW_MORPHTARGETS = ("h0_000_pma__morphs.morphtarget",)
+HEAD_SHAPE_MAX = 22
+FRAME_PROFILES: dict[str, dict[str, Any]] = {
+    "male_average": {
+        "player_token": "pma",
+        "npc_token": "ma",
+        "base_entity_type": "ManAverage",
+        "root_component_count": 110,
+        "head_shape_max": 21,
+        "preview_morphtargets": ("h0_000_pma__morphs.morphtarget",),
+        "unresolved_documented_values": (22,),
+    },
+    "female_average": {
+        "player_token": "pwa",
+        "npc_token": "wa",
+        "base_entity_type": "WomanAverage",
+        "root_component_count": 116,
+        "head_shape_max": 22,
+        "preview_morphtargets": ("h0_000_pwa__morphs.morphtarget",),
+        "unresolved_documented_values": (),
+    },
+}
 INDEXED_OVERRIDE_KEYS = frozenset({"depot_path", "mesh_appearance"})
 CNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.:-]+$")
 FRAME_TOKEN_PATTERN = re.compile(
@@ -97,6 +116,95 @@ def write_json(path: Path, value: Any) -> None:
 def repo_path(value: str | Path) -> Path:
     path = Path(value)
     return path if path.is_absolute() else ROOT / path
+
+
+def frame_profile(manifest: dict[str, Any]) -> dict[str, Any]:
+    frame = manifest.get("frame")
+    profile = FRAME_PROFILES.get(str(frame))
+    if profile is None:
+        raise CharacterBuildError(
+            f"Unsupported character frame {frame!r}; choose one of {', '.join(FRAME_PROFILES)}"
+        )
+    return profile
+
+
+def normalized_depot_root(value: Any, label: str) -> str:
+    root = str(value or "")
+    parts = root.split("\\")
+    if (
+        not root
+        or "/" in root
+        or ":" in root
+        or root != root.strip()
+        or root.endswith("\\")
+        or any(not part or part in {".", ".."} for part in parts)
+    ):
+        raise CharacterBuildError(f"{label} must be a normalized depot path")
+    return root
+
+
+def fnv1a64_resource_path(value: str) -> str:
+    result = 0xCBF29CE484222325
+    for byte in value.casefold().encode("utf-8"):
+        result ^= byte
+        result = (result * 0x100000001B3) & 0xFFFFFFFFFFFFFFFF
+    return str(result)
+
+
+def template_asset_records(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    spec = manifest.get("template_assets")
+    if spec is None:
+        return []
+    if not isinstance(spec, dict):
+        raise CharacterBuildError("template_assets must be an object")
+    source_root_value = spec.get("source_root")
+    if (
+        not isinstance(source_root_value, str)
+        or not source_root_value
+        or source_root_value != source_root_value.strip()
+    ):
+        raise CharacterBuildError("template_assets.source_root must name a directory")
+    source_root = repo_path(source_root_value)
+    if not source_root.is_dir():
+        raise CharacterBuildError(f"Template asset source was not found: {source_root}")
+    source_depot_root = normalized_depot_root(
+        spec.get("source_depot_root"), "template_assets.source_depot_root"
+    )
+    target_depot_root = normalized_depot_root(
+        manifest.get("namespace"), "character namespace"
+    )
+    template_identity = manifest.get("template_identity")
+    if not isinstance(template_identity, dict):
+        raise CharacterBuildError("template_identity must be an object")
+    identity_namespace = normalized_depot_root(
+        template_identity.get("namespace"), "template_identity.namespace"
+    )
+    if source_depot_root.casefold() != identity_namespace.casefold():
+        raise CharacterBuildError(
+            "template_assets.source_depot_root must match template_identity.namespace"
+        )
+    records: list[dict[str, Any]] = []
+    hashes: set[str] = set()
+    for source in sorted(source_root.rglob("*.mesh"), key=lambda path: str(path).casefold()):
+        relative = source.relative_to(source_root).as_posix().replace("/", "\\")
+        source_depot_path = f"{source_depot_root}\\{relative}"
+        resource_hash = fnv1a64_resource_path(source_depot_path)
+        if resource_hash in hashes:
+            raise CharacterBuildError(
+                f"Template asset ResourcePath hash collision for {source_depot_path}"
+            )
+        hashes.add(resource_hash)
+        records.append(
+            {
+                "hash": resource_hash,
+                "source": source,
+                "source_depot_path": source_depot_path,
+                "target_depot_path": f"{target_depot_root}\\{relative}",
+            }
+        )
+    if not records:
+        raise CharacterBuildError(f"Template asset source contains no .mesh files: {source_root}")
+    return records
 
 
 def sha256_file(path: Path) -> str:
@@ -406,6 +514,95 @@ def replace_strings(value: Any, replacements: list[tuple[str, str]]) -> Any:
     return value
 
 
+def resolve_template_asset_paths(value: Any, records: list[dict[str, Any]]) -> int:
+    """Replace serialized numeric tutorial mesh paths with explicit character paths."""
+    by_hash = {record["hash"]: record["target_depot_path"] for record in records}
+    by_source = {
+        str(record["source_depot_path"]).casefold(): record["target_depot_path"]
+        for record in records
+    }
+    replaced = 0
+
+    def visit(child: Any) -> None:
+        nonlocal replaced
+        if isinstance(child, list):
+            for item in child:
+                visit(item)
+            return
+        if not isinstance(child, dict):
+            return
+        if child.get("$type") == "ResourcePath":
+            raw = child.get("$value")
+            target = by_hash.get(str(raw))
+            if target is None and isinstance(raw, str):
+                target = by_source.get(raw.casefold())
+            if target is not None and raw != target:
+                child["$storage"] = "string"
+                child["$value"] = target
+                replaced += 1
+        for item in child.values():
+            visit(item)
+
+    visit(value)
+    return replaced
+
+
+def stage_template_assets(
+    manifest: dict[str, Any],
+    entity: dict[str, Any],
+    appearance: dict[str, Any],
+    output_root: Path,
+) -> list[str]:
+    spec = manifest.get("template_assets")
+    if not isinstance(spec, dict):
+        return []
+    records = template_asset_records(manifest)
+    referenced = {
+        path.casefold() for path in resource_paths(entity) + resource_paths(appearance)
+    }
+    staged: list[str] = []
+    for record in records:
+        depot_path = str(record["target_depot_path"])
+        if depot_path.casefold() not in referenced:
+            continue
+        normalized_depot_path = depot_path.replace("\\", "/")
+        relative = f"source/archive/{normalized_depot_path}"
+        target = output_path(output_root, relative)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(record["source"], target)
+        staged.append(relative)
+
+    source_root = repo_path(str(spec.get("source_root", "")))
+    source_depot_root = normalized_depot_root(
+        spec.get("source_depot_root"), "template_assets.source_depot_root"
+    )
+    dependency_globs = spec.get("dependency_globs", [])
+    if not isinstance(dependency_globs, list):
+        raise CharacterBuildError("template_assets.dependency_globs must be a list")
+    for pattern in dependency_globs:
+        if (
+            not isinstance(pattern, str)
+            or not pattern
+            or "\\" in pattern
+            or ":" in pattern
+            or ".." in Path(pattern).parts
+        ):
+            raise CharacterBuildError(
+                "template_assets.dependency_globs entries must be safe source-relative glob patterns"
+            )
+        for source in sorted(source_root.glob(pattern), key=lambda path: str(path).casefold()):
+            if not source.is_file():
+                continue
+            child = source.relative_to(source_root).as_posix()
+            normalized_source_root = source_depot_root.replace("\\", "/")
+            relative = f"source/archive/{normalized_source_root}/{child}"
+            target = output_path(output_root, relative)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+            staged.append(relative)
+    return sorted(set(staged), key=str.casefold)
+
+
 def archive_path_for_raw(raw_path: str) -> Path:
     normalized = raw_path.replace("\\", "/")
     if not normalized.startswith("source/raw/") or not normalized.endswith(".json"):
@@ -503,6 +700,12 @@ def normalized_indexed_override(
     anchor_option = str(config.get("anchor_option", ""))
     if not all((asset_slot, frame_token, component, anchor_option)):
         raise CharacterBuildError(f"Catalog indexed override metadata is incomplete for {category_id!r}")
+    required_frame_token = str(frame_profile(manifest)["player_token"])
+    if frame_token.casefold() != required_frame_token.casefold():
+        raise CharacterBuildError(
+            f"Catalog indexed override {category_id!r} uses {frame_token or 'no'} body frame, "
+            f"but {manifest.get('frame')} requires {required_frame_token}"
+        )
     if not isinstance(depot_path, str) or not depot_path:
         raise CharacterBuildError(f"Indexed override {category_id!r} requires a depot_path")
     depot_segments = depot_path.split("\\")
@@ -581,9 +784,19 @@ def apply_indexed_overrides(
                 raise CharacterBuildError(
                     f"Indexed override target {component_name_value!r} is absent from appearance copy {index}"
                 )
-            if component.get("$type") != "entGarmentSkinnedMeshComponent":
+            allowed_types = config.get("component_types", ["entGarmentSkinnedMeshComponent"])
+            if (
+                not isinstance(allowed_types, list)
+                or not allowed_types
+                or any(not isinstance(value, str) or not value for value in allowed_types)
+            ):
                 raise CharacterBuildError(
-                    f"Indexed override target {component_name_value!r} is not a garment mesh component"
+                    f"Indexed override {category_id!r} has invalid component_types metadata"
+                )
+            if component.get("$type") not in allowed_types:
+                raise CharacterBuildError(
+                    f"Indexed override target {component_name_value!r} has unsupported component type "
+                    f"{component.get('$type')!r}"
                 )
             mesh = component.get("mesh", {}).get("DepotPath")
             mesh_appearance_value = component.get("meshAppearance")
@@ -648,13 +861,64 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
     if not namespace.startswith("mod\\") or ".." in namespace or namespace.endswith("\\"):
         report.errors.append("namespace must be a normalized mod\\... depot path")
 
+    frame = manifest.get("frame")
+    profile = FRAME_PROFILES.get(str(frame))
+    if profile is None:
+        report.errors.append(
+            f"Unsupported character frame {frame!r}; choose one of {', '.join(FRAME_PROFILES)}"
+        )
+    template_identity = manifest.get("template_identity")
+    if not isinstance(template_identity, dict):
+        report.errors.append("template_identity must be an object")
+        template_identity = {}
+    template_frame = template_identity.get("frame")
+    if template_frame != frame:
+        report.errors.append(
+            "template_identity.frame must match the manifest frame so root entity templates cannot be mixed"
+        )
+
     phantom_liberty = manifest.get("requirements", {}).get("phantom_liberty")
     if not isinstance(phantom_liberty, bool):
         report.errors.append("requirements.phantom_liberty must be a JSON boolean")
 
-    for kind, value in manifest.get("templates", {}).items():
+    templates = manifest.get("templates")
+    if not isinstance(templates, dict):
+        report.errors.append("templates must be an object")
+        templates = {}
+    for kind, value in templates.items():
         if not isinstance(value, str) or not repo_path(value).is_file():
             report.errors.append(f"Template {kind} does not exist: {value}")
+
+    if profile is not None:
+        entity_template = templates.get("entity")
+        if isinstance(entity_template, str) and repo_path(entity_template).is_file():
+            try:
+                entity_document = read_json(repo_path(entity_template))
+                root_components = entity_document.get("Data", {}).get("RootChunk", {}).get(
+                    "components"
+                )
+                expected_count = int(profile["root_component_count"])
+                if not isinstance(root_components, list) or len(root_components) != expected_count:
+                    actual = len(root_components) if isinstance(root_components, list) else "malformed"
+                    report.errors.append(
+                        f"Entity template has {actual} root components; {frame} requires {expected_count}"
+                    )
+            except CharacterBuildError as exc:
+                report.errors.append(str(exc))
+        appearance_template = templates.get("appearance")
+        if isinstance(appearance_template, str) and repo_path(appearance_template).is_file():
+            try:
+                appearance_document = read_json(repo_path(appearance_template))
+                actual_type = typed_value(
+                    appearance_document.get("Data", {}).get("RootChunk", {}).get("baseEntityType")
+                )
+                if actual_type != profile["base_entity_type"]:
+                    report.errors.append(
+                        f"Appearance template baseEntityType is {actual_type!r}; {frame} requires "
+                        f"{profile['base_entity_type']!r}"
+                    )
+            except CharacterBuildError as exc:
+                report.errors.append(str(exc))
 
     outputs = manifest.get("outputs", {})
     for kind, value in outputs.items():
@@ -670,6 +934,17 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
             catalog = {}
     if catalog.get("schema_version") != 1:
         report.errors.append("Only catalog schema_version 1 is supported")
+    catalog_frames = catalog.get("frames")
+    if (
+        not isinstance(catalog_frames, list)
+        or not catalog_frames
+        or any(value not in FRAME_PROFILES for value in catalog_frames)
+    ):
+        report.errors.append("Catalog frames must list one or more supported character frames")
+    elif frame not in catalog_frames:
+        report.errors.append(
+            f"Catalog {catalog.get('id', '')!r} does not support character frame {frame!r}"
+        )
     categories = catalog.get("categories", {})
     for category_id, option_id in manifest.get("appearance", {}).get("selections", {}).items():
         category = categories.get(category_id)
@@ -691,19 +966,69 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
                 f"Indexed {category_id} mesh exists in the installed-game catalog only after UI/index validation"
             )
 
+    try:
+        template_assets = template_asset_records(manifest)
+    except CharacterBuildError as exc:
+        report.errors.append(str(exc))
+        template_assets = []
+    template_asset_spec = manifest.get("template_assets")
+    dependency_globs = (
+        template_asset_spec.get("dependency_globs", [])
+        if isinstance(template_asset_spec, dict)
+        else []
+    )
+    if template_asset_spec is not None and not isinstance(dependency_globs, list):
+        report.errors.append("template_assets.dependency_globs must be a list")
+    elif isinstance(dependency_globs, list):
+        for pattern in dependency_globs:
+            if (
+                not isinstance(pattern, str)
+                or not pattern
+                or "\\" in pattern
+                or ":" in pattern
+                or Path(pattern).is_absolute()
+                or ".." in Path(pattern).parts
+            ):
+                report.errors.append(
+                    "template_assets.dependency_globs entries must be safe source-relative glob patterns"
+                )
+
     shapes = manifest.get("head", {}).get("shapes", {})
+    head_shape_max = int(profile["head_shape_max"]) if profile is not None else HEAD_SHAPE_MAX
     for name in SHAPE_NAMES:
         value = shapes.get(name)
         if value is None:
             report.warnings.append(f"Head shape {name} is unset; head generation is unavailable")
-        elif not isinstance(value, int) or not HEAD_SHAPE_MIN <= value <= HEAD_SHAPE_MAX:
-            report.errors.append(
-                f"Head shape {name} must be an integer from {HEAD_SHAPE_MIN} through {HEAD_SHAPE_MAX}; "
-                "the current morph resources do not contain the documented option 22 target"
+        elif not isinstance(value, int) or not HEAD_SHAPE_MIN <= value <= head_shape_max:
+            suffix = (
+                "; the current male morph resources do not contain the documented option 22 target"
+                if frame == "male_average" and value == 22
+                else ""
             )
+            report.errors.append(
+                f"Head shape {name} must be an integer from {HEAD_SHAPE_MIN} through {head_shape_max}{suffix}"
+            )
+
+    morph_names = manifest.get("head", {}).get("morphtargets", [])
+    if not isinstance(morph_names, list) or not morph_names:
+        report.errors.append("Manifest head.morphtargets must select at least one file")
+    elif profile is not None:
+        expected_token = str(profile["player_token"])
+        for value in morph_names:
+            filename_frames = {
+                match.group(1).casefold()
+                for match in FRAME_TOKEN_PATTERN.finditer(Path(str(value)).name)
+            }
+            if filename_frames != {expected_token}:
+                report.errors.append(
+                    f"Head morphtarget {value!r} must use the {expected_token} body frame"
+                )
 
     report.details["manifest"] = manifest.get("_manifest_path", "")
     report.details["catalog"] = manifest.get("catalog", "")
+    report.details["frame"] = frame
+    report.details["player_frame_token"] = profile.get("player_token") if profile else ""
+    report.details["template_assets"] = len(template_assets)
     report.details["selections"] = len(manifest.get("appearance", {}).get("selections", {}))
     report.details["indexed_overrides"] = len(overrides)
     return report
@@ -717,6 +1042,24 @@ def validate_generated(
     app_apps = appearance_data(appearance)
     entity_spec = manifest["entity"]
     namespace = manifest["namespace"]
+    profile = frame_profile(manifest)
+
+    root_components = entity.get("Data", {}).get("RootChunk", {}).get("components")
+    expected_root_components = int(profile["root_component_count"])
+    if not isinstance(root_components, list) or len(root_components) != expected_root_components:
+        actual = len(root_components) if isinstance(root_components, list) else "malformed"
+        report.errors.append(
+            f"Generated entity has {actual} root components, expected {expected_root_components} "
+            f"for {manifest['frame']}"
+        )
+
+    app_root = appearance.get("Data", {}).get("RootChunk", {})
+    actual_base_entity_type = typed_value(app_root.get("baseEntityType"))
+    if actual_base_entity_type != profile["base_entity_type"]:
+        report.errors.append(
+            f"Appearance baseEntityType is {actual_base_entity_type!r}, expected "
+            f"{profile['base_entity_type']!r} for {manifest['frame']}"
+        )
 
     if len(entity_apps) != 1:
         report.errors.append(f"Schema v1 expects exactly one root appearance, found {len(entity_apps)}")
@@ -795,9 +1138,21 @@ def validate_generated(
         template_path = manifest.get("templates", {}).get(template_name)
         if isinstance(template_path, str) and repo_path(template_path).is_file():
             template_resources.extend(resource_paths(read_json(repo_path(template_path))))
-    new_numeric = sorted(set(numeric) - {path for path in template_resources if path.isdigit()})
+    template_numeric = {path for path in template_resources if path.isdigit()}
+    template_asset_map = template_asset_records(manifest)
+    mapped_target_numeric = {
+        fnv1a64_resource_path(str(record["target_depot_path"]))
+        for record in template_asset_map
+    }
+    resolved_mapped_numeric = sorted(set(numeric) & mapped_target_numeric)
+    preserved_template_numeric = set() if template_asset_map else template_numeric
+    new_numeric = sorted(set(numeric) - preserved_template_numeric - mapped_target_numeric)
     if new_numeric:
         report.errors.append(f"Generated new opaque numeric ResourcePath values: {', '.join(new_numeric)}")
+    elif resolved_mapped_numeric:
+        report.warnings.append(
+            f"Resolved {len(resolved_mapped_numeric)} hashed template ResourcePaths through the manifest asset map"
+        )
     elif numeric:
         report.warnings.append(
             f"Preserved {len(numeric)} opaque numeric ResourcePath values from the validated template"
@@ -819,6 +1174,9 @@ def validate_generated(
             "base_game_references": len(base_override_refs),
             "phantom_liberty_references": len(ep1_refs),
             "opaque_numeric_resources": len(numeric),
+            "resolved_template_hashes": len(resolved_mapped_numeric),
+            "frame": manifest["frame"],
+            "base_entity_type": actual_base_entity_type,
         }
     )
     return report
@@ -837,6 +1195,22 @@ def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tup
     ]
     entity = replace_strings(entity, replacements)
     app = replace_strings(app, replacements)
+    template_assets = template_asset_records(manifest)
+    resolved_template_resources = resolve_template_asset_paths(entity, template_assets)
+    resolved_template_resources += resolve_template_asset_paths(app, template_assets)
+    if template_assets:
+        unresolved_template_resources = sorted(
+            {
+                path
+                for path in resource_paths(entity) + resource_paths(app)
+                if path.isdigit()
+            }
+        )
+        if unresolved_template_resources:
+            raise CharacterBuildError(
+                "Template asset rebasing left opaque numeric ResourcePath values: "
+                + ", ".join(unresolved_template_resources)
+            )
 
     entity_rows = appearance_data(entity)
     if not entity_rows:
@@ -860,6 +1234,10 @@ def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tup
     ]
     warnings = apply_catalog_selections(app, manifest, catalog)
     warnings.extend(apply_indexed_overrides(app, manifest, catalog))
+    if resolved_template_resources:
+        warnings.append(
+            f"Resolved {resolved_template_resources} template mesh ResourcePaths into {manifest['namespace']}"
+        )
     renumber_handles(app)
     update_localization(localization, manifest)
 
@@ -897,7 +1275,14 @@ def generate(manifest_path: Path, output_root: Path) -> dict[str, Any]:
     tweak_path.parent.mkdir(parents=True, exist_ok=True)
     tweak_path.write_text(tweak, encoding="utf-8")
 
-    generated_files = [outputs["entity_raw"], outputs["appearance_raw"], outputs["localization_raw"], outputs["tweak"]]
+    staged_assets = stage_template_assets(manifest, entity, app, output_root)
+    generated_files = [
+        outputs["entity_raw"],
+        outputs["appearance_raw"],
+        outputs["localization_raw"],
+        outputs["tweak"],
+        *staged_assets,
+    ]
     hashes = {
         relative: hashlib.sha256(output_path(output_root, relative).read_bytes()).hexdigest().upper()
         for relative in generated_files
@@ -905,9 +1290,11 @@ def generate(manifest_path: Path, output_root: Path) -> dict[str, Any]:
     build_report = {
         "schema_version": 1,
         "character": manifest["id"],
+        "frame": manifest["frame"],
         "manifest": str(manifest_path.resolve()),
         "output_root": str(output_root.resolve()),
         "files": generated_files,
+        "staged_template_assets": staged_assets,
         "sha256": hashes,
         "validation": output_report.as_dict(),
     }
@@ -1014,9 +1401,11 @@ def build_preview_manifest(
         shape = digit_to_shape[match.group("part")]
         creator_value = int(match.group("variant")) + 1
         targets_by_part[shape].setdefault(str(creator_value), target_name)
+    profile = frame_profile(manifest)
     return {
         "schema_version": 1,
         "character_id": str(manifest.get("id", "")),
+        "frame": str(manifest.get("frame", "")),
         "models": models,
         "morph_mapping": {
             name: {
@@ -1026,7 +1415,11 @@ def build_preview_manifest(
                     {HEAD_SHAPE_MIN, *(int(value) for value in targets_by_part[name])}
                 ),
                 "targets": targets_by_part[name],
-                "unresolved_documented_values": [22],
+                "unresolved_documented_values": [
+                    value
+                    for value in profile["unresolved_documented_values"]
+                    if str(value) not in targets_by_part[name]
+                ],
             }
             for name in SHAPE_NAMES
         },
@@ -1056,9 +1449,18 @@ def prepare_head_preview(
     if not source_root.is_dir():
         raise CharacterBuildError(f"Morphtarget source was not found: {source_root}")
     configured = [str(value) for value in head.get("morphtargets", [])]
-    names = configured if include_all else [name for name in configured if name in DEFAULT_PREVIEW_MORPHTARGETS]
+    configured_preview = head.get("preview_morphtargets")
+    if configured_preview is None:
+        preview_names = tuple(frame_profile(manifest)["preview_morphtargets"])
+    elif isinstance(configured_preview, list) and all(
+        isinstance(value, str) and value for value in configured_preview
+    ):
+        preview_names = tuple(configured_preview)
+    else:
+        raise CharacterBuildError("head.preview_morphtargets must be a list of filenames")
+    names = configured if include_all else [name for name in configured if name in preview_names]
     if not names:
-        names = [name for name in DEFAULT_PREVIEW_MORPHTARGETS if (source_root / name).is_file()]
+        names = [name for name in preview_names if (source_root / name).is_file()]
     sources = [source_root / name for name in names]
     missing = [str(path) for path in sources if not path.is_file()]
     if missing:
@@ -1140,10 +1542,24 @@ def head_build(
     dry_run: bool,
 ) -> dict[str, Any]:
     manifest = load_manifest(manifest_path)
+    profile_error = ""
+    try:
+        profile = frame_profile(manifest)
+        head_shape_max = int(profile["head_shape_max"])
+    except CharacterBuildError as exc:
+        profile = {}
+        head_shape_max = HEAD_SHAPE_MAX
+        profile_error = str(exc)
     shapes = dict(manifest.get("head", {}).get("shapes", {}))
     shapes.update(shape_overrides)
     missing = [name for name in SHAPE_NAMES if shapes.get(name) is None]
-    errors: list[str] = []
+    validation_manifest = copy.deepcopy(manifest)
+    validation_manifest.setdefault("head", {})["shapes"] = shapes
+    validation = validate_manifest(validation_manifest)
+    errors: list[str] = list(validation.errors)
+    validation_warnings = list(validation.warnings)
+    if not profile:
+        errors.append(profile_error)
     for path, label in ((wolvenkit, "WolvenKit"), (blender, "Blender"), (BLENDER_RUNNER, "Blender runner")):
         if not path.is_file():
             errors.append(f"{label} was not found: {path}")
@@ -1175,13 +1591,15 @@ def head_build(
     for name in SHAPE_NAMES:
         value = shapes.get(name)
         if value is not None and (
-            not isinstance(value, int) or not HEAD_SHAPE_MIN <= value <= HEAD_SHAPE_MAX
+            not isinstance(value, int) or not HEAD_SHAPE_MIN <= value <= head_shape_max
         ):
-            errors.append(f"Shape {name} must be from {HEAD_SHAPE_MIN} through {HEAD_SHAPE_MAX}")
+            errors.append(f"Shape {name} must be from {HEAD_SHAPE_MIN} through {head_shape_max}")
+    errors = list(dict.fromkeys(errors))
     plan = {
         "ok": not errors,
         "dry_run": dry_run,
         "workspace": str(workspace.resolve()),
+        "frame": str(manifest.get("frame", "")),
         "wolvenkit": str(wolvenkit),
         "blender": str(blender),
         "game_path": str(game_path),
@@ -1191,7 +1609,7 @@ def head_build(
         "morphtargets": [path.name for path in selected_morphs],
         "shapes": shapes,
         "errors": errors,
-        "warnings": [],
+        "warnings": validation_warnings,
         "commands": [],
     }
     if errors or dry_run:
@@ -1262,8 +1680,8 @@ def head_build(
         plan["ok"] = False
         return plan
 
-    depot_head = Path(*manifest["namespace"].split("\\")) / "head"
-    archive_dir = workspace / "source/archive" / depot_head
+    depot_head = manifest["namespace"].replace("\\", "/") + "/head"
+    archive_dir = output_path(workspace, f"source/archive/{depot_head}")
     archive_dir.mkdir(parents=True, exist_ok=True)
     for source_mesh in selected_meshes:
         shutil.copy2(source_mesh, archive_dir / source_mesh.name)

@@ -72,22 +72,36 @@ mappings, export timestamp, and the intentional `defaultAppearance` value, the
 serialized documents are identical. Clone a pinned and validated root template;
 do not reconstruct that component graph per character.
 
+The downloaded female NPV root is independently pinned at
+`source/characters/templates/npv-female.ent.json`; its paired appearance is
+`npv-female.app.json`. The female root has 116 components and the appearance
+declares `WomanAverage`, so never derive a female character by relabeling the
+male root. `tools/character_builder.py` owns the `male_average`/`female_average`
+profiles that bind entity type, PMA/PWA filename token, preview source, and head
+range. Manifests, template identities, catalogs, and indexed assignments must
+all agree with that profile.
+
 The local NPV `head_import.blend` embeds import, shape-key application, and
 export scripts. Blender 5.1 has Cyberpunk IO Suite 1.8.0 installed, while the
 local Blender 4.4 does not. `tools/character_builder.py head` now performs the
 complete selected-morphtarget export, background Blender shape application,
 GLB export, and WolvenKit CR2W rebuild. A 13-mesh Patch-subset smoke test passed
 through the toolchain, but the later GLB audit proved that temporary shape value
-22 selected no target: the files contain Basis plus `h01` through `h20`, not
-`h21`. The builder now permits the mechanically verified range 1 through 21 and
-blocks 22 until the documented offset is resolved. The smoke run also emitted
-WolvenKit garment-support warnings; do not apply those temporary meshes to
-Patch or treat the warning as resolved without runtime validation.
+22 selected no target: the male files contain Basis plus `h01` through `h20`,
+not `h21`. The male profile permits the mechanically verified range 1 through
+21. The female PWA core contains 21 named variants per region, including
+`h21`, so the female profile permits 1 through 22. The smoke run also emitted
+WolvenKit garment-support warnings; do not apply generated meshes to shipping
+characters or treat the warning as resolved without runtime validation.
 
 Character authoring inputs:
 
 - `source/characters/patch.character.json`
 - `source/characters/catalog.json`
+- `source/characters/female-example.character.json`
+- `source/characters/female-catalog.json`
+- `source/characters/templates/npv-female.ent.json`
+- `source/characters/templates/npv-female.app.json`
 - `tools/character_builder.py`
 - `tools/character_asset_index.py`
 - `tools/character_ui.py` and `tools/character_ui/*`
@@ -100,6 +114,16 @@ checks generated output against the applied source paths and reports all four
 documents equivalent. Keep new UI generation isolated under
 `converted/characters` until it is explicitly reviewed and applied.
 
+The female example additionally stages only tutorial meshes referenced by its
+selected appearance. The template stores those paths as numeric ResourcePath
+hashes, so the builder recognizes their lowercase FNV-1a values, rewrites them
+to explicit character-owned paths before generation, and permits only the exact
+mapped hashes after a WolvenKit round trip. The female full-body mesh embeds
+texture paths under `tutorial\npv\your_female_character`; its four required
+texture resources are staged at that original namespace until the internal mesh
+references are patched. The female root also retains EP1 references, so the
+checked example declares Phantom Liberty and is not yet shipping content.
+
 The local UI uses a pinned Three.js runtime to render the real morph-target GLB
 and applies creator values as browser morph influences. The
 `character_builder.py preview` command prepares that GLB without Blender.
@@ -108,10 +132,12 @@ searchable candidates from the current installed archives and can uncook a
 selected mesh for a neutral-material preview. It also serializes the exact
 cooked mesh to ignored CR2W-JSON so the UI can enumerate real
 `meshMeshAppearance` names. PMA primary meshes in `torso`, `legs`, and `feet`
-may be assigned through `appearance.indexed_overrides`; the server re-resolves
-them against its installed index and the generator replaces the primary
-component in both normal and `compiledData` copies. The corresponding curated
-bundle's cuff/shadow companion is retained provisionally.
+may be assigned for Patch; PWA primary meshes in `torso` and `legs` may be
+assigned for the female example. The server re-resolves them against its
+installed index and the generator replaces the primary component in both normal
+and `compiledData` copies. The corresponding curated bundle's cuff/shadow
+companion is retained provisionally. Female indexed feet remain preview-only
+because the tutorial boot is not a validated garment anchor.
 
 Curated hair options may describe binding topology as well as resource paths.
 The `patch_dread_undercut` option changes the primary component class, rewires
@@ -125,6 +151,17 @@ filename, not every directory token: current archives contain PWA meshes below
 folders whose names include `pma`. Preview refreshes must stay staged and may
 replace cached GLB/cooked/metadata files only after WolvenKit succeeds and the
 serialized CR2W metadata shape validates.
+
+Run the female UI by passing the reviewed manifest on the server command line:
+
+```powershell
+py -B .\tools\character_ui.py `
+  --manifest .\source\characters\female-example.character.json --open
+```
+
+The HTTP client may change selections and shape values, but it must never be
+allowed to replace the trusted manifest, catalog, template, source, or tool
+paths.
 
 Treat index rows as discovery records, not complete appearance bundles: hair
 and clothing commonly need control entities, animated components, shadows,

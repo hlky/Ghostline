@@ -43,6 +43,7 @@ to be refreshed.
 & $wk convert serialize .\source\archive\mod\gq000\phases\gq000.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\phases\gq000_post_accept.questphase -o .\source\raw\mod\gq000\phases -v Minimal
+& $wk convert serialize .\source\archive\mod\gq000\phases\gq000_delivery.questphase -o .\source\raw\mod\gq000\phases -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\scenes\gq000_patch_meet.scene -o .\source\raw\mod\gq000\scenes -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\journal\gq000.journal -o .\source\raw\mod\gq000\journal -v Minimal
 & $wk convert serialize .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json -o .\source\raw\mod\gq000\localization\en-us\onscreens -v Minimal
@@ -76,6 +77,7 @@ Expected raw outputs:
 - `source/raw/mod/gq000/phases/gq000.questphase.json`
 - `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
 - `source/raw/mod/gq000/phases/gq000_post_accept.questphase.json`
+- `source/raw/mod/gq000/phases/gq000_delivery.questphase.json`
 - `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
 - `source/raw/mod/gq000/journal/gq000.journal.json`
 - `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
@@ -99,6 +101,7 @@ Use this before packing or testing the asset in game.
 & $wk convert deserialize .\source\raw\mod\gq000\phases\gq000.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_patch_meet.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_post_accept.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
+& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_delivery.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json -o .\source\archive\mod\gq000\scenes -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\journal\gq000.journal.json -o .\source\archive\mod\gq000\journal -v Minimal
 & $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\onscreens\gq000.json.json -o .\source\archive\mod\gq000\localization\en-us\onscreens -v Minimal

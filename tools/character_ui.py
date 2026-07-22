@@ -35,6 +35,32 @@ def clean_manifest(value: dict[str, Any]) -> dict[str, Any]:
     return {key: child for key, child in value.items() if not key.startswith("_")}
 
 
+def player_frame_token(manifest: dict[str, Any]) -> str:
+    return str(character_builder.frame_profile(manifest)["player_token"])
+
+
+def catalog_assignment_support(
+    manifest: dict[str, Any], support: dict[str, Any]
+) -> dict[str, Any]:
+    constrained = dict(support)
+    constrained["reasons"] = list(support.get("reasons", []))
+    if not constrained.get("supported"):
+        return constrained
+    category_id = constrained.get("manifest_category")
+    catalog = character_builder.load_catalog(manifest)
+    category = catalog.get("categories", {}).get(category_id)
+    config = category.get("indexed_override") if isinstance(category, dict) else None
+    if not isinstance(config, dict):
+        constrained["supported"] = False
+        constrained["reasons"].append(
+            f"the active character catalog does not support indexed {category_id} assignment"
+        )
+    elif str(config.get("frame_token", "")).casefold() != player_frame_token(manifest):
+        constrained["supported"] = False
+        constrained["reasons"].append("the catalog slot is configured for a different body frame")
+    return constrained
+
+
 def editable_manifest(value: dict[str, Any]) -> dict[str, Any]:
     """Copy UI-editable values onto server-owned templates and build paths."""
     trusted = clean_manifest(character_builder.load_manifest(DEFAULT_MANIFEST))
@@ -103,9 +129,13 @@ def validate_installed_overrides(manifest: dict[str, Any], character_id: str) ->
             output,
             character_asset_index.DEFAULT_WOLVENKIT,
             character_asset_index.DEFAULT_GAME,
+            player_frame_token(manifest),
         )
         assignment = character_asset_index.canonical_indexed_override(
-            preview["asset"], mesh_appearance, preview["mesh_appearances"]
+            preview["asset"],
+            mesh_appearance,
+            preview["mesh_appearances"],
+            player_frame_token(manifest),
         )
         if assignment["manifest_category"] != category_id:
             raise character_builder.CharacterBuildError(
@@ -165,12 +195,15 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
     def log_message(self, format: str, *args: Any) -> None:
         sys.stdout.write(f"character-ui: {format % args}\n")
 
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def send_json(self, value: Any, status: HTTPStatus = HTTPStatus.OK) -> None:
         payload = json.dumps(value, indent=2, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
-        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(payload)
 
@@ -211,6 +244,17 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                         "available": asset_index is not None,
                         "summary": asset_index.get("summary", {}) if asset_index else {},
                     },
+                    "frame_profile": {
+                        **character_builder.frame_profile(manifest),
+                        "preview_morphtargets": list(
+                            character_builder.frame_profile(manifest)["preview_morphtargets"]
+                        ),
+                        "unresolved_documented_values": list(
+                            character_builder.frame_profile(manifest)[
+                                "unresolved_documented_values"
+                            ]
+                        ),
+                    },
                 }
             )
             return
@@ -248,7 +292,6 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                 self.send_response(HTTPStatus.OK)
                 self.send_header("Content-Type", content_type or "application/octet-stream")
                 self.send_header("Content-Length", str(size))
-                self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 with target.open("rb") as stream:
                     shutil.copyfileobj(stream, self.wfile)
@@ -273,7 +316,7 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                 with BUILD_LOCK:
                     validate_installed_overrides(manifest, character_id)
                     report = character_builder.validate_manifest(
-                        manifest, character_builder.read_json(ROOT / "source/characters/catalog.json")
+                        manifest, character_builder.load_catalog(manifest)
                     )
                 self.send_json(report.as_dict(), HTTPStatus.OK if report.ok else HTTPStatus.BAD_REQUEST)
                 return
@@ -351,7 +394,11 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                         output,
                         character_asset_index.DEFAULT_WOLVENKIT,
                         character_asset_index.DEFAULT_GAME,
+                        player_frame_token(manifest),
                     )
+                result["assignment"] = catalog_assignment_support(
+                    manifest, result["assignment"]
+                )
                 result["preview_url"] = (
                     f"/preview/{character_id}/asset-previews/{preview_id}/preview-manifest.json"
                 )
@@ -379,10 +426,24 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                         output,
                         character_asset_index.DEFAULT_WOLVENKIT,
                         character_asset_index.DEFAULT_GAME,
+                        player_frame_token(manifest),
                     )
                     assignment = character_asset_index.canonical_indexed_override(
-                        preview["asset"], mesh_appearance, preview["mesh_appearances"]
+                        preview["asset"],
+                        mesh_appearance,
+                        preview["mesh_appearances"],
+                        player_frame_token(manifest),
                     )
+                    constrained = catalog_assignment_support(
+                        manifest,
+                        character_asset_index.selection_support(
+                            preview["asset"], player_frame_token(manifest)
+                        ),
+                    )
+                    if not constrained["supported"]:
+                        raise character_asset_index.CharacterAssetIndexError(
+                            "Asset cannot be assigned: " + "; ".join(constrained["reasons"])
+                        )
                 catalog = character_builder.load_catalog(manifest)
                 category = catalog["categories"][assignment["manifest_category"]]
                 assignment["anchor_option"] = category["indexed_override"]["anchor_option"]
@@ -406,11 +467,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--open", action="store_true", dest="open_browser")
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=DEFAULT_MANIFEST,
+        help="Trusted character manifest/profile to edit",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
+    global DEFAULT_MANIFEST
     args = build_parser().parse_args(argv)
+    DEFAULT_MANIFEST = args.manifest.resolve()
+    if not DEFAULT_MANIFEST.is_file():
+        print(f"error: character manifest not found: {DEFAULT_MANIFEST}", file=sys.stderr)
+        return 1
     if not STATIC_ROOT.joinpath("index.html").is_file():
         print(f"error: UI assets not found under {STATIC_ROOT}", file=sys.stderr)
         return 1

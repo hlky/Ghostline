@@ -1,8 +1,8 @@
 # Ghostline Testing
 
-The first dated section is the current installed candidate and required next
-test. Later sections preserve the exact historical baselines that isolated the
-scene-lifecycle and lipsync failures.
+The first dated section is the active next-test candidate. It explicitly says
+when build/install evidence is still pending. Later sections preserve exact
+historical baselines that isolated earlier failures.
 
 Use a fresh save when validating questphase, scene, journal, or world-trigger
 changes. Prefer a manual save made before any version of Ghostline was
@@ -20,6 +20,362 @@ The project includes test-time autosave suppression resources:
 These reduce accidental save contamination, but they do not clean an already
 contaminated save. Keep a known-good pre-Ghostline manual save and return to it
 for each start-flow validation pass.
+
+## 2026-07-23 Delivery GPS And Marker-Height Candidate
+
+Installed archive SHA-256:
+`7C3BB9844EE0DD8BC65C1883D61AD0307E89593DFBFC69A8EFF2B7C504D93590`.
+
+Verified seven-file ZIP SHA-256:
+`92B71E698F9C4BE9EAF58597463B3A9BC931A84540EF2EE18C411F10CA95771C`.
+
+Build and extraction evidence is retained at
+`H:\Ghostline-builds\gps-marker-fix-20260723-002208`; byte-identical CR2W
+round trips for both changed resources are retained at
+`H:\Ghostline-audits\gps-marker-fix-roundtrip-20260723-002032`. The replaced
+seven-file installation is backed up at
+`H:\Ghostline-backups\pre-gps-marker-fix-20260723-002543`.
+
+All 103 automated tests pass. The candidate archive contains the same 175
+depot paths as the preceding installed build, every extracted payload matches
+`source/archive`, all seven ZIP and installed files match `packed`, and exactly
+two archive payloads changed:
+
+- `mod\gq000\journal\gq000.journal`;
+- `mod\gq000\phases\gq000_delivery.questphase`.
+
+The preceding runtime pass confirmed the complete quest: native deposit,
+package removal, delivery progression, both Morrow response routes, reward,
+and quest success all worked. It exposed two presentation defects. The yellow
+pin rendered close to the kiosk's floor-level entity root, and the map retained
+a second dotted GPS leg toward the old bridge even though the short solid route
+already ended at the correct drop point.
+
+This candidate raises the journal pin by two units, matching the native drop
+point template's `UI_Interaction` slot, and sets
+`disablePreviousMappins: 1` only on delivery-pin activation. For the next
+fresh-save pass:
+
+1. Complete the quest through `Leave the relay area.` and let delivery start.
+2. Open the map and confirm the route has no dotted continuation back toward
+   the bridge.
+3. At `drop_point_009`, confirm the yellow quest icon is at the kiosk console
+   height rather than beside its base.
+4. Deposit the datacache and confirm the already-proven Morrow/completion flow
+   still finishes normally.
+
+## 2026-07-22 Accessible Drop-Point 009 Candidate (Historical)
+
+Installed archive SHA-256:
+`1C669335E83C93F714455D24743C7F03E34F2FA381A60ABB9E8F35A85375EDCC`.
+
+Verified seven-file ZIP SHA-256:
+`D3F32A60C789030FB47BA9C3C06C9E48DBB7097F2F786EB858EF8551D3764275`.
+
+Build evidence and the extracted/round-trip verification trees are retained at
+`H:\Ghostline-builds\drop-point-009-yellow-20260722-234109` and
+`H:\Ghostline-audits\drop-point-009-roundtrip-20260722-233650`. The replaced
+seven-file installation is backed up at
+`H:\Ghostline-backups\pre-drop-point-009-20260722-234356`. All 175 archive
+entries match `source/archive`, all seven ZIP and installed payloads match the
+staged tree, and all 103 automated tests pass. The six regenerated CR2W files
+round-trip to byte-identical binaries. Relative to the preceding
+delivery/debrief candidate, exactly three archive payloads changed:
+
+- `mod\gq000\journal\gq000.journal`;
+- `mod\gq000\phases\gq000_delivery.questphase`;
+- `mod\gq000\world\gq000_always_loaded.streamingsector`.
+
+World Inspector confirms the replacement target is the publicly accessible,
+map-labelled Kabuki `drop_point_009`:
+
+- NodeRef:
+  `$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y`
+- position: `(-1168.66333, 1309.51709, 19.9768238)`
+- orientation: `(0, 0, 0.999, 0.044)`, approximately `175` degrees
+- sector: `exterior_-19_20_0_0.streamingsector`
+
+The quest reserves `Items.gq000_datacache` to that native device with the
+vanilla `ReserveItemToThisDropPoint` fan-out confirmed against
+`sts_wat_kab_05`. The journal UI instead targets Ghostline's always-loaded
+`#gq000_03_mp_drop_point` at the same coordinates. This split is intentional:
+ArchiveXL logged that it could not resolve the previous direct cooked mappin,
+and the previous physical target was occluded. The replacement journal entry
+uses `DefaultQuestVariant`, so the quest marker should be yellow rather than
+fixer-green.
+
+Use a save from before the Ghostline phone flow and validate the whole route.
+In particular, do not continue a save that already entered the previous
+delivery phase: its fire-and-forget reservation node may already be complete,
+and installing a rebuilt questphase does not rewind saved graph state.
+
+1. Complete the bridge meeting, relay encounter, breach, and leave-area beat.
+   Confirm the breach grants `Datacache` in addition to both readable shards.
+2. Confirm the tracker changes to `Deliver the datacache to the drop point.`
+   and shows a yellow marker at the accessible `drop_point_009` kiosk.
+3. Interact with the machine. Confirm it offers the quest deposit, removes the
+   datacache package, and closes the delivery objective.
+4. Confirm Morrow's `Quiet Spine` thread sends both opening messages and offers
+   both V replies.
+5. Select either reply. Confirm only its matching Morrow response appears,
+   followed by `Keep this number...`.
+6. Read the final message. Confirm the standard eddies/XP completion reward is
+   granted and `GHOSTLINE` moves to Completed.
+
+If step 2 does not start, check that `Datacache` was granted and that the
+leave-area objective completed. If step 3 does not advance, inspect whether
+the package remains in inventory and whether fact `gq000_datacache` was
+incremented. Progression waits on that native deposit fact, not on the reserve
+event output.
+
+## 2026-07-22 Delivery + Morrow Debrief Candidate (Historical)
+
+Installed archive SHA-256:
+`0F971F97877421C181C5D4B114F5090D015DEE97B3FE7FFCF9091F57FD476158`.
+
+Verified seven-file ZIP SHA-256:
+`03BF484092377E5B022B9BE4867B1383544B46B24BA4769291904EC93395FBBB`.
+
+Build evidence, exact CR2W round trips, archive extraction, and ZIP
+verification are retained at
+`H:\Ghostline-builds\delivery-morrow-20260722-224211`. The replaced seven-file
+install is backed up at
+`H:\Ghostline-backups\pre-delivery-morrow-20260722-224211`. All 175 archive
+entries match the packable `source/archive` payloads byte-for-byte, all seven
+ZIP and installed payloads match `packed`, and all 98 automated tests pass.
+Relative to the runtime-confirmed explicit-player hostility build, four
+payloads changed and one was added:
+
+- changed `mod\gq000\phases\gq000.questphase`;
+- changed `mod\gq000\phases\gq000_post_accept.questphase`;
+- changed `mod\gq000\journal\gq000.journal`;
+- changed `mod\gq000\localization\en-us\onscreens\gq000.json`;
+- added `mod\gq000\phases\gq000_delivery.questphase`.
+
+The cache breach grants a separate `Items.gq000_datacache` package along with
+the two readable Quiet Spine shards. Its intended native deposit increments
+the package `friendlyName` fact `gq000_datacache`, which advances the delivery
+phase into Morrow's authored `Quiet Spine` phone thread. Both player replies
+converge on the same final message, but only the matching branch response
+should appear.
+
+Runtime testing superseded this package before the deposit could be validated:
+the selected kiosk was occluded by inaccessible geometry, its tracker led into
+the building, and ArchiveXL logged that it could not resolve the direct cooked
+mappin position. The active candidate above keeps the same delivery/debrief
+graph while replacing both the native target and the journal-marker strategy.
+
+Use a save from before the Ghostline phone flow and validate the whole route:
+
+1. Complete the bridge meeting, relay encounter, breach, and leave-area beat.
+   Confirm the breach grants `Datacache` in addition to both readable shards.
+2. After leaving the relay area, confirm the tracker changes to `Deliver the
+   datacache to the drop point.` and its marker resolves to the Kabuki machine.
+3. Interact with that machine. Confirm it offers the quest deposit, removes the
+   datacache package, and closes the delivery objective.
+4. Confirm Morrow's `Quiet Spine` thread sends `Cache authenticated. Clean
+   extraction.` followed by the courier-route message and then offers both V
+   replies.
+5. Select either reply. Confirm only its matching Morrow response appears,
+   followed by `Keep this number...`.
+6. Read the final message. Confirm the standard eddies/XP completion reward is
+   granted and `GHOSTLINE` moves to Completed.
+
+If step 2 does not start, check that `Datacache` was granted and that the
+leave-area objective completed. If step 3 does not advance, inspect whether
+the package remains in inventory and whether fact `gq000_datacache` was
+incremented. The reserve event is deliberately fire-and-forget; progression
+waits on the native drop-point fact rather than the event output.
+
+## 2026-07-22 Explicit-Player Guard Hostility Candidate
+
+Installed archive SHA-256:
+`18D56C1F20C3600AFBA385BE4F6678D58825D0E29E5A350C72FA48FF4227B3E2`.
+
+Verified seven-file ZIP SHA-256:
+`D5FAC9FE9CE7DA060CDA3CA79114552D89D9D6BF7C2ED7699D999DBD65645674`.
+
+Build evidence, an exact questphase CR2W round trip, archive extraction, and
+ZIP verification are retained at
+`H:\Ghostline-builds\guard-hostility-mq022-20260722-214120`. The replaced
+seven-file install is backed up at
+`H:\Ghostline-backups\pre-guard-hostility-mq022-20260722-214120`. All 174
+archive entries match `source/archive` byte-for-byte, all seven ZIP and
+installed payloads match `packed`, and all 88 automated tests pass. Comparison
+against the preceding runtime-tested archive reports exactly one changed
+payload: `mod\gq000\phases\gq000_post_accept.questphase`.
+
+The preceding pass confirmed every other encounter change: all guards spawn
+beside the relay, the short patrol works, the terminal is flat and correctly
+marked, breach and shard delivery work, both conversations are readable, and
+the leave-area cleanup completes. The guards remained passive even after the
+objective changed to extraction. That proves the 25-unit trigger and graph
+branch executed; the failed border-patrol command simply had no explicit
+threat target.
+
+This focused candidate replaces that one whole-community pulse with the
+stronger vanilla `mq022_combat.questphase` pattern. For each named guard it:
+
+- transitions the guard through `neutral` and `hostile` attitude groups;
+- assigns V as the immediate combat target;
+- injects an explicit `#player` combat threat with forced hostile attitude.
+
+The hostility sequence is a side branch. It cannot block the reach-to-extract
+objective transition if a guard has already died or cannot resolve.
+
+Use a save from before the Ghostline phone flow. The focused retest is:
+
+1. Complete the bridge conversation and approach the relay.
+2. At about 25 units, verify all three yellow/neutral guard indicators turn
+   hostile and the patrol/sentry AI is interrupted to attack V.
+3. Confirm the objective still changes to `Extract the datacache.` and that
+   evasion or breaching under pressure remains possible; kills are not an
+   objective.
+
+Everything after aggression is regression coverage only, since it already
+passed: terminal pin, breach, two shard notifications/Journal entries,
+`Leave the relay area.`, and cleanup outside 75 units.
+
+## 2026-07-22 Hostile Guard + Patrol Candidate (Historical)
+
+Archive SHA-256:
+`DE2A28EF7F7D8D20B4FADF3B97BD0B96BB420FED8456AC0D57E9987B00ACFB2A`.
+ZIP SHA-256:
+`BCB1BDDE74877FF798EA9BDAABC550CA88A5DC8018CECB486E785152F34E5830`.
+Evidence is retained at
+`H:\Ghostline-builds\cache-encounter-hostile-patrol-20260722-205717`.
+
+This build established the final relay transform, patrol, terminal mappin,
+breach, shard, and cleanup baseline. Its one failure was guard aggression: it
+copied a Badlands border-patrol threat pulse with null target references, which
+does not create a target for otherwise passive community puppets.
+
+The current delivery target, vanilla Kabuki `drop_point_009`, is documented in
+`docs/world-references.md` but was intentionally dormant in this historical
+focused build.
+
+## 2026-07-22 Cache Runtime-Fix + Patch Visibility Candidate (Historical)
+
+Installed archive SHA-256:
+`2C5179349DBD1AFF5A5A01123F83FF1DC76D8D91E45FE946CEA4DCAF0166BF80`.
+
+Verified seven-file ZIP SHA-256:
+`73B3C28C525DF298878FA011D5B8D9E79AF03C4FB35CAC740E8064A96CBDAB7C`.
+
+Final build, Patch `.app` round-trip, and extraction evidence is retained at
+`H:\Ghostline-builds\patch-genital-visibility-20260722-202817`; the underlying
+cache-phase round trips remain at
+`H:\Ghostline-builds\cache-runtime-fix-20260722-201715`. The immediately
+preceding seven-file cache candidate is backed up at
+`H:\Ghostline-backups\pre-patch-genital-visibility-20260722-202817`. All 174
+archive entries match `source/archive` byte-for-byte after extraction, all
+seven ZIP payloads match the staged tree, and all seven installed payloads
+match that same tree.
+Relative to the failed first-cache archive, this adds only
+`mod\gq000\world\gq000_custom_devices.devices` and changes the journal,
+quest onscreen localization, post-accept phase, always-loaded sector, and quest
+sector; no archive payload was removed.
+
+This candidate responds to the first cache runtime pass:
+
+- the access point remains at `(-1000.02, 1497.2208, 8.3)` but now uses yaw
+  `-91.4`, facing the personal-link workspot away from the cabinet;
+- the streamable guard community is anchored at the cache and uses three
+  verified Japantown Tyger Claw records, with whole-community activation and a
+  whole-community spawn-readiness gate;
+- the relay has a minimal Ghostline `.devices` registry patched into the
+  global Night City device registry;
+- successful breach immediately sets `gq000_cache_acquired`, then grants two
+  readable Quiet Spine items with pickup notifications and Journal entries;
+- `Leave the relay area.` becomes visible after extraction, and the surviving
+  community cleans up only after V crosses the 75-unit boundary;
+- Patch's fixed clothed appearance disables the inherited `t0_peen` and
+  `t0_pubic_hair` meshes in both appearance copies. This is the only archive
+  payload change from the otherwise identical cache runtime-fix build.
+
+Runtime result: Patch was clothed; all three Tyger Claws spawned; breach,
+automatic shard grants, both Journal entries, and the leave-area objective all
+worked. The guards were 7–14 units away and remained passive, the `-91.4`
+terminal was still perpendicular to the cabinet, and the extract stage had no
+yellow quest pin because the reach-stage pin was disabled before extraction.
+The historical hostile-guard/patrol candidate above replaced this build, and
+the active explicit-player hostility candidate now supersedes that package.
+
+Use a save from before the Ghostline phone flow. Then run this concise route:
+
+1. Check ArchiveXL and TweakXL logs for the `.devices` patch and both
+   `Items.GhostlineQuietSpine*` records without errors.
+2. At the bridge, confirm Patch's trousers fully cover his lower body with no
+   genital or pubic-hair mesh clipping, then accept the job.
+3. Approach the relay; confirm all three Tyger Claws spawn at plausible
+   navmesh positions and that combat is not required.
+4. Confirm the socket faces outward, the 25-unit arrival gate changes the
+   tracker to `Extract the datacache.`, and the native breach opens normally.
+5. If practical, fail or cancel once and verify no progression; then succeed.
+6. After success, confirm extraction closes, two automatic item pickup
+   notifications appear, and both archived conversations are readable under
+   Journal -> Shards. No separate world pickup is expected.
+7. Confirm `Leave the relay area.` is tracked, then cross the 75-unit cleanup
+   boundary and verify the objective succeeds and surviving guards deactivate.
+
+If a debug console is available, also confirm `gq000_cache_acquired == 1`
+immediately after successful breach rather than waiting for the hacking UI or
+leave-area transition.
+
+## 2026-07-22 First Cache Encounter Candidate (Historical)
+
+Installed archive SHA-256:
+`888E678162D6086124E1CC8AE3CDB39D58697129289A24C5E9DC15B53EEF2D05`.
+
+Repo `Ghostline.zip` SHA-256:
+`D4628E6652567DFE46CF9E1D707D002F5B436515F7C4ACE8D544AA3900CF8A69`.
+
+Build and round-trip evidence is retained at
+`H:\Ghostline-builds\cache-encounter-candidate-20260722`. The previous
+installed six-file candidate and ZIP are backed up at
+`H:\Ghostline-backups\pre-cache-encounter-20260722-191442`.
+
+This candidate adds the first complete cache encounter after Patch's meeting:
+
+- the mappin now targets the selected Watson/Kabuki recycling-station cabinet;
+- a native physical access point starts disabled on the cabinet face;
+- three inactive Tyger Claw entries activate when the cache phase begins;
+- entering the 25-unit site radius changes the tracker to `Extract the
+  datacache.` and enables the relay;
+- native breach success completes the objective and unlocks both Quiet Spine
+  archived conversations;
+- surviving guards deactivate only after V leaves the 75-unit cleanup radius.
+
+Runtime result: the socket rendered and launched the native minigame, but the
+guard community did not spawn, the socket faced into the cabinet, and a
+successful breach produced neither visible continuation nor shard pickup
+notifications. The runtime-fix candidate above replaces this build for the
+next test; the checklist below is retained as its original validation plan.
+
+Use a save from before the Ghostline phone flow. Saves that already ran the old
+terminating `gq000_post_accept` skeleton can retain stale phase/fact state.
+
+1. Complete the phone and Patch bridge flow, choose `I'm in.`, and confirm the
+   cache marker points to the cabinet site.
+2. Approach the site and confirm all three Tyger Claws appear at plausible,
+   navmesh-safe positions without a streaming crash.
+3. Confirm stealth remains possible and killing every guard is not required.
+4. At roughly 25 units, confirm `Go to the cache coordinates.` succeeds and
+   `Extract the datacache.` becomes tracked.
+5. Check that the mounted socket is visible, correctly aligned, and offers the
+   native personal-link/breach interaction.
+6. Fail or cancel one breach attempt if practical; confirm the objective does
+   not complete, then retry and succeed.
+7. Confirm notifications wait until the hacking UI closes, the extraction
+   objective succeeds, and both Quiet Spine archived conversations become
+   available/readable.
+8. Leave the wider site radius and confirm any surviving spawned guards clean
+   up without visibly popping while V is still at the relay.
+
+For this historical build, the mount offset, guard transforms,
+whole-community lifecycle, direct onscreen shard activation, and native
+breach-success event were the runtime-unknown surfaces. Delivery and Morrow's
+follow-up were intentionally dormant.
 
 ## 2026-07-22 Patch Root-Appearance Fix
 

@@ -37,17 +37,102 @@ UI_SPEC.loader.exec_module(character_ui)
 
 class CharacterBuilderTests(unittest.TestCase):
     manifest_path = ROOT / "source/characters/patch.character.json"
+    female_manifest_path = ROOT / "source/characters/female-example.character.json"
 
     def setUp(self) -> None:
         self.manifest = character_builder.load_manifest(self.manifest_path)
         self.catalog = character_builder.load_catalog(self.manifest)
+        self.female_manifest = character_builder.load_manifest(self.female_manifest_path)
+        self.female_catalog = character_builder.load_catalog(self.female_manifest)
 
     def test_patch_manifest_and_catalog_validate(self) -> None:
         report = character_builder.validate_manifest(self.manifest, self.catalog)
         self.assertTrue(report.ok, report.errors)
-        self.assertEqual(report.details["selections"], 5)
+        self.assertEqual(report.details["selections"], 6)
         self.assertEqual(report.details["indexed_overrides"], 2)
         self.assertEqual(len(report.warnings), 7)
+
+    def test_female_manifest_catalog_and_template_validate(self) -> None:
+        report = character_builder.validate_manifest(
+            self.female_manifest, self.female_catalog
+        )
+
+        self.assertTrue(report.ok, report.errors)
+        self.assertEqual(report.details["frame"], "female_average")
+        self.assertEqual(report.details["player_frame_token"], "pwa")
+        self.assertEqual(report.details["template_assets"], 44)
+
+    def test_female_template_asset_rebasing_fails_closed(self) -> None:
+        mismatched = copy.deepcopy(self.female_manifest)
+        mismatched["template_assets"]["source_depot_root"] += "_typo"
+        report = character_builder.validate_manifest(mismatched, self.female_catalog)
+        self.assertTrue(
+            any("must match template_identity.namespace" in error for error in report.errors)
+        )
+
+        self_declared_typo = copy.deepcopy(mismatched)
+        self_declared_typo["template_identity"]["namespace"] += "_typo"
+        with self.assertRaisesRegex(
+            character_builder.CharacterBuildError,
+            "rebasing left opaque numeric ResourcePath",
+        ):
+            character_builder.generate_documents(self_declared_typo, self.female_catalog)
+
+    def test_entity_template_root_must_match_the_frame_profile(self) -> None:
+        mixed = copy.deepcopy(self.female_manifest)
+        mixed["templates"]["entity"] = self.manifest["templates"]["entity"]
+
+        report = character_builder.validate_manifest(mixed, self.female_catalog)
+        self.assertTrue(any("requires 116" in error for error in report.errors))
+
+        entity, app, _, _, _ = character_builder.generate_documents(
+            mixed, self.female_catalog
+        )
+        generated = character_builder.validate_generated(mixed, entity, app)
+        self.assertTrue(
+            any("expected 116" in error for error in generated.errors), generated.errors
+        )
+
+    def test_unknown_and_catalog_mismatched_frames_are_rejected(self) -> None:
+        unknown = copy.deepcopy(self.manifest)
+        unknown["frame"] = "unknown"
+        unknown["template_identity"]["frame"] = "unknown"
+        report = character_builder.validate_manifest(unknown, self.catalog)
+        self.assertTrue(any("Unsupported character frame" in error for error in report.errors))
+
+        mismatched = copy.deepcopy(self.female_manifest)
+        mismatched["catalog"] = "source/characters/catalog.json"
+        report = character_builder.validate_manifest(mismatched, self.catalog)
+        self.assertTrue(any("does not support character frame" in error for error in report.errors))
+
+    def test_female_template_generates_self_contained_mesh_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            report = character_builder.generate(self.female_manifest_path, output)
+            app = character_builder.read_json(
+                character_builder.output_path(
+                    output, self.female_manifest["outputs"]["appearance_raw"]
+                )
+            )
+            resources = character_builder.resource_paths(app)
+
+            self.assertTrue(report["validation"]["ok"])
+            self.assertEqual(report["validation"]["details"]["app_components"], 35)
+            self.assertEqual(report["validation"]["details"]["base_entity_type"], "WomanAverage")
+            self.assertEqual(report["validation"]["details"]["opaque_numeric_resources"], 0)
+            self.assertTrue(report["staged_template_assets"])
+            self.assertTrue(
+                any(
+                    path.startswith(self.female_manifest["namespace"] + "\\head\\")
+                    for path in resources
+                )
+            )
+            self.assertTrue(
+                any(
+                    path.endswith("body/textures/t0_000_wa__c_base_d02_naked.xbm")
+                    for path in report["staged_template_assets"]
+                )
+            )
 
     def test_entity_default_uses_the_exposed_root_appearance_name(self) -> None:
         entity, _, _, _, _ = character_builder.generate_documents(
@@ -82,6 +167,7 @@ class CharacterBuilderTests(unittest.TestCase):
     def test_original_patch_selection_remains_semantically_equivalent(self) -> None:
         baseline = copy.deepcopy(self.manifest)
         baseline.pop("_manifest_path", None)
+        baseline["appearance"]["selections"]["genitals"] = "template_enabled"
         baseline["appearance"]["selections"]["hair"] = "patch_dual_braids"
         baseline["appearance"]["indexed_overrides"] = {}
         with tempfile.TemporaryDirectory() as directory:
@@ -115,6 +201,13 @@ class CharacterBuilderTests(unittest.TestCase):
         for components in character_builder.component_sets(appearance):
             selected = {character_builder.component_name(item): item for item in components}
             self.assertEqual({selected[name]["isEnabled"] for name in expected}, {0})
+
+    def test_clothed_patch_disables_inherited_genital_meshes(self) -> None:
+        _, app, _, _, _ = character_builder.generate_documents(self.manifest, self.catalog)
+        appearance = character_builder.appearance_data(app)[0]
+        for mapping in character_builder.components_by_name(appearance):
+            self.assertEqual(mapping["t0_pubic_hair"]["isEnabled"], 0)
+            self.assertEqual(mapping["t0_peen"]["isEnabled"], 0)
 
     def test_dread_undercut_rebuilds_the_complete_hair_bundle(self) -> None:
         manifest = copy.deepcopy(self.manifest)
@@ -234,6 +327,53 @@ class CharacterBuilderTests(unittest.TestCase):
                 report = character_builder.validate_generated(manifest, entity, app)
                 self.assertTrue(report.ok, report.errors)
                 self.assertTrue(any("companion remains provisional" in item for item in warnings))
+
+    def test_female_indexed_torso_and_legs_require_pwa_and_update_both_copies(self) -> None:
+        cases = (
+            (
+                "inner_torso",
+                r"base\characters\garment\player_equipment\torso\test\t1_test_pwa.mesh",
+                "t1_shirt",
+            ),
+            (
+                "legs",
+                r"base\characters\garment\player_equipment\legs\test\l1_test_pwa.mesh",
+                "l1_pants",
+            ),
+        )
+        for category, depot_path, component_name in cases:
+            with self.subTest(category=category):
+                manifest = copy.deepcopy(self.female_manifest)
+                manifest["appearance"]["indexed_overrides"] = {
+                    category: {
+                        "depot_path": depot_path,
+                        "mesh_appearance": "default",
+                    }
+                }
+                entity, app, _, _, _ = character_builder.generate_documents(
+                    manifest, self.female_catalog
+                )
+                mappings = character_builder.components_by_name(
+                    character_builder.appearance_data(app)[0]
+                )
+                self.assertEqual(len(mappings), 2)
+                self.assertEqual(
+                    {mapping[component_name]["mesh"]["DepotPath"]["$value"] for mapping in mappings},
+                    {depot_path},
+                )
+                self.assertTrue(character_builder.validate_generated(manifest, entity, app).ok)
+
+        wrong_frame = copy.deepcopy(self.female_manifest)
+        wrong_frame["appearance"]["indexed_overrides"] = {
+            "legs": {
+                "depot_path": (
+                    r"base\characters\garment\player_equipment\legs\test\l1_test_pma.mesh"
+                ),
+                "mesh_appearance": "default",
+            }
+        }
+        report = character_builder.validate_manifest(wrong_frame, self.female_catalog)
+        self.assertTrue(any("pwa body frame" in error for error in report.errors))
 
     def test_indexed_override_supports_renamed_appearance(self) -> None:
         manifest = copy.deepcopy(self.manifest)
@@ -401,6 +541,24 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertFalse(report.ok)
         self.assertTrue(any("new opaque numeric" in error for error in report.errors))
 
+    def test_generated_validation_resolves_roundtripped_female_asset_hashes(self) -> None:
+        entity, app, _, _, _ = character_builder.generate_documents(
+            self.female_manifest, self.female_catalog
+        )
+        mappings = character_builder.components_by_name(
+            character_builder.appearance_data(app)[0]
+        )
+        for mapping in mappings:
+            resource = mapping["h0_head"]["mesh"]["DepotPath"]
+            resource["$storage"] = "uint64"
+            resource["$value"] = character_builder.fnv1a64_resource_path(
+                f"{self.female_manifest['namespace']}\\head\\h0_000_pwa_c__basehead.mesh"
+            )
+
+        report = character_builder.validate_generated(self.female_manifest, entity, app)
+        self.assertTrue(report.ok, report.errors)
+        self.assertEqual(report.details["resolved_template_hashes"], 1)
+
     def test_head_dry_run_accepts_explicit_shape_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             report = character_builder.head_build(
@@ -422,6 +580,71 @@ class CharacterBuilderTests(unittest.TestCase):
         report = character_builder.validate_manifest(manifest, self.catalog)
         self.assertFalse(report.ok)
         self.assertTrue(any("option 22" in error for error in report.errors))
+
+    def test_female_shape_22_validates_and_passes_head_dry_run(self) -> None:
+        manifest = copy.deepcopy(self.female_manifest)
+        manifest["head"]["shapes"] = {
+            name: 22 for name in character_builder.SHAPE_NAMES
+        }
+        report = character_builder.validate_manifest(manifest, self.female_catalog)
+        self.assertTrue(report.ok, report.errors)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "female.character.json"
+            character_builder.write_json(path, manifest)
+            head = character_builder.head_build(
+                path,
+                Path(directory) / "head",
+                {},
+                character_builder.DEFAULT_WOLVENKIT,
+                character_builder.DEFAULT_BLENDER,
+                character_builder.DEFAULT_GAME,
+                True,
+            )
+        self.assertTrue(head["ok"], head["errors"])
+        self.assertEqual(set(head["shapes"].values()), {22})
+
+    def test_head_build_rejects_invalid_namespace_and_cross_frame_morphs(self) -> None:
+        cases = (
+            (
+                "unsafe_namespace",
+                lambda manifest: manifest.update(
+                    {"namespace": r"mod\ghostline\characters\female_example\..\..\escape"}
+                ),
+                "namespace must be a normalized",
+            ),
+            (
+                "cross_frame_morphs",
+                lambda manifest: manifest["head"].update(
+                    {
+                        "morphtargets": [
+                            name.replace("_pwa_", "_pma_")
+                            for name in manifest["head"]["morphtargets"]
+                        ]
+                    }
+                ),
+                "must use the pwa body frame",
+            ),
+        )
+        for label, mutate, expected_error in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory:
+                manifest = copy.deepcopy(self.female_manifest)
+                mutate(manifest)
+                path = Path(directory) / "female.character.json"
+                character_builder.write_json(path, manifest)
+                plan = character_builder.head_build(
+                    path,
+                    Path(directory) / "head",
+                    {},
+                    character_builder.DEFAULT_WOLVENKIT,
+                    character_builder.DEFAULT_BLENDER,
+                    character_builder.DEFAULT_GAME,
+                    True,
+                )
+
+                self.assertFalse(plan["ok"])
+                self.assertTrue(
+                    any(expected_error in error for error in plan["errors"]), plan["errors"]
+                )
 
     def test_preview_manifest_uses_target_names_from_the_glb(self) -> None:
         document = {
@@ -445,6 +668,30 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertEqual(preview["morph_mapping"]["ears"]["targets"]["21"], "h205_ear")
         self.assertNotIn("22", preview["morph_mapping"]["ears"]["targets"])
 
+    def test_female_preview_maps_h21_to_creator_value_22(self) -> None:
+        document = {
+            "asset": {"version": "2.0"},
+            "meshes": [{"extras": {"targetNames": ["h211_eyes", "h215_ear"]}, "primitives": []}],
+        }
+        encoded = json.dumps(document, separators=(",", ":")).encode("utf-8")
+        encoded += b" " * ((4 - len(encoded) % 4) % 4)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "female.morphtarget.glb"
+            payload_length = 12 + 8 + len(encoded)
+            path.write_bytes(
+                struct.pack("<4sII", b"glTF", 2, payload_length)
+                + struct.pack("<II", len(encoded), 0x4E4F534A)
+                + encoded
+            )
+            preview = character_builder.build_preview_manifest(
+                self.female_manifest, [path], root
+            )
+
+        self.assertEqual(preview["morph_mapping"]["eyes"]["targets"]["22"], "h211_eyes")
+        self.assertEqual(preview["morph_mapping"]["ears"]["targets"]["22"], "h215_ear")
+        self.assertEqual(preview["morph_mapping"]["eyes"]["unresolved_documented_values"], [])
+
     def test_preview_route_rejects_path_traversal(self) -> None:
         with self.assertRaises(character_builder.CharacterBuildError):
             character_ui.preview_file_path("/preview/patch/../outside.glb")
@@ -463,6 +710,20 @@ class CharacterBuilderTests(unittest.TestCase):
         )
         self.assertEqual(merged["head"]["blend_template"], self.manifest["head"]["blend_template"])
         self.assertEqual(merged["head"]["morphtargets"], self.manifest["head"]["morphtargets"])
+
+    def test_ui_female_profile_keeps_server_owned_frame_and_templates(self) -> None:
+        posted = copy.deepcopy(self.female_manifest)
+        posted["frame"] = "male_average"
+        posted["catalog"] = "source/characters/catalog.json"
+        posted["templates"] = self.manifest["templates"]
+        with mock.patch.object(
+            character_ui, "DEFAULT_MANIFEST", self.female_manifest_path
+        ):
+            merged = character_ui.editable_manifest(posted)
+
+        self.assertEqual(merged["frame"], "female_average")
+        self.assertEqual(merged["catalog"], self.female_manifest["catalog"])
+        self.assertEqual(merged["templates"], self.female_manifest["templates"])
 
     def test_ui_manifest_retains_only_canonical_indexed_override_fields(self) -> None:
         posted = copy.deepcopy(self.manifest)
@@ -502,6 +763,12 @@ class CharacterBuilderTests(unittest.TestCase):
             character_builder.mesh_name_for_morphtarget("hb_000_pma__morphs_logan.morphtarget"),
             "hb_000_pma_c__basehead_logan.mesh",
         )
+        self.assertEqual(
+            character_builder.mesh_name_for_morphtarget(
+                "h0_000_pwa__morphs.morphtarget"
+            ),
+            "h0_000_pwa_c__basehead.mesh",
+        )
 
     def test_local_ui_bootstrap_and_validation_api(self) -> None:
         server = ThreadingHTTPServer(("127.0.0.1", 0), character_ui.CharacterUIHandler)
@@ -525,9 +792,42 @@ class CharacterBuilderTests(unittest.TestCase):
             thread.join(timeout=5)
 
         self.assertTrue(bootstrap["validation"]["ok"])
-        self.assertEqual(len(bootstrap["catalog"]["categories"]), 5)
+        self.assertEqual(len(bootstrap["catalog"]["categories"]), 6)
         self.assertIn("asset_index", bootstrap)
         self.assertTrue(validation["ok"])
+
+    def test_local_ui_bootstraps_selected_female_profile(self) -> None:
+        with mock.patch.object(
+            character_ui, "DEFAULT_MANIFEST", self.female_manifest_path
+        ):
+            server = ThreadingHTTPServer(("127.0.0.1", 0), character_ui.CharacterUIHandler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with urllib.request.urlopen(
+                    f"http://127.0.0.1:{server.server_port}/api/bootstrap", timeout=5
+                ) as response:
+                    bootstrap = json.load(response)
+                request = urllib.request.Request(
+                    f"http://127.0.0.1:{server.server_port}/api/validate",
+                    data=json.dumps({"manifest": bootstrap["manifest"]}).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(request, timeout=5) as response:
+                    validation = json.load(response)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=5)
+
+        self.assertTrue(bootstrap["validation"]["ok"])
+        self.assertEqual(bootstrap["manifest"]["frame"], "female_average")
+        self.assertEqual(bootstrap["frame_profile"]["player_token"], "pwa")
+        self.assertEqual(bootstrap["frame_profile"]["head_shape_max"], 22)
+        self.assertEqual(len(bootstrap["catalog"]["categories"]), 4)
+        self.assertTrue(validation["ok"])
+        self.assertEqual(validation["details"]["frame"], "female_average")
 
     def test_local_ui_serves_allowlisted_preview_and_searches_generated_index(self) -> None:
         original_preview_root = character_ui.PREVIEW_ROOT

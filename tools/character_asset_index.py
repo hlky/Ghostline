@@ -341,8 +341,13 @@ def find_asset(index: dict[str, Any], depot_path: str) -> dict[str, Any]:
     raise CharacterAssetIndexError(f"Asset is not present in the current index: {depot_path}")
 
 
-def selection_support(asset: dict[str, Any]) -> dict[str, Any]:
+def selection_support(asset: dict[str, Any], required_frame_token: str = "pma") -> dict[str, Any]:
     reasons: list[str] = []
+    required_frame_token = required_frame_token.casefold()
+    if required_frame_token not in {"pma", "pwa"}:
+        raise CharacterAssetIndexError(
+            f"Indexed clothing assignment does not support frame token {required_frame_token!r}"
+        )
     slot = str(asset.get("slot") or "")
     manifest_category = SUPPORTED_CLOTHING_SLOTS.get(slot)
     if asset.get("category") != "clothing":
@@ -357,13 +362,13 @@ def selection_support(asset: dict[str, Any]) -> dict[str, Any]:
     filename_frames = {
         match.group(1).casefold() for match in FRAME_PATTERN.finditer(depot_stem)
     }
-    if "pma" not in filename_frames:
-        reasons.append("Patch currently requires the pma player-male-average frame")
+    if filename_frames != {required_frame_token}:
+        reasons.append(f"the active character requires the {required_frame_token} body frame")
     return {
         "supported": not reasons,
         "manifest_category": manifest_category,
         "asset_slot": slot or None,
-        "required_frame": "pma",
+        "required_frame": required_frame_token,
         "reasons": reasons,
     }
 
@@ -411,9 +416,12 @@ def mesh_appearance_metadata(document: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def canonical_indexed_override(
-    asset: dict[str, Any], mesh_appearance: str, appearances: Iterable[str]
+    asset: dict[str, Any],
+    mesh_appearance: str,
+    appearances: Iterable[str],
+    required_frame_token: str = "pma",
 ) -> dict[str, Any]:
-    support = selection_support(asset)
+    support = selection_support(asset, required_frame_token)
     if not support["supported"]:
         raise CharacterAssetIndexError("Asset cannot be assigned: " + "; ".join(support["reasons"]))
     available = list(appearances)
@@ -471,6 +479,7 @@ def prepare_mesh_preview(
     output_dir: Path,
     wolvenkit: Path = DEFAULT_WOLVENKIT,
     game_path: Path = DEFAULT_GAME,
+    required_frame_token: str = "pma",
 ) -> dict[str, Any]:
     asset = find_asset(index, depot_path)
     if asset.get("resource_type") != "mesh":
@@ -567,7 +576,7 @@ def prepare_mesh_preview(
             )
         appearance_rows = mesh_appearance_metadata(read_json(expected_metadata))
     mesh_appearances = [row["name"] for row in appearance_rows]
-    support = selection_support(asset)
+    support = selection_support(asset, required_frame_token)
     warnings = list(asset.get("warnings", []))
     if not mesh_appearances:
         warnings.append("The mesh did not advertise any selectable appearances")

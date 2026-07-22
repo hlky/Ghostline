@@ -33,6 +33,7 @@
         <div class="field-grid">
           <label>Character ID<input id="character-id" pattern="[a-z][a-z0-9_]+"></label>
           <label>Display name<input id="display-name"></label>
+          <label>Body frame<input id="character-frame" readonly></label>
           <label>Namespace<input id="namespace"></label>
           <label>Tweak record<input id="tweak-record"></label>
           <label>Voice tag<input id="voice-tag"></label>
@@ -48,7 +49,7 @@
         <div class="head-workspace">
           <div class="shape-controls">
             <div id="shape-fields" class="shape-grid"></div>
-            <p class="hint">The current GLB exposes Basis as 1 and named targets 2–21. The documented option 22 has no matching target and stays blocked until its offset is resolved. Empty values preserve the current head and block regeneration.</p>
+            <p id="shape-range-hint" class="hint">Shape ranges are loaded from the trusted body-frame profile. Empty values preserve the current head and block regeneration.</p>
             <div class="preview-actions">
               <button data-action="preview-prepare" class="primary">Prepare live preview</button>
               <label class="check-field"><input id="preview-all-parts" type="checkbox"> Load all head layers</label>
@@ -75,7 +76,7 @@
         <div class="selected-overrides-panel">
           <div>
             <h3>Selected indexed clothing</h3>
-            <p>These replace the primary mesh in a curated Patch slot. Existing cuff and shadow companions stay in place until bundle resolution is added.</p>
+            <p>These replace the primary mesh in a compatible curated slot. Existing companion components stay in place until complete bundle resolution is added.</p>
           </div>
           <div id="selected-overrides" class="selected-overrides"></div>
         </div>
@@ -83,7 +84,7 @@
           <div class="asset-browser-heading">
             <div>
               <h3>Installed-game asset index</h3>
-              <p>Search current archives by slot, frame, family, and depot path. Preview a PMA torso, legs, or feet primary mesh to choose one of its real in-game appearances, then add it to the outfit. The current neutral geometry preview does not render appearance/material changes yet.</p>
+              <p>Search current archives by slot, frame, family, and depot path. Compatible player-frame torso, legs, and supported feet meshes can be previewed and assigned with one of their real in-game appearances. The current neutral geometry preview does not render appearance/material changes yet.</p>
             </div>
             <button data-action="asset-index">Rebuild game index</button>
           </div>
@@ -136,6 +137,6 @@
       </section>
     </main>
 
-    <script type="module" src="/app.js"></script>
+    <script type="module" src="/app.js?v=frame-profiles-1"></script>
   </body>
 </html>

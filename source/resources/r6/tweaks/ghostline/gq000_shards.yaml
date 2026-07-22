@@ -1,0 +1,33 @@
+# Inherit the current game's complete readable-shard records. Ghostline only
+# owns the title and journal linkage; the vanilla base supplies item behavior,
+# tags, UI category, and any version-specific fields.
+Items.GhostlineQuietSpine01:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: Items.GhostlineQuietSpine01_inline0
+  localizedName: gl_gq000_shard_quiet_spine_01_title
+
+Items.GhostlineQuietSpine01_inline0:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq000/shards/quiet_spine_01
+
+Items.GhostlineQuietSpine02:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: Items.GhostlineQuietSpine02_inline0
+  localizedName: gl_gq000_shard_quiet_spine_02_title
+
+Items.GhostlineQuietSpine02_inline0:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq000/shards/quiet_spine_02
+
+# A separate quest package is reserved by the live Kabuki drop point. The
+# vanilla base supplies the drop-point deposit behavior; this record owns only
+# Ghostline's stable item ID and display name.
+Items.gq000_datacache:
+  $base: Items.sts_std_rcr_05_datachip
+  friendlyName: gq000_datacache
+  localizedName: gl_gq000_item_datacache_name
+
+# Match the modest Kabuki side-job economy while giving Ghostline a stable
+# reward record that can be tuned independently later.
+QuestRewards.gq000_completion:
+  $base: QuestRewards.sts_wat_kab_05_completion
