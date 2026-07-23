@@ -602,6 +602,13 @@ world-reference notes, and packaging instructions now live in focused docs:
   Evidence is retained at
   `H:\Ghostline-audits\typed-quest-final-20260723`, and the full regression
   suite passes 116 tests.
+- A generated vanilla quest research catalog now links IGN's Main Jobs, Side
+  Jobs, and Gigs indexes to the exact records in `H:\projects\quest.json`.
+  `docs/vanilla-quest-reference` contains structural Markdown for 57 main
+  jobs, 85 side jobs, and 85 gigs; `reference/quests/ign-link-map.json`
+  preserves the machine-readable IGN URL to journal hash/path mapping.
+  Objective text, phase paths, map pins, and inferred reusable building blocks
+  can now be searched before opening the corresponding vanilla CR2W resources.
 
 ### 5. Validate Audio Packaging
 

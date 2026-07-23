@@ -190,6 +190,23 @@ validation. Other indexed categories remain preview-only.
 
 ## Questphase Explorer
 
+### Vanilla Quest Reference
+
+`tools/build_quest_reference.py` reads IGN's Main Jobs, Side Jobs, and Gigs
+indexes, matches their quest links to `H:\projects\quest.json`, and generates
+structural Markdown references under `docs/vanilla-quest-reference`. Each
+matched quest includes its vanilla type, journal hash/path, premise, ordered
+objective paths, map-pin references, and automatically tagged candidate quest
+building blocks. Machine-readable IGN-to-journal linkage is written to
+`reference/quests/ign-link-map.json`.
+
+```powershell
+py -B .\tools\build_quest_reference.py
+```
+
+The generator stores links and locally exported journal structure; it does not
+copy IGN walkthrough prose.
+
 ### Typed Quest Composition
 
 `tools/quest_compiler.py` validates typed linear quest manifests and emits a
