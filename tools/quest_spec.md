@@ -17,15 +17,38 @@ phase for graph inspection.
 also performs its own strict validation so command-line builds do not depend on
 an editor or an optional schema library.
 
-## Stage Types
+## Stage Types and implementation boundary
 
-| Type | Required typed fields |
-| --- | --- |
-| `phone_job_offer` | `contact`, `message`, `choice_group`, `accept_choice`, `start_fact`, `accepted_fact` |
-| `meet_contact` | `contact`, `scene`, `community`, `objective`, `description_entry`, `mappin` |
-| `hack_access_point` | `device`, `success_fact` |
-| `deliver_drop_point` | `item`, `drop_point`, `deposit_fact` |
-| `phone_conversation` | `contact`, `thread`, `messages`, `choice_group`, `choices`, `final_message` |
+| Type | Implementation | Required typed fields |
+| --- | --- | --- |
+| `phone_job_offer` | generated | `contact`, `message`, `choice_group`, `accept_choice`, `start_fact`, `accepted_fact` |
+| `phone_conversation` | generated | `contact`, `thread`, `messages`, `choice_group`, `choices`, `final_message` |
+| `reach_area` | generated | `trigger`, `objective`, `description_entry`, `mappin` |
+| `leave_area` | generated | `trigger`, `objective`, `description_entry` |
+| `acquire_item` | generated | `item`, `source` |
+| `read_shard` | generated | `journal_entry`, `file_entry_index` |
+| `meet_contact` | template | `contact`, `scene`, `community`, `objective`, `description_entry`, `mappin` |
+| `hack_access_point` | template | `device`, `success_fact` |
+| `deliver_drop_point` | template | `item`, `drop_point`, `deposit_fact` |
+| `interact_device` | template | `device`, `controller_class`, `action`, `completion_function` |
+| `combat_encounter` | template | `community`, `hostility`, `completion` |
+| `investigate_clues` | template | `objective`, `description_entry`, `clues` |
+| `optional_condition` | template | `objective`, `condition`, `success_fact`, `failure_fact`, `evaluation` |
+| `choice_gate` | template | `gate_kind`, `branches`, `join` |
+| `escort_npc` | template | `community`, `entry`, `destinations`, `objective` |
+| `carry_npc` | template | `community`, `entry`, `destination`, `objective` |
+| `deliver_vehicle` | template | `vehicle`, `destination`, `objective` |
+
+`generated` means the compiler constructs the complete child graph from typed
+fields. `template` means it resolves a reduced raw CR2W-JSON template,
+performs exact scalar replacement, validates the handle graph, and checks the
+typed contract after instantiation. The eight new complex blocks resolve
+Ghostline-owned built-in templates automatically; authors normally provide
+only the typed fields shown above. An explicit `phase_template` plus
+`template_bindings` can override the built-in for an advanced shape.
+Template-backed does **not** mean that an arbitrary whole vanilla phase is
+reusable. The research corpus and provenance map live under
+`reference/vanilla_quest_blocks`.
 
 Every stage also requires:
 
@@ -37,17 +60,28 @@ Every stage also requires:
 ready stage can compile. Missing resources are errors for `ready` stages and
 warnings for `planned` stages.
 
-Meeting, hacking, and delivery stages currently declare `phase_template` and
-`template_bindings`. Bindings replace complete scalar values only; substring
-rewrites are intentionally forbidden. Compilation rejects a binding that was
-not found in the template, duplicate `HandleId` values, and dangling
-`HandleRefId` values. This preserves the proven graph topology while making
-quest-local facts, journal paths, scene paths, actor names, NodeRefs, and
-completion state explicit in the manifest. A post-build contract check also
-requires every typed runtime identifier (contact, scene, community, device,
-success fact, grants, item, drop point, and deposit fact as applicable) to be
-present in the generated child, preventing descriptive manifest fields from
-silently drifting away from template behavior.
+Template bindings replace complete scalar values only; substring rewrites are
+intentionally forbidden. Compilation rejects an unused binding, duplicate
+`HandleId` values, dangling `HandleRefId` values, or a generated child that
+does not contain its typed runtime identifiers. This preserves proven graph
+topology while making quest-local facts, journal paths, scene paths, actor
+identities, NodeRefs, device actions, AI destinations, and completion state
+explicit.
+
+The built-in template shapes are intentionally narrow:
+
+- combat is an already-hostile whole community ending when all are defeated;
+- investigation is one required scan-started clue;
+- optional condition is one fact evaluated when the block is reached;
+- choice is two fact-backed branches that reconverge;
+- escort observes one named entry through exactly two ordered trigger gates;
+- carrying requires the named NPC mounted to V inside a destination trigger;
+- vehicle delivery requires the vehicle inside a destination trigger and
+  stopped.
+
+Use an explicit custom template for broader variants. Companion movement AI,
+community/world placement, device setup, carry interactions, and vehicle
+spawning remain separate authored assets rather than hidden compiler behavior.
 
 Phone choices are objects with paired `choice` and `reply` journal paths. The
 generated graph activates the initial messages in order, waits on every choice
@@ -56,10 +90,18 @@ been visited, optionally sets `completion_fact`, and exits through `Out1`.
 `source/quests/examples/phone_conversation.quest.json` is the standalone
 authoring example.
 
-The first compiler slice is intentionally linear. Dialogue choices remain
-inside scene or phone blocks; combat, breach outcomes, and deposit completion
-remain inside their child phases. Future schema versions can add named stage
-outcomes and conditional edges without changing existing manifests.
+`source/quests/examples/direct_building_blocks.quest.json` compiles all four
+generated blocks. `source/quests/examples/template_building_blocks.quest.json`
+compiles all eight built-in template blocks without author-written template
+paths or placeholder maps.
+
+The orchestration layer remains intentionally linear. `choice_gate` is a
+converging child block: its alternatives must rejoin before `Out1`.
+`optional_condition` evaluates inside its child phase rather than running as a
+parallel monitor. Dialogue choices remain inside scene or phone blocks;
+combat, breach outcomes, and deposit completion remain inside their child
+phases. A future schema version can add named stage outcomes and graph edges
+without changing these linear manifests.
 
 ## Commands
 

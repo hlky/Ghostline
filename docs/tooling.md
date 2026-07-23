@@ -211,10 +211,13 @@ copy IGN walkthrough prose.
 
 `tools/quest_compiler.py` validates typed linear quest manifests and emits a
 deterministic orchestration questphase, instantiated child questphases, and a
-normalized build plan. Meeting, hacking, and delivery blocks use raw
-CR2W-JSON templates with strict scalar bindings; phone conversations are
-generated directly from typed message and choice paths. Scene, world, journal,
-and localization resources remain separate stage-owned build products.
+normalized build plan. Simple objective, item, shard, and phone blocks are
+generated directly. Meeting, hacking, delivery, device, combat, investigation,
+branching, escort, carry, and vehicle blocks use reduced raw CR2W-JSON
+templates with strict scalar bindings. The eight reusable complex blocks have
+compiler-owned default templates, so normal manifests do not expose template
+placeholders. Scene, world, journal, localization, community AI, and device
+placement remain separate stage-owned build products.
 
 ```powershell
 py -B .\tools\quest_compiler.py validate `
@@ -236,6 +239,28 @@ py -B .\tools\quest_compiler.py compile `
   .\source\quests\examples\phone_conversation.quest.json `
   --out .\converted\quests\examples\phone_conversation.questphase.json
 ```
+
+The complete building-block acceptance examples are:
+
+```powershell
+py -B .\tools\quest_compiler.py compile `
+  .\source\quests\examples\direct_building_blocks.quest.json `
+  --out .\converted\quest-blocks\gq_blocks_direct.questphase.json
+
+py -B .\tools\quest_compiler.py compile `
+  .\source\quests\examples\template_building_blocks.quest.json `
+  --out .\converted\quest-blocks\gq_blocks_template.questphase.json
+```
+
+Regenerate the eight checked-in reduced templates with:
+
+```powershell
+py -B .\tools\generate_quest_block_templates.py
+py -B .\tools\generate_ai_vehicle_block_templates.py
+```
+
+Their vanilla provenance and deliberately supported shapes are documented in
+`reference/vanilla_quest_blocks/README.md`.
 
 `tools/explore_questphase.py` inspects deserialized questphase JSON. The
 default target is

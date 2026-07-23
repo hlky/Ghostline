@@ -20,15 +20,22 @@ from generate_cache_phase import (  # noqa: E402
     JsonObject,
     PhaseGraphBuilder,
     cname,
+    entity_reference,
     fact_node,
     input_node,
     journal_entry_node,
     mappin_node,
     node_ref,
+    objective_node,
     output_node,
     realtime_delay_node,
+    trigger_condition_node,
+    local_player_reference,
+    tweakdbid,
 )
 from generate_delivery_phase import (  # noqa: E402
+    fact_condition_node,
+    inventory_condition_node,
     journal_choice_succeeded_node,
     journal_entry_visited_node,
     logical_xor_node,
@@ -42,8 +49,75 @@ SUPPORTED_STAGE_TYPES = {
     "hack_access_point",
     "deliver_drop_point",
     "phone_conversation",
+    "reach_area",
+    "interact_device",
+    "acquire_item",
+    "combat_encounter",
+    "leave_area",
+    "read_shard",
+    "investigate_clues",
+    "optional_condition",
+    "choice_gate",
+    "escort_npc",
+    "carry_npc",
+    "deliver_vehicle",
 }
-DIRECT_STAGE_TYPES = {"phone_job_offer", "phone_conversation"}
+DIRECT_STAGE_TYPES = {
+    "phone_job_offer",
+    "phone_conversation",
+    "reach_area",
+    "acquire_item",
+    "leave_area",
+    "read_shard",
+}
+TEMPLATE_REQUIRED_STAGE_TYPES = {
+    "interact_device",
+    "combat_encounter",
+    "investigate_clues",
+    "optional_condition",
+    "choice_gate",
+    "escort_npc",
+    "carry_npc",
+    "deliver_vehicle",
+}
+
+BUILTIN_TEMPLATE_RESOURCES = {
+    stage_type: rf"mod\ghostline\quest_blocks\templates\{stage_type}.questphase"
+    for stage_type in TEMPLATE_REQUIRED_STAGE_TYPES
+}
+
+BUILTIN_UNSUPPORTED_FIELDS = {
+    "interact_device": {"objective", "description_entry", "mappin", "success_fact"},
+    "combat_encounter": {
+        "entries",
+        "completion_fact",
+        "cleanup_on_exit",
+        "nonlethal_allowed",
+    },
+    "investigate_clues": {"completion_fact"},
+    "optional_condition": {"description_entry"},
+    "choice_gate": {"default_branch"},
+    "escort_npc": {
+        "description_entry",
+        "failure_fact",
+        "allow_combat_interrupt",
+    },
+    "carry_npc": {"description_entry", "placement_slot", "completion_fact"},
+    "deliver_vehicle": {
+        "description_entry",
+        "mappin",
+        "require_player_exit",
+        "completion_fact",
+    },
+}
+
+STAGE_IMPLEMENTATION_MODE = {
+    **{stage_type: "generated" for stage_type in DIRECT_STAGE_TYPES},
+    **{stage_type: "template" for stage_type in TEMPLATE_REQUIRED_STAGE_TYPES},
+    "meet_contact": "template",
+    "hack_access_point": "template",
+    "deliver_drop_point": "template",
+}
 STAGE_REQUIRED_FIELDS = {
     "phone_job_offer": {
         "contact",
@@ -64,6 +138,22 @@ STAGE_REQUIRED_FIELDS = {
     "hack_access_point": {"device", "success_fact"},
     "deliver_drop_point": {"item", "drop_point", "deposit_fact"},
     "phone_conversation": {"contact", "thread", "choice_group", "final_message"},
+    "reach_area": {"trigger", "objective", "description_entry", "mappin"},
+    "interact_device": {
+        "device", "controller_class", "action", "completion_function",
+    },
+    "acquire_item": {"item", "source"},
+    "combat_encounter": {"community", "hostility", "completion"},
+    "leave_area": {"trigger", "objective", "description_entry"},
+    "read_shard": {"journal_entry"},
+    "investigate_clues": {"objective", "description_entry"},
+    "optional_condition": {
+        "objective", "success_fact", "failure_fact", "evaluation",
+    },
+    "choice_gate": {"gate_kind"},
+    "escort_npc": {"community", "entry", "objective"},
+    "carry_npc": {"community", "entry", "destination", "objective"},
+    "deliver_vehicle": {"vehicle", "destination", "objective"},
 }
 TOP_LEVEL_FIELDS = {
     "schema_version",
@@ -73,40 +163,80 @@ TOP_LEVEL_FIELDS = {
     "phase_prefabs",
     "stages",
 }
-STAGE_FIELDS = {
+COMMON_STAGE_FIELDS = {
     "id",
     "type",
     "status",
     "phase_resource",
     "phase_template",
     "template_bindings",
-    "contact",
-    "scene",
-    "community",
-    "appearance",
-    "objective",
-    "description_entry",
-    "mappin",
-    "device",
-    "success_fact",
-    "guard_community",
-    "grants",
-    "item",
-    "drop_point",
-    "deposit_fact",
-    "thread",
-    "messages",
-    "message",
-    "accept_choice",
-    "start_fact",
-    "accepted_fact",
-    "choice_group",
-    "choices",
-    "final_message",
-    "completion_fact",
-    "delay_seconds",
     "required_assets",
     "notes",
+}
+STAGE_TYPE_FIELDS = {
+    "phone_job_offer": {
+        "contact", "message", "choice_group", "accept_choice", "start_fact",
+        "accepted_fact", "delay_seconds",
+    },
+    "meet_contact": {
+        "contact", "scene", "community", "appearance", "objective",
+        "description_entry", "mappin",
+    },
+    "hack_access_point": {
+        "device", "success_fact", "guard_community", "grants",
+    },
+    "deliver_drop_point": {"item", "drop_point", "deposit_fact"},
+    "phone_conversation": {
+        "contact", "thread", "choice_group", "messages", "choices",
+        "final_message", "completion_fact", "delay_seconds",
+    },
+    "reach_area": {
+        "trigger", "objective", "description_entry", "mappin",
+        "start_fact", "disable_previous_mappins",
+    },
+    "interact_device": {
+        "device", "controller_class", "action", "completion_function",
+        "objective", "description_entry", "mappin", "success_fact",
+    },
+    "acquire_item": {
+        "item", "source", "quantity", "objective", "description_entry", "mappin",
+        "acquisition_fact",
+    },
+    "combat_encounter": {
+        "community", "entries", "activate", "hostility", "completion",
+        "nonlethal_allowed", "completion_fact", "cleanup_on_exit",
+    },
+    "leave_area": {
+        "trigger", "objective", "description_entry", "mappin",
+        "completion_fact", "cleanup_community",
+    },
+    "read_shard": {
+        "item", "journal_entry", "file_entry_index", "activate_entry",
+        "objective", "description_entry", "completion_fact",
+    },
+    "investigate_clues": {
+        "clues", "required_count", "objective", "description_entry",
+        "completion_fact",
+    },
+    "optional_condition": {
+        "objective", "description_entry", "condition", "success_fact",
+        "failure_fact", "evaluation",
+    },
+    "choice_gate": {
+        "gate_kind", "branches", "default_branch", "join",
+    },
+    "escort_npc": {
+        "community", "entry", "destinations", "objective", "description_entry",
+        "failure_fact", "allow_combat_interrupt",
+    },
+    "carry_npc": {
+        "community", "entry", "destination", "objective", "description_entry",
+        "placement_slot", "completion_fact",
+    },
+    "deliver_vehicle": {
+        "vehicle", "destination", "objective", "description_entry", "mappin",
+        "require_player_exit", "completion_fact",
+    },
 }
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 DEPOT_RE = re.compile(r"^(?:base|ep1|mod)\\.+$")
@@ -290,7 +420,8 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             diagnostics=diagnostics,
         )
 
-        for field in sorted(set(stage) - STAGE_FIELDS):
+        allowed_fields = COMMON_STAGE_FIELDS | STAGE_TYPE_FIELDS.get(stage_type, set())
+        for field in sorted(set(stage) - allowed_fields):
             diagnostics.append(
                 Diagnostic(
                     "error",
@@ -327,8 +458,321 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                     stage_id or None,
                 )
             )
-        for field in STAGE_REQUIRED_FIELDS.get(stage_type, set()):
+        for field in sorted(STAGE_REQUIRED_FIELDS.get(stage_type, set())):
             require_string(stage, field, context=context, diagnostics=diagnostics)
+
+        if (
+            stage_type in TEMPLATE_REQUIRED_STAGE_TYPES
+            and not isinstance(stage.get("phase_template"), str)
+        ):
+            unsupported = sorted(
+                BUILTIN_UNSUPPORTED_FIELDS.get(stage_type, set()) & set(stage)
+            )
+            if unsupported:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_builtin_fields",
+                        f"{context} fields require an explicit custom template: "
+                        + ", ".join(unsupported),
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "acquire_item":
+            if stage.get("source") not in {"inventory", "grant"}:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_item_source",
+                        f"{context}.source must be inventory or grant",
+                        stage_id or None,
+                    )
+                )
+            quantity = stage.get("quantity", 1)
+            if not isinstance(quantity, int) or isinstance(quantity, bool) or quantity < 1:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_quantity",
+                        f"{context}.quantity must be a positive integer",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "read_shard":
+            file_index = stage.get("file_entry_index")
+            if (
+                not isinstance(file_index, int)
+                or isinstance(file_index, bool)
+                or file_index < 0
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_file_entry_index",
+                        f"{context}.file_entry_index must be a non-negative integer",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "reach_area" and not isinstance(
+            stage.get("disable_previous_mappins", True), bool
+        ):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "invalid_disable_previous_mappins",
+                    f"{context}.disable_previous_mappins must be a boolean",
+                    stage_id or None,
+                )
+            )
+
+        if stage_type == "investigate_clues":
+            clues = stage.get("clues")
+            if (
+                not isinstance(clues, list)
+                or not clues
+                or not all(
+                    isinstance(item, dict)
+                    and isinstance(item.get("id"), str)
+                    and ID_RE.fullmatch(item["id"])
+                    and isinstance(item.get("object_ref"), str)
+                    for item in clues
+                )
+                or len({item["id"] for item in clues if isinstance(item, dict)}) != len(clues)
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_clues",
+                        f"{context}.clues must contain unique id/object_ref objects",
+                        stage_id or None,
+                    )
+                )
+            if (
+                not isinstance(stage.get("phase_template"), str)
+                and isinstance(clues, list)
+                and any(
+                    isinstance(clue, dict)
+                    and set(clue) - {"id", "object_ref"}
+                    for clue in clues
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_clue_fields",
+                        f"{context} built-in template supports clue id and object_ref only",
+                        stage_id or None,
+                    )
+                )
+            else:
+                required_count = stage.get("required_count", len(clues))
+                if (
+                    not isinstance(required_count, int)
+                    or isinstance(required_count, bool)
+                    or not 1 <= required_count <= len(clues)
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_required_count",
+                            f"{context}.required_count must be between 1 and the clue count",
+                            stage_id or None,
+                        )
+                    )
+
+        if stage_type == "optional_condition":
+            if stage.get("success_fact") == stage.get("failure_fact"):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "duplicate_outcome_fact",
+                        f"{context}.success_fact and failure_fact must differ",
+                        stage_id or None,
+                    )
+                )
+            condition = stage.get("condition")
+            if (
+                not isinstance(condition, dict)
+                or set(condition) != {"kind", "value"}
+                or condition.get("kind")
+                not in {"fact", "trigger", "detection", "alarm", "timer"}
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_optional_condition",
+                        f"{context}.condition must contain a supported kind and value",
+                        stage_id or None,
+                    )
+                )
+            if stage.get("evaluation") not in {"continuous", "at_exit"}:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_evaluation",
+                        f"{context}.evaluation must be continuous or at_exit",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "choice_gate":
+            choices = stage.get("branches")
+            if (
+                not isinstance(choices, list)
+                or len(choices) < 2
+                or not all(
+                    isinstance(item, dict)
+                    and set(item) == {"id", "condition", "set_fact"}
+                    and isinstance(item["id"], str)
+                    and ID_RE.fullmatch(item["id"])
+                    and isinstance(item["condition"], str)
+                    and item["condition"].strip()
+                    and isinstance(item["set_fact"], str)
+                    and item["set_fact"].strip()
+                    for item in choices
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_gate_choices",
+                        f"{context}.branches must contain at least two id/condition/set_fact objects",
+                        stage_id or None,
+                    )
+                )
+            elif (
+                len({item["id"] for item in choices}) != len(choices)
+                or len({item["set_fact"] for item in choices}) != len(choices)
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "duplicate_gate_choice",
+                        f"{context}.branches must use unique ids and outcome facts",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "combat_encounter":
+            if stage.get("hostility") not in {"neutral_to_hostile", "already_hostile"}:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_hostility",
+                        f"{context}.hostility is not supported",
+                        stage_id or None,
+                    )
+                )
+            completion = stage.get("completion")
+            if completion not in {"all_defeated", "named_defeated", "fact"}:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_combat_completion",
+                        f"{context}.completion is not supported",
+                        stage_id or None,
+                    )
+                )
+            using_builtin = not isinstance(stage.get("phase_template"), str)
+            if using_builtin and completion != "all_defeated":
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_combat_completion",
+                        f"{context} built-in template supports completion=all_defeated",
+                        stage_id or None,
+                    )
+                )
+            if using_builtin and stage.get("hostility") != "already_hostile":
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_combat_variant",
+                        f"{context} currently supports hostility=already_hostile",
+                        stage_id or None,
+                    )
+                )
+        if stage_type == "escort_npc":
+            destinations = stage.get("destinations")
+            if (
+                not isinstance(destinations, list)
+                or not destinations
+                or not all(isinstance(item, str) and item.strip() for item in destinations)
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_destinations",
+                        f"{context}.destinations must be a non-empty string array",
+                        stage_id or None,
+                    )
+                )
+            elif (
+                not isinstance(stage.get("phase_template"), str)
+                and len(destinations) != 2
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_destination_count",
+                        f"{context}.destinations currently requires exactly two route gates",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "investigate_clues":
+            clues = stage.get("clues")
+            if (
+                not isinstance(stage.get("phase_template"), str)
+                and isinstance(clues, list)
+                and (
+                len(clues) != 1 or stage.get("required_count", 1) != 1
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_clue_count",
+                        f"{context} currently supports exactly one required clue",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "optional_condition":
+            if (
+                not isinstance(stage.get("phase_template"), str)
+                and stage.get("evaluation") != "at_exit"
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_condition_evaluation",
+                        f"{context} currently supports evaluation=at_exit",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "choice_gate":
+            branches = stage.get("branches")
+            if (
+                not isinstance(stage.get("phase_template"), str)
+                and (
+                    stage.get("gate_kind") != "fact"
+                    or not isinstance(branches, list)
+                    or len(branches) != 2
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_choice_shape",
+                        f"{context} currently supports exactly two fact branches",
+                        stage_id or None,
+                    )
+                )
 
         if stage_type == "phone_conversation":
             messages = stage.get("messages")
@@ -456,8 +900,8 @@ def audit_resources(spec: QuestSpec) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = []
     for stage in spec.stages:
         resources = []
-        template = stage.data.get("phase_template")
-        if isinstance(template, str):
+        template = stage_template_resource(stage)
+        if template is not None:
             resources.append(template)
         elif stage.type not in DIRECT_STAGE_TYPES:
             resources.append(stage.phase_resource)
@@ -563,6 +1007,92 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             (field, stage.data[field])
             for field in ("item", "drop_point", "deposit_fact")
         )
+    elif stage.type == "reach_area":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("trigger", "objective", "description_entry", "mappin")
+        )
+    elif stage.type == "interact_device":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("device", "controller_class", "action", "completion_function")
+        )
+    elif stage.type == "acquire_item":
+        expected.append(("item", stage.data["item"]))
+    elif stage.type == "combat_encounter":
+        expected.append(("community", stage.data["community"]))
+        expected.extend(("entries", item) for item in stage.data.get("entries", []))
+    elif stage.type == "leave_area":
+        expected.extend(
+            (field, stage.data[field]) for field in ("trigger", "objective")
+        )
+        if isinstance(stage.data.get("cleanup_community"), str):
+            expected.append(
+                ("cleanup_community", stage.data["cleanup_community"])
+            )
+    elif stage.type == "read_shard":
+        expected.append(("journal_entry", stage.data["journal_entry"]))
+        if isinstance(stage.data.get("item"), str):
+            expected.append(("item", stage.data["item"]))
+    elif stage.type == "investigate_clues":
+        for clue in stage.data.get("clues", []):
+            expected.append(("clues", clue["object_ref"]))
+            for field in ("completion_fact", "journal_entry", "mappin"):
+                if isinstance(clue.get(field), str):
+                    expected.append((f"clues.{field}", clue[field]))
+    elif stage.type == "optional_condition":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("success_fact", "failure_fact")
+        )
+        condition_value = stage.data.get("condition", {}).get("value")
+        if isinstance(condition_value, str):
+            expected.append(("condition.value", condition_value))
+    elif stage.type == "choice_gate":
+        for branch in stage.data.get("branches", []):
+            expected.extend(
+                (
+                    ("branches.condition", branch["condition"]),
+                    ("branches.set_fact", branch["set_fact"]),
+                )
+            )
+    elif stage.type == "escort_npc":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("community", "entry", "objective")
+        )
+        expected.extend(("destinations", item) for item in stage.data["destinations"])
+    elif stage.type == "carry_npc":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("community", "entry", "destination", "objective")
+        )
+    elif stage.type == "deliver_vehicle":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("vehicle", "destination", "objective")
+        )
+
+    if stage.type in SUPPORTED_STAGE_TYPES - {
+        "phone_job_offer",
+        "meet_contact",
+        "hack_access_point",
+        "deliver_drop_point",
+        "phone_conversation",
+    }:
+        for field in (
+            "description_entry",
+            "mappin",
+            "completion_fact",
+            "acquisition_fact",
+            "success_fact",
+            "failure_fact",
+        ):
+            if (
+                isinstance(stage.data.get(field), str)
+                and (field, stage.data[field]) not in expected
+            ):
+                expected.append((field, stage.data[field]))
 
     values = scalar_strings(phase)
     missing = [f"{field}={value}" for field, value in expected if value not in values]
@@ -573,16 +1103,80 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         )
 
 
+def stage_template_resource(stage: CompiledStage) -> str | None:
+    explicit = stage.data.get("phase_template")
+    if isinstance(explicit, str):
+        return explicit
+    return BUILTIN_TEMPLATE_RESOURCES.get(stage.type)
+
+
+def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
+    if stage.type == "interact_device":
+        return {
+            "{{device}}": stage.data["device"],
+            "{{controller_class}}": stage.data["controller_class"],
+            "{{action}}": stage.data["action"],
+            "{{completion_function}}": stage.data["completion_function"],
+        }
+    if stage.type == "combat_encounter":
+        return {"{{community}}": stage.data["community"]}
+    if stage.type == "investigate_clues":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{description_entry}}": stage.data["description_entry"],
+            "{{clue_object_ref}}": stage.data["clues"][0]["object_ref"],
+        }
+    if stage.type == "optional_condition":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{condition_fact}}": stage.data["condition"]["value"],
+            "{{success_fact}}": stage.data["success_fact"],
+            "{{failure_fact}}": stage.data["failure_fact"],
+        }
+    if stage.type == "choice_gate":
+        first, second = stage.data["branches"]
+        return {
+            "{{branch_a_condition}}": first["condition"],
+            "{{branch_a_set_fact}}": first["set_fact"],
+            "{{branch_b_condition}}": second["condition"],
+            "{{branch_b_set_fact}}": second["set_fact"],
+        }
+    if stage.type == "escort_npc":
+        return {
+            "{{community}}": stage.data["community"],
+            "{{entry}}": stage.data["entry"],
+            "{{destination_1}}": stage.data["destinations"][0],
+            "{{destination_2}}": stage.data["destinations"][1],
+            "{{objective}}": stage.data["objective"],
+        }
+    if stage.type == "carry_npc":
+        return {
+            "{{community}}": stage.data["community"],
+            "{{entry}}": stage.data["entry"],
+            "{{destination}}": stage.data["destination"],
+            "{{objective}}": stage.data["objective"],
+        }
+    if stage.type == "deliver_vehicle":
+        return {
+            "{{vehicle}}": stage.data["vehicle"],
+            "{{destination}}": stage.data["destination"],
+            "{{objective}}": stage.data["objective"],
+        }
+    return {}
+
+
 def instantiate_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
-    template_resource = stage.data.get("phase_template")
-    if not isinstance(template_resource, str):
+    template_resource = stage_template_resource(stage)
+    if template_resource is None:
         raise QuestSpecError(f"Stage {stage.id} does not declare phase_template")
     raw_template, packed_template = resource_paths(template_resource)
     if not raw_template.is_file():
         raise QuestSpecError(
             f"Stage {stage.id} needs raw template {raw_template}; packed-only templates cannot be rewritten"
         )
-    bindings_value = stage.data.get("template_bindings", {})
+    bindings_value = stage.data.get("template_bindings")
+    if bindings_value is None:
+        bindings_value = builtin_template_bindings(stage)
     if not isinstance(bindings_value, dict) or not all(
         isinstance(key, str) and isinstance(value, str)
         for key, value in bindings_value.items()
@@ -770,11 +1364,281 @@ def build_phone_job_offer_phase(
     }
 
 
+def phase_document(builder: PhaseGraphBuilder, archive_target: Path) -> JsonObject:
+    return {
+        "Header": {
+            "WolvenKitVersion": "8.17.4",
+            "WKitJsonVersion": "0.0.9",
+            "GameVersion": 2310,
+            "ExportedDateTime": "1970-01-01T00:00:00Z",
+            "DataType": "CR2W",
+            "ArchiveFileName": str(archive_target.resolve()),
+        },
+        "Data": {
+            "Version": 195,
+            "BuildVersion": 0,
+            "RootChunk": {
+                "$type": "questQuestPhaseResource",
+                "cookingPlatform": "PLATFORM_PC",
+                "graph": builder.graph,
+                "inplacePhases": [],
+                "phasePrefabs": [],
+            },
+            "EmbeddedFiles": [],
+        },
+    }
+
+
+def add_item_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    item_id: str,
+    quantity: int,
+) -> GraphNode:
+    params = builder.handles.wrap(
+        {
+            "$type": "questAddRemoveItem_NodeTypeParams",
+            "entityRef": local_player_reference(builder),
+            "flagItemAddedCallbackAsSilent": 0,
+            "isPlayer": 0,
+            "itemID": tweakdbid(item_id),
+            "itemIDsToIgnoreOnRemove": [],
+            "nodeType": "AddItem",
+            "objectRef": entity_reference(),
+            "quantity": quantity,
+            "removeAllQuantity": 0,
+            "sendNotification": 1,
+            "tagsToIgnoreOnRemove": [],
+            "tagToRemove": cname("None"),
+        }
+    )
+    node_type = builder.handles.wrap(
+        {"$type": "questAddRemoveItem_NodeType", "params": [params]}
+    )
+    return builder.node(
+        quest_id,
+        "questItemManagerNodeDefinition",
+        input_names=("In",),
+        properties={"type": node_type},
+    )
+
+
+def community_action_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community_ref: str,
+    action: str,
+) -> GraphNode:
+    action_type = builder.handles.wrap(
+        {
+            "$type": "questCommunityTemplate_NodeType",
+            "action": action,
+            "communityEntryName": cname("None"),
+            "communityEntryPhaseName": cname("None"),
+            "spawnerReference": node_ref(community_ref),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questSpawnManagerNodeDefinition",
+        input_names=("In",),
+        properties={
+            "actions": [
+                {
+                    "$type": "questSpawnManagerNodeActionEntry",
+                    "type": action_type,
+                }
+            ]
+        },
+    )
+
+
+def build_reach_area_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    objective = objective_node(builder, 10, stage.data["objective"])
+    description = journal_entry_node(
+        builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+    )
+    mappin = mappin_node(
+        builder,
+        12,
+        stage.data["mappin"],
+        disable_previous_mappins=stage.data.get("disable_previous_mappins", True),
+    )
+    entered = trigger_condition_node(builder, 13, stage.data["trigger"], "Entered")
+    builder.connect(start, objective, destination_socket="Active")
+    builder.connect(objective, description, destination_socket="Active")
+    builder.connect(description, mappin, destination_socket="Active")
+    previous: GraphNode = mappin
+    if stage.data.get("start_fact"):
+        started = fact_node(builder, 14, stage.data["start_fact"])
+        builder.connect(previous, started)
+        previous = started
+    builder.connect(previous, entered, destination_socket="In")
+    builder.connect_to_earlier_input(
+        entered, objective, destination_socket="Succeeded"
+    )
+    builder.connect(objective, mappin, destination_socket="Inactive")
+    previous = mappin
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def build_leave_area_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    objective: GraphNode | None = None
+    previous: GraphNode = start
+    if stage.data.get("objective"):
+        objective = objective_node(builder, 10, stage.data["objective"])
+        builder.connect(start, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+        )
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    mappin: GraphNode | None = None
+    if stage.data.get("mappin"):
+        mappin = mappin_node(builder, 12, stage.data["mappin"])
+        builder.connect(previous, mappin, destination_socket="Active")
+        previous = mappin
+    exited = trigger_condition_node(builder, 13, stage.data["trigger"], "Exited")
+    builder.connect(previous, exited, destination_socket="In")
+    builder.connect_to_earlier_input(
+        exited, objective, destination_socket="Succeeded"
+    )
+    previous = objective
+    if mappin is not None:
+        builder.connect(previous, mappin, destination_socket="Inactive")
+        previous = mappin
+    if stage.data.get("completion_fact"):
+        completed = fact_node(builder, 14, stage.data["completion_fact"])
+        builder.connect(previous, completed)
+        previous = completed
+    if stage.data.get("cleanup_community"):
+        cleanup = community_action_node(
+            builder, 15, stage.data["cleanup_community"], "Deactivate"
+        )
+        builder.connect(previous, cleanup)
+        previous = cleanup
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def build_acquire_item_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    objective: GraphNode | None = None
+    previous: GraphNode = start
+    if stage.data.get("objective"):
+        objective = objective_node(builder, 10, stage.data["objective"])
+        builder.connect(start, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+        )
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    mappin: GraphNode | None = None
+    if stage.data.get("mappin"):
+        mappin = mappin_node(builder, 12, stage.data["mappin"])
+        builder.connect(previous, mappin, destination_socket="Active")
+        previous = mappin
+    if stage.data["source"] == "grant":
+        grant = add_item_node(
+            builder, 13, stage.data["item"], stage.data.get("quantity", 1)
+        )
+        builder.connect(previous, grant)
+        previous = grant
+    acquired = inventory_condition_node(
+        builder, 14, stage.data["item"], quantity=stage.data.get("quantity", 1)
+    )
+    builder.connect(previous, acquired, destination_socket="In")
+    previous = acquired
+    if objective is not None:
+        builder.connect_to_earlier_input(
+            previous, objective, destination_socket="Succeeded"
+        )
+        previous = objective
+    if mappin is not None:
+        builder.connect(previous, mappin, destination_socket="Inactive")
+        previous = mappin
+    if stage.data.get("acquisition_fact"):
+        completed = fact_node(builder, 15, stage.data["acquisition_fact"])
+        builder.connect(previous, completed)
+        previous = completed
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def build_read_shard_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    objective: GraphNode | None = None
+    if stage.data.get("objective"):
+        objective = objective_node(builder, 10, stage.data["objective"])
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+        )
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    if stage.data.get("activate_entry", False):
+        activate = journal_entry_node(
+            builder,
+            12,
+            stage.data["journal_entry"],
+            "gameJournalOnscreen",
+            stage.data["file_entry_index"],
+        )
+        builder.connect(previous, activate, destination_socket="Active")
+        previous = activate
+    if stage.data.get("item"):
+        acquired = inventory_condition_node(builder, 13, stage.data["item"])
+        builder.connect(previous, acquired, destination_socket="In")
+        previous = acquired
+    visited = journal_entry_visited_node(
+        builder,
+        14,
+        stage.data["journal_entry"],
+        stage.data.get("journal_class", "gameJournalOnscreen"),
+        file_index=stage.data.get("file_entry_index", 1),
+    )
+    builder.connect(previous, visited, destination_socket="In")
+    previous = visited
+    if objective is not None:
+        builder.connect_to_earlier_input(
+            previous, objective, destination_socket="Succeeded"
+        )
+        previous = objective
+    if stage.data.get("completion_fact"):
+        completed = fact_node(builder, 15, stage.data["completion_fact"])
+        builder.connect(previous, completed)
+        previous = completed
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
 def build_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
     if stage.type == "phone_job_offer" and not stage.data.get("phase_template"):
         result = build_phone_job_offer_phase(stage, archive_target)
     elif stage.type == "phone_conversation" and not stage.data.get("phase_template"):
         result = build_phone_phase(stage, archive_target)
+    elif stage.type == "reach_area" and not stage.data.get("phase_template"):
+        result = build_reach_area_phase(stage, archive_target)
+    elif stage.type == "leave_area" and not stage.data.get("phase_template"):
+        result = build_leave_area_phase(stage, archive_target)
+    elif stage.type == "acquire_item" and not stage.data.get("phase_template"):
+        result = build_acquire_item_phase(stage, archive_target)
+    elif stage.type == "read_shard" and not stage.data.get("phase_template"):
+        result = build_read_shard_phase(stage, archive_target)
     else:
         result = instantiate_stage_phase(stage, archive_target)
     validate_handle_graph(result, context=f"Stage {stage.id}")
@@ -907,7 +1771,8 @@ def build_plan(spec: QuestSpec, diagnostics: Iterable[Diagnostic]) -> dict[str, 
                 "type": stage.type,
                 "status": stage.status,
                 "phase_resource": stage.phase_resource,
-                "phase_template": stage.data.get("phase_template"),
+                "phase_template": stage_template_resource(stage),
+                "implementation": STAGE_IMPLEMENTATION_MODE[stage.type],
                 "data": stage.data,
             }
             for stage in spec.stages
@@ -973,7 +1838,7 @@ def command_compile(args: argparse.Namespace) -> int:
     child_root = output.parent / "children"
     for stage in spec.stages:
         if (
-            not isinstance(stage.data.get("phase_template"), str)
+            stage_template_resource(stage) is None
             and stage.type not in DIRECT_STAGE_TYPES
         ):
             continue

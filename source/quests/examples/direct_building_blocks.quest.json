@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "gq_blocks_direct",
+  "title": "Direct building block example",
+  "description": "Structural acceptance fixture for compiler-generated quest blocks.",
+  "stages": [
+    {
+      "id": "reach_relay",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_direct\\phases\\reach_relay.questphase",
+      "trigger": "#gq_blocks_direct_tr_relay",
+      "objective": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_01",
+      "description_entry": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_01/description",
+      "mappin": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_01/mappin"
+    },
+    {
+      "id": "acquire_datacache",
+      "type": "acquire_item",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_direct\\phases\\acquire_datacache.questphase",
+      "item": "Items.gq_blocks_direct_datacache",
+      "source": "inventory",
+      "objective": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_02"
+    },
+    {
+      "id": "read_datacache",
+      "type": "read_shard",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_direct\\phases\\read_datacache.questphase",
+      "journal_entry": "onscreens/gq_blocks_direct_datacache",
+      "file_entry_index": 1,
+      "item": "Items.gq_blocks_direct_datacache",
+      "objective": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_03"
+    },
+    {
+      "id": "leave_relay",
+      "type": "leave_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_direct\\phases\\leave_relay.questphase",
+      "trigger": "#gq_blocks_direct_tr_relay",
+      "objective": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_04",
+      "description_entry": "quests/minor_quest/gq_blocks_direct/gq_blocks_direct_04/description",
+      "cleanup_community": "#gq_blocks_direct_com_guards",
+      "completion_fact": "gq_blocks_direct_complete"
+    }
+  ]
+}

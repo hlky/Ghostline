@@ -237,6 +237,31 @@ class PhaseGraphBuilder:
         destination_handle["Data"]["connections"].append(connection)
         self._replace_socket(source, source_handle, self.handles.ref(source_handle))
 
+    def connect_to_earlier_input(
+        self,
+        source: GraphNode,
+        destination: GraphNode,
+        *,
+        source_socket: str = "Out",
+        destination_socket: str = "In",
+    ) -> None:
+        """Connect a later node to an input socket owned by an earlier node."""
+
+        source_handle = source.outputs[source_socket]
+        destination_handle = destination.inputs[destination_socket]
+        connection_id = self.handles.reserve()
+        source_handle["Data"]["connections"].append(self.handles.ref(connection_id))
+        connection = self.handles.define(
+            connection_id,
+            {
+                "$type": "graphGraphConnectionDefinition",
+                "destination": self.handles.ref(destination_handle),
+                "source": source_handle,
+            },
+        )
+        destination_handle["Data"]["connections"].append(connection)
+        self._replace_socket(source, source_handle, self.handles.ref(source_handle))
+
 
 def input_node(builder: PhaseGraphBuilder) -> GraphNode:
     return builder.node(

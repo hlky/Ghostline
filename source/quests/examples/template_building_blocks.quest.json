@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "gq_blocks_template",
+  "title": "Template building block example",
+  "description": "Structural acceptance fixture for built-in complex quest block templates.",
+  "stages": [
+    {
+      "id": "use_terminal",
+      "type": "interact_device",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\use_terminal.questphase",
+      "device": "#gq_blocks_template_device",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ForceEnabled",
+      "completion_function": "WasHackingMinigameSucceeded"
+    },
+    {
+      "id": "clear_guards",
+      "type": "combat_encounter",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\clear_guards.questphase",
+      "community": "#gq_blocks_template_guards",
+      "hostility": "already_hostile",
+      "completion": "all_defeated"
+    },
+    {
+      "id": "scan_clue",
+      "type": "investigate_clues",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\scan_clue.questphase",
+      "objective": "quests/minor_quest/gq_blocks_template/scan_clue",
+      "description_entry": "quests/minor_quest/gq_blocks_template/scan_clue/description",
+      "clues": [
+        {
+          "id": "relay",
+          "object_ref": "#gq_blocks_template_clue"
+        }
+      ],
+      "required_count": 1
+    },
+    {
+      "id": "record_optional_result",
+      "type": "optional_condition",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\record_optional_result.questphase",
+      "objective": "quests/minor_quest/gq_blocks_template/optional",
+      "condition": {
+        "kind": "fact",
+        "value": "gq_blocks_template_optional_met"
+      },
+      "success_fact": "gq_blocks_template_optional_success",
+      "failure_fact": "gq_blocks_template_optional_failure",
+      "evaluation": "at_exit"
+    },
+    {
+      "id": "resolve_choice",
+      "type": "choice_gate",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\resolve_choice.questphase",
+      "gate_kind": "fact",
+      "branches": [
+        {
+          "id": "left",
+          "condition": "gq_blocks_template_choose_left",
+          "set_fact": "gq_blocks_template_chose_left"
+        },
+        {
+          "id": "right",
+          "condition": "gq_blocks_template_choose_right",
+          "set_fact": "gq_blocks_template_chose_right"
+        }
+      ],
+      "join": true
+    },
+    {
+      "id": "escort_contact",
+      "type": "escort_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\escort_contact.questphase",
+      "community": "#gq_blocks_template_contact_community",
+      "entry": "contact",
+      "destinations": [
+        "#gq_blocks_template_escort_gate_01",
+        "#gq_blocks_template_escort_gate_02"
+      ],
+      "objective": "quests/minor_quest/gq_blocks_template/escort"
+    },
+    {
+      "id": "carry_contact",
+      "type": "carry_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\carry_contact.questphase",
+      "community": "#gq_blocks_template_contact_community",
+      "entry": "contact",
+      "destination": "#gq_blocks_template_carry_destination",
+      "objective": "quests/minor_quest/gq_blocks_template/carry"
+    },
+    {
+      "id": "deliver_vehicle",
+      "type": "deliver_vehicle",
+      "status": "ready",
+      "phase_resource": "mod\\gq_blocks_template\\phases\\deliver_vehicle.questphase",
+      "vehicle": "#gq_blocks_template_vehicle",
+      "destination": "#gq_blocks_template_vehicle_destination",
+      "objective": "quests/minor_quest/gq_blocks_template/deliver_vehicle"
+    }
+  ]
+}

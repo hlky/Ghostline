@@ -306,6 +306,8 @@ def journal_entry_visited_node(
     quest_id: int,
     path: str,
     class_name: str,
+    *,
+    file_index: int = 1,
 ) -> GraphNode:
     condition_type = builder.handles.wrap(
         {
@@ -314,7 +316,7 @@ def journal_entry_visited_node(
                 builder,
                 path,
                 class_name,
-                1,
+                file_index,
             ),
             "visited": 1,
         }

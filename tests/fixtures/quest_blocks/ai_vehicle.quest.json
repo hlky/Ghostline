@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "gq_block_ai_vehicle",
+  "title": "AI and Vehicle Block Fixture",
+  "description": "Structural compiler fixture for reduced AI and vehicle templates.",
+  "stages": [
+    {
+      "id": "escort",
+      "type": "escort_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gq_block_ai_vehicle\\phases\\escort.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\escort_npc.questphase",
+      "template_bindings": {
+        "{{community}}": "#fixture_escort_com",
+        "{{entry}}": "fixture_escort",
+        "{{destination_1}}": "#fixture_escort_gate_01",
+        "{{destination_2}}": "#fixture_escort_gate_02",
+        "{{objective}}": "quests/minor_quest/gq_block_ai_vehicle/escort"
+      },
+      "community": "#fixture_escort_com",
+      "entry": "fixture_escort",
+      "destinations": [
+        "#fixture_escort_gate_01",
+        "#fixture_escort_gate_02"
+      ],
+      "objective": "quests/minor_quest/gq_block_ai_vehicle/escort"
+    },
+    {
+      "id": "carry",
+      "type": "carry_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gq_block_ai_vehicle\\phases\\carry.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\carry_npc.questphase",
+      "template_bindings": {
+        "{{community}}": "#fixture_carry_com",
+        "{{entry}}": "fixture_carry",
+        "{{destination}}": "#fixture_carry_destination",
+        "{{objective}}": "quests/minor_quest/gq_block_ai_vehicle/carry"
+      },
+      "community": "#fixture_carry_com",
+      "entry": "fixture_carry",
+      "destination": "#fixture_carry_destination",
+      "objective": "quests/minor_quest/gq_block_ai_vehicle/carry"
+    },
+    {
+      "id": "deliver_vehicle",
+      "type": "deliver_vehicle",
+      "status": "ready",
+      "phase_resource": "mod\\gq_block_ai_vehicle\\phases\\deliver_vehicle.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\deliver_vehicle.questphase",
+      "template_bindings": {
+        "{{vehicle}}": "#fixture_vehicle",
+        "{{destination}}": "#fixture_vehicle_destination",
+        "{{objective}}": "quests/minor_quest/gq_block_ai_vehicle/deliver_vehicle"
+      },
+      "vehicle": "#fixture_vehicle",
+      "destination": "#fixture_vehicle_destination",
+      "objective": "quests/minor_quest/gq_block_ai_vehicle/deliver_vehicle"
+    }
+  ]
+}

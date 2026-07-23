@@ -60,7 +60,19 @@
             "meet_contact",
             "hack_access_point",
             "deliver_drop_point",
-            "phone_conversation"
+            "phone_conversation",
+            "reach_area",
+            "leave_area",
+            "acquire_item",
+            "read_shard",
+            "interact_device",
+            "combat_encounter",
+            "investigate_clues",
+            "optional_condition",
+            "choice_gate",
+            "escort_npc",
+            "carry_npc",
+            "deliver_vehicle"
           ]
         },
         "status": {
@@ -336,8 +348,666 @@
             }
           ],
           "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "reach_area"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "trigger": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "start_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "disable_previous_mappins": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "objective",
+                "description_entry",
+                "mappin",
+                "trigger"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "leave_area"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "trigger": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "cleanup_community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "objective",
+                "description_entry",
+                "trigger"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "acquire_item"
+                },
+                "item": {
+                  "$ref": "#/$defs/tweakDbId"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "source": {
+                  "enum": [
+                    "inventory",
+                    "grant"
+                  ]
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "acquisition_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "item",
+                "source"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "read_shard"
+                },
+                "journal_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "file_entry_index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "item": {
+                  "$ref": "#/$defs/tweakDbId"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "activate_entry": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "required": [
+                "journal_entry",
+                "file_entry_index"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "interact_device"
+                },
+                "device": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "controller_class": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_function": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "success_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "device",
+                "controller_class",
+                "action",
+                "completion_function"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "combat_encounter"
+                },
+                "community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "entries": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "activate": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "hostility": {
+                  "enum": [
+                    "neutral_to_hostile",
+                    "already_hostile"
+                  ]
+                },
+                "completion": {
+                  "enum": [
+                    "all_defeated",
+                    "named_defeated",
+                    "fact"
+                  ]
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "nonlethal_allowed": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "cleanup_on_exit": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "community",
+                "hostility",
+                "completion"
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "completion": {
+                        "const": "named_defeated"
+                      }
+                    },
+                    "required": [
+                      "completion"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "entries"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "completion": {
+                        "const": "fact"
+                      }
+                    },
+                    "required": [
+                      "completion"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "completion_fact"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "investigate_clues"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "clues": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/clue"
+                  }
+                },
+                "required_count": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "objective",
+                "description_entry",
+                "clues"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "optional_condition"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "condition": {
+                  "$ref": "#/$defs/condition"
+                },
+                "success_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "failure_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "evaluation": {
+                  "enum": [
+                    "continuous",
+                    "at_exit"
+                  ]
+                }
+              },
+              "required": [
+                "objective",
+                "condition",
+                "success_fact",
+                "failure_fact",
+                "evaluation"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "choice_gate"
+                },
+                "gate_kind": {
+                  "enum": [
+                    "phone_choice",
+                    "fact",
+                    "scene_exit"
+                  ]
+                },
+                "branches": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "$ref": "#/$defs/choiceBranch"
+                  }
+                },
+                "default_branch": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "join": {
+                  "const": true
+                }
+              },
+              "required": [
+                "gate_kind",
+                "branches",
+                "join"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "escort_npc"
+                },
+                "community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "destinations": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/nodeRef"
+                  }
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "failure_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "allow_combat_interrupt": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "required": [
+                "community",
+                "entry",
+                "destinations",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "carry_npc"
+                },
+                "community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "destination": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "placement_slot": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "community",
+                "entry",
+                "destination",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "deliver_vehicle"
+                },
+                "vehicle": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "destination": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "require_player_exit": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "vehicle",
+                "destination",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
         }
       ]
+    },
+    "nodeRef": {
+      "type": "string",
+      "pattern": "^(#|\\$/).+"
+    },
+    "journalPath": {
+      "type": "string",
+      "pattern": "^[^/]+(?:/[^/]+)+$"
+    },
+    "factName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "tweakDbId": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*\\.[A-Za-z0-9_.]+$"
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "fact",
+            "trigger",
+            "detection",
+            "alarm",
+            "timer"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "integer",
+            "number",
+            "boolean"
+          ]
+        }
+      }
+    },
+    "clue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "object_ref"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "object_ref": {
+          "$ref": "#/$defs/nodeRef"
+        },
+        "completion_fact": {
+          "$ref": "#/$defs/factName"
+        },
+        "journal_entry": {
+          "$ref": "#/$defs/journalPath"
+        },
+        "mappin": {
+          "$ref": "#/$defs/journalPath"
+        }
+      }
+    },
+    "choiceBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "condition",
+        "set_fact"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "set_fact": {
+          "$ref": "#/$defs/factName"
+        }
+      }
     },
     "depotPath": {
       "type": "string",

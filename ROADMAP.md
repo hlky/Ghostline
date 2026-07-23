@@ -609,6 +609,28 @@ world-reference notes, and packaging instructions now live in focused docs:
   preserves the machine-readable IGN URL to journal hash/path mapping.
   Objective text, phase paths, map pins, and inferred reusable building blocks
   can now be searched before opening the corresponding vanilla CR2W resources.
+- Typed schema v1 now defines twelve additional reusable blocks:
+  `reach_area`, `leave_area`, `acquire_item`, `read_shard`,
+  `interact_device`, `combat_encounter`, `investigate_clues`,
+  `optional_condition`, `choice_gate`, `escort_npc`, `carry_npc`, and
+  `deliver_vehicle`. The first four have deterministic compiler-generated
+  child graphs and handle-integrity tests. The remaining eight use strict raw
+  phase-template contracts because their device, AI, branching, carry, and
+  vehicle behavior must retain proven engine topology. A targeted 28-phase
+  vanilla CR2W/JSON corpus with depot-path provenance is stored under
+  `reference/vanilla_quest_blocks` to support reducing and validating those
+  templates. All eight reduced templates are now checked in under
+  `source/raw/mod/ghostline/quest_blocks/templates`, resolve automatically
+  from ordinary typed manifests, and retain explicit custom-template
+  overrides for advanced variants. The four-stage direct and eight-stage
+  template acceptance quests compile with no planned stages. Their 14 total
+  orchestration/child resources passed WolvenKit deserialize/serialize
+  round trips, with evidence at
+  `H:\Ghostline-audits\quest-building-blocks-direct-20260723` and
+  `H:\Ghostline-audits\quest-building-blocks-template-20260723`. Compiler,
+  schema, generator-exact, binding, and handle tests pass as part of the
+  141-test regression suite. Template-backed blocks remain structurally
+  validated rather than in-game runtime-proven until used by a playable quest.
 
 ### 5. Validate Audio Packaging
 
