@@ -52,10 +52,12 @@ offset. The same template provides:
 - `main_slot/navQuery` at local `(0, 1.3, 1.0)`.
 
 Native entity references can resolve these slots directly. Ghostline's
-always-loaded delivery marker cannot, so its journal map pin explicitly uses a
-two-unit Z offset while preserving the native device root X/Y used by the
-cooked GPS data. Do not treat a vertical marker offset as a substitute for
-clearing stale GPS state between objectives.
+always-loaded delivery marker cannot. Runtime testing showed that placing the
+custom marker at the device root leaves GPS routing to a point inside the
+kiosk, producing a conspicuous detour at `drop_point_009`. The marker therefore
+uses the world-space transform of `main_slot/navQuery`, while the journal
+offset raises the HUD icon the remaining metre to console height. The live
+device NodeRef remains the interaction and reservation target.
 
 ## Query And Select
 

@@ -190,6 +190,36 @@ validation. Other indexed categories remain preview-only.
 
 ## Questphase Explorer
 
+### Typed Quest Composition
+
+`tools/quest_compiler.py` validates typed linear quest manifests and emits a
+deterministic orchestration questphase, instantiated child questphases, and a
+normalized build plan. Meeting, hacking, and delivery blocks use raw
+CR2W-JSON templates with strict scalar bindings; phone conversations are
+generated directly from typed message and choice paths. Scene, world, journal,
+and localization resources remain separate stage-owned build products.
+
+```powershell
+py -B .\tools\quest_compiler.py validate `
+  .\source\quests\gq001.quest.json
+
+py -B .\tools\quest_compiler.py compile `
+  .\source\quests\gq001.quest.json `
+  --out .\converted\quests\gq001\gq001.questphase.json `
+  --allow-planned
+```
+
+See `tools/quest_spec.md` for the schema, readiness rules, and current
+meet-hack-meet-deliver acceptance manifest.
+
+The standalone generated-phone example is:
+
+```powershell
+py -B .\tools\quest_compiler.py compile `
+  .\source\quests\examples\phone_conversation.quest.json `
+  --out .\converted\quests\examples\phone_conversation.questphase.json
+```
+
 `tools/explore_questphase.py` inspects deserialized questphase JSON. The
 default target is
 `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`.

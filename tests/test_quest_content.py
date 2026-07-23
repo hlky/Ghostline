@@ -142,7 +142,7 @@ class QuestContentTests(unittest.TestCase):
         )
         self.assertEqual("UI_Interaction", mappin["slotName"]["$value"])
         self.assertEqual(
-            {"$type": "Vector3", "X": 0, "Y": 0, "Z": 2},
+            {"$type": "Vector3", "X": 0, "Y": 0, "Z": 1},
             mappin["offset"],
         )
         self.assertEqual(1, mappin["enableGPS"])

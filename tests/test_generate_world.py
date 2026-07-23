@@ -46,7 +46,7 @@ class GenerateWorldTests(unittest.TestCase):
         self.assertEqual(outlines["#gq000_01_tr_setup"]["radius"], 90)
         self.assertEqual(outlines["#gq000_01_tr_engage"]["radius"], 10)
         self.assertEqual(outlines["#gq000_01_tr_bridge_case_mood"]["radius"], 60)
-        self.assertEqual(outlines["#gq000_01_tr_someone_coming"]["radius"], 20)
+        self.assertEqual(outlines["#gq000_01_tr_someone_coming"]["radius"], 6)
         meeting_heights = {
             outline["height"] for ref, outline in outlines.items() if ref.startswith("#gq000_01_")
         }
@@ -325,7 +325,7 @@ class GenerateWorldTests(unittest.TestCase):
         self.assertEqual(marker["sector"], "always_loaded")
         self.assertEqual(
             marker["position"],
-            {"x": -1168.66333, "y": 1309.51709, "z": 19.9768238},
+            {"x": -1168.77763, "y": 1308.22212, "z": 20.9768238},
         )
         self.assertEqual(marker["yaw"], 175)
 
@@ -340,9 +340,9 @@ class GenerateWorldTests(unittest.TestCase):
         node = root["nodes"][placement["NodeIndex"]]["Data"]
 
         self.assertEqual(node["$type"], "worldStaticMarkerNode")
-        self.assertEqual(placement["Position"]["X"], -1168.66333)
-        self.assertEqual(placement["Position"]["Y"], 1309.51709)
-        self.assertEqual(placement["Position"]["Z"], 19.9768238)
+        self.assertEqual(placement["Position"]["X"], -1168.77763)
+        self.assertEqual(placement["Position"]["Y"], 1308.22212)
+        self.assertEqual(placement["Position"]["Z"], 20.9768238)
 
 
 if __name__ == "__main__":

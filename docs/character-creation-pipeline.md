@@ -241,6 +241,25 @@ components enabled. Clothed NPC manifests must select `genitals: none`;
 relying on player equipment tags or trouser chunk masks is incorrect for
 standalone genital components in a fixed NPC appearance.
 
+## Current Iris Design
+
+Iris is the first fresh female-average character authored through the reusable
+pipeline rather than retained as a tutorial fixture. Her reviewed manifest is
+`source/characters/iris.character.json`. It selects creator shapes
+`eyes 8 / nose 5 / mouth 10 / jaw 3 / ears 2`, the tutorial's complete merlot
+asymmetrical hair bundle, a blue-pattern high-collar shirt, black/white ninja
+trousers, and the tutorial boots. The restrained technical silhouette supports
+her role as Ghostline's empathetic braindance editor without making her read as
+a Tyger Claw or conventional street-gang member.
+
+Her generated root, appearance, TweakXL record, localization, body assets, and
+four baked head meshes live under the character-owned
+`mod\ghostline\characters\iris` namespace. The two indexed garments still use
+the provisional primary-mesh replacement model, and the female tutorial body
+mesh retains four dependencies under its original tutorial texture namespace.
+Treat Iris as a shipping candidate that still requires an in-game spawn,
+animation, garment-fit, material, LOD, and streaming test before quest use.
+
 ## Build Stages
 
 The command-line build engine comes before the UI. Both must invoke the same

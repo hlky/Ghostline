@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ghostline.local/schemas/quest-v1.json",
+  "title": "Ghostline typed quest manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "stages"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "phase_prefabs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^#"
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/stage"
+      }
+    }
+  },
+  "$defs": {
+    "baseStage": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "phase_resource"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type": {
+          "enum": [
+            "phone_job_offer",
+            "meet_contact",
+            "hack_access_point",
+            "deliver_drop_point",
+            "phone_conversation"
+          ]
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "planned"
+          ],
+          "default": "ready"
+        },
+        "phase_resource": {
+          "$ref": "#/$defs/depotPath"
+        },
+        "phase_template": {
+          "$ref": "#/$defs/depotPath"
+        },
+        "template_bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "required_assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/depotPath"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "stage": {
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "meet_contact"
+                },
+                "contact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "scene": {
+                  "$ref": "#/$defs/depotPath"
+                },
+                "community": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "appearance": {
+                  "type": "string"
+                },
+                "objective": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description_entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mappin": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "contact",
+                "scene",
+                "community",
+                "objective",
+                "description_entry",
+                "mappin"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "phone_job_offer"
+                },
+                "contact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "message": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "choice_group": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accept_choice": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "start_fact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accepted_fact": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "contact",
+                "message",
+                "choice_group",
+                "accept_choice",
+                "start_fact",
+                "accepted_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "hack_access_point"
+                },
+                "device": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "success_fact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "guard_community": {
+                  "type": "string"
+                },
+                "grants": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "device",
+                "success_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "deliver_drop_point"
+                },
+                "item": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "drop_point": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "deposit_fact": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "item",
+                "drop_point",
+                "deposit_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "phone_conversation"
+                },
+                "contact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "thread": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "messages": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "choice_group": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "choices": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "choice",
+                      "reply"
+                    ],
+                    "properties": {
+                      "choice": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "reply": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "final_message": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_fact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "delay_seconds": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 1
+                }
+              },
+              "required": [
+                "contact",
+                "thread",
+                "messages",
+                "choice_group",
+                "choices",
+                "final_message"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        }
+      ]
+    },
+    "depotPath": {
+      "type": "string",
+      "pattern": "^(base|ep1|mod)\\\\"
+    }
+  }
+}

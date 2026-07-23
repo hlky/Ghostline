@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "id": "gq001",
+  "title": "Ghostline",
+  "description": "Prototype acceptance manifest for reusable Ghostline quest blocks.",
+  "phase_prefabs": [
+    "#gq000_pr_patch_meet",
+    "#gq001_pr_iris_meet"
+  ],
+  "stages": [
+    {
+      "id": "patch_job_offer",
+      "type": "phone_job_offer",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_job_offer.questphase",
+      "contact": "patch",
+      "message": "contacts/patch/gq001_01_start/01_msg_patch_bridge",
+      "choice_group": "contacts/patch/gq001_01_start/02_ch_meet_patch",
+      "accept_choice": "contacts/patch/gq001_01_start/02_ch_meet_patch/02a_ch_on_my_way",
+      "start_fact": "gq001_phone_start_sent",
+      "accepted_fact": "gq001_phone_reply_on_my_way"
+    },
+    {
+      "id": "meet_patch",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_patch_meet.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "gq000_job_accepted": "gq001_patch_accepted",
+        "gq000_patch_meet": "gq001_patch_meet",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "quests/minor_quest/gq001/gq001_01/gq001_01_obj_meet_patch",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "quests/minor_quest/gq001/gq001_01/gq001_01_obj_meet_patch/gq001_01_qmp_patch_bridge"
+      },
+      "contact": "patch",
+      "scene": "mod\\gq000\\scenes\\gq000_patch_meet.scene",
+      "community": "#gq000_01_com_patch_bridge",
+      "appearance": "ghostline_patch_default",
+      "objective": "quests/minor_quest/gq001/gq001_01/gq001_01_obj_meet_patch",
+      "description_entry": "quests/minor_quest/gq001/gq001_01/gq001_01_obj_meet_patch/gq001_01_desc_meet_patch",
+      "mappin": "quests/minor_quest/gq001/gq001_01/gq001_01_obj_meet_patch/gq001_01_qmp_patch_bridge",
+      "required_assets": [
+        "mod\\ghostline\\characters\\patch\\patch.ent"
+      ]
+    },
+    {
+      "id": "hack_relay",
+      "type": "hack_access_point",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_hack_relay.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_post_accept.questphase",
+      "template_bindings": {
+        "gq000_02_started": "gq001_02_started",
+        "gq000_cache_acquired": "gq001_cache_acquired",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_reach_cache",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache/gq000_02_desc_reach_cache": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_reach_cache/gq001_02_desc_reach_cache",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache/gq000_02_qmp_cache": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_reach_cache/gq001_02_qmp_cache",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_extract_cache": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_extract_cache",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_extract_cache/gq000_02_desc_extract_cache": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_extract_cache/gq001_02_desc_extract_cache",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_extract_cache/gq000_02_qmp_extract_cache": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_extract_cache/gq001_02_qmp_extract_cache",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_leave_area": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_leave_area",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_leave_area/gq000_02_desc_leave_area": "quests/minor_quest/gq001/gq001_02/gq001_02_obj_leave_area/gq001_02_desc_leave_area"
+      },
+      "device": "#gq000_02_ap_cache",
+      "success_fact": "gq001_cache_acquired",
+      "guard_community": "#gq000_02_com_cache_guards",
+      "grants": [
+        "Items.gq000_datacache",
+        "Items.GhostlineQuietSpine01",
+        "Items.GhostlineQuietSpine02"
+      ]
+    },
+    {
+      "id": "meet_iris",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_iris_meet.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "#gq001_03_com_iris",
+        "#gq000_01_sm_patch_bridge": "#gq001_03_sm_iris",
+        "#gq000_01_tr_setup": "#gq001_03_tr_setup",
+        "#gq000_pr_patch_meet": "#gq001_pr_iris_meet",
+        "gq000_job_accepted": "gq001_iris_met",
+        "gq000_patch_meet": "gq001_iris_meet",
+        "job_accept": "continue_delivery",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq001\\scenes\\gq001_iris_meet.scene",
+        "patch": "iris",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "quests/minor_quest/gq001/gq001_03/gq001_03_obj_meet_iris",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "quests/minor_quest/gq001/gq001_03/gq001_03_obj_meet_iris/gq001_03_qmp_iris"
+      },
+      "contact": "iris",
+      "scene": "mod\\gq001\\scenes\\gq001_iris_meet.scene",
+      "community": "#gq001_03_com_iris",
+      "appearance": "ghostline_iris_default",
+      "objective": "quests/minor_quest/gq001/gq001_03/gq001_03_obj_meet_iris",
+      "description_entry": "quests/minor_quest/gq001/gq001_03/gq001_03_obj_meet_iris/gq001_03_desc_meet_iris",
+      "mappin": "quests/minor_quest/gq001/gq001_03/gq001_03_obj_meet_iris/gq001_03_qmp_iris",
+      "required_assets": [
+        "mod\\ghostline\\characters\\iris\\iris.ent",
+        "mod\\gq001\\world\\gq001_iris_meet.streamingblock",
+        "mod\\gq001\\world\\gq001_iris_meet.streamingsector",
+        "mod\\gq001\\world\\gq001_always_loaded.streamingsector",
+        "mod\\gq001\\journal\\gq001.journal",
+        "mod\\gq001\\localization\\en-us\\subtitles\\gq001_03_subtitles_map.json",
+        "mod\\gq001\\localization\\en-us\\vo\\gq001_03.json"
+      ],
+      "notes": "Authored candidate at -406.1001, 724.7273, 127.00006. Runtime approach, choice, appearance, and exit-handoff validation remain."
+    },
+    {
+      "id": "deliver_cache",
+      "type": "deliver_drop_point",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_delivery.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_delivery.questphase",
+      "template_bindings": {
+        "gq000_cache_delivered": "gq001_cache_delivered",
+        "gq000_completed": "gq001_completed",
+        "quests/minor_quest/gq000": "quests/minor_quest/gq001",
+        "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache": "quests/minor_quest/gq001/gq001_04/gq001_04_obj_deliver_cache",
+        "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache/gq000_03_desc_deliver_cache": "quests/minor_quest/gq001/gq001_04/gq001_04_obj_deliver_cache/gq001_04_desc_deliver_cache",
+        "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache/gq000_03_qmp_drop_point": "quests/minor_quest/gq001/gq001_04/gq001_04_obj_deliver_cache/gq001_04_qmp_drop_point",
+        "contacts/morrow/gq000_04_delivery/01_msg_cache_authenticated": "contacts/morrow/gq001_05_delivery/01_msg_cache_authenticated",
+        "contacts/morrow/gq000_04_delivery/02_msg_route_found": "contacts/morrow/gq001_05_delivery/02_msg_route_found",
+        "contacts/morrow/gq000_04_delivery/03_ch_delivery_response": "contacts/morrow/gq001_05_delivery/03_ch_delivery_response",
+        "contacts/morrow/gq000_04_delivery/03_ch_delivery_response/03a_ch_pay_me": "contacts/morrow/gq001_05_delivery/03_ch_delivery_response/03a_ch_pay_me",
+        "contacts/morrow/gq000_04_delivery/03_ch_delivery_response/03b_ch_what_route": "contacts/morrow/gq001_05_delivery/03_ch_delivery_response/03b_ch_what_route",
+        "contacts/morrow/gq000_04_delivery/04a_msg_pay_adjusted": "contacts/morrow/gq001_05_delivery/04a_msg_pay_adjusted",
+        "contacts/morrow/gq000_04_delivery/04b_msg_route_explained": "contacts/morrow/gq001_05_delivery/04b_msg_route_explained",
+        "contacts/morrow/gq000_04_delivery/05_msg_more_work": "contacts/morrow/gq001_05_delivery/05_msg_more_work"
+      },
+      "item": "Items.gq000_datacache",
+      "drop_point": "$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y",
+      "deposit_fact": "gq000_datacache"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "gq_phone_example",
+  "title": "Phone Conversation Example",
+  "description": "Standalone authoring fixture for a generated multi-choice phone block.",
+  "stages": [
+    {
+      "id": "morrow_followup",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gq_phone_example\\phases\\morrow_followup.questphase",
+      "contact": "morrow",
+      "thread": "contacts/morrow/gq_phone_example",
+      "messages": [
+        "contacts/morrow/gq_phone_example/01_msg_received",
+        "contacts/morrow/gq_phone_example/02_msg_context"
+      ],
+      "choice_group": "contacts/morrow/gq_phone_example/03_ch_response",
+      "choices": [
+        {
+          "choice": "contacts/morrow/gq_phone_example/03_ch_response/03a_ch_professional",
+          "reply": "contacts/morrow/gq_phone_example/04a_msg_professional"
+        },
+        {
+          "choice": "contacts/morrow/gq_phone_example/03_ch_response/03b_ch_suspicious",
+          "reply": "contacts/morrow/gq_phone_example/04b_msg_suspicious"
+        }
+      ],
+      "final_message": "contacts/morrow/gq_phone_example/05_msg_more_work",
+      "completion_fact": "gq_phone_example_completed",
+      "delay_seconds": 1,
+      "notes": "Journal entries and localization must exist before promoting this generated phase into a shipping quest."
+    }
+  ]
+}

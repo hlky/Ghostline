@@ -1,6 +1,6 @@
 # Ghostline Roadmap
 
-Last audited: 2026-07-22
+Last audited: 2026-07-23
 
 This file tracks the current state and the next work needed to turn `gq000`
 from a dialogue prototype into a playable quest slice. The current 2026-07-22
@@ -154,6 +154,14 @@ world-reference notes, and packaging instructions now live in focused docs:
   bake only. It accepts a reviewed server-side manifest through `--manifest`;
   the default remains Patch. The male default preview is the 25.7-MiB core
   head; optional layers are loaded only on request.
+- Iris now has a reviewed female-average character manifest at
+  `source/characters/iris.character.json`. The creator pass selects face values
+  `8/5/10/3/2`, the complete merlot tutorial hair bundle, a blue-pattern
+  high-collar shirt, black/white ninja trousers, and tutorial boots. Her
+  isolated source generation and four-mesh head bake pass; generated `.ent`,
+  `.app`, localization, TweakXL, body, and head resources have been applied
+  under `mod\ghostline\characters\iris`. Runtime spawn, animation, garment fit,
+  materials, LODs, and streaming remain unvalidated.
 - The installed-game path index currently contains 4,965 records from base and
   EP1: 1,329 clothing, 1,528 hair, 1,772 head, 144 body, and 192 player-item
   appearance resources. The UI searches slot/frame/family/path metadata and
@@ -574,6 +582,26 @@ world-reference notes, and packaging instructions now live in focused docs:
   interaction height and clears previous mappins when delivery activates.
 - Keep prefab NodeRef lifecycle aligned with the resolved model in
   `docs/world-references.md`.
+- Typed quest composition schema v1 now represents linear
+  `meet_contact`, `hack_access_point`, `deliver_drop_point`, and
+  `phone_conversation` blocks. `tools/quest_compiler.py` validates strict stage
+  inputs, resource readiness, duplicate IDs, planned assets, CR2W handle
+  uniqueness, and handle resolution. It emits a deterministic orchestration
+  questphase, normalized build plan, and child phases. Runtime-proven meeting,
+  hacking, and delivery graphs are instantiated from raw templates with strict
+  quest-local scalar bindings; phone conversations are generated directly
+  from typed messages and paired choice/reply paths. The checked `gq001`
+  acceptance manifest represents
+  `meet Patch -> hack relay -> meet Iris -> deliver datacache`. Iris's
+  character, world placement, journal, scene, selected VO, subtitle/VO maps,
+  and phase handoff are now authored. `meet_contact` orchestration now
+  activates the contact objective, description, and map pin before launching
+  each child phase.
+  All four instantiated children, the orchestration graph, and the standalone
+  phone example passed isolated WolvenKit deserialize/serialize round trips.
+  Evidence is retained at
+  `H:\Ghostline-audits\typed-quest-final-20260723`, and the full regression
+  suite passes 116 tests.
 
 ### 5. Validate Audio Packaging
 
@@ -585,6 +613,59 @@ world-reference notes, and packaging instructions now live in focused docs:
 
 ### 6. Pack And Test In Game
 
+- Patch and Iris now both use six-unit opening-line awareness triggers. Their
+  larger setup/mood streaming ranges and final interaction gates are unchanged.
+  All 116 tests pass, the 226-entry archive has zero extracted payload
+  mismatches, and installed SHA-256 is
+  `AA0686E4604F94E4BBA79295041A9643C2D87891581D66CE1D89C743CA96D1E4`.
+  Evidence is retained at
+  `H:\Ghostline-builds\contact-trigger-6m-20260723-145709`; the preceding
+  install is backed up at
+  `H:\Ghostline-backups\pre-contact-trigger-6m-20260723-145805`.
+- The next runtime candidate reduces Iris's opening-line awareness trigger from
+  20 to 12 units while retaining its four-unit vertical band. It also moves the
+  custom `drop_point_009` quest marker from the kiosk root to the transformed
+  `main_slot/navQuery` approach point, so GPS targets walkable ground in front
+  of the machine; the live drop-point NodeRef and deposit flow are unchanged.
+  All 116 tests pass, the 226-entry archive has zero extracted payload
+  mismatches, and installed SHA-256 is
+  `B2917118EF08A865A6A5F2547BF5869514B84F7175ADAD7732F2AF02E7DE368E`.
+  Evidence is retained at
+  `H:\Ghostline-builds\iris-gps-nav-20260723-143811`; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-iris-gps-nav-20260723-143913`.
+- The 2026-07-23 title/landing-trigger revision restores the displayed quest
+  name to `Ghostline` and narrows Iris's awareness and engage triggers from
+  12-unit bridge-style vertical columns to four-unit bands centered on the
+  upper landing. Setup and mood ranges remain tall for early streaming and
+  scene preparation. The 226-entry archive has zero extracted payload
+  mismatches, all 116 tests and 9 subtests pass, and installed SHA-256 is
+  `DBE3CF8D7C03A3F46854AED7B215C32EDD648E851D092C7F6389A0AA8685D6A1`.
+  Evidence is retained at
+  `H:\Ghostline-builds\gq001-title-trigger-20260723-141725`.
+- The corrected `gq001` replacement candidate now starts with a generated
+  `phone_job_offer` child matching the proven `gq000` opening lifecycle:
+  Patch's message and choice group activate, the phase waits for “On my way,”
+  and only then does the reusable `meet_contact` block activate the bridge
+  objective, description, and mappin. The complete five-stage flow is
+  `phone offer -> meet Patch -> hack relay -> meet Iris -> deliver cache`.
+  The 226-entry archive was extracted with zero payload mismatches, all 116
+  tests and 9 subtests pass, and the installed SHA-256 is
+  `418815B8890300BC1F2880094223BCF81EE60A2E352C5FD8F3D9B0F0F25A55C3`.
+  Evidence is retained at
+  `H:\Ghostline-builds\gq001-phone-iris-20260723-135831`; the preceding install
+  is backed up at
+  `H:\Ghostline-backups\pre-gq001-phone-20260723-135908`.
+- The first complete `gq001` Iris candidate was compiled, deserialized, packed,
+  extracted, payload-verified, and installed on 2026-07-23. It contains 225
+  archive entries with no payload mismatches and activates only the `gq001`
+  root while retaining `gq000` shared Patch/cache registrations. All 116 tests
+  and 9 subtests pass. Installed archive SHA-256 is
+  `456604460AAAC6FD8A209EB40AAE09E3D0AC1E2DA8992F96E545E5E7B89E9EDE`.
+  Evidence is retained at
+  `H:\Ghostline-builds\gq001-iris-20260723-133033`; the replaced install is
+  backed up at
+  `H:\Ghostline-backups\pre-gq001-iris-20260723-133135`.
 - The 2026-07-23 delivery GPS/height candidate is generated, deserialized,
   byte-identical after CR2W round trips, packed, extracted, payload-verified,
   installed, and wrapped in a verified seven-file ZIP. All 103 tests pass.

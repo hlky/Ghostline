@@ -309,9 +309,10 @@ The native device NodeRef remains the reservation target, but it is not the
 journal-UI target. ArchiveXL logged `Can't resolve mappin ... position` when the
 quest mappin referenced a cooked cross-world drop-point NodeRef directly.
 Ghostline therefore places always-loaded static marker
-`#gq000_03_mp_drop_point` at the exact device coordinates and points the
-journal entry there with `DefaultQuestVariant`, producing the normal yellow
-side-quest marker. Reusing the device still requires no custom drop-point
+`#gq000_03_mp_drop_point` at the device template's transformed
+`main_slot/navQuery` approach point and points the journal entry there with
+`DefaultQuestVariant`, producing the normal yellow side-quest marker and a
+walkable GPS endpoint. Reusing the device still requires no custom drop-point
 device or Ghostline `.devices` registry entry; the custom node is only a UI
 marker. The previous kiosk candidate was both poorly exposed by surrounding
 geometry and unsuitable as a direct journal-mappin target.

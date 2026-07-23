@@ -21,6 +21,49 @@ These reduce accidental save contamination, but they do not clean an already
 contaminated save. Keep a known-good pre-Ghostline manual save and return to it
 for each start-flow validation pass.
 
+## 2026-07-23 Six-Metre Contact Awareness Candidate
+
+Installed archive SHA-256:
+`AA0686E4604F94E4BBA79295041A9643C2D87891581D66CE1D89C743CA96D1E4`.
+
+Patch and Iris now both start their opening lines at six metres. Their setup,
+mood, and final interaction triggers are otherwise unchanged. All 116 tests
+pass, all 226 extracted archive payloads match `source/archive`, and all eight
+installed files match their verified sources.
+
+Build evidence is retained at
+`H:\Ghostline-builds\contact-trigger-6m-20260723-145709`; the preceding install
+is backed up at
+`H:\Ghostline-backups\pre-contact-trigger-6m-20260723-145805`.
+
+## 2026-07-23 Iris Awareness And Drop-Point Nav Endpoint Candidate
+
+Installed archive SHA-256:
+`B2917118EF08A865A6A5F2547BF5869514B84F7175ADAD7732F2AF02E7DE368E`.
+
+Build and extraction evidence is retained at
+`H:\Ghostline-builds\iris-gps-nav-20260723-143811`; the replaced eight-file
+installation is backed up at
+`H:\Ghostline-backups\pre-iris-gps-nav-20260723-143913`. All 116 automated
+tests pass, the candidate contains 226 entries, every extracted payload matches
+`source/archive`, and all eight installed files match their verified sources.
+
+The Iris opening line now waits for the 12-unit awareness trigger instead of
+the earlier 20-unit circle; its four-unit vertical band is unchanged. The
+drop-point journal marker now resolves at the native template's transformed
+`main_slot/navQuery` approach point rather than inside the kiosk body. Its
+journal Z offset is reduced from two units to one because the navigation slot
+itself is already one unit above the device root.
+
+For the next fresh-save pass:
+
+1. Approach Iris up the stairs and confirm her opening line starts only near
+   the upper landing.
+2. Advance to delivery and confirm the yellow GPS route ends directly in front
+   of `drop_point_009`, without the rectangular detour around the kiosk.
+3. Confirm the yellow icon still appears at console height and depositing the
+   datacache completes the objective normally.
+
 ## 2026-07-23 Delivery GPS And Marker-Height Candidate
 
 Installed archive SHA-256:

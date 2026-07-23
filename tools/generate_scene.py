@@ -945,8 +945,14 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
 
     if not isinstance(root.get("exitPoints"), list):
         errors.append("exitPoints must be a vanilla-style array")
-    elif not any(ep.get("name", {}).get("$value") == "job_accept" for ep in root["exitPoints"]):
-        errors.append("Missing job_accept exit point")
+    else:
+        actual_exit_names = {
+            ep.get("name", {}).get("$value") for ep in root["exitPoints"]
+        }
+        for exit_spec in spec.get("exit_points", []):
+            expected_exit = str(exit_spec["name"])
+            if expected_exit not in actual_exit_names:
+                errors.append(f"Missing configured exit point: {expected_exit}")
 
     actor_count = len(root.get("actors", [])) + len(root.get("playerActors", []))
     if actor_count != len(spec.get("actors", [])):
