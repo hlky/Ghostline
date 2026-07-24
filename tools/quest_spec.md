@@ -40,7 +40,7 @@ an editor or an optional schema library.
 | `carry_npc` | template | `community`, `entry`, `destination`, `objective` |
 | `deliver_vehicle` | template | `vehicle`, `destination`, `objective` |
 | `time_gate` | generated | A non-zero combination of `days`, `hours`, `minutes`, and `seconds`; optional `completion_fact` |
-| `read_terminal_document` | template | `computer`, `scene`, `output_socket`, `completion_fact`, `objective` |
+| `read_terminal_document` | template | `computer`, `completion_fact`, `objective`; optional `scene`, `output_socket`, `document_entry` |
 | `stealth_monitor` | template | `objective`, `failure_fact`, `success_fact`, `stop_fact` |
 | `plant_item` | template | `item`, device action/condition fields, `completion_fact`, `objective` |
 | `defend_target` | template | `community`, `entry`, `completion_fact`, `failure_fact`, `objective` |
@@ -90,8 +90,10 @@ The remaining built-in template shapes are intentionally narrow:
 - vehicle delivery requires the vehicle inside a destination trigger and
   stopped.
 
-`read_terminal_document` waits on `completion_fact`. The authored computer
-scene named by `scene` must expose `output_socket` and route it to that fact;
+`read_terminal_document` waits on `completion_fact`. A custom computer scene
+may expose `output_socket` and route it to that fact. Native computer files can
+instead use `gamedeviceDataElement.questInfo.factName`, which is the direct
+vanilla document-read signal used by `gqt001_signal_delay`;
 the phase cannot infer a read from generic journal state.
 
 `stealth_monitor` and `defend_target` race explicit success/stop and failure

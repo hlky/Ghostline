@@ -132,7 +132,12 @@ staged source before distributing it.
   registration. It also patches
   `mod\gq000\world\gq000_custom_devices.devices` into Night City's global
   `03_night_city.devices` registry; the custom access point must not rely on
-  sector placement alone for controller lookup.
+  sector placement alone for controller lookup. GQT001 no longer requires the
+  experimental local ArchiveXL extension: its working computer is a complete
+  Ghostline-owned sector instance with correctly bound component CRUIDs. The
+  earlier extension investigation remains documented in
+  `docs/archivexl-inplace-resource-patching.md`, but it is not a runtime
+  dependency of the current test.
 - TweakXL is required for `Character.GhostlinePatch`, the Ghostline faction,
   both readable Quiet Spine shard records, the separate datacache delivery
   package, and `QuestRewards.gq000_completion` in `gq000_shards.yaml`. The

@@ -1,6 +1,6 @@
 # Ghostline Roadmap
 
-Last audited: 2026-07-23
+Last audited: 2026-07-24
 
 This file tracks the current state and the next work needed to turn `gq000`
 from a dialogue prototype into a playable quest slice. The current 2026-07-22
@@ -26,6 +26,225 @@ world-reference notes, and packaging instructions now live in focused docs:
 - `docs/packaging.md`
 
 ## Current Status
+
+### Native archive and CR2W tooling
+
+- `tools/ghostline-red` is the focused Rust replacement for
+  WolvenKit's command-line archive and CR2W conversion path. Its first working
+  slice reads archive indexes, resolves depot paths from `source/archive`, and
+  inspects CR2W headers plus string, name, import, export, and buffer tables.
+- The current 301-entry `packed` archive is parsed with every path resolved.
+  Its schema-driven CR2W codec now consumes the complete 80-resource authored
+  corpus, including typed RedPackage buffers and the required custom
+  appendices. Binary-to-native-JSON round trips are byte-identical. The writer
+  supports new CName/import entries and template-class handle exports; novel
+  class layouts and package topology changes intentionally remain
+  template-bound.
+- Native `pack` and `extract` commands now reproduce the current archive's 301
+  entries and 1,048 CR2W segments. A full native pack/extract returns all 301
+  payloads byte-identically, and WolvenKit independently extracts the native
+  archive with the same result. Hardened Kraken compression uses the exact
+  WolvenKit capacity formula, validates every compressed payload by
+  decompression, and runs two-payload bounded workers in parallel so a native
+  heap failure cannot corrupt the parent packer. The performance pass reduced
+  warm native packing from roughly 3.06 seconds to 2.72 seconds while retaining
+  a roughly 68.53 MiB archive versus WolvenKit's 68.41 MiB.
+- A base-game `03_night_city.streamingworld` compatibility fixture round-trips
+  byte-identically from both native and WolvenKit JSON. Native serialize and
+  deserialize average 85.5 ms and 81.2 ms versus WolvenKit's 18.69 s and
+  17.81 s on the same machine.
+
+### GQT001 — Signal Delay building-block test
+
+- `source/quests/tests/gqt001_signal_delay.quest.json` is the first isolated
+  advanced-block runtime harness: reach a Ghostline-owned Kabuki laptop, open a
+  quest-owned diagnostic file, wait ten seconds, and complete a two-choice
+  Patch phone exchange.
+- The selected native `laptop_1` has empty Files and Mails arrays. Its
+  authoritative `ComputerControllerPS` is the outer sector node's
+  `instanceData`. The test now uses a one-node ArchiveXL patch matched by
+  compiled `globalNodeID`; only that laptop's instance data is replaced.
+- Quest root/child phases, journal, onscreen localization, marker/trigger
+  world resources, and the native-laptop sector patch are generated and
+  deserialize successfully. The typed manifest is shipping-valid and the
+  repository gate passes 179 tests plus 139 subtests.
+- The corrected candidate is retained at
+  `H:\Ghostline-builds\gqt001-inline-content-fix-20260724`. The first runtime
+  pass proved the sector patch loaded but exposed a copied vanilla
+  `fileEntryIndex: 7`; ArchiveXL-added onscreen entries resolve through the
+  custom journal index `1`. A second pass still showed an empty Files menu:
+  the instance's `DeviceContentAssignment.kabuki_generic` was replacing the
+  injected inline Files array during initialization. The current override
+  clears that assignment only on the selected laptop. When that still produced
+  an empty menu, the isolation candidate switched the same injected slot to a
+  known vanilla `gameJournalFile` while retaining Ghostline's completion fact.
+  This distinguishes device-slot rejection from unresolved custom journal
+  content. All 301 extracted archive payloads match `source/archive`; current
+  diagnostic archive SHA-256 is
+  `2FC11C9D767981A04E92D77894E7594358675E525E683AA5C30E0C01F368CBE7`.
+  Its nine staged files are installed byte-identically under
+  `H:\Cyberpunk 2077`, with the preceding install backed up at
+  `H:\Ghostline-backups\pre-gqt001-signal-delay-20260724`.
+- Repeated runtime passes proved that the outer
+  `exterior_-18_28_0_0.streamingsector` instance-data edit was not the
+  laptop's authoritative runtime content. The selected laptop is instantiated
+  from cooked inplace resource
+  `bd21168eed6c6d62.streamingsector_inplace`; its embedded
+  `ComputerControllerPS.computerSetup` contains the actual empty Files and
+  Mails arrays. ArchiveXL resource patching supports global `.devices` and
+  `.psrep` resources but does not merge `streamingsector_inplace`, so the
+  focused harness now directly overrides that exact cooked resource and no
+  longer ships the ineffective outer-sector override.
+- The resulting installed candidate is retained at
+  `H:\Ghostline-builds\gqt001-cooked-computer-fix-20260724`. The cooked
+  resource round-trip contains the custom file entry and
+  `gqt001_document_read` fact, all 179 tests plus 139 subtests pass, all 301
+  extracted archive payloads match `source/archive`, and the installed archive
+  SHA-256 is
+  `4B56BD1955E138C0EC9CE850F4B18FA648752EBB1C01D1D3615CEE0283767008`.
+  The preceding install is backed up at
+  `H:\Ghostline-backups\pre-gqt001-cooked-computer-fix-20260724`.
+- The local ArchiveXL dependency was updated from 1.26.2 to 1.27.0 for this
+  pass. Its upstream changes do not include a computer-content fix; the prior
+  installation is backed up at
+  `H:\Ghostline-backups\ArchiveXL-1.26.2-pre-1.27.0-20260724`.
+- Runtime of the first cooked-resource candidate showed only the Net tab. The
+  cooked file slot was present, but its custom journal-backed
+  `gameJournalFile` had never been activated, so the computer UI filtered the
+  entry and hid the empty Files tab. `read_terminal_document` is now a direct
+  generated building block that activates an optional `document_entry` before
+  the objective, then waits on the file's vanilla `questInfo.factName`.
+- The rebuilt and installed candidate is retained at
+  `H:\Ghostline-builds\gqt001-document-activation-20260724`. The packed
+  read-document phase round-trips with the diagnostic journal activation first,
+  all 179 tests plus 137 subtests pass, all 301 extracted payloads match
+  `source/archive`, and the installed archive SHA-256 is
+  `8FCE8971F4C4F842E99E45225BBAF6AC30141B7894C528A2E44AF611C16ED0D8`.
+  The preceding archive is backed up at
+  `H:\Ghostline-backups\pre-gqt001-document-activation-20260724`.
+- ArchiveXL 1.27.0 has been extended locally with a
+  `worldStreamingSectorInplaceContent` resource-patch merger. It replaces or
+  appends embedded resources by depot path and honors the existing
+  `props: [inplaceResources]` schema. The source patch and build notes are in
+  `tools/archive-xl/inplace-resource-patching.patch` and
+  `docs/archivexl-inplace-resource-patching.md`. The custom DLL is retained at
+  `H:\Ghostline-builds\archivexl-inplace-patch-20260724` (SHA-256
+  `6241B51528B8FCBF97ABB84EF5447C95FFFBF8AA96B90532F5756D7156C98781`);
+  the official 1.27.0 DLL is backed up at
+  `H:\Ghostline-backups\ArchiveXL-1.27.0-official-20260724`.
+- The current archive is retained at
+  `H:\Ghostline-builds\gqt001-archivexl-inplace-20260724`. It contains 301
+  verified payloads, includes
+  `mod\gqt001\world\gqt001_laptop.streamingsector_inplace`, excludes the old
+  `base\...\bd21168eed6c6d62.streamingsector_inplace` override, and has SHA-256
+  `6A8894CF3B9617EEFC4D968E14C4A9CEA4096DAB372D17F2AD6FF1F0D36BCC53`.
+  The full repository gate passes 181 tests.
+- The current candidate replaces the earlier coarse inplace-resource attempt.
+  ArchiveXL applies `props: [instanceData]` after sector `PostLoad`, while the
+  retained `inplaceResources` merger remains available for genuinely embedded
+  template targets. The generated patch round-trips as one
+  `worldStreamingSector` node with the `gqt001_document_read` fact, and the
+  full repository gate passes 181 tests.
+- The verified and installed instance-specific candidate is retained at
+  `H:\Ghostline-builds\gqt001-instance-patch-20260724-172832`. Its 301
+  extracted payloads match `source/archive`; archive SHA-256 is
+  `92CBF34ACF38CB169DCF7550A7AB580AB3D3B2D00403A4C7C16CE999A39226CC`.
+  The first instance-specific DLL incorrectly installed a second hook on
+  `StreamingSector::PostLoad`; ArchiveXL logged a WorldStreaming hook failure,
+  the laptop remained unchanged, and the game later crashed while exiting.
+  The corrected build invokes resource patches from ArchiveXL's existing
+  WorldStreaming callback and uses exact ID or transform/type node matching.
+  Its installed SHA-256 is
+  `DD6CE8A76E7321DE1B430F3B4A4DED28836DCDF3B5D73BB83B4FE584E9F868FC`.
+- Runtime validation remains: confirm the native combat-event laptop is
+  available from a clean save, the five-metre reach trigger and GPS marker are
+  useful, the file sets its fact exactly once, the elapsed-time gate advances,
+  and both phone choices complete the harness.
+- Runtime confirmed the instance patch reaches the exact intended node and
+  creates the Files menu, but the journal-backed element was filtered from the
+  list. The current candidate supplies native inline title/body fallback data
+  and deep-copies the `entEntityInstanceData` buffer rather than sharing the
+  patch resource's handle, addressing the repeatable exit-time crash. It is
+  retained at `H:\Ghostline-builds\gqt001-inline-file-deepcopy-20260724`;
+  archive SHA-256 is
+  `23A1F56163D58E975873E5D517802FA9EA9F050A0F895770574D9E2AE0518471`
+  and custom ArchiveXL SHA-256 is
+  `741803BB0866407CA7A5007150EBFDA26069154398C8BC664C1DE41B91D53E5A`.
+- Runtime disproved that deep-copy candidate: both handle assignment and raw
+  `RedPackage` buffer copying caused repeatable exit-time DEP crashes. The
+  official ArchiveXL 1.27.0 DLL is restored. GQT001 now registers a complete
+  Ghostline-owned laptop sector instead of patching vanilla persistent state.
+  For rapid validation, its laptop, trigger, and marker are aligned near the
+  corrected tabletop test position at
+  `(-1058.3098, 1316.1430, 5.9833)`. The verified
+  301-entry candidate is retained at
+  `H:\Ghostline-builds\gqt001-owned-laptop-spawn-20260724`; all extracted
+  payloads match source, all 181 tests plus 137 subtests pass, and archive
+  SHA-256 is
+  `6E630A53EFDF52CD2E0201AEED7D78D07817F21EA47A02C208113B90AD46A686`.
+- Runtime confirmed the owned laptop is visible and usable at the tabletop
+  position. The absent Files tab exposed an authoring bug: journal
+  `fileEntryIndex` is the path-component index of the containing file entry,
+  not a document-array index. Both the device content path and activation
+  phase now use `5` for
+  `onscreens/emails/quests/minor_quest/gqt001/files/diagnostic`. The installed
+  diagnostic candidate is retained at
+  `H:\Ghostline-builds\gqt001-journal-path-fix-20260724-185927` with archive
+  SHA-256
+  `060E81FD7174C88701F4FB78FE4CE92EAE53845545343DCD5F74CFA3EEA3978E`.
+- A full vanilla comparison against SQ021 Randy's quest laptop found that a
+  working quest computer carries two `ComputerControllerPS` chunks (raw
+  fallback plus journal-backed content) and a
+  `gameScanningComponentPS`, while the first Ghostline-owned candidates
+  carried only one sparse controller. GQT001 now derives its owned laptop from
+  that SQ021 node topology, supplies the diagnostic in both controllers,
+  preserves the journal path in the journal-backed copy, and sets the
+  standalone device on without relying on SQ021's scene activation event. The
+  installed runtime candidate is retained at
+  `H:\Ghostline-builds\gqt001-sq021-laptop-20260724-192838`; candidate and
+  installed archive SHA-256 are
+  `41CA8192553DCE4FFA47F7879E6CD6C3CBD6B852972365EF756E8ADBD8559AFB`.
+- Runtime still omitted the Files tab with the SQ021 package topology. The
+  remaining difference was the global persistent-device registry: like
+  GQ000's access point, a streamed device may render and expose Use while its
+  authored controller remains unresolved. GQT001 now emits
+  `gqt001_custom_devices.devices` with the owned laptop's verified NodeRef
+  hash (`3885000984853365008`), `ComputerControllerPS`, and world position;
+  ArchiveXL merges it into Night City's global `03_night_city.devices`.
+  The installed candidate is retained at
+  `H:\Ghostline-builds\gqt001-device-registry-20260724-193826`; archive
+  SHA-256 is
+  `7183AB6D48A162B91A797C8A83F9B245F67B8590632F909AC11C1CFD2C4128E9`.
+- The completed SQ021 trace disproved the device-registry hypothesis for
+  Files content. Randy's laptop is sector-instance-backed and is absent from
+  Night City's `.devices` and direct `.psrep` values. Its active
+  `ComputerControllerPS` binds to `laptop_1.ent` through component CRUID
+  `1131680419258347532`; the scanner binds through
+  `1131680419258347552`. Earlier Ghostline generation replaced those IDs, so
+  the visible and usable laptop silently fell back to the entity template's
+  empty controller. Preserving the complete three-chunk SQ021 package and its
+  CRUID dictionary made the custom Files entry work in game.
+- The first successful runtime inherited SQ021's nine messages from the copied
+  controller package. GQT001 now clears mail, internet, newsfeed, and SQ021
+  scanner content from both controller variants and uses fresh NodeRef
+  `#gqt001_terminal_laptop_r2`, because streamed device state is persisted in
+  saves. The Files-only candidate is retained at
+  `H:\Ghostline-builds\gqt001-files-only-r2-20260724-201904`; all 302
+  extracted payloads match `source/archive`, all 181 repository tests pass,
+  and candidate plus installed archive SHA-256 are
+  `791ED71FB1B443734153304DB609961D193BF7ECEE300CD09818BEEE10D5C166`.
+  The full vanilla chain and reusable authoring contract are documented in
+  `docs/vanilla-sq021-computer-flow.md`.
+- Runtime confirmed the `_r2` laptop exposes only its authored Files tab and
+  opening SIGNAL DELAY advances the quest through the document-read fact. The
+  remaining test failure was a manifest omission: the Patch phone phase set
+  `gqt001_completed` and terminated without succeeding the quest journal
+  entry. It now explicitly succeeds `quests/minor_quest/gqt001` before its
+  output. The verified and installed completion candidate is retained at
+  `H:\Ghostline-builds\gqt001-completion-20260724-221150`; all 302 extracted
+  payloads match `source/archive`, all 181 repository tests pass, and candidate
+  plus installed archive SHA-256 are
+  `49410EDCC82EFFC054D1D2A83DA8C9EFDDE5B83EE41A3139E30BBEECF4B78669`.
 
 ### GQ002 — The Machine Stops
 
@@ -834,6 +1053,13 @@ world-reference notes, and packaging instructions now live in focused docs:
   vanilla-owned devices remain searchable but ineligible. The schemas,
   commands, current coverage, and test-quest routing are documented in
   `docs/world-asset-catalog.md`.
+- The first isolated runtime harness is now specified as
+  `gqt001_signal_delay`: reach a quest-owned computer, read a computer-hosted
+  diagnostic through a real scene output, wait ten seconds of elapsed game
+  time, and answer Patch by phone. Its Kabuki laptop hit is retained only as
+  an unverified placement reference because the native device belongs to
+  `sts_wat_kab_101`; the world, terminal scene, journal, and localization
+  stages remain explicitly planned until authored and tested.
 
 ### 5. Validate Audio Packaging
 

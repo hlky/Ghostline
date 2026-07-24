@@ -86,6 +86,7 @@ DIRECT_STAGE_TYPES = {
     "interact_device",
     "combat_encounter",
     "time_gate",
+    "read_terminal_document",
 }
 TEMPLATE_REQUIRED_STAGE_TYPES = {
     "optional_condition",
@@ -93,7 +94,6 @@ TEMPLATE_REQUIRED_STAGE_TYPES = {
     "escort_npc",
     "carry_npc",
     "deliver_vehicle",
-    "read_terminal_document",
     "stealth_monitor",
     "plant_item",
     "defend_target",
@@ -172,7 +172,7 @@ STAGE_REQUIRED_FIELDS = {
     "deliver_vehicle": {"vehicle", "destination", "objective"},
     "time_gate": set(),
     "read_terminal_document": {
-        "computer", "scene", "output_socket", "completion_fact", "objective",
+        "computer", "completion_fact", "objective",
     },
     "stealth_monitor": {
         "objective", "failure_fact", "success_fact", "stop_fact",
@@ -1261,6 +1261,8 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             (field, stage.data[field])
             for field in ("objective", "completion_fact")
         )
+        if isinstance(stage.data.get("document_entry"), str):
+            expected.append(("document_entry", stage.data["document_entry"]))
     elif stage.type == "stealth_monitor":
         expected.extend(
             (field, stage.data[field])
@@ -1406,11 +1408,6 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{vehicle}}": stage.data["vehicle"],
             "{{destination}}": stage.data["destination"],
             "{{objective}}": stage.data["objective"],
-        }
-    if stage.type == "read_terminal_document":
-        return {
-            "{{objective}}": stage.data["objective"],
-            "{{completion_fact}}": stage.data["completion_fact"],
         }
     if stage.type == "stealth_monitor":
         return {
@@ -2120,6 +2117,46 @@ def build_time_gate_phase(stage: CompiledStage, archive_target: Path) -> JsonObj
     return phase_document(builder, archive_target)
 
 
+def build_read_terminal_document_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    """Activate an optional computer file, then wait for its vanilla read fact."""
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    next_id = 10
+
+    document_entry = stage.data.get("document_entry")
+    if isinstance(document_entry, str):
+        document = journal_entry_node(
+            builder,
+            next_id,
+            document_entry,
+            "gameJournalFile",
+            5,
+        )
+        builder.connect(previous, document, destination_socket="Active")
+        previous = document
+        next_id += 1
+
+    objective = objective_node(builder, next_id, stage.data["objective"])
+    builder.connect(previous, objective, destination_socket="Active")
+    next_id += 1
+
+    completed = fact_condition_node(
+        builder, next_id, stage.data["completion_fact"]
+    )
+    builder.connect(objective, completed)
+    next_id += 1
+
+    objective_done = objective_node(
+        builder, next_id, stage.data["objective"]
+    )
+    builder.connect(completed, objective_done, destination_socket="Succeeded")
+    builder.connect_to_earlier_output(objective_done, end)
+    return phase_document(builder, archive_target)
+
+
 def scan_started_node(
     builder: PhaseGraphBuilder, quest_id: int, object_ref: str
 ) -> GraphNode:
@@ -2600,6 +2637,11 @@ def build_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         result = build_combat_encounter_phase(stage, archive_target)
     elif stage.type == "time_gate" and not stage.data.get("phase_template"):
         result = build_time_gate_phase(stage, archive_target)
+    elif (
+        stage.type == "read_terminal_document"
+        and not stage.data.get("phase_template")
+    ):
+        result = build_read_terminal_document_phase(stage, archive_target)
     else:
         result = instantiate_stage_phase(stage, archive_target)
     validate_handle_graph(result, context=f"Stage {stage.id}")

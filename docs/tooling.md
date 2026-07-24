@@ -11,6 +11,100 @@ world spec, or world generator:
 py -B -m unittest discover -s tests -v
 ```
 
+## Native Archive And CR2W Inspection
+
+`tools/ghostline-red` is a focused Rust CLI for fast archive and CR2W
+operations. Build and test it with:
+
+```powershell
+cargo test --manifest-path .\tools\ghostline-red\Cargo.toml
+cargo build --release --manifest-path .\tools\ghostline-red\Cargo.toml
+```
+
+List the current archive index and resolve every hash from the authored depot
+tree:
+
+```powershell
+.\tools\ghostline-red\target\release\ghostline-red.exe archive-list `
+  .\packed\archive\pc\mod\Ghostline.archive `
+  --paths-root .\source\archive
+```
+
+Pack and extract the authored depot tree:
+
+```powershell
+.\tools\ghostline-red\target\release\ghostline-red.exe pack `
+  .\source\archive -o H:\Ghostline-builds\native-candidate
+
+.\tools\ghostline-red\target\release\ghostline-red.exe extract `
+  H:\Ghostline-builds\native-candidate\archive.archive `
+  -o H:\Ghostline-builds\native-candidate\extracted
+```
+
+The native packer uses the pinned Kraken DLL through small, crash-isolated
+parallel worker batches. Each worker handles at most two payloads, uses
+WolvenKit's exact output-capacity formula, and accepts compressed data only
+after a decompression byte comparison. Worker failures fall back to an
+uncompressed segment without exposing the parent packer's heap. The current
+301-file archive is about 68.53 MiB and WolvenKit extracts every payload
+byte-identically. Kraken owns the SIMD-sensitive compression loop; explicit
+SIMD in the much smaller Rust CRC/path loops did not justify added complexity.
+
+Inspect the structural tables of a packed CR2W resource:
+
+```powershell
+.\tools\ghostline-red\target\release\ghostline-red.exe cr2w-inspect `
+  .\source\archive\mod\gq000\phases\gq000.questphase
+```
+
+Both commands accept `--json`. Generic reflected CR2W conversion uses the
+schema generated from the pinned WolvenKit submodule:
+
+```powershell
+.\tools\ghostline-red\target\release\ghostline-red.exe schema-generate `
+  .\WolvenKit .\red-schema.json
+
+.\tools\ghostline-red\target\release\ghostline-red.exe cr2w-serialize `
+  .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase `
+  --schema .\red-schema.json .\converted\gq000_patch_meet.questphase.json
+
+.\tools\ghostline-red\target\release\ghostline-red.exe cr2w-deserialize `
+  .\converted\gq000_patch_meet.questphase.json `
+  --template .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase `
+  --schema .\red-schema.json .\converted\gq000_patch_meet.questphase
+```
+
+The writer supports shifted strings and arrays, new CName/import entries,
+typed world-node data, and typed RedPackage edits across all package-bearing
+authored resources. It can grow a non-empty handle array and allocate the
+corresponding export when that class already has a template instance. The
+current 80-resource binary-to-native-JSON corpus rebuilds byte-identically.
+Novel class layouts and RedPackage chunk-topology changes still require a
+matching template or WolvenKit.
+
+On the base-game `03_night_city.streamingworld` fixture, three warm CLI runs
+averaged 85.5 ms serialize and 81.2 ms deserialize, versus WolvenKit 8.17.4 at
+18.69 s and 17.81 s. Both native JSON and WolvenKit JSON rebuilt to the
+original CR2W byte-for-byte.
+
+The specialized localization commands remain available:
+
+```powershell
+.\tools\ghostline-red\target\release\ghostline-red.exe `
+  cr2w-serialize-localization `
+  .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json `
+  .\converted\gq000.json.json
+
+.\tools\ghostline-red\target\release\ghostline-red.exe `
+  cr2w-deserialize-localization `
+  .\converted\gq000.json.json `
+  --template `
+  .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json `
+  .\converted\gq000.json
+```
+
+The GQ000 fixture round-trips byte-identically.
+
 The suite covers the 15-node scene contract, phase-owned community activation
 and spawn-readiness gate, the scene-local engage gate, restored trigger radii,
 distinct community registry node identity, numerically sorted choice locStore

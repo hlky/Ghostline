@@ -1,0 +1,88 @@
+{
+  "ok": true,
+  "dry_run": false,
+  "workspace": "H:\\projects\\Ghostline\\generated\\cinder-head",
+  "frame": "female_average",
+  "wolvenkit": "H:\\WolvenKit.Console-8.17.4\\WolvenKit.CLI.exe",
+  "blender": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+  "game_path": "H:\\Cyberpunk 2077",
+  "blend_template": "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\raw\\tutorial\\npv\\your_female_character\\head\\head_import.blend",
+  "morphtarget_source": "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\archive\\tutorial\\npv\\your_female_character\\head\\morphtargets",
+  "mesh_source": "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\archive\\tutorial\\npv\\your_female_character\\head",
+  "morphtargets": [
+    "h0_000_pwa__morphs.morphtarget",
+    "he_000_pwa__morphs.morphtarget",
+    "heb_000_pwa__morphs.morphtarget",
+    "ht_000_pwa__morphs.morphtarget"
+  ],
+  "shapes": {
+    "eyes": 6,
+    "nose": 10,
+    "mouth": 5,
+    "jaw": 15,
+    "ears": 8
+  },
+  "errors": [],
+  "warnings": [
+    "Indexed inner_torso mesh exists in the installed-game catalog only after UI/index validation",
+    "Indexed legs mesh exists in the installed-game catalog only after UI/index validation",
+    "WolvenKit reported garment-support warnings while rebuilding head meshes; review the CLI log before runtime use"
+  ],
+  "commands": [
+    [
+      "H:\\WolvenKit.Console-8.17.4\\WolvenKit.CLI.exe",
+      "export",
+      "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\archive\\tutorial\\npv\\your_female_character\\head\\morphtargets\\h0_000_pwa__morphs.morphtarget",
+      "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\archive\\tutorial\\npv\\your_female_character\\head\\morphtargets\\he_000_pwa__morphs.morphtarget",
+      "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\archive\\tutorial\\npv\\your_female_character\\head\\morphtargets\\heb_000_pwa__morphs.morphtarget",
+      "H:\\projects\\tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090\\source\\archive\\tutorial\\npv\\your_female_character\\head\\morphtargets\\ht_000_pwa__morphs.morphtarget",
+      "-o",
+      "generated\\cinder-head\\head\\morphtargets",
+      "--gamepath",
+      "H:\\Cyberpunk 2077",
+      "-v",
+      "Minimal"
+    ],
+    [
+      "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+      "--background",
+      "generated\\cinder-head\\head\\head_import.blend",
+      "--python",
+      "H:\\projects\\Ghostline\\tools\\character_head_blender.py",
+      "--",
+      "--shapes",
+      "generated\\cinder-head\\head\\head-shapes.json"
+    ],
+    [
+      "H:\\WolvenKit.Console-8.17.4\\WolvenKit.CLI.exe",
+      "import",
+      "generated\\cinder-head\\head\\h0_000_pwa_c__basehead.glb",
+      "generated\\cinder-head\\head\\he_000_pwa_c__basehead.glb",
+      "generated\\cinder-head\\head\\heb_000_pwa_c__basehead.glb",
+      "generated\\cinder-head\\head\\ht_000_pwa_c__basehead.glb",
+      "-o",
+      "H:\\projects\\Ghostline\\generated\\cinder-head\\source\\archive\\mod\\ghostline\\characters\\cinder\\head",
+      "--keep",
+      "-v",
+      "Minimal"
+    ]
+  ],
+  "glb_outputs": [
+    "generated\\cinder-head\\head\\h0_000_pwa_c__basehead.glb",
+    "generated\\cinder-head\\head\\he_000_pwa_c__basehead.glb",
+    "generated\\cinder-head\\head\\heb_000_pwa_c__basehead.glb",
+    "generated\\cinder-head\\head\\ht_000_pwa_c__basehead.glb"
+  ],
+  "cr2w_outputs": [
+    "H:\\projects\\Ghostline\\generated\\cinder-head\\source\\archive\\mod\\ghostline\\characters\\cinder\\head\\h0_000_pwa_c__basehead.mesh",
+    "H:\\projects\\Ghostline\\generated\\cinder-head\\source\\archive\\mod\\ghostline\\characters\\cinder\\head\\he_000_pwa_c__basehead.mesh",
+    "H:\\projects\\Ghostline\\generated\\cinder-head\\source\\archive\\mod\\ghostline\\characters\\cinder\\head\\heb_000_pwa_c__basehead.mesh",
+    "H:\\projects\\Ghostline\\generated\\cinder-head\\source\\archive\\mod\\ghostline\\characters\\cinder\\head\\ht_000_pwa_c__basehead.mesh"
+  ],
+  "cr2w_sha256": {
+    "h0_000_pwa_c__basehead.mesh": "B8E48655E467877EAD0FA33682E27103AB20253547750B5EC2C43F13A2A91171",
+    "he_000_pwa_c__basehead.mesh": "0D7D59A68A1C36D9901AC5F44AA8E904DF544B70589DE2133AE1E3767DF62AE4",
+    "heb_000_pwa_c__basehead.mesh": "57F0E8D9C3D5E087DB2794308995AA62F588DBB23BC9C2451238C5DEF8C62DF2",
+    "ht_000_pwa_c__basehead.mesh": "34C0150556A5A40CA49EBF9DBFD11136E2A37AAF1649B9FBFB5FE27247F5CEF8"
+  }
+}

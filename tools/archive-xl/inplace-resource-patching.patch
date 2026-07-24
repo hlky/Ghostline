@@ -1,0 +1,242 @@
+diff --git a/src/App/Extensions/ResourcePatch/Extension.cpp b/src/App/Extensions/ResourcePatch/Extension.cpp
+index b9454c0..dcc29cf 100644
+--- a/src/App/Extensions/ResourcePatch/Extension.cpp
++++ b/src/App/Extensions/ResourcePatch/Extension.cpp
+@@ -41,6 +41,9 @@ constexpr auto MorphTargetTextureParamProp = Red::CName("baseTextureParamName");
+ constexpr auto MorphTargetBlobProp = Red::CName("blob");
+ constexpr auto MorphTargetBoundingBoxProp = Red::CName("boundingBox");
+ constexpr auto MorphTargetTargetsProp = Red::CName("targets");
++
++constexpr auto StreamingSectorInplaceResourcesProp = Red::CName("inplaceResources");
++constexpr auto StreamingSectorInstanceDataProp = Red::CName("instanceData");
+ }
+ 
+ std::string_view App::ResourcePatchExtension::GetName()
+@@ -178,6 +181,16 @@ void App::ResourcePatchExtension::OnResourceRequest(void* aSerializer, uint64_t
+     if (patchList.empty())
+         return;
+ 
++    for (const auto& patchInstance : patchList)
++    {
++        if (patchInstance->Modifies(StreamingSectorInplaceResourcesProp))
++        {
++            LogInfo(R"([{}] Inplace patch target "{}" requested.)", ExtensionName,
++                    s_resourcePathRegistry->ResolvePathOrHash(aRequest.path));
++            break;
++        }
++    }
++
+     for (auto& patchInstance : patchList)
+     {
+         patchInstance->LoadResource();
+@@ -206,6 +219,18 @@ void App::ResourcePatchExtension::OnResourceDeserialize(void* aSerializer, uint6
+ 
+ void App::ResourcePatchExtension::OnResourceReady(Red::ResourceSerializerContext* aContext)
+ {
++    const auto& contextPatches = GetPatchList(aContext->request.path);
++    for (const auto& patchInstance : contextPatches)
++    {
++        if (patchInstance->Modifies(StreamingSectorInplaceResourcesProp))
++        {
++            LogInfo(R"([{}] Inplace patch target "{}" reached dependency-ready with {} serialized object(s).)",
++                    ExtensionName, s_resourcePathRegistry->ResolvePathOrHash(aContext->request.path),
++                    aContext->serializables.Size());
++            break;
++        }
++    }
++
+     if (!aContext->serializables.IsEmpty())
+     {
+         for (const auto& serializable : aContext->serializables)
+@@ -236,6 +261,137 @@ void App::ResourcePatchExtension::OnResourceReady(Red::ResourceSerializerContext
+                 }
+                 break;
+             }
++            case Red::GetTypeName<Red::worldStreamingSectorInplaceContent>():
++            {
++                if (const auto& resource = Red::Cast<Red::worldStreamingSectorInplaceContent>(serializable))
++                {
++                    OnStreamingSectorInplaceLoad(resource, aContext->request.path);
++                }
++                break;
++            }
++            }
++        }
++    }
++}
++
++void App::ResourcePatchExtension::ApplyStreamingSectorPatches(Red::worldStreamingSector* aResource)
++{
++    const auto& patchList = GetPatchList(aResource->path);
++
++    if (patchList.empty())
++        return;
++
++    auto& targetBuffer = Raw::StreamingSector::NodeBuffer::Ref(aResource);
++
++    for (const auto& patchInstance : patchList)
++    {
++        if (!patchInstance->Modifies(StreamingSectorInstanceDataProp))
++            continue;
++
++        auto patchResource = patchInstance->GetResource<Red::worldStreamingSector>();
++
++        if (!patchResource)
++            continue;
++
++        auto& patchBuffer = Raw::StreamingSector::NodeBuffer::Ref(patchResource);
++        auto patchedNodes = 0u;
++
++        for (auto& patchSetup : patchBuffer.nodeSetups)
++        {
++            auto* patchNode = patchBuffer.nodes[patchSetup.nodeIndex].instance;
++            auto* patchEntityNode = Red::Cast<Red::worldEntityNode>(patchNode);
++
++            if (!patchEntityNode || !patchEntityNode->instanceData)
++                continue;
++
++            for (auto& targetSetup : targetBuffer.nodeSetups)
++            {
++                const auto sameGlobalID = targetSetup.globalNodeID == patchSetup.globalNodeID;
++                const auto sameTransform =
++                    std::memcmp(&targetSetup.transform, &patchSetup.transform, sizeof(targetSetup.transform)) == 0;
++                auto* targetCandidate = targetBuffer.nodes[targetSetup.nodeIndex].instance;
++                const auto sameNodeType =
++                    targetCandidate && targetCandidate->GetNativeType() == patchNode->GetNativeType();
++
++                if (!sameGlobalID && !(sameTransform && sameNodeType))
++                    continue;
++
++                auto* targetEntityNode = Red::Cast<Red::worldEntityNode>(targetCandidate);
++
++                if (!targetEntityNode)
++                    break;
++
++                auto instanceData = Red::MakeHandle<Red::entEntityInstanceData>();
++                Red::CopyBuffer(instanceData->buffer, patchEntityNode->instanceData->buffer);
++                targetEntityNode->instanceData = std::move(instanceData);
++                ++patchedNodes;
++                LogInfo(
++                    R"([{}] Matched sector node: target ID {}, patch ID {}, exact ID {}, transform fallback {}.)",
++                    ExtensionName, targetSetup.globalNodeID, patchSetup.globalNodeID, sameGlobalID,
++                    !sameGlobalID && sameTransform && sameNodeType);
++                break;
++            }
++        }
++
++        LogInfo(R"([{}] Replaced instance data for {} node(s) in "{}" from "{}".)", ExtensionName, patchedNodes,
++                s_resourcePathRegistry->ResolvePathOrHash(aResource->path),
++                s_resourcePathRegistry->ResolvePathOrHash(patchResource->path));
++    }
++}
++
++void App::ResourcePatchExtension::OnStreamingSectorInplaceLoad(
++    Red::worldStreamingSectorInplaceContent* aResource, Red::ResourcePath aTargetPath)
++{
++    const auto& patchList = GetPatchList(aTargetPath);
++
++    if (patchList.empty())
++        return;
++
++    const auto targetPathStr = s_resourcePathRegistry->ResolvePathOrHash(aTargetPath);
++    LogInfo(R"([{}] Applying {} inplace resource patch(es) to "{}".)", ExtensionName, patchList.size(),
++            targetPathStr);
++
++    for (const auto& patchInstance : patchList)
++    {
++        if (!patchInstance->Modifies(StreamingSectorInplaceResourcesProp))
++            continue;
++
++        auto patchResource = patchInstance->GetResource<Red::worldStreamingSectorInplaceContent>();
++
++        if (!patchResource)
++            continue;
++
++        const auto patchPathStr = s_resourcePathRegistry->ResolvePathOrHash(patchResource->path);
++
++        for (const auto& patchInplace : patchResource->inplaceResources)
++        {
++            if (patchInplace.path.IsEmpty())
++                continue;
++
++            auto replaced = false;
++
++            for (auto& targetInplace : aResource->inplaceResources)
++            {
++                if (targetInplace.path == patchInplace.path)
++                {
++                    targetInplace = patchInplace;
++                    replaced = true;
++                    break;
++                }
++            }
++
++            const auto inplacePathStr = s_resourcePathRegistry->ResolvePathOrHash(patchInplace.path);
++
++            if (replaced)
++            {
++                LogInfo(R"([{}] Inplace resource "{}" from "{}" replaced the matching resource in "{}".)",
++                        ExtensionName, inplacePathStr, patchPathStr, targetPathStr);
++            }
++            else
++            {
++                aResource->inplaceResources.PushBack(patchInplace);
++                LogInfo(R"([{}] Inplace resource "{}" from "{}" added to "{}".)",
++                        ExtensionName, inplacePathStr, patchPathStr, targetPathStr);
+             }
+         }
+     }
+diff --git a/src/App/Extensions/ResourcePatch/Extension.hpp b/src/App/Extensions/ResourcePatch/Extension.hpp
+index 5671cd3..b88e87f 100644
+--- a/src/App/Extensions/ResourcePatch/Extension.hpp
++++ b/src/App/Extensions/ResourcePatch/Extension.hpp
+@@ -9,6 +9,7 @@
+ #include "Red/EntityTemplate.hpp"
+ #include "Red/GarmentAssembler.hpp"
+ #include "Red/Serialization.hpp"
++#include "Red/StreamingSector.hpp"
+ 
+ namespace App
+ {
+@@ -26,6 +27,7 @@ public:
+ 
+     static void RegisterPatch(Red::ResourcePath aTargetPath, Red::ResourcePath aPatchPath);
+     static void RegisterPatch(Red::ResourcePath aTargetPath, const char* aPatchPathStr);
++    static void ApplyStreamingSectorPatches(Red::worldStreamingSector* aResource);
+     // static void ClearTarget(Red::ResourcePath aTarget);
+ 
+ private:
+@@ -74,6 +76,8 @@ private:
+                                      const Red::SharedPtr<Red::ResourceToken<Red::EntityTemplate>>& aPartToken);
+     static void OnGarmentPackageExtract(Red::GarmentExtractionParams* aParams, const Red::JobGroup& aJobGroup);
+     static void OnStreamingWorldLoad(Red::worldStreamingWorld* aWorld);
++    static void OnStreamingSectorInplaceLoad(Red::worldStreamingSectorInplaceContent* aResource,
++                                             Red::ResourcePath aTargetPath);
+     static void OnCurveSetResourceLoad(Red::CurveSet* aResource);
+     static void OnDeviceResourceLoad(Red::gameDeviceResource* aResource);
+     static void OnSetPersistentStateData(uint64_t a1, Red::DataBuffer& aData, uint64_t a3, uint32_t a4);
+diff --git a/src/App/Extensions/WorldStreaming/Extension.cpp b/src/App/Extensions/WorldStreaming/Extension.cpp
+index f3b65e4..3152551 100644
+--- a/src/App/Extensions/WorldStreaming/Extension.cpp
++++ b/src/App/Extensions/WorldStreaming/Extension.cpp
+@@ -117,6 +117,8 @@ void App::WorldStreamingExtension::PostConfigure()
+ 
+ void App::WorldStreamingExtension::OnSectorPostLoad(Red::world::StreamingSector* aSector, uint64_t)
+ {
++    ResourcePatchExtension::ApplyStreamingSectorPatches(aSector);
++
+     std::shared_lock _(s_sectorsLock);
+ 
+     const auto& sectorMods = s_sectors.find(aSector->path);
+diff --git a/src/pch.hpp b/src/pch.hpp
+index 41d9b1d..db9763f 100644
+--- a/src/pch.hpp
++++ b/src/pch.hpp
+@@ -165,6 +165,7 @@
+ #include <RED4ext/Scripting/Natives/Generated/world/StaticOccluderMeshNode.hpp>
+ #include <RED4ext/Scripting/Natives/Generated/world/StreamingBlock.hpp>
+ #include <RED4ext/Scripting/Natives/Generated/world/StreamingSector.hpp>
++#include <RED4ext/Scripting/Natives/Generated/world/StreamingSectorInplaceContent.hpp>
+ #include <RED4ext/Scripting/Natives/Generated/world/StreamingWorld.hpp>
+ #include <RED4ext/Scripting/Natives/Generated/world/TerrainMeshNode.hpp>
+ #include <RED4ext/Scripting/Natives/Generated/world/WeatherState.hpp>

@@ -1,0 +1,51 @@
+{
+  "_note": "GQT001 uses a Ghostline-owned laptop near the current test-save spawn. This world spec aligns its reach trigger and quest marker.",
+  "name": "gqt001",
+  "prefab_root": "$/mod/gqt001/#gqt001_pr_signal_delay",
+  "block_path": "mod\\gqt001\\world\\gqt001_signal_delay.streamingblock",
+  "quest_sector_path": "mod\\gqt001\\world\\gqt001_signal_delay.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt001\\world\\gqt001_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1058.3098,
+    "y": 1316.143,
+    "z": 5.98333,
+    "yaw": -30.15
+  },
+  "markers": [
+    {
+      "ref": "#gqt001_01_mp_terminal",
+      "sector": "always_loaded",
+      "position": {
+        "from": "origin"
+      },
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt001_01_tr_terminal",
+      "position": {
+        "from": "origin",
+        "up": -2
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 5,
+        "segments": 12,
+        "height": 4
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  ]
+}
