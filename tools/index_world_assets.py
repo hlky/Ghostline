@@ -19,7 +19,10 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "reference" / "world" / "world-assets.json"
+# Legacy exact-resource indexes have a different schema from the normalized
+# multi-family catalog produced by world_asset_catalog.py. Keep their defaults
+# separate so this helper cannot overwrite the canonical catalog.
+DEFAULT_MANIFEST = ROOT / "reference" / "world" / "world-assets-exact.json"
 WORLD_SECTOR_PREFIX = r"base\worlds\03_night_city\_compiled\default"
 
 

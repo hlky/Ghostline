@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ghostline.local/schemas/world-asset-curation-v1.json",
+  "title": "Ghostline world asset curation",
+  "type": "object",
+  "required": ["schema_version", "annotations"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "annotations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["accessibility", "quest_safety", "interior"],
+        "properties": {
+          "accessibility": {"enum": ["unvetted", "verified", "rejected"]},
+          "quest_safety": {"enum": ["unvetted", "verified", "rejected"]},
+          "interior": {"type": "string"},
+          "add_tags": {"type": "array", "items": {"type": "string"}},
+          "remove_tags": {"type": "array", "items": {"type": "string"}},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

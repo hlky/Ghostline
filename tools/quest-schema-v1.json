@@ -72,7 +72,18 @@
             "choice_gate",
             "escort_npc",
             "carry_npc",
-            "deliver_vehicle"
+            "deliver_vehicle",
+            "time_gate",
+            "read_terminal_document",
+            "stealth_monitor",
+            "plant_item",
+            "defend_target",
+            "release_or_rescue_npc",
+            "enter_vehicle",
+            "ride_with_contact",
+            "drive_to",
+            "steal_vehicle",
+            "vehicle_cleanup"
           ]
         },
         "status": {
@@ -880,13 +891,17 @@
                 "allow_combat_interrupt": {
                   "type": "boolean",
                   "default": true
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
                 }
               },
               "required": [
                 "community",
                 "entry",
                 "destinations",
-                "objective"
+                "objective",
+                "completion_fact"
               ]
             }
           ],
@@ -973,6 +988,454 @@
                 "vehicle",
                 "destination",
                 "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "time_gate"
+                },
+                "days": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "hours": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "anyOf": [
+                {
+                  "required": [
+                    "days"
+                  ]
+                },
+                {
+                  "required": [
+                    "hours"
+                  ]
+                },
+                {
+                  "required": [
+                    "minutes"
+                  ]
+                },
+                {
+                  "required": [
+                    "seconds"
+                  ]
+                }
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "read_terminal_document"
+                },
+                "computer": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "scene": {
+                  "$ref": "#/$defs/depotPath"
+                },
+                "output_socket": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "document_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "computer",
+                "scene",
+                "output_socket",
+                "completion_fact",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "stealth_monitor"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "failure_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "success_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "stop_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "objective",
+                "failure_fact",
+                "success_fact",
+                "stop_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "plant_item"
+                },
+                "item": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "device": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "controller_class": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_function": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "consume_item": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "required": [
+                "item",
+                "device",
+                "controller_class",
+                "action",
+                "completion_function",
+                "completion_fact",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "defend_target"
+                },
+                "community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "failure_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "community",
+                "entry",
+                "completion_fact",
+                "failure_fact",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "release_or_rescue_npc"
+                },
+                "community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "device": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "controller_class": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_function": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "community",
+                "entry",
+                "device",
+                "controller_class",
+                "action",
+                "completion_function",
+                "completion_fact",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "enter_vehicle"
+                },
+                "vehicle": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "vehicle",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "ride_with_contact"
+                },
+                "vehicle": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "contact_community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "contact_entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "vehicle",
+                "contact_community",
+                "contact_entry",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "drive_to"
+                },
+                "vehicle": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "destination": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "vehicle",
+                "destination",
+                "completion_fact",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "steal_vehicle"
+                },
+                "vehicle": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "vehicle",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "vehicle_cleanup"
+                },
+                "player_vehicle_record": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                }
+              },
+              "required": [
+                "player_vehicle_record",
+                "completion_fact"
               ]
             }
           ],

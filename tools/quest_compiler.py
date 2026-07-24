@@ -63,6 +63,17 @@ SUPPORTED_STAGE_TYPES = {
     "escort_npc",
     "carry_npc",
     "deliver_vehicle",
+    "time_gate",
+    "read_terminal_document",
+    "stealth_monitor",
+    "plant_item",
+    "defend_target",
+    "release_or_rescue_npc",
+    "enter_vehicle",
+    "ride_with_contact",
+    "drive_to",
+    "steal_vehicle",
+    "vehicle_cleanup",
 }
 DIRECT_STAGE_TYPES = {
     "phone_job_offer",
@@ -74,6 +85,7 @@ DIRECT_STAGE_TYPES = {
     "investigate_clues",
     "interact_device",
     "combat_encounter",
+    "time_gate",
 }
 TEMPLATE_REQUIRED_STAGE_TYPES = {
     "optional_condition",
@@ -81,6 +93,16 @@ TEMPLATE_REQUIRED_STAGE_TYPES = {
     "escort_npc",
     "carry_npc",
     "deliver_vehicle",
+    "read_terminal_document",
+    "stealth_monitor",
+    "plant_item",
+    "defend_target",
+    "release_or_rescue_npc",
+    "enter_vehicle",
+    "ride_with_contact",
+    "drive_to",
+    "steal_vehicle",
+    "vehicle_cleanup",
 }
 
 BUILTIN_TEMPLATE_RESOURCES = {
@@ -145,9 +167,34 @@ STAGE_REQUIRED_FIELDS = {
         "objective", "success_fact", "failure_fact", "evaluation",
     },
     "choice_gate": {"gate_kind"},
-    "escort_npc": {"community", "entry", "objective"},
+    "escort_npc": {"community", "entry", "objective", "completion_fact"},
     "carry_npc": {"community", "entry", "destination", "objective"},
     "deliver_vehicle": {"vehicle", "destination", "objective"},
+    "time_gate": set(),
+    "read_terminal_document": {
+        "computer", "scene", "output_socket", "completion_fact", "objective",
+    },
+    "stealth_monitor": {
+        "objective", "failure_fact", "success_fact", "stop_fact",
+    },
+    "plant_item": {
+        "item", "device", "controller_class", "action",
+        "completion_function", "completion_fact", "objective",
+    },
+    "defend_target": {
+        "community", "entry", "completion_fact", "failure_fact", "objective",
+    },
+    "release_or_rescue_npc": {
+        "community", "entry", "device", "controller_class", "action",
+        "completion_function", "completion_fact", "objective",
+    },
+    "enter_vehicle": {"vehicle", "objective"},
+    "ride_with_contact": {
+        "vehicle", "contact_community", "contact_entry", "objective",
+    },
+    "drive_to": {"vehicle", "destination", "completion_fact", "objective"},
+    "steal_vehicle": {"vehicle", "objective"},
+    "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
 }
 TOP_LEVEL_FIELDS = {
     "schema_version",
@@ -225,7 +272,7 @@ STAGE_TYPE_FIELDS = {
     },
     "escort_npc": {
         "community", "entry", "destinations", "objective", "description_entry",
-        "failure_fact", "allow_combat_interrupt",
+        "failure_fact", "allow_combat_interrupt", "completion_fact",
     },
     "carry_npc": {
         "community", "entry", "destination", "objective", "description_entry",
@@ -235,6 +282,42 @@ STAGE_TYPE_FIELDS = {
         "vehicle", "destination", "objective", "description_entry", "mappin",
         "require_player_exit", "completion_fact",
     },
+    "time_gate": {
+        "days", "hours", "minutes", "seconds", "completion_fact",
+    },
+    "read_terminal_document": {
+        "computer", "scene", "output_socket", "document_entry",
+        "completion_fact", "objective", "description_entry",
+    },
+    "stealth_monitor": {
+        "objective", "description_entry", "failure_fact", "success_fact",
+        "stop_fact",
+    },
+    "plant_item": {
+        "item", "device", "controller_class", "action",
+        "completion_function", "completion_fact", "objective",
+        "description_entry", "consume_item",
+    },
+    "defend_target": {
+        "community", "entry", "completion_fact", "failure_fact", "objective",
+        "description_entry",
+    },
+    "release_or_rescue_npc": {
+        "community", "entry", "device", "controller_class", "action",
+        "completion_function", "completion_fact", "objective",
+        "description_entry",
+    },
+    "enter_vehicle": {"vehicle", "objective", "description_entry"},
+    "ride_with_contact": {
+        "vehicle", "contact_community", "contact_entry", "objective",
+        "description_entry",
+    },
+    "drive_to": {
+        "vehicle", "destination", "completion_fact", "objective",
+        "description_entry",
+    },
+    "steal_vehicle": {"vehicle", "objective", "description_entry"},
+    "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
 }
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 DEPOT_RE = re.compile(r"^(?:base|ep1|mod)\\.+$")
@@ -498,6 +581,36 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                     )
                 )
 
+        if stage_type == "time_gate":
+            duration_fields = ("days", "hours", "minutes", "seconds")
+            duration = []
+            for field in duration_fields:
+                value = stage.get(field, 0)
+                if (
+                    not isinstance(value, int)
+                    or isinstance(value, bool)
+                    or value < 0
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_time_gate_duration",
+                            f"{context}.{field} must be a non-negative integer",
+                            stage_id or None,
+                        )
+                    )
+                else:
+                    duration.append(value)
+            if len(duration) == len(duration_fields) and not any(duration):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "empty_time_gate",
+                        f"{context} must wait for a non-zero game-time duration",
+                        stage_id or None,
+                    )
+                )
+
         if stage_type == "read_shard":
             file_index = stage.get("file_entry_index")
             if (
@@ -693,13 +806,13 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                 )
             elif (
                 not isinstance(stage.get("phase_template"), str)
-                and len(destinations) != 2
+                and len(destinations) != 3
             ):
                 diagnostics.append(
                     Diagnostic(
                         "error",
                         "unsupported_destination_count",
-                        f"{context}.destinations currently requires exactly two route gates",
+                        f"{context}.destinations currently requires exactly three route gates",
                         stage_id or None,
                     )
                 )
@@ -1127,7 +1240,7 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
     elif stage.type == "escort_npc":
         expected.extend(
             (field, stage.data[field])
-            for field in ("community", "entry", "objective")
+            for field in ("community", "entry", "objective", "completion_fact")
         )
         expected.extend(("destinations", item) for item in stage.data["destinations"])
     elif stage.type == "carry_npc":
@@ -1139,6 +1252,68 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         expected.extend(
             (field, stage.data[field])
             for field in ("vehicle", "destination", "objective")
+        )
+    elif stage.type == "time_gate":
+        if isinstance(stage.data.get("completion_fact"), str):
+            expected.append(("completion_fact", stage.data["completion_fact"]))
+    elif stage.type == "read_terminal_document":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("objective", "completion_fact")
+        )
+    elif stage.type == "stealth_monitor":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "objective", "failure_fact", "success_fact", "stop_fact"
+            )
+        )
+    elif stage.type == "plant_item":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "item", "device", "controller_class", "action",
+                "completion_function", "completion_fact", "objective",
+            )
+        )
+    elif stage.type == "defend_target":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "community", "entry", "completion_fact",
+                "failure_fact", "objective",
+            )
+        )
+    elif stage.type == "release_or_rescue_npc":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "community", "entry", "device", "controller_class",
+                "action", "completion_function", "completion_fact", "objective",
+            )
+        )
+    elif stage.type in {"enter_vehicle", "steal_vehicle"}:
+        expected.extend(
+            (field, stage.data[field]) for field in ("vehicle", "objective")
+        )
+    elif stage.type == "ride_with_contact":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "vehicle", "contact_community", "contact_entry", "objective",
+            )
+        )
+    elif stage.type == "drive_to":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "vehicle", "destination", "completion_fact", "objective",
+            )
+        )
+    elif stage.type == "vehicle_cleanup":
+        expected.extend(
+            (field, stage.data[field])
+            for field in ("player_vehicle_record", "completion_fact")
         )
 
     if stage.type in SUPPORTED_STAGE_TYPES - {
@@ -1215,7 +1390,9 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{entry}}": stage.data["entry"],
             "{{destination_1}}": stage.data["destinations"][0],
             "{{destination_2}}": stage.data["destinations"][1],
+            "{{destination_3}}": stage.data["destinations"][2],
             "{{objective}}": stage.data["objective"],
+            "{{completion_fact}}": stage.data["completion_fact"],
         }
     if stage.type == "carry_npc":
         return {
@@ -1229,6 +1406,71 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{vehicle}}": stage.data["vehicle"],
             "{{destination}}": stage.data["destination"],
             "{{objective}}": stage.data["objective"],
+        }
+    if stage.type == "read_terminal_document":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{completion_fact}}": stage.data["completion_fact"],
+        }
+    if stage.type == "stealth_monitor":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{failure_fact}}": stage.data["failure_fact"],
+            "{{success_fact}}": stage.data["success_fact"],
+            "{{stop_fact}}": stage.data["stop_fact"],
+        }
+    if stage.type == "plant_item":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "Items.GhostlineTemplateItem": stage.data["item"],
+            "{{device}}": stage.data["device"],
+            "{{controller_class}}": stage.data["controller_class"],
+            "{{action}}": stage.data["action"],
+            "{{completion_function}}": stage.data["completion_function"],
+            "{{completion_fact}}": stage.data["completion_fact"],
+        }
+    if stage.type == "defend_target":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{community}}": stage.data["community"],
+            "{{entry}}": stage.data["entry"],
+            "{{completion_fact}}": stage.data["completion_fact"],
+            "{{failure_fact}}": stage.data["failure_fact"],
+        }
+    if stage.type == "release_or_rescue_npc":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{community}}": stage.data["community"],
+            "{{entry}}": stage.data["entry"],
+            "{{device}}": stage.data["device"],
+            "{{controller_class}}": stage.data["controller_class"],
+            "{{action}}": stage.data["action"],
+            "{{completion_function}}": stage.data["completion_function"],
+            "{{completion_fact}}": stage.data["completion_fact"],
+        }
+    if stage.type in {"enter_vehicle", "steal_vehicle"}:
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{vehicle}}": stage.data["vehicle"],
+        }
+    if stage.type == "ride_with_contact":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{vehicle}}": stage.data["vehicle"],
+            "{{contact_community}}": stage.data["contact_community"],
+            "{{contact_entry}}": stage.data["contact_entry"],
+        }
+    if stage.type == "drive_to":
+        return {
+            "{{objective}}": stage.data["objective"],
+            "{{vehicle}}": stage.data["vehicle"],
+            "{{destination_1}}": stage.data["destination"],
+            "{{completion_fact}}": stage.data["completion_fact"],
+        }
+    if stage.type == "vehicle_cleanup":
+        return {
+            "{{player_vehicle_record}}": stage.data["player_vehicle_record"],
+            "{{completion_fact}}": stage.data["completion_fact"],
         }
     return {}
 
@@ -1828,6 +2070,56 @@ def build_read_shard_phase(stage: CompiledStage, archive_target: Path) -> JsonOb
     return phase_document(builder, archive_target)
 
 
+def game_time_delay_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    *,
+    days: int,
+    hours: int,
+    minutes: int,
+    seconds: int,
+) -> GraphNode:
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questGameTimeDelay_ConditionType",
+            "days": days,
+            "hours": hours,
+            "minutes": minutes,
+            "seconds": seconds,
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questTimeCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def build_time_gate_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    delay = game_time_delay_node(
+        builder,
+        10,
+        days=stage.data.get("days", 0),
+        hours=stage.data.get("hours", 0),
+        minutes=stage.data.get("minutes", 0),
+        seconds=stage.data.get("seconds", 0),
+    )
+    builder.connect(start, delay, destination_socket="In")
+    previous: GraphNode = delay
+    if stage.data.get("completion_fact"):
+        completed = fact_node(builder, 11, stage.data["completion_fact"])
+        builder.connect(previous, completed)
+        previous = completed
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
 def scan_started_node(
     builder: PhaseGraphBuilder, quest_id: int, object_ref: str
 ) -> GraphNode:
@@ -2306,6 +2598,8 @@ def build_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         result = build_interact_device_phase(stage, archive_target)
     elif stage.type == "combat_encounter" and not stage.data.get("phase_template"):
         result = build_combat_encounter_phase(stage, archive_target)
+    elif stage.type == "time_gate" and not stage.data.get("phase_template"):
+        result = build_time_gate_phase(stage, archive_target)
     else:
         result = instantiate_stage_phase(stage, archive_target)
     validate_handle_graph(result, context=f"Stage {stage.id}")

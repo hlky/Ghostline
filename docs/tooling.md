@@ -190,6 +190,18 @@ validation. Other indexed categories remain preview-only.
 
 ## Questphase Explorer
 
+### World Asset Catalog
+
+`tools/world_asset_catalog.py` discovers reusable world families in extracted
+binary streaming sectors, serializes a deterministic bounded candidate set
+with WolvenKit, builds a normalized placement catalog, and performs safe
+deterministic selection by category, tag, district, area, radius, and seed.
+Default selection excludes every record not explicitly reviewed as accessible
+and quest-safe.
+
+See `docs/world-asset-catalog.md` for the discovery/build/curation workflow,
+the generated coverage summary, and test-quest selection examples.
+
 ### Vanilla Quest Reference
 
 `tools/build_quest_reference.py` reads IGN's Main Jobs, Side Jobs, and Gigs
@@ -214,10 +226,10 @@ deterministic orchestration questphase, instantiated child questphases, and a
 normalized build plan. Simple objective, item, shard, and phone blocks are
 generated directly. Meeting, hacking, delivery, device, combat, investigation,
 branching, escort, carry, and vehicle blocks use reduced raw CR2W-JSON
-templates with strict scalar bindings. The eight reusable complex blocks have
-compiler-owned default templates, so normal manifests do not expose template
-placeholders. Scene, world, journal, localization, community AI, and device
-placement remain separate stage-owned build products.
+templates with strict scalar bindings. Nineteen reusable template-backed
+blocks have compiler-owned defaults, so normal manifests do not expose
+template placeholders. Scene, world, journal, localization, community AI, and
+device placement remain separate stage-owned build products.
 
 ```powershell
 py -B .\tools\quest_compiler.py validate `

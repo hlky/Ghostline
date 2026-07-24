@@ -780,28 +780,60 @@ world-reference notes, and packaging instructions now live in focused docs:
   preserves the machine-readable IGN URL to journal hash/path mapping.
   Objective text, phase paths, map pins, and inferred reusable building blocks
   can now be searched before opening the corresponding vanilla CR2W resources.
-- Typed schema v1 now defines twelve additional reusable blocks:
+- Typed schema v1 now defines twenty-three additional reusable blocks:
   `reach_area`, `leave_area`, `acquire_item`, `read_shard`,
   `interact_device`, `combat_encounter`, `investigate_clues`,
   `optional_condition`, `choice_gate`, `escort_npc`, `carry_npc`, and
-  `deliver_vehicle`. The first four have deterministic compiler-generated
-  child graphs and handle-integrity tests. The remaining eight use strict raw
+  `deliver_vehicle`, `time_gate`, `read_terminal_document`,
+  `stealth_monitor`, `plant_item`, `defend_target`,
+  `release_or_rescue_npc`, `enter_vehicle`, `ride_with_contact`, `drive_to`,
+  `steal_vehicle`, and `vehicle_cleanup`. The direct blocks have deterministic compiler-generated
+  child graphs and handle-integrity tests. Nineteen blocks use strict raw
   phase-template contracts because their device, AI, branching, carry, and
   vehicle behavior must retain proven engine topology. A targeted 28-phase
   vanilla CR2W/JSON corpus with depot-path provenance is stored under
   `reference/vanilla_quest_blocks` to support reducing and validating those
-  templates. All eight reduced templates are now checked in under
+  templates. All nineteen reduced templates are now checked in under
   `source/raw/mod/ghostline/quest_blocks/templates`, resolve automatically
   from ordinary typed manifests, and retain explicit custom-template
-  overrides for advanced variants. The four-stage direct and eight-stage
-  template acceptance quests compile with no planned stages. Their 14 total
+  overrides for advanced variants. The original four-stage direct and
+  eight-stage template acceptance quests compile with no planned stages.
+  Their 14 total
   orchestration/child resources passed WolvenKit deserialize/serialize
   round trips, with evidence at
   `H:\Ghostline-audits\quest-building-blocks-direct-20260723` and
   `H:\Ghostline-audits\quest-building-blocks-template-20260723`. Compiler,
   schema, generator-exact, binding, and handle tests pass as part of the
-  141-test regression suite. Template-backed blocks remain structurally
+  full regression suite. Template-backed blocks remain structurally
   validated rather than in-game runtime-proven until used by a playable quest.
+- The higher-order vanilla extraction now includes
+  `reference/vanilla_quest_blocks`: `sq021_randys_room` for
+  `read_terminal_document`, `sq011_concert`/`sq011_follow_up` for
+  `time_gate`, and the existing complete `sts_wbr_jpn_03` pair for
+  `stealth_monitor`. The extracted evidence establishes that terminal reads
+  are computer-graph outputs routed into a dedicated fact, elapsed game time
+  is a standalone `questGameTimeDelay_ConditionType` gate, and stealth failure
+  must be monitored in parallel with the main flow. Exact nodes, proposed
+  contracts, and reduction boundaries are recorded in
+  `reference/vanilla_quest_blocks/EXTRACTION-NOTES.md`. They are joined by
+  `plant_item`, `defend_target`, `release_or_rescue_npc`, expanded
+  `escort_npc`, and five vehicle lifecycle templates. `time_gate` is
+  compiler-generated; the other advanced blocks have strict typed contracts
+  and Ghostline-owned raw templates. All eleven advanced templates pass
+  handle validation and WolvenKit 8.17.4 deserialize/serialize round trips.
+  They remain structurally validated rather than in-game runtime-proven.
+- Reusable world-location discovery now has an exhaustive binary-sector pass,
+  a deterministic WolvenKit serialization stage, a normalized placement
+  catalog, and a separate runtime curation layer. The v1 discovery accounts
+  for 15,859 of 23,691 extracted exterior sectors across terminals, access
+  points, antennas, doors/restraints, plant targets, drop points, loot
+  anchors, and vehicles. The bounded detailed catalog contains 10,055
+  placements from 760 serialized sectors and supports seeded filtering by
+  category, capability tag, district, area, and radius. Default selection
+  requires both accessibility and quest safety to be runtime verified; known
+  vanilla-owned devices remain searchable but ineligible. The schemas,
+  commands, current coverage, and test-quest routing are documented in
+  `docs/world-asset-catalog.md`.
 
 ### 5. Validate Audio Packaging
 

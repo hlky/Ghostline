@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ghostline.local/schemas/world-asset-catalog-v1.json",
+  "title": "Ghostline world asset catalog",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "summary", "assets"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_by": {"type": "string"},
+    "summary": {"type": "object"},
+    "curation": {"type": "string"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "categories",
+          "tags",
+          "sector",
+          "node_type",
+          "position",
+          "review",
+          "selection_eligible"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+          "categories": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "terminal",
+                "access_point",
+                "antenna",
+                "door_lock",
+                "plant_target",
+                "drop_point",
+                "loot_anchor",
+                "vehicle"
+              ]
+            }
+          },
+          "tags": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string"}
+          },
+          "resource": {"type": "string"},
+          "sector": {"type": "string"},
+          "node_type": {"type": "string"},
+          "node_ref": {"type": "string"},
+          "position": {
+            "oneOf": [
+              {"type": "null"},
+              {
+                "type": "object",
+                "required": ["x", "y", "z"],
+                "properties": {
+                  "x": {"type": "number"},
+                  "y": {"type": "number"},
+                  "z": {"type": "number"}
+                }
+              }
+            ]
+          },
+          "review": {
+            "type": "object",
+            "required": ["accessibility", "quest_safety", "interior"],
+            "properties": {
+              "accessibility": {"enum": ["unvetted", "verified", "rejected"]},
+              "quest_safety": {"enum": ["unvetted", "verified", "rejected"]},
+              "interior": {"type": "string"},
+              "notes": {"type": "string"}
+            }
+          },
+          "selection_eligible": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

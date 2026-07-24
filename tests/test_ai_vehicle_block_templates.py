@@ -14,6 +14,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 import generate_ai_vehicle_block_templates as templates
+import generate_advanced_quest_block_templates as advanced_templates
 import quest_compiler
 
 
@@ -61,14 +62,16 @@ class AiVehicleBlockTemplateTests(unittest.TestCase):
             quest_compiler.validate_handle_graph(document, context=name)
 
     def test_escort_uses_named_npc_trigger_gates(self):
-        document = templates.build_escort()
+        document = advanced_templates.build_escort()
         types = data_types(document)
         values = scalars(document)
-        self.assertEqual(types.count("questTriggerCondition"), 2)
-        self.assertIn(templates.COMMUNITY, values)
-        self.assertIn(templates.ENTRY, values)
-        self.assertIn(templates.DESTINATION_1, values)
-        self.assertIn(templates.DESTINATION_2, values)
+        self.assertEqual(types.count("questTriggerCondition"), 3)
+        self.assertIn(advanced_templates.COMMUNITY, values)
+        self.assertIn(advanced_templates.ENTRY, values)
+        self.assertIn(advanced_templates.DESTINATION_1, values)
+        self.assertIn(advanced_templates.DESTINATION_2, values)
+        self.assertIn(advanced_templates.DESTINATION_3, values)
+        self.assertIn("questPuppetAIManagerNodeDefinition", types)
         trigger_conditions = [
             value
             for value in walk(document)
@@ -81,7 +84,7 @@ class AiVehicleBlockTemplateTests(unittest.TestCase):
         self.assertTrue(
             all(
                 condition["activatorRef"]["names"][0]["$value"]
-                == templates.ENTRY
+                == advanced_templates.ENTRY
                 for condition in trigger_conditions
             )
         )

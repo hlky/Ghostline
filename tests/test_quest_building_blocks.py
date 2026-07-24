@@ -100,8 +100,13 @@ def stage(stage_type: str) -> dict:
             "phase_template": TEMPLATE,
             "community": "#test_community",
             "entry": "escort",
-            "destinations": ["#test_destination_a", "#test_destination_b"],
+            "destinations": [
+                "#test_destination_a",
+                "#test_destination_b",
+                "#test_destination_c",
+            ],
             "objective": OBJECTIVE,
+            "completion_fact": "test_escort_complete",
         },
         "carry_npc": {
             "phase_template": TEMPLATE,
@@ -115,6 +120,77 @@ def stage(stage_type: str) -> dict:
             "vehicle": "#test_vehicle",
             "destination": "#test_destination",
             "objective": OBJECTIVE,
+        },
+        "time_gate": {
+            "days": 1,
+            "hours": 2,
+            "minutes": 3,
+            "seconds": 4,
+            "completion_fact": "test_time_gate_complete",
+        },
+        "read_terminal_document": {
+            "computer": "#test_computer",
+            "scene": r"mod\test\computer.scene",
+            "output_socket": "document_read",
+            "document_entry": "internet_sites/test/document",
+            "completion_fact": "test_document_read",
+            "objective": OBJECTIVE,
+        },
+        "stealth_monitor": {
+            "objective": OBJECTIVE,
+            "failure_fact": "test_stealth_failed",
+            "success_fact": "test_stealth_succeeded",
+            "stop_fact": "test_stealth_stop",
+        },
+        "plant_item": {
+            "item": "Items.test_tracker",
+            "device": "#test_target",
+            "controller_class": "DeviceControllerPS",
+            "action": "PlantTracker",
+            "completion_function": "WasTrackerPlanted",
+            "completion_fact": "test_tracker_planted",
+            "objective": OBJECTIVE,
+        },
+        "defend_target": {
+            "community": "#test_allies",
+            "entry": "protected",
+            "completion_fact": "test_defense_complete",
+            "failure_fact": "test_target_failed",
+            "objective": OBJECTIVE,
+        },
+        "release_or_rescue_npc": {
+            "community": "#test_prisoners",
+            "entry": "rescued",
+            "device": "#test_lock",
+            "controller_class": "DoorControllerPS",
+            "action": "QuestForceUnlock",
+            "completion_function": "IsUnlocked",
+            "completion_fact": "test_rescue_complete",
+            "objective": OBJECTIVE,
+        },
+        "enter_vehicle": {
+            "vehicle": "#test_vehicle",
+            "objective": OBJECTIVE,
+        },
+        "ride_with_contact": {
+            "vehicle": "#test_vehicle",
+            "contact_community": "#test_contacts",
+            "contact_entry": "driver",
+            "objective": OBJECTIVE,
+        },
+        "drive_to": {
+            "vehicle": "#test_vehicle",
+            "destination": "#test_drive_destination",
+            "completion_fact": "test_drive_complete",
+            "objective": OBJECTIVE,
+        },
+        "steal_vehicle": {
+            "vehicle": "#test_vehicle",
+            "objective": OBJECTIVE,
+        },
+        "vehicle_cleanup": {
+            "player_vehicle_record": "Vehicle.test_vehicle",
+            "completion_fact": "test_vehicle_cleanup",
         },
     }
     common.update(values[stage_type])
@@ -136,6 +212,17 @@ BUILDING_BLOCK_TYPES = tuple(
         "escort_npc",
         "carry_npc",
         "deliver_vehicle",
+        "time_gate",
+        "read_terminal_document",
+        "stealth_monitor",
+        "plant_item",
+        "defend_target",
+        "release_or_rescue_npc",
+        "enter_vehicle",
+        "ride_with_contact",
+        "drive_to",
+        "steal_vehicle",
+        "vehicle_cleanup",
     )
 )
 
@@ -163,7 +250,7 @@ class QuestBuildingBlockTests(unittest.TestCase):
             self.write_manifest(Path(temporary.name), stages)
         )
 
-    def test_all_twelve_minimal_manifests_validate(self) -> None:
+    def test_all_minimal_manifests_validate(self) -> None:
         for stage_type in BUILDING_BLOCK_TYPES:
             with self.subTest(stage_type=stage_type):
                 spec, diagnostics = self.load([stage(stage_type)])
@@ -190,7 +277,7 @@ class QuestBuildingBlockTests(unittest.TestCase):
     def test_complex_blocks_resolve_builtin_templates(self) -> None:
         for stage_type in sorted(quest_compiler.TEMPLATE_REQUIRED_STAGE_TYPES):
             value = stage(stage_type)
-            del value["phase_template"]
+            value.pop("phase_template", None)
             with self.subTest(stage_type=stage_type):
                 spec, diagnostics = self.load([value])
                 self.assertIsNotNone(
@@ -201,6 +288,27 @@ class QuestBuildingBlockTests(unittest.TestCase):
                 self.assertEqual(
                     quest_compiler.stage_template_resource(spec.stages[0]),
                     quest_compiler.BUILTIN_TEMPLATE_RESOURCES[stage_type],
+                )
+
+    def test_every_builtin_template_instantiates_without_placeholders(self) -> None:
+        for stage_type in sorted(quest_compiler.TEMPLATE_REQUIRED_STAGE_TYPES):
+            value = stage(stage_type)
+            value.pop("phase_template", None)
+            with self.subTest(stage_type=stage_type):
+                spec, diagnostics = self.load([value])
+                self.assertIsNotNone(
+                    spec,
+                    [diagnostic.as_dict() for diagnostic in diagnostics],
+                )
+                assert spec is not None
+                child = quest_compiler.build_stage_phase(
+                    spec.stages[0],
+                    ROOT / "generated/block-debug" / f"{stage_type}.questphase",
+                )
+                encoded = json.dumps(child)
+                self.assertNotIn("{{", encoded)
+                quest_compiler.validate_handle_graph(
+                    child, context=stage_type
                 )
 
     def test_builtin_templates_reject_fields_their_graph_does_not_implement(
@@ -232,7 +340,7 @@ class QuestBuildingBlockTests(unittest.TestCase):
         )
         self.assertEqual(schema_types, quest_compiler.SUPPORTED_STAGE_TYPES)
 
-    def test_all_twelve_minimal_manifests_match_json_schema(self) -> None:
+    def test_all_minimal_manifests_match_json_schema(self) -> None:
         schema = json.loads(
             (ROOT / "tools/quest-schema-v1.json").read_text(encoding="utf-8")
         )
@@ -320,6 +428,34 @@ class QuestBuildingBlockTests(unittest.TestCase):
             ),
         )
 
+    def test_time_gate_uses_elapsed_game_time_and_optional_completion_fact(self) -> None:
+        self.assert_direct_phase(
+            "time_gate",
+            (
+                "questGameTimeDelay_ConditionType",
+                '"days": 1',
+                '"hours": 2',
+                '"minutes": 3',
+                '"seconds": 4',
+                "test_time_gate_complete",
+            ),
+        )
+
+    def test_time_gate_rejects_empty_or_negative_durations(self) -> None:
+        value = stage("time_gate")
+        value.update({"days": 0, "hours": 0, "minutes": 0, "seconds": 0})
+        spec, diagnostics = self.load([value])
+        self.assertIsNone(spec)
+        self.assertIn("empty_time_gate", {item.code for item in diagnostics})
+
+        value["seconds"] = -1
+        spec, diagnostics = self.load([value])
+        self.assertIsNone(spec)
+        self.assertIn(
+            "invalid_time_gate_duration",
+            {item.code for item in diagnostics},
+        )
+
     def test_investigate_clues_generates_variable_ordered_scan_flow(self) -> None:
         value = stage("investigate_clues")
         value.pop("phase_template")
@@ -386,6 +522,7 @@ class QuestBuildingBlockTests(unittest.TestCase):
             "acquire_item",
             "read_shard",
             "investigate_clues",
+            "time_gate",
         ):
             with self.subTest(stage_type=stage_type):
                 value = stage(stage_type)

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "annotations": {
+    "$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y": {
+      "accessibility": "verified",
+      "quest_safety": "verified",
+      "interior": "exterior",
+      "add_tags": [
+        "runtime_verified",
+        "native_interaction_reusable"
+      ],
+      "notes": "Runtime-proven Ghostline delivery target. Reuse the native reservation target with a quest-owned static mappin."
+    },
+    "$/03_night_city/c_watson/kabuki/loc_sts_wat_kab_101_slums_prefabTADN6HA/loc_sts_wat_kab_101_slums_gameplay_prefabOPIWFHA/loc_sts_wat_kab_101_slums_devices_prefab3DMUFNQ/#kab_101_dvc_ap_001": {
+      "accessibility": "verified",
+      "quest_safety": "rejected",
+      "interior": "exterior",
+      "add_tags": [
+        "runtime_verified"
+      ],
+      "notes": "Publicly reachable and natively hackable, but owned by sts_wat_kab_101; retain as a reference, not a default random target."
+    },
+    "$/03_night_city/c_watson/kabuki/loc_sts_wat_kab_101_slums_prefabTADN6HA/loc_sts_wat_kab_101_slums_gameplay_prefabOPIWFHA/loc_sts_wat_kab_101_slums_loot_prefabY5AWMTA/weapon_case_small_prefab6VB65NQ": {
+      "accessibility": "verified",
+      "quest_safety": "verified",
+      "interior": "exterior",
+      "add_tags": [
+        "runtime_verified",
+        "coordinate_anchor_only"
+      ],
+      "notes": "Runtime-inspected walkable loot location. Safe as a nearby coordinate/staging anchor; do not repurpose or mutate the vanilla container."
+    }
+  },
+  "warnings": [
+    "Unreviewed assets are discovery candidates only. Default selection requires both accessibility and quest_safety to be verified."
+  ]
+}

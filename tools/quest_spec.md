@@ -36,14 +36,25 @@ an editor or an optional schema library.
 | `investigate_clues` | generated | `objective`, `description_entry`, `clues` |
 | `optional_condition` | template | `objective`, `condition`, `success_fact`, `failure_fact`, `evaluation` |
 | `choice_gate` | template | `gate_kind`, `branches`, `join` |
-| `escort_npc` | template | `community`, `entry`, `destinations`, `objective` |
+| `escort_npc` | template | `community`, `entry`, three `destinations`, `objective`, `completion_fact` |
 | `carry_npc` | template | `community`, `entry`, `destination`, `objective` |
 | `deliver_vehicle` | template | `vehicle`, `destination`, `objective` |
+| `time_gate` | generated | A non-zero combination of `days`, `hours`, `minutes`, and `seconds`; optional `completion_fact` |
+| `read_terminal_document` | template | `computer`, `scene`, `output_socket`, `completion_fact`, `objective` |
+| `stealth_monitor` | template | `objective`, `failure_fact`, `success_fact`, `stop_fact` |
+| `plant_item` | template | `item`, device action/condition fields, `completion_fact`, `objective` |
+| `defend_target` | template | `community`, `entry`, `completion_fact`, `failure_fact`, `objective` |
+| `release_or_rescue_npc` | template | target fields, device action/condition fields, `completion_fact`, `objective` |
+| `enter_vehicle` | template | `vehicle`, `objective` |
+| `ride_with_contact` | template | `vehicle`, `contact_community`, `contact_entry`, `objective` |
+| `drive_to` | template | `vehicle`, `destination`, `completion_fact`, `objective` |
+| `steal_vehicle` | template | `vehicle`, `objective` |
+| `vehicle_cleanup` | template | `player_vehicle_record`, `completion_fact` |
 
 `generated` means the compiler constructs the complete child graph from typed
 fields. `template` means it resolves a reduced raw CR2W-JSON template,
 performs exact scalar replacement, validates the handle graph, and checks the
-typed contract after instantiation. The eight new complex blocks resolve
+typed contract after instantiation. The eleven advanced complex blocks resolve
 Ghostline-owned built-in templates automatically; authors normally provide
 only the typed fields shown above. An explicit `phase_template` plus
 `template_bindings` can override the built-in for an advanced shape.
@@ -73,10 +84,22 @@ The remaining built-in template shapes are intentionally narrow:
 
 - optional condition is one fact evaluated when the block is reached;
 - choice is two fact-backed branches that reconverge;
-- escort observes one named entry through exactly two ordered trigger gates;
+- escort sets one named companion to gameplay AI and observes exactly three
+  ordered trigger gates;
 - carrying requires the named NPC mounted to V inside a destination trigger;
 - vehicle delivery requires the vehicle inside a destination trigger and
   stopped.
+
+`read_terminal_document` waits on `completion_fact`. The authored computer
+scene named by `scene` must expose `output_socket` and route it to that fact;
+the phase cannot infer a read from generic journal state.
+
+`stealth_monitor` and `defend_target` race explicit success/stop and failure
+signals and preserve the result. Their surrounding encounter owns those
+signals. The vehicle lifecycle is split into mounting, riding with a contact,
+driving to a trigger, stealing by mounting, and player-vehicle cleanup.
+`vehicle_cleanup` uses the `sq031_porsche` player-vehicle record shape and is
+not a generic despawner for arbitrary world NodeRefs.
 
 `investigate_clues` accepts any positive number of ordered clues. Each clue
 has its own object reference and may set a fact, activate a map pin, or reveal
@@ -118,8 +141,9 @@ authoring example.
 
 `source/quests/examples/direct_building_blocks.quest.json` compiles all four
 generated blocks. `source/quests/examples/template_building_blocks.quest.json`
-compiles all eight built-in template blocks without author-written template
-paths or placeholder maps.
+compiles the original eight building-block stages without author-written
+template paths or placeholder maps. The advanced-template regression suite
+instantiates every built-in template, including the eleven advanced blocks.
 
 The orchestration layer remains intentionally linear. `choice_gate` is a
 converging child block: its alternatives must rejoin before `Out1`.

@@ -5,8 +5,6 @@ These templates deliberately retain the condition shapes used by the audited
 vanilla references while removing quest-specific scenes, facts, and cleanup.
 They are orchestration templates:
 
-* ``escort_npc`` waits for a named community entry to cross two route gates.
-  The companion's follow/patrol behaviour remains world/community authored.
 * ``carry_npc`` waits for the named entry to be mounted to the player and then
   carried inside the destination trigger.
 * ``deliver_vehicle`` waits for the referenced vehicle to enter the delivery
@@ -328,7 +326,6 @@ def build_deliver_vehicle() -> JsonObject:
 
 
 BUILDERS = {
-    "escort_npc": build_escort,
     "carry_npc": build_carry,
     "deliver_vehicle": build_deliver_vehicle,
 }

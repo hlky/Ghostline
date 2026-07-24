@@ -1,0 +1,1100 @@
+{
+  "Header": {
+    "WolvenKitVersion": "8.17.4",
+    "WKitJsonVersion": "0.0.9",
+    "GameVersion": 2310,
+    "ExportedDateTime": "2026-07-24T10:09:04.6416734Z",
+    "DataType": "CR2W",
+    "ArchiveFileName": "H:\\projects\\Ghostline\\.tmp\\expanded-block-extract\\base\\quest\\side_quests\\sq004\\phases\\combat\\sq004_drones.questphase"
+  },
+  "Data": {
+    "Version": 195,
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "questQuestPhaseResource",
+      "cookingPlatform": "PLATFORM_PC",
+      "graph": {
+        "HandleId": "0",
+        "Data": {
+          "$type": "questGraphDefinition",
+          "nodes": [
+            {
+              "HandleId": "1",
+              "Data": {
+                "$type": "questInputNodeDefinition",
+                "id": 0,
+                "socketName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "In1"
+                },
+                "sockets": [
+                  {
+                    "HandleId": "2",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleId": "3",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "4",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "5",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "4"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "3"
+                            }
+                          }
+                        },
+                        {
+                          "HandleId": "6",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "7",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "6"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "3"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "8",
+              "Data": {
+                "$type": "questPauseConditionNodeDefinition",
+                "condition": {
+                  "HandleId": "9",
+                  "Data": {
+                    "$type": "questCharacterCondition",
+                    "type": {
+                      "HandleId": "10",
+                      "Data": {
+                        "$type": "questCharacterSpawned_ConditionType",
+                        "comparisonParams": {
+                          "HandleId": "11",
+                          "Data": {
+                            "$type": "questComparisonParam",
+                            "comparisonType": "Greater",
+                            "count": 0,
+                            "entireCommunity": 1
+                          }
+                        },
+                        "objectRef": {
+                          "$type": "gameEntityReference",
+                          "dynamicEntityUniqueName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "names": [],
+                          "reference": {
+                            "$type": "NodeRef",
+                            "$storage": "string",
+                            "$value": "#sq004_spwn_raffen_shiv_drone_01"
+                          },
+                          "sceneActorContextName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "slotName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "type": "EntityRef"
+                        }
+                      }
+                    }
+                  }
+                },
+                "id": 130,
+                "sockets": [
+                  {
+                    "HandleId": "12",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleId": "13",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "14",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleRefId": "13"
+                            },
+                            "source": {
+                              "HandleId": "15",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "14"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "Out"
+                                },
+                                "type": "Output"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "In"
+                      },
+                      "type": "Input"
+                    }
+                  },
+                  {
+                    "HandleId": "16",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "17",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "18",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "17"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "16"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "19",
+              "Data": {
+                "$type": "questPauseConditionNodeDefinition",
+                "condition": {
+                  "HandleId": "20",
+                  "Data": {
+                    "$type": "questCharacterCondition",
+                    "type": {
+                      "HandleId": "21",
+                      "Data": {
+                        "$type": "questCharacterSpawned_ConditionType",
+                        "comparisonParams": {
+                          "HandleId": "22",
+                          "Data": {
+                            "$type": "questComparisonParam",
+                            "comparisonType": "Greater",
+                            "count": 0,
+                            "entireCommunity": 1
+                          }
+                        },
+                        "objectRef": {
+                          "$type": "gameEntityReference",
+                          "dynamicEntityUniqueName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "names": [],
+                          "reference": {
+                            "$type": "NodeRef",
+                            "$storage": "string",
+                            "$value": "#sq004_spwn_raffen_shiv_drone_02"
+                          },
+                          "sceneActorContextName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "slotName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "type": "EntityRef"
+                        }
+                      }
+                    }
+                  }
+                },
+                "id": 133,
+                "sockets": [
+                  {
+                    "HandleId": "23",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleId": "24",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "25",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleRefId": "24"
+                            },
+                            "source": {
+                              "HandleId": "26",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "25"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "Out"
+                                },
+                                "type": "Output"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "In"
+                      },
+                      "type": "Input"
+                    }
+                  },
+                  {
+                    "HandleId": "27",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "28",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "29",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "28"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "27"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "30",
+              "Data": {
+                "$type": "questMovePuppetNodeDefinition",
+                "entityReference": {
+                  "$type": "gameEntityReference",
+                  "dynamicEntityUniqueName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "names": [],
+                  "reference": {
+                    "$type": "NodeRef",
+                    "$storage": "string",
+                    "$value": "#sq004_spwn_raffen_shiv_drone_01"
+                  },
+                  "sceneActorContextName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "slotName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "type": "EntityRef"
+                },
+                "id": 135,
+                "moveType": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "questMoveOnSplineParams"
+                },
+                "nodeParams": {
+                  "HandleId": "31",
+                  "Data": {
+                    "$type": "questMoveOnSplineParams",
+                    "additionalParams": {
+                      "HandleId": "32",
+                      "Data": {
+                        "$type": "questMoveOnSplineAdditionalParams",
+                        "animParams": {
+                          "$type": "questAnimMoveOnSplineParams",
+                          "blendTime": 0,
+                          "controllersSetupName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "Walk"
+                          },
+                          "customMainAnimationName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "customStartAnimationName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "customStopAnimationName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "globalInBlendTime": 0,
+                          "globalOutBlendTime": 0,
+                          "mainSnapToTerrain": 0,
+                          "startSnapToTerrain": 0,
+                          "startSnapToTerrainBlendTime": 0,
+                          "stopSnapToTerrain": 0,
+                          "stopSnapToTerrainBlendTime": 0,
+                          "turnCharacterToMatchVelocity": 0
+                        },
+                        "simpleParams": {
+                          "$type": "questSimpleMoveOnSplineParams",
+                          "allowCrowdOnPath": 0,
+                          "facingTargetRef": {
+                            "HandleId": "33",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 0
+                            }
+                          },
+                          "movementType": "Walk",
+                          "rotateEntityTowardsFacingTarget": 0,
+                          "snapToTerrain": 1,
+                          "useOffMeshLinkReservation": 0
+                        },
+                        "type": "Simple",
+                        "withCompanionParams": {
+                          "$type": "questWithCompanionMoveOnSplineParams",
+                          "catchUpWithCompanion": 1,
+                          "companionDistancePreset": "Medium",
+                          "companionPosition": "Behind",
+                          "companionRef": {
+                            "HandleId": "34",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 1
+                            }
+                          },
+                          "facingTargetRef": null,
+                          "ignoreLineOfSightCheck": 0,
+                          "ignoreNavigation": 0,
+                          "interruptCapability": "NotInterruptable",
+                          "lookAtTargetRef": {
+                            "HandleId": "35",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 1
+                            }
+                          },
+                          "maxCompanionDistanceOnSpline": 0,
+                          "maxSearchAngle": 60,
+                          "minSearchAngle": 22.5,
+                          "movementType": {
+                            "$type": "AIMovementTypeSpec",
+                            "movementType": "Walk",
+                            "useNPCMovementParams": 1
+                          },
+                          "rotateEntityTowardsFacingTarget": 0,
+                          "shootingTargetRef": {
+                            "HandleId": "36",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 1
+                            }
+                          },
+                          "snapToTerrain": 0,
+                          "teleportToCompanion": 1,
+                          "useMatchForSpeedForPlayer": 0,
+                          "useOffMeshLinkReservation": 0
+                        }
+                      }
+                    },
+                    "alwaysUseStealth": 0,
+                    "disableFootIK": 0,
+                    "executeWhileDespawned": 1,
+                    "ignoreInCombat": 0,
+                    "noWaitToEndCompanionDistance": 5,
+                    "noWaitToEndDistance": 10,
+                    "removeAfterCombat": 0,
+                    "repeatCommandOnInterrupt": 1,
+                    "reverse": 0,
+                    "splineNodeRef": {
+                      "$type": "NodeRef",
+                      "$storage": "string",
+                      "$value": "#sq004_spl_raffen_shiv_drone_01"
+                    },
+                    "splineRecalculation": 1,
+                    "startFromClosestPoint": 0,
+                    "useAlertedState": 0,
+                    "useCombatState": 0,
+                    "useStart": 1,
+                    "useStop": 1
+                  }
+                },
+                "sockets": [
+                  {
+                    "HandleId": "37",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "18"
+                  },
+                  {
+                    "HandleId": "38",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "39",
+              "Data": {
+                "$type": "questMovePuppetNodeDefinition",
+                "entityReference": {
+                  "$type": "gameEntityReference",
+                  "dynamicEntityUniqueName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "names": [],
+                  "reference": {
+                    "$type": "NodeRef",
+                    "$storage": "string",
+                    "$value": "#sq004_spwn_raffen_shiv_drone_02"
+                  },
+                  "sceneActorContextName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "slotName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "type": "EntityRef"
+                },
+                "id": 136,
+                "moveType": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "questMoveOnSplineParams"
+                },
+                "nodeParams": {
+                  "HandleId": "40",
+                  "Data": {
+                    "$type": "questMoveOnSplineParams",
+                    "additionalParams": {
+                      "HandleId": "41",
+                      "Data": {
+                        "$type": "questMoveOnSplineAdditionalParams",
+                        "animParams": {
+                          "$type": "questAnimMoveOnSplineParams",
+                          "blendTime": 0,
+                          "controllersSetupName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "Walk"
+                          },
+                          "customMainAnimationName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "customStartAnimationName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "customStopAnimationName": {
+                            "$type": "CName",
+                            "$storage": "string",
+                            "$value": "None"
+                          },
+                          "globalInBlendTime": 0,
+                          "globalOutBlendTime": 0,
+                          "mainSnapToTerrain": 0,
+                          "startSnapToTerrain": 0,
+                          "startSnapToTerrainBlendTime": 0,
+                          "stopSnapToTerrain": 0,
+                          "stopSnapToTerrainBlendTime": 0,
+                          "turnCharacterToMatchVelocity": 0
+                        },
+                        "simpleParams": {
+                          "$type": "questSimpleMoveOnSplineParams",
+                          "allowCrowdOnPath": 0,
+                          "facingTargetRef": {
+                            "HandleId": "42",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 0
+                            }
+                          },
+                          "movementType": "Walk",
+                          "rotateEntityTowardsFacingTarget": 0,
+                          "snapToTerrain": 1,
+                          "useOffMeshLinkReservation": 0
+                        },
+                        "type": "Simple",
+                        "withCompanionParams": {
+                          "$type": "questWithCompanionMoveOnSplineParams",
+                          "catchUpWithCompanion": 1,
+                          "companionDistancePreset": "Medium",
+                          "companionPosition": "Behind",
+                          "companionRef": {
+                            "HandleId": "43",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 1
+                            }
+                          },
+                          "facingTargetRef": null,
+                          "ignoreLineOfSightCheck": 0,
+                          "ignoreNavigation": 0,
+                          "interruptCapability": "NotInterruptable",
+                          "lookAtTargetRef": {
+                            "HandleId": "44",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 1
+                            }
+                          },
+                          "maxCompanionDistanceOnSpline": 0,
+                          "maxSearchAngle": 60,
+                          "minSearchAngle": 22.5,
+                          "movementType": {
+                            "$type": "AIMovementTypeSpec",
+                            "movementType": "Walk",
+                            "useNPCMovementParams": 1
+                          },
+                          "rotateEntityTowardsFacingTarget": 0,
+                          "shootingTargetRef": {
+                            "HandleId": "45",
+                            "Data": {
+                              "$type": "questUniversalRef",
+                              "entityReference": {
+                                "$type": "gameEntityReference",
+                                "dynamicEntityUniqueName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "names": [],
+                                "reference": {
+                                  "$type": "NodeRef",
+                                  "$storage": "uint64",
+                                  "$value": "0"
+                                },
+                                "sceneActorContextName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "slotName": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "None"
+                                },
+                                "type": "EntityRef"
+                              },
+                              "mainPlayerObject": 0,
+                              "refLocalPlayer": 1
+                            }
+                          },
+                          "snapToTerrain": 0,
+                          "teleportToCompanion": 1,
+                          "useMatchForSpeedForPlayer": 0,
+                          "useOffMeshLinkReservation": 0
+                        }
+                      }
+                    },
+                    "alwaysUseStealth": 0,
+                    "disableFootIK": 0,
+                    "executeWhileDespawned": 1,
+                    "ignoreInCombat": 0,
+                    "noWaitToEndCompanionDistance": 5,
+                    "noWaitToEndDistance": 10,
+                    "removeAfterCombat": 0,
+                    "repeatCommandOnInterrupt": 1,
+                    "reverse": 0,
+                    "splineNodeRef": {
+                      "$type": "NodeRef",
+                      "$storage": "string",
+                      "$value": "#sq004_spl_raffen_shiv_drone_02"
+                    },
+                    "splineRecalculation": 1,
+                    "startFromClosestPoint": 0,
+                    "useAlertedState": 0,
+                    "useCombatState": 0,
+                    "useStart": 1,
+                    "useStop": 1
+                  }
+                },
+                "sockets": [
+                  {
+                    "HandleId": "46",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "29"
+                  },
+                  {
+                    "HandleId": "47",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "48",
+              "Data": {
+                "$type": "questSpawnManagerNodeDefinition",
+                "actions": [
+                  {
+                    "$type": "questSpawnManagerNodeActionEntry",
+                    "type": {
+                      "HandleId": "49",
+                      "Data": {
+                        "$type": "questSpawner_NodeType",
+                        "action": "Activate",
+                        "spawnerReference": {
+                          "$type": "NodeRef",
+                          "$storage": "string",
+                          "$value": "#sq004_spwn_raffen_shiv_drone_01"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "id": 139,
+                "sockets": [
+                  {
+                    "HandleId": "50",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "5"
+                  },
+                  {
+                    "HandleRefId": "15"
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "51",
+              "Data": {
+                "$type": "questSpawnManagerNodeDefinition",
+                "actions": [
+                  {
+                    "$type": "questSpawnManagerNodeActionEntry",
+                    "type": {
+                      "HandleId": "52",
+                      "Data": {
+                        "$type": "questSpawner_NodeType",
+                        "action": "Activate",
+                        "spawnerReference": {
+                          "$type": "NodeRef",
+                          "$storage": "string",
+                          "$value": "#sq004_spwn_raffen_shiv_drone_02"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "id": 140,
+                "sockets": [
+                  {
+                    "HandleId": "53",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "7"
+                  },
+                  {
+                    "HandleRefId": "26"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "inplacePhases": [],
+      "phasePrefabs": []
+    },
+    "EmbeddedFiles": []
+  }
+}
