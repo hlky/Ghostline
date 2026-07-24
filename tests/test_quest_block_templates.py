@@ -219,10 +219,12 @@ class QuestBlockTemplateTests(unittest.TestCase):
                 )
                 encoded = json.dumps(result)
                 self.assertNotIn("{{", encoded)
-                self.assertEqual(
-                    quest_compiler.stage_template_resource(stage),
-                    f"{TEMPLATE_DEPOT}\\{name}.questphase",
+                expected = (
+                    None
+                    if name in quest_compiler.DIRECT_STAGE_TYPES
+                    else f"{TEMPLATE_DEPOT}\\{name}.questphase"
                 )
+                self.assertEqual(quest_compiler.stage_template_resource(stage), expected)
 
     def test_template_placeholders_are_explicit_and_all_are_bound(self) -> None:
         for name, stage_value in template_stages().items():

@@ -4,8 +4,9 @@
 Ghostline quests. It compiles the linear orchestration graph and its child
 questphases. Runtime-proven meeting, hacking, and delivery phases are
 instantiated from raw CR2W-JSON templates with exact scalar bindings. Phone
-conversation phases are generated directly from typed fields. Scene, world,
-journal, and localization resources remain separate authored products.
+conversation, device interaction, combat, and variable-size investigation
+phases are generated directly from typed fields. Scene, world, journal, and
+localization resources remain separate authored products.
 
 This boundary makes a quest reviewable before every asset exists without
 pretending that a planned scene is playable. A `planned` stage is permitted by
@@ -26,13 +27,13 @@ an editor or an optional schema library.
 | `reach_area` | generated | `trigger`, `objective`, `description_entry`, `mappin` |
 | `leave_area` | generated | `trigger`, `objective`, `description_entry` |
 | `acquire_item` | generated | `item`, `source` |
-| `read_shard` | generated | `journal_entry`, `file_entry_index` |
+| `read_shard` | generated | `item`, `journal_entry`, `file_entry_index`; use `acquisition_fact` for readable shards that are consumed into the Journal and `presentation_delay_seconds` when the pickup overlay needs time |
 | `meet_contact` | template | `contact`, `scene`, `community`, `objective`, `description_entry`, `mappin` |
 | `hack_access_point` | template | `device`, `success_fact` |
 | `deliver_drop_point` | template | `item`, `drop_point`, `deposit_fact` |
-| `interact_device` | template | `device`, `controller_class`, `action`, `completion_function` |
-| `combat_encounter` | template | `community`, `hostility`, `completion` |
-| `investigate_clues` | template | `objective`, `description_entry`, `clues` |
+| `interact_device` | generated | `device`, `controller_class`, `action`, `completion_function` |
+| `combat_encounter` | generated | `community`, `entries`, `hostility`, `completion` |
+| `investigate_clues` | generated | `objective`, `description_entry`, `clues` |
 | `optional_condition` | template | `objective`, `condition`, `success_fact`, `failure_fact`, `evaluation` |
 | `choice_gate` | template | `gate_kind`, `branches`, `join` |
 | `escort_npc` | template | `community`, `entry`, `destinations`, `objective` |
@@ -68,10 +69,8 @@ topology while making quest-local facts, journal paths, scene paths, actor
 identities, NodeRefs, device actions, AI destinations, and completion state
 explicit.
 
-The built-in template shapes are intentionally narrow:
+The remaining built-in template shapes are intentionally narrow:
 
-- combat is an already-hostile whole community ending when all are defeated;
-- investigation is one required scan-started clue;
 - optional condition is one fact evaluated when the block is reached;
 - choice is two fact-backed branches that reconverge;
 - escort observes one named entry through exactly two ordered trigger gates;
@@ -79,14 +78,41 @@ The built-in template shapes are intentionally narrow:
 - vehicle delivery requires the vehicle inside a destination trigger and
   stopped.
 
+`investigate_clues` accepts any positive number of ordered clues. Each clue
+has its own object reference and may set a fact, activate a map pin, or reveal
+a journal entry; the generated phase joins every required scan before
+completing. A partial threshold (`required_count < clue count`) still requires
+an explicit custom phase because it changes the graph from an all-of join.
+
+`combat_encounter` activates the whole community, waits for its entries to
+spawn, injects the player as a combat threat for every named entry, waits until
+all are defeated, and optionally deactivates the community. This is the
+runtime-proven hostility pattern used by Ghostline's Tyger Claw encounter.
+
+`read_shard` deliberately completes from ownership of the readable item, not
+from a journal `visited` condition. Vanilla minor activities with objectives
+named `read_shard` (`ma_wat_lch_03`, `ma_wat_lch_05`, and `ma_wat_lch_15`)
+likewise use inventory, loot, or interaction state and do not wait for
+`questJournalEntryVisited_ConditionType`. The pickup-notification preview and
+the full Journal reader are separate UI paths; only the latter reliably sets
+the visited state. Computer pages and emails can use device/UI-specific
+progress signals and should be represented by a separate terminal-reading
+block rather than this inventory-shard block.
+
 Use an explicit custom template for broader variants. Companion movement AI,
 community/world placement, device setup, carry interactions, and vehicle
 spawning remain separate authored assets rather than hidden compiler behavior.
 
 Phone choices are objects with paired `choice` and `reply` journal paths. The
 generated graph activates the initial messages in order, waits on every choice
-branch, joins the selected reply, sends `final_message`, waits until it has
-been visited, optionally sets `completion_fact`, and exits through `Out1`.
+branch, optionally sets the choice's `set_fact`, joins the selected reply,
+sends `final_message`, waits until it has been visited, optionally sets
+`completion_fact`, and exits through `Out1`.
+An optional `opening_branches` array can insert fact-conditioned message
+sequences between the common opening messages and the response group. This is
+the generated pattern for outcome-specific debriefs: each branch contains a
+unique `condition` fact and one or more journal `messages`, and all branches
+reconverge before the shared choices.
 `source/quests/examples/phone_conversation.quest.json` is the standalone
 authoring example.
 

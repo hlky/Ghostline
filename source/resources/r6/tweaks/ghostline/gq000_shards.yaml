@@ -31,3 +31,19 @@ Items.gq000_datacache:
 # reward record that can be tuned independently later.
 QuestRewards.gq000_completion:
   $base: QuestRewards.sts_wat_kab_05_completion
+
+# Match GQ000's modest Kabuki side-job payout while keeping GQ002 independently
+# tunable.
+QuestRewards.gq002_completion:
+  $base: QuestRewards.sts_wat_kab_05_completion
+
+# GQ002's final relay scan grants a real readable shard so the player receives
+# the normal acquisition notification before the separate read objective.
+Items.GhostlineHostageCircuit:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: Items.GhostlineHostageCircuit_inline0
+  localizedName: gl_gq002_shard_hostage_circuit_title
+
+Items.GhostlineHostageCircuit_inline0:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq002/shards/hostage_circuit

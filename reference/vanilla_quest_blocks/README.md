@@ -24,10 +24,12 @@ are explicit, it round-trips through WolvenKit, and it passes an in-game test.
 | `carry_npc` | `sts_hey_rey_09_*` | Puppet mount/carry/drop-off conditions |
 | `deliver_vehicle` | `sts_wat_nid_02_*` | Vehicle state, destination, and handoff |
 
-The typed compiler treats these eight blocks as explicit `phase_template`
-contracts. It does not synthesize their native AI/device/vehicle graphs. The
-four simpler blocks (`reach_area`, `leave_area`, `acquire_item`, and
-`read_shard`) are generated directly and do not depend on this corpus.
+The typed compiler now generates `interact_device`, `combat_encounter`, and
+variable-size `investigate_clues` phases directly from typed fields. Their
+reduced templates remain here as provenance and regression fixtures. The five
+other complex blocks remain explicit `phase_template` contracts. The four
+simpler blocks (`reach_area`, `leave_area`, `acquire_item`, and `read_shard`)
+are also generated directly and do not depend on this corpus.
 
 ## Reduced Ghostline templates
 
@@ -41,9 +43,9 @@ deserialize/serialize round trip.
 
 | Template | Reduced behavior | Vanilla structural evidence | Current proof |
 | --- | --- | --- | --- |
-| `interact_device` | Send one device action and wait for one controller condition function | `sts_wat_lch_01_*`; Ghostline's runtime-proven cache access point | CR2W structural only as a generic controller/action |
-| `combat_encounter` | Activate an already-hostile whole community, wait for spawn, then wait until the whole community is defeated | `sts_wat_lch_01_combat` `questCharacterKilled_ConditionType`; Ghostline's guard community lifecycle | CR2W structural; Ghostline separately proves activation/aggression, but not this reduced completion graph |
-| `investigate_clues` | Activate objective/description, wait for one `Started` scan event, and complete the objective | `sts_wat_lch_01_openworld` `questScan_ConditionType`; `ma_wat_nid_15_phase` investigation flow | CR2W structural only |
+| `interact_device` | Send one device action and wait for one controller condition function | `sts_wat_lch_01_*`; Ghostline's runtime-proven cache access point | Direct generated block; generic action/condition combinations still need an in-game proof |
+| `combat_encounter` | Activate an already-hostile whole community, wait for spawn, inject V as a threat for each named entry, wait until all are defeated, then optionally clean up | `sts_wat_lch_01_combat` `questCharacterKilled_ConditionType`; Ghostline's runtime-proven forced-attack guard lifecycle | Direct generated block; GQ002 is the first full combined exercise |
+| `investigate_clues` | Activate objective/description and per-clue map pins, wait for every ordered `Started` scan event, reveal optional journal entries, then complete | `sts_wat_lch_01_openworld` `questScan_ConditionType`; `ma_wat_nid_15_phase` investigation flow | Direct variable-size generated block; GQ002 exercises three clues |
 | `optional_condition` | Evaluate one boolean fact at entry, set success or failure fact, converge, complete objective | `sts_wbr_jpn_03_*` optional outcome facts | CR2W structural only; supports `at_exit`-style fact evaluation, not a parallel continuous monitor |
 | `choice_gate` | Wait on either of two fact conditions, set the selected branch fact, reconverge | vanilla fact-condition and logical-XOR patterns, including `sts_wat_kab_05_*` | CR2W structural only; exactly two fact branches |
 | `escort_npc` | Wait for one named community entry to cross two ordered destination triggers | `sts_wat_nid_03_*` and `sts_std_rcr_02_phase` NPC-trigger/patrol patterns | CR2W structural only; companion movement must be authored separately |
@@ -52,12 +54,12 @@ deserialize/serialize round trip.
 
 The limitations are intentional and should remain visible:
 
-- `combat_encounter` currently represents only
-  `already_hostile` + `all_defeated`. Neutral-to-hostile transitions and named
-  enemy lists require a variable-shape generator rather than scalar binding.
-- `investigate_clues` currently represents exactly one `scan Started` clue.
-  Multiple clues and `required_count < clue count` likewise require a
-  variable-shape generator.
+- `combat_encounter` currently represents only `already_hostile` +
+  `all_defeated`, but it does accept a variable-size named entry list.
+  Suspicion/escalation behavior and mixed friendly/hostile communities still
+  require a broader block.
+- `investigate_clues` accepts a variable-size clue list and requires all
+  listed clues. `required_count < clue count` still requires a custom phase.
 - `optional_condition` is a converging entry-time fact test. It does not claim
   to implement the schema's `continuous` evaluation.
 - `choice_gate` is exactly two fact-backed branches. Phone choices and scene
@@ -73,6 +75,23 @@ The limitations are intentional and should remain visible:
 - `deliver_vehicle` accepts a single vehicle NodeRef and a single destination
   trigger. It does not handle vehicle spawning, ownership, damage/failure,
   exit/unmount requirements, or post-delivery despawn.
+
+### Readable shard progression
+
+Vanilla evidence does not support treating the pickup-notification preview as
+a quest-readable event. The extracted phases for `ma_wat_lch_03`,
+`ma_wat_lch_05`, and `ma_wat_lch_15` all correspond to journal objectives
+named `read_shard`, but none contains
+`questJournalEntryVisited_ConditionType`. They advance from inventory, loot, or
+interaction state instead. Ghostline's generated `read_shard` block therefore
+uses readable-item ownership as its completion condition and leaves opening
+the shard as presentation.
+
+Computer pages and emails are a distinct device/UI flow. They can advance
+quests when opened, but that does not establish that an inventory shard's
+pickup-preview overlay emits the same event. A reusable terminal-document
+block should be isolated from a vanilla computer quest rather than folding
+that behavior into `read_shard`.
 
 Do not call these eight templates runtime-proven until an instantiated child
 phase has been packed, installed, and exercised in game. A successful CR2W

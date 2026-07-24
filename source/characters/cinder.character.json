@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "id": "cinder",
+  "display_name": "Cinder",
+  "namespace": "mod\\ghostline\\characters\\cinder",
+  "frame": "female_average",
+  "catalog": "source/characters/female-catalog.json",
+  "templates": {
+    "entity": "source/characters/templates/npv-female.ent.json",
+    "appearance": "source/characters/templates/npv-female.app.json",
+    "localization": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
+  },
+  "template_identity": {
+    "frame": "female_average",
+    "namespace": "tutorial\\npv\\your_female_character"
+  },
+  "template_assets": {
+    "source_root": "H:/projects/tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090/source/archive/tutorial/npv/your_female_character",
+    "source_depot_root": "tutorial\\npv\\your_female_character",
+    "dependency_globs": [
+      "body/textures/*.xbm",
+      "head/textures/*.xbm"
+    ]
+  },
+  "outputs": {
+    "entity_raw": "source/raw/mod/ghostline/characters/cinder/cinder.ent.json",
+    "appearance_raw": "source/raw/mod/ghostline/characters/cinder/cinder.app.json",
+    "localization_raw": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json",
+    "tweak": "source/resources/r6/tweaks/ghostline/character_cinder.yaml"
+  },
+  "entity": {
+    "file_name": "cinder.ent",
+    "root_appearance": "ghostline_cinder_default",
+    "appearance_name": "default",
+    "appearance_file": "cinder.app"
+  },
+  "appearance": {
+    "template_name": "casual",
+    "name": "default",
+    "selections": {
+      "hair": "tutorial_judy_variant",
+      "inner_torso": "tutorial_casual_tank",
+      "legs": "tutorial_casual_pants",
+      "feet": "tutorial_casual_boots"
+    },
+    "indexed_overrides": {
+      "inner_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t1_087_shirt__high_collar\\t1_087_pwa_shirt__high_collar.mesh",
+        "mesh_appearance": "black"
+      },
+      "legs": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\legs\\l1_087_pants__ninja\\l1_087_pwa_pants__ninja.mesh",
+        "mesh_appearance": "black"
+      }
+    }
+  },
+  "head": {
+    "blend_template": "H:/projects/tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090/source/raw/tutorial/npv/your_female_character/head/head_import.blend",
+    "morphtarget_source": "H:/projects/tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090/source/archive/tutorial/npv/your_female_character/head/morphtargets",
+    "mesh_source": "H:/projects/tutorial_npv_wolvenkit_2_3-8328-4-0-9-1778610090/source/archive/tutorial/npv/your_female_character/head",
+    "preview_morphtargets": [
+      "h0_000_pwa__morphs.morphtarget"
+    ],
+    "morphtargets": [
+      "h0_000_pwa__morphs.morphtarget",
+      "he_000_pwa__morphs.morphtarget",
+      "heb_000_pwa__morphs.morphtarget",
+      "ht_000_pwa__morphs.morphtarget"
+    ],
+    "shapes": {
+      "eyes": 6,
+      "nose": 10,
+      "mouth": 5,
+      "jaw": 15,
+      "ears": 8
+    }
+  },
+  "tweak": {
+    "record": "Character.GhostlineCinder",
+    "base": "Character.Quest_NPC_Base",
+    "display_name": "gq_npc_cinder",
+    "affiliation": "Factions.Ghostline",
+    "voice_tag": "gq_cinder"
+  },
+  "localization": {
+    "secondary_key": "gq_npc_cinder",
+    "female_variant": "Cinder",
+    "male_variant": ""
+  },
+  "requirements": {
+    "phantom_liberty": true
+  }
+}

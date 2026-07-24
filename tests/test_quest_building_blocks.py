@@ -67,8 +67,11 @@ def stage(stage_type: str) -> dict:
             "description_entry": DESCRIPTION,
         },
         "read_shard": {
+            "item": "Items.test_shard",
             "journal_entry": "onscreens/shards/test_shard",
             "file_entry_index": 1,
+            "acquisition_fact": "test_shard_acquired",
+            "presentation_delay_seconds": 3,
         },
         "investigate_clues": {
             "phase_template": TEMPLATE,
@@ -310,7 +313,62 @@ class QuestBuildingBlockTests(unittest.TestCase):
     def test_read_shard_direct_generator_is_deterministic_and_complete(self) -> None:
         self.assert_direct_phase(
             "read_shard",
-            ("questJournalEntryVisited_ConditionType", "onscreens/shards/test_shard"),
+            (
+                "questFactsDBCondition",
+                "test_shard_acquired",
+                "questRealtimeDelay_ConditionType",
+            ),
+        )
+
+    def test_investigate_clues_generates_variable_ordered_scan_flow(self) -> None:
+        value = stage("investigate_clues")
+        value.pop("phase_template")
+        value.update(
+            {
+                "clues": [
+                    {
+                        "id": "relay",
+                        "object_ref": "#test_clue_relay",
+                        "completion_fact": "test_clue_relay_scanned",
+                    },
+                    {
+                        "id": "medical",
+                        "object_ref": "#test_clue_medical",
+                        "journal_entry": "onscreens/emails/quests/minor_quest/test/shards/medical",
+                    },
+                    {
+                        "id": "backup",
+                        "object_ref": "#test_clue_backup",
+                        "mappin": MAPPIN,
+                    },
+                ],
+                "required_count": 3,
+                "completion_fact": "test_investigation_complete",
+            }
+        )
+        phase = self.build_direct(copy.deepcopy(value))
+        encoded = json.dumps(phase, sort_keys=True)
+        self.assertEqual(encoded.count("questScan_ConditionType"), 3)
+        self.assertNotIn("SetDefaultHighlightEvent", encoded)
+        for expected in (
+            "#test_clue_relay",
+            "#test_clue_medical",
+            "#test_clue_backup",
+            "test_clue_relay_scanned",
+            "test_investigation_complete",
+        ):
+            self.assertIn(expected, encoded)
+
+    def test_investigate_clues_rejects_partial_generated_threshold(self) -> None:
+        value = stage("investigate_clues")
+        value.pop("phase_template")
+        value["clues"].append({"id": "clue_b", "object_ref": "#test_clue_b"})
+        value["required_count"] = 1
+        spec, diagnostics = self.load([value])
+        self.assertIsNone(spec)
+        self.assertIn(
+            "unsupported_clue_threshold",
+            {diagnostic.code for diagnostic in diagnostics},
         )
 
     def test_leave_area_can_deactivate_a_community(self) -> None:
@@ -322,9 +380,17 @@ class QuestBuildingBlockTests(unittest.TestCase):
         self.assertIn('"action": "Deactivate"', encoded)
 
     def test_direct_generators_emit_valid_handle_graphs(self) -> None:
-        for stage_type in ("reach_area", "leave_area", "acquire_item", "read_shard"):
+        for stage_type in (
+            "reach_area",
+            "leave_area",
+            "acquire_item",
+            "read_shard",
+            "investigate_clues",
+        ):
             with self.subTest(stage_type=stage_type):
-                phase = self.build_direct(stage(stage_type))
+                value = stage(stage_type)
+                value.pop("phase_template", None)
+                phase = self.build_direct(value)
                 quest_compiler.validate_handle_graph(
                     phase, context=f"{stage_type} acceptance"
                 )

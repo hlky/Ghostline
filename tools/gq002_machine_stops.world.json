@@ -1,0 +1,312 @@
+{
+  "_note": "GQ002 prototype. Cinder uses the separately runtime-proven contact pad captured for Iris at -406.1001,724.7273,127.00006; the relay remains in Kabuki. The three relay clue transforms are native antenna access points indexed from vanilla sectors; Ghostline owns only markers, triggers, and communities.",
+  "name": "gq002",
+  "prefab_root": "$/mod/gq002/#gq002_pr_machine_stops",
+  "block_path": "mod\\gq002\\world\\gq002_machine_stops.streamingblock",
+  "quest_sector_path": "mod\\gq002\\world\\gq002_machine_stops.streamingsector",
+  "always_loaded_sector_path": "mod\\gq002\\world\\gq002_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -406.1001,
+    "y": 724.7273,
+    "z": 127.00006,
+    "yaw": -40.45
+  },
+  "markers": [
+    {
+      "ref": "#gq002_01_sm_cinder",
+      "sector": "always_loaded",
+      "position": {
+        "from": "origin"
+      },
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    },
+    {
+      "ref": "#gq002_01_mp_cinder",
+      "sector": "always_loaded",
+      "position": {
+        "from": "#gq002_01_sm_cinder"
+      },
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    },
+    {
+      "ref": "#gq002_02_mp_relay",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1111.06006,
+        "y": 1456.3999,
+        "z": 16.3599968
+      },
+      "yaw": -24.95,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gq002_03_mp_tenant",
+      "sector": "always_loaded",
+      "position": {
+        "from": "#gq002_02_mp_relay"
+      },
+      "yaw": -24.95
+    },
+    {
+      "ref": "#gq002_03_mp_medical",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1110.08997,
+        "y": 1408.65991,
+        "z": 24.8799973
+      },
+      "yaw": 119.75
+    },
+    {
+      "ref": "#gq002_03_mp_invoice",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1081.27771,
+        "y": 1414.33435,
+        "z": 21.7671986
+      },
+      "yaw": -115.25
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gq002_01_tr_setup",
+      "position": {
+        "from": "#gq002_01_sm_cinder",
+        "up": -4
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 45,
+        "segments": 16,
+        "height": 8
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq002_01_tr_engage",
+      "position": {
+        "from": "#gq002_01_sm_cinder",
+        "up": -2
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 3,
+        "segments": 12,
+        "height": 3
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq002_01_tr_mood",
+      "position": {
+        "from": "#gq002_01_sm_cinder",
+        "up": -4
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 30,
+        "segments": 16,
+        "height": 8
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq002_01_tr_awareness",
+      "position": {
+        "from": "#gq002_01_sm_cinder",
+        "up": -2
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 3,
+        "segments": 12,
+        "height": 3
+      },
+      "notifiers": [
+        "quest"
+      ]
+    },
+    {
+      "ref": "#gq002_02_tr_relay",
+      "position": {
+        "from": "#gq002_02_mp_relay",
+        "up": -4
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 18,
+        "segments": 16,
+        "height": 8
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gq002_02_tr_relay_cleanup",
+      "position": {
+        "from": "#gq002_02_mp_relay",
+        "up": -6
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 65,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 360,
+        "streaming_distance": 320
+      }
+    },
+    {
+      "ref": "#gq002_05_tr_security",
+      "position": {
+        "from": "#gq002_02_mp_relay"
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 10,
+        "segments": 12,
+        "height": 10
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    }
+  ],
+  "community": {
+    "ref": "#gq002_01_com_cinder",
+    "entry": "cinder",
+    "phase": "default",
+    "period": "Day",
+    "character": "Character.GhostlineCinder",
+    "appearance": "ghostline_cinder_default",
+    "source_object_id": "auto",
+    "registry_node_id": "auto",
+    "active_on_start": 0,
+    "streaming_distance": 160,
+    "node_data": {
+      "max_streaming_distance": 280,
+      "streaming_distance": 240
+    },
+    "spot": {
+      "ref": "#gq002_01_spot_cinder",
+      "position": {
+        "from": "#gq002_01_sm_cinder"
+      },
+      "yaw": "origin",
+      "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__arms_crossed__01.workspot",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  },
+  "communities": [
+    {
+      "ref": "#gq002_05_com_security",
+      "position": {
+        "from": "#gq002_02_mp_relay"
+      },
+      "yaw": -24.95,
+      "phase": "A",
+      "period": "Day",
+      "source_object_id": "auto",
+      "registry_node_id": "auto",
+      "registry_debug_name": "gq002_relay_security_registry",
+      "active_on_start": 0,
+      "streaming_distance": 160,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "entries": [
+        {
+          "entry": "security_ranged_m",
+          "character": "Character.jpn_tyger_claws_gangster2_ranged2_sidewinder_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq002_05_spot_security_ranged_m",
+              "position": {
+                "x": -1109.5,
+                "y": 1454.8,
+                "z": 16.36
+              },
+              "yaw": 130,
+              "workspot": "base\\workspots\\patrolling\\guard_stand.workspot"
+            }
+          ]
+        },
+        {
+          "entry": "security_ranged_f",
+          "character": "Character.jpn_tyger_claws_biker2_ranged2_copperhead_wa",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq002_05_spot_security_ranged_f",
+              "position": {
+                "x": -1112.3,
+                "y": 1455.1,
+                "z": 16.36
+              },
+              "yaw": -40,
+              "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__02.workspot"
+            }
+          ]
+        },
+        {
+          "entry": "security_melee",
+          "character": "Character.jpn_tyger_claws_biker1_melee1_baseball_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq002_05_spot_security_melee",
+              "position": {
+                "x": -1108.2,
+                "y": 1453.6,
+                "z": 16.36
+              },
+              "yaw": -160,
+              "workspot": "base\\workspots\\master\\master_generic__stand_ground__guard__01.workspot"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

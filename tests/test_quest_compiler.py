@@ -183,11 +183,26 @@ class QuestCompilerTests(unittest.TestCase):
                         "contacts/morrow/gq_phone_test/01_message",
                         "contacts/morrow/gq_phone_test/02_message",
                     ],
+                    "opening_branches": [
+                        {
+                            "condition": "gq_phone_test_outcome_a",
+                            "messages": [
+                                "contacts/morrow/gq_phone_test/02a_outcome"
+                            ],
+                        },
+                        {
+                            "condition": "gq_phone_test_outcome_b",
+                            "messages": [
+                                "contacts/morrow/gq_phone_test/02b_outcome"
+                            ],
+                        },
+                    ],
                     "choice_group": "contacts/morrow/gq_phone_test/03_choices",
                     "choices": [
                         {
                             "choice": "contacts/morrow/gq_phone_test/03_choices/03a_choice",
                             "reply": "contacts/morrow/gq_phone_test/04a_reply",
+                            "set_fact": "gq_phone_test_chose_a",
                         },
                         {
                             "choice": "contacts/morrow/gq_phone_test/03_choices/03b_choice",
@@ -216,7 +231,10 @@ class QuestCompilerTests(unittest.TestCase):
         self.assertIn("03a_choice", encoded)
         self.assertIn("03b_choice", encoded)
         self.assertIn("05_final", encoded)
+        self.assertIn("gq_phone_test_chose_a", encoded)
         self.assertIn("gq_phone_test_completed", encoded)
+        self.assertIn("gq_phone_test_outcome_a", encoded)
+        self.assertIn("02a_outcome", encoded)
 
     def test_phone_stage_rejects_unpaired_choices(self) -> None:
         value = copy.deepcopy(self.raw)
@@ -247,6 +265,18 @@ class QuestCompilerTests(unittest.TestCase):
             quest_compiler.validate_handle_graph(
                 {"HandleId": "1", "child": {"HandleRefId": "2"}},
                 context="broken phase",
+            )
+
+    def test_handle_validation_rejects_forward_references(self) -> None:
+        with self.assertRaisesRegex(
+            quest_compiler.QuestSpecError, "forward HandleRefId"
+        ):
+            quest_compiler.validate_no_forward_handle_refs(
+                {
+                    "early": {"HandleRefId": "2"},
+                    "late": {"HandleId": "2", "Data": {"$type": "Example"}},
+                },
+                context="forward phase",
             )
 
     def test_stage_contract_rejects_manifest_template_drift(self) -> None:

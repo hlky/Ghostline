@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "quest": "gq002",
+  "selected": {
+    "relay_site": {
+      "district": "Watson / Kabuki",
+      "anchor": {
+        "position": {
+          "x": -1111.06006,
+          "y": 1456.3999,
+          "z": 16.3599968
+        },
+        "orientation": {
+          "i": 0.0,
+          "j": 0.0,
+          "k": -0.216072619,
+          "r": 0.976377308
+        },
+        "node_ref": "$/03_night_city/c_watson/kabuki/loc_sts_wat_kab_101_slums_prefabTADN6HA/loc_sts_wat_kab_101_slums_gameplay_prefabOPIWFHA/loc_sts_wat_kab_101_slums_devices_prefab3DMUFNQ/#kab_101_dvc_ap_001",
+        "entity_template": "base\\gameplay\\devices\\masters\\access_points\\antenna_access_point_small.ent",
+        "controller": "AccessPointControllerPS",
+        "sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-18_22_0_0.streamingsector",
+        "debug_name": "{kab_101_dvc_ap_}001"
+      },
+      "nearby_visuals": [
+        {
+          "kind": "small_satellite_dish_collision",
+          "position": {
+            "x": -1041.985,
+            "y": 1446.384,
+            "z": 17.462
+          },
+          "orientation": {
+            "i": -0.121,
+            "j": 0.034,
+            "k": 0.266,
+            "r": -0.956
+          },
+          "source_prefab_hash": "14867752268622539079",
+          "collision_node": "DecoCollisionNode_640",
+          "collision_actor": 11
+        },
+        {
+          "kind": "small_satellite_support_collision",
+          "position": {
+            "x": -1042.029,
+            "y": 1446.311,
+            "z": 16.039
+          },
+          "orientation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": -0.139866948,
+            "r": 0.99017036
+          },
+          "source_prefab_hash": "14867752268622539079",
+          "collision_node": "DecoCollisionNode_640",
+          "collision_actor": 27
+        },
+        {
+          "kind": "large_satellite_dish_collision",
+          "position": {
+            "x": -1036.978,
+            "y": 1441.737,
+            "z": 25.919
+          },
+          "orientation": {
+            "i": 0.064,
+            "j": 0.0,
+            "k": 0.0,
+            "r": 0.998
+          },
+          "source_prefab_hash": "14867752268622539079",
+          "collision_node": "DecoCollisionNode_640",
+          "collision_actor": 2
+        }
+      ],
+      "notes": [
+        "Use the native antenna access point for the jack-in/minigame interaction.",
+        "Place Ghostline-owned quest refs, clues, guards, and triggers; do not depend on the vanilla street-story lifecycle.",
+        "Runtime walking access and encounter layout still require an in-game pass."
+      ]
+    }
+  },
+  "indexes": {
+    "antenna_access_points": "reference/world/antenna-access-points.json",
+    "plate_antennas": "reference/world/plate-antennas.json",
+    "satellite_dishes": "reference/world/satellite-dishes.json"
+  }
+}

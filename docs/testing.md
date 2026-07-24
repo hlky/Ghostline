@@ -21,6 +21,255 @@ These reduce accidental save contamination, but they do not clean an already
 contaminated save. Keep a known-good pre-Ghostline manual save and return to it
 for each start-flow validation pass.
 
+## 2026-07-23 GQ002 Return-To-Relay Candidate
+
+Installed archive SHA-256:
+`8F84793C62FF446B5A54E30429B03FD3C5E483AE0998D78372B596B407D1BF50`.
+
+The verified build and ZIP are retained at
+`H:\Ghostline-builds\gq002-return-relay-20260723`; the preceding nine-file
+installation is backed up at
+`H:\Ghostline-backups\pre-gq002-return-relay-20260723`.
+
+Runtime confirmed the corrected security trigger and downstream quest flow.
+This candidate fills the remaining silent transition with a dedicated
+`Return to the target relay.` reach-area stage and yellow GPS-enabled pin.
+Entering the ten-metre security trigger succeeds that objective, hides its
+pin, and starts the existing combat phase.
+
+Confirm from a clean/pre-GQ002 route:
+
+1. The return objective and relay GPS pin appear after the shard stage.
+2. The route terminates at the target relay rather than a remote device proxy.
+3. Entering the trigger replaces the return task with
+   `Neutralize the relay security.` and spawns the guards.
+4. The already-confirmed decision, relay operation, exit, and debrief flow
+   still completes.
+
+## 2026-07-23 GQ002 Security-Trigger Candidate
+
+Installed archive SHA-256:
+`8FF1835A73F93B032FC4E1602FA1CC80234779706B085C385EBB7DFB91CE945B`.
+
+The verified build and ZIP are retained at
+`H:\Ghostline-builds\gq002-security-trigger-20260723`; the preceding nine-file
+installation is backed up at
+`H:\Ghostline-backups\pre-gq002-security-trigger-20260723`.
+
+Runtime confirmed that the shard-acquisition fact advances the read objective.
+The following security phase then appeared blank because its trigger was
+centred four metres below the relay roof. This candidate centres the
+ten-metre-tall combat trigger on the relay's `z=16.36` walking plane.
+
+Resume from the clean-save route and confirm:
+
+1. The archived-conversation objective clears after the final scan and
+   presentation delay.
+2. At the target relay, `Neutralize the relay security.` activates immediately.
+3. All three Tyger Claws spawn on the visible rooftop plane and become hostile.
+4. Defeating them advances to Cinder's relay-decision phone conversation.
+
+## 2026-07-23 GQ002 Shard-Acquisition-Fact Candidate
+
+Installed archive SHA-256:
+`82C221619EBA15D39D5F82D53B9CCE86AEEB9107AEC15166718143043284B312`.
+
+The verified build and ZIP are retained at
+`H:\Ghostline-builds\gq002-shard-fact-20260723`; the preceding nine-file
+installation is backed up at
+`H:\Ghostline-backups\pre-gq002-shard-fact-20260723`.
+
+Runtime proved that the readable Hostage Circuit shard is consumed into the
+Journal and does not remain a dependable inventory stack. This candidate
+therefore completes the read stage from the final scan's
+`gq002_clue_invoice_scanned` acquisition fact, after a three-second
+presentation delay. It does not wait on inventory ownership or the Journal
+reader's visited flag.
+
+From a clean pre-GQ002 save, complete the three scans and confirm the shard
+notification is followed after roughly three seconds by the target-relay
+security stage. Continue through the remaining quest to catch any downstream
+regression.
+
+## 2026-07-23 GQ002 Native-Scanner Candidate
+
+Installed archive SHA-256:
+`9291927EAF3059628AC57A97AB71C65D2424652258BEFD86B90025A546395DDC`.
+
+The verified build and ZIP are retained at
+`H:\Ghostline-builds\gq002-native-scanner-20260723`; the preceding nine-file
+installation is backed up at
+`H:\Ghostline-backups\pre-gq002-native-scanner-20260723`.
+
+This candidate removes Ghostline's persistent yellow
+`SetDefaultHighlightEvent` layer from all three relay clues. The antennas now
+use their native blue device-scanner outline while `questScan Finished` remains
+the progression condition. The shard stage advances from ownership of the real
+readable item rather than a journal-visited event, because opening the pickup
+notification overlay does not set the full Journal reader's visited flag.
+
+Retest from a clean pre-GQ002 save:
+
+1. Scan each relay and confirm only the native scanner outline appears; no
+   yellow outline should remain after leaving scanner mode.
+2. Confirm every completed scan clears its clue marker and activates the next
+   clue in order.
+3. Confirm the final scan awards the Hostage Circuit shard and the quest
+   proceeds beyond `Read the archived conversation`.
+4. Continue through the target-relay combat gate and confirm the remaining
+   choice, relay-operation, leave-area, and debrief stages still complete.
+
+## 2026-07-23 GQ002 Sequencing-Fix Candidate
+
+Installed archive SHA-256:
+`E5BAA7FE06E2BBD85A6D094C897F1BF847C4B3076B57C0A8CE8749138E5A4D77`.
+
+The verified build is retained at
+`H:\Ghostline-builds\gq002-sequencing-fix-20260723`; the preceding installed
+files are backed up at
+`H:\Ghostline-backups\pre-gq002-sequencing-fix-20260723`.
+
+Use a clean pre-GQ002 save. This pass specifically verifies the corrected
+generated-stage lifecycle:
+
+1. Confirm Cinder stands visibly in the open rooftop space rather than
+   intersecting the concrete column.
+2. Accept Cinder's job and confirm only `Go to the Kabuki relay.` activates.
+   Her relay-decision phone thread must not appear yet.
+3. Enter the relay trigger and confirm the reach objective completes before
+   `Inspect the relay network.` appears.
+4. Confirm only the first clue marker is active. Scan its referenced antenna
+   access point, then confirm its marker clears and the next clue activates.
+   Repeat for all three clues.
+5. Treat the antenna's native jack-in/minigame and reward as separate vanilla
+   behavior during this investigation stage. The quest investigation advances
+   from scanning the marked devices; the later `Jack in to the relay.`
+   objective owns the required minigame completion.
+6. Confirm the shard, security encounter, Cinder relay decision, relay
+   interaction, leave-area objective, and debrief appear only in that order.
+
+## 2026-07-23 GQ002 Runtime-Fixes Candidate
+
+Installed archive SHA-256:
+`F8738A94773AFFD415BEEA2C6A77CB21C22CF3B375ECAB88DC0E1C3CE2B98BC7`.
+
+The verified build is retained at
+`H:\Ghostline-builds\gq002-runtime-fixes-20260723`; the preceding install is
+backed up at
+`H:\Ghostline-backups\pre-gq002-runtime-fixes-20260723`.
+
+Retest from a clean pre-GQ002 save:
+
+1. Confirm Cinder stands on the rooftop and her dialogue begins only within
+   the new three-metre engage volume.
+2. Confirm each currently active investigation target receives the standard
+   yellow quest outline and completes only after a finished scanner pass.
+3. Confirm completing the final scan produces the archived-conversation
+   notification; open and read it before security begins.
+4. Confirm all three security actors stand on the walking surface around the
+   relay, none intersects nearby geometry, and combat waits until the shard has
+   actually been read.
+5. Complete either phone branch and the remaining relay/leave stages. Confirm
+   the final Cinder message is followed by a normal quest-complete notification
+   and no active `The Machine Stops` objective remains.
+
+## 2026-07-23 GQ002 Location/Combat-Fix Candidate
+
+Installed archive SHA-256:
+`34A7F1024B0BB5913F437CF63DEA9783E2636A064722D0E8A3416B0BEA20D0DF`.
+
+The verified build is retained at
+`H:\Ghostline-builds\gq002-location-combat-fix-20260723`; the preceding install
+is backed up at
+`H:\Ghostline-backups\pre-gq002-location-combat-fix-20260723`.
+
+Retest from a clean pre-GQ002 save:
+
+1. Confirm Cinder now appears on the separately proven contact pad used by the
+   GQ001 Iris meeting rather than beside the Kabuki relay network.
+2. Confirm the second clue has no offset quest pin and is instead clearly
+   identified by its yellow quest outline.
+3. Complete the final scan and confirm a readable
+   `Archived conversation: Sato and Keene` shard is acquired with the normal
+   inventory notification. The read objective should then wait for the entry
+   to be opened.
+4. Confirm security does not activate at the remote third clue. Return to
+   within ten metres of the target relay and confirm the objective and combat
+   begin there.
+5. Confirm all three Tyger Claws are reachable on the visible rooftop walking
+   plane and no actor is inside the structure.
+
+## 2026-07-23 GQ002 Preview/Highlight-Delay Candidate
+
+Build: `H:\Ghostline-builds\gq002-preview-highlight-delay-20260723`
+
+Archive SHA-256:
+`B2F418B7A80BA2950BC2A42C924A3D71061C45E0C55B2A0764935D835EC3C31D`
+
+1. Confirm the second clue still has a world/map quest icon, but does not draw
+   the incorrect GPS route to the native device's remote gameplay proxy.
+2. Confirm each yellow device outline clears about one second after its scan
+   completes.
+3. Confirm reading the shard from the pickup-notification overlay is accepted:
+   the read objective should complete after the three-second presentation
+   window and progression should wait at the target-relay combat trigger.
+
+## 2026-07-23 GQ002 Journal/Highlight-Fix Candidate
+
+Build: `H:\Ghostline-builds\gq002-journal-highlight-fix-20260723`
+
+Archive SHA-256:
+`50134BD2F8BD116BA133F4AD456DD877562CDBCE97C290D600FB615710535328`
+
+1. Confirm the second investigation clue has a quest pin anchored to the
+   native access point rather than the former offset static marker.
+2. After each completed scan, confirm that clue's yellow quest outline clears
+   before the next clue becomes active.
+3. Confirm opening the awarded Hostage Circuit shard completes `Read the
+   archived conversation` and advances to the return-to-relay combat gate.
+
+## 2026-07-23 GQ002 “The Machine Stops” Candidate
+
+Installed archive SHA-256:
+`783A11CF8FF248FEDFC3CC190BDE357B9D4309B2DEBE0D13A95BC5E0D15251EA`.
+
+The verified build, extracted archive, staged package, and ZIP are retained at
+`H:\Ghostline-builds\gq002-machine-stops-20260723`. The preceding nine
+installed files are backed up at
+`H:\Ghostline-backups\pre-gq002-machine-stops-20260723`.
+
+Use a fresh or pre-GQ002 save and validate both outcome routes, reloading the
+same clean baseline before the second route:
+
+1. Confirm Patch’s `The Machine Stops` phone offer appears and selecting
+   `On my way.` activates `Meet Cinder.` under the correctly named quest.
+2. Confirm Cinder appears at the Kabuki meeting point, her opening line does
+   not trigger before the six-unit approach boundary, and all five dialogue
+   choices display correctly.
+3. Exercise the two optional branches, then accept. Confirm all eleven spoken
+   lines use the selected VO, show matching subtitles, and remain synchronized.
+4. Confirm `Go to the Kabuki relay.` activates and routes to the native antenna
+   access point around `(-1111.060, 1456.400, 16.360)`.
+5. Scan each of the three clue markers. Confirm every clue completes once,
+   remains complete, and the investigation advances only after all three.
+6. Open and read `Archived conversation: Sato and Keene`; confirm its content
+   describes the tenant classifier, clinic telemetry hostage circuit, and
+   Tyger Claw security.
+7. Confirm all three security actors spawn near the relay, patrol, become
+   hostile to V, and the objective advances only after all are defeated.
+8. In Cinder’s phone choice, select `Destroy the relay.` for the first run and
+   `Spoof the shutdown.` for the second. Confirm the appropriate immediate
+   response appears and V is instructed to jack in.
+9. Complete the native access-point interaction/minigame. Confirm the selected
+   outcome fact advances the same interaction stage without stalling.
+10. Leave the marked area. Confirm remaining encounter actors clean up and
+    Cinder’s debrief begins.
+11. Confirm the debrief’s opening message is outcome-specific, both final V
+    response choices work, and the quest reaches completion with no lingering
+    objective, marker, actor, or interaction.
+12. After each run, inspect ArchiveXL, TweakXL, REDscript, CET, and crash logs
+    for new GQ002 errors or missing resource registrations.
+
 ## 2026-07-23 Six-Metre Contact Awareness Candidate
 
 Installed archive SHA-256:
@@ -582,3 +831,28 @@ sequencing.
 This build intentionally continues using `Character.Judy` for community
 isolation. Patch cannot be validated until TweakXL is installed or that
 dependency is removed.
+
+## 2026-07-23 GQ002 Final-Polish Candidate
+
+Installed archive SHA-256:
+`E37C3498B0AF0EE01697C4542D579252DE844E4D529F6381EDAF0D0CFCA1BF94`.
+
+All 165 automated tests pass. The archive contains 279 verified payloads and
+the nine-file staged install and ZIP both match their sources. Build evidence
+is retained at `H:\Ghostline-builds\gq002-final-polish-20260723`; the replaced
+install is backed up at
+`H:\Ghostline-backups\pre-gq002-final-polish-20260723`.
+
+Retest from a clean pre-GQ002 save and verify:
+
+1. All three relay guards stand on reachable walking surfaces; specifically,
+   the melee guard is no longer embedded in the rear wall.
+2. Complete the final relay breach once. Confirm only one native
+   `EXTRACTED DATA` reward is shown and the phase does not retrigger the
+   access-point device.
+3. Leave the area. Confirm `Respond to Cinder` becomes the tracked objective
+   instead of an empty quest header, and remains visible throughout the phone
+   exchange.
+4. Reply to Cinder and receive the final message. Confirm the response
+   objective succeeds, XP and eddies are awarded, and `THE MACHINE STOPS`
+   moves to Completed.

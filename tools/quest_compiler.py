@@ -24,6 +24,7 @@ from generate_cache_phase import (  # noqa: E402
     fact_node,
     input_node,
     journal_entry_node,
+    journal_path,
     mappin_node,
     node_ref,
     objective_node,
@@ -39,6 +40,7 @@ from generate_delivery_phase import (  # noqa: E402
     journal_choice_succeeded_node,
     journal_entry_visited_node,
     logical_xor_node,
+    reward_node,
 )
 
 
@@ -69,11 +71,11 @@ DIRECT_STAGE_TYPES = {
     "acquire_item",
     "leave_area",
     "read_shard",
-}
-TEMPLATE_REQUIRED_STAGE_TYPES = {
+    "investigate_clues",
     "interact_device",
     "combat_encounter",
-    "investigate_clues",
+}
+TEMPLATE_REQUIRED_STAGE_TYPES = {
     "optional_condition",
     "choice_gate",
     "escort_npc",
@@ -87,14 +89,6 @@ BUILTIN_TEMPLATE_RESOURCES = {
 }
 
 BUILTIN_UNSUPPORTED_FIELDS = {
-    "interact_device": {"objective", "description_entry", "mappin", "success_fact"},
-    "combat_encounter": {
-        "entries",
-        "completion_fact",
-        "cleanup_on_exit",
-        "nonlethal_allowed",
-    },
-    "investigate_clues": {"completion_fact"},
     "optional_condition": {"description_entry"},
     "choice_gate": {"default_branch"},
     "escort_npc": {
@@ -145,7 +139,7 @@ STAGE_REQUIRED_FIELDS = {
     "acquire_item": {"item", "source"},
     "combat_encounter": {"community", "hostility", "completion"},
     "leave_area": {"trigger", "objective", "description_entry"},
-    "read_shard": {"journal_entry"},
+    "read_shard": {"item", "journal_entry"},
     "investigate_clues": {"objective", "description_entry"},
     "optional_condition": {
         "objective", "success_fact", "failure_fact", "evaluation",
@@ -188,7 +182,8 @@ STAGE_TYPE_FIELDS = {
     "deliver_drop_point": {"item", "drop_point", "deposit_fact"},
     "phone_conversation": {
         "contact", "thread", "choice_group", "messages", "choices",
-        "final_message", "completion_fact", "delay_seconds",
+        "opening_branches", "final_message", "completion_fact", "complete_quest",
+        "delay_seconds", "objective", "description_entry", "reward",
     },
     "reach_area": {
         "trigger", "objective", "description_entry", "mappin",
@@ -197,6 +192,7 @@ STAGE_TYPE_FIELDS = {
     "interact_device": {
         "device", "controller_class", "action", "completion_function",
         "objective", "description_entry", "mappin", "success_fact",
+        "send_action",
     },
     "acquire_item": {
         "item", "source", "quantity", "objective", "description_entry", "mappin",
@@ -205,6 +201,7 @@ STAGE_TYPE_FIELDS = {
     "combat_encounter": {
         "community", "entries", "activate", "hostility", "completion",
         "nonlethal_allowed", "completion_fact", "cleanup_on_exit",
+        "objective", "description_entry", "trigger",
     },
     "leave_area": {
         "trigger", "objective", "description_entry", "mappin",
@@ -212,7 +209,8 @@ STAGE_TYPE_FIELDS = {
     },
     "read_shard": {
         "item", "journal_entry", "file_entry_index", "activate_entry",
-        "objective", "description_entry", "completion_fact",
+        "objective", "description_entry", "acquisition_fact",
+        "presentation_delay_seconds", "completion_fact",
     },
     "investigate_clues": {
         "clues", "required_count", "objective", "description_entry",
@@ -550,24 +548,7 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                         stage_id or None,
                     )
                 )
-            if (
-                not isinstance(stage.get("phase_template"), str)
-                and isinstance(clues, list)
-                and any(
-                    isinstance(clue, dict)
-                    and set(clue) - {"id", "object_ref"}
-                    for clue in clues
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_clue_fields",
-                        f"{context} built-in template supports clue id and object_ref only",
-                        stage_id or None,
-                    )
-                )
-            else:
+            if isinstance(clues, list) and clues:
                 required_count = stage.get("required_count", len(clues))
                 if (
                     not isinstance(required_count, int)
@@ -728,15 +709,14 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             if (
                 not isinstance(stage.get("phase_template"), str)
                 and isinstance(clues, list)
-                and (
-                len(clues) != 1 or stage.get("required_count", 1) != 1
-                )
+                and stage.get("required_count", len(clues)) != len(clues)
             ):
                 diagnostics.append(
                     Diagnostic(
                         "error",
-                        "unsupported_clue_count",
-                        f"{context} currently supports exactly one required clue",
+                        "unsupported_clue_threshold",
+                        f"{context} generated flow currently requires all authored clues; "
+                        "use a custom phase_template for a partial threshold",
                         stage_id or None,
                     )
                 )
@@ -795,10 +775,18 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                 or len(choices) < 2
                 or not all(
                     isinstance(item, dict)
-                    and set(item) == {"choice", "reply"}
+                    and {"choice", "reply"} <= set(item)
+                    and set(item) <= {"choice", "reply", "set_fact"}
                     and all(
                         isinstance(item[key], str) and item[key].strip()
                         for key in ("choice", "reply")
+                    )
+                    and (
+                        "set_fact" not in item
+                        or (
+                            isinstance(item["set_fact"], str)
+                            and item["set_fact"].strip()
+                        )
                     )
                     for item in choices
                 )
@@ -807,7 +795,37 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                     Diagnostic(
                         "error",
                         "invalid_phone_choices",
-                        f"{context}.choices must contain at least two choice/reply objects",
+                        f"{context}.choices must contain at least two choice/reply "
+                        "objects with an optional set_fact",
+                        stage_id or None,
+                    )
+                )
+            opening_branches = stage.get("opening_branches")
+            if opening_branches is not None and (
+                not isinstance(opening_branches, list)
+                or len(opening_branches) < 2
+                or not all(
+                    isinstance(item, dict)
+                    and set(item) == {"condition", "messages"}
+                    and isinstance(item["condition"], str)
+                    and item["condition"].strip()
+                    and isinstance(item["messages"], list)
+                    and item["messages"]
+                    and all(
+                        isinstance(message, str) and message.strip()
+                        for message in item["messages"]
+                    )
+                    for item in opening_branches
+                )
+                or len({item["condition"] for item in opening_branches})
+                != len(opening_branches)
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_phone_opening_branches",
+                        f"{context}.opening_branches must contain at least two "
+                        "unique fact conditions with non-empty message arrays",
                         stage_id or None,
                     )
                 )
@@ -950,9 +968,11 @@ def validate_handle_graph(value: Any, *, context: str) -> None:
     def walk(child: Any) -> None:
         if isinstance(child, dict):
             if "HandleId" in child:
-                handle_ids.append(str(child["HandleId"]))
+                handle_id = str(child["HandleId"])
+                handle_ids.append(handle_id)
             if "HandleRefId" in child:
-                handle_refs.append(str(child["HandleRefId"]))
+                handle_ref = str(child["HandleRefId"])
+                handle_refs.append(handle_ref)
             for nested in child.values():
                 walk(nested)
         elif isinstance(child, list):
@@ -972,6 +992,33 @@ def validate_handle_graph(value: Any, *, context: str) -> None:
         raise QuestSpecError(
             f"{context} contains unresolved HandleRefId values: "
             + ", ".join(unresolved)
+        )
+
+
+def validate_no_forward_handle_refs(value: Any, *, context: str) -> None:
+    """Reject forward refs in generated JSON; WolvenKit's importer is order-sensitive."""
+    defined: set[str] = set()
+    forward_refs: list[str] = []
+
+    def walk(child: Any) -> None:
+        if isinstance(child, dict):
+            if "HandleRefId" in child:
+                handle_ref = str(child["HandleRefId"])
+                if handle_ref not in defined:
+                    forward_refs.append(handle_ref)
+            if "HandleId" in child:
+                defined.add(str(child["HandleId"]))
+            for nested in child.values():
+                walk(nested)
+        elif isinstance(child, list):
+            for nested in child:
+                walk(nested)
+
+    walk(value)
+    if forward_refs:
+        raise QuestSpecError(
+            f"{context} contains forward HandleRefId values that WolvenKit "
+            "cannot deserialize: " + ", ".join(sorted(set(forward_refs)))
         )
 
 
@@ -1007,6 +1054,18 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             (field, stage.data[field])
             for field in ("item", "drop_point", "deposit_fact")
         )
+    elif stage.type == "phone_conversation":
+        expected.extend(
+            ("choices.set_fact", choice["set_fact"])
+            for choice in stage.data.get("choices", [])
+            if isinstance(choice.get("set_fact"), str)
+        )
+        for opening in stage.data.get("opening_branches", []):
+            expected.append(("opening_branches.condition", opening["condition"]))
+            expected.extend(
+                ("opening_branches.messages", message)
+                for message in opening["messages"]
+            )
     elif stage.type == "reach_area":
         expected.extend(
             (field, stage.data[field])
@@ -1015,13 +1074,17 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
     elif stage.type == "interact_device":
         expected.extend(
             (field, stage.data[field])
-            for field in ("device", "controller_class", "action", "completion_function")
+            for field in ("device", "controller_class", "completion_function")
         )
+        if stage.data.get("send_action", True):
+            expected.append(("action", stage.data["action"]))
     elif stage.type == "acquire_item":
         expected.append(("item", stage.data["item"]))
     elif stage.type == "combat_encounter":
         expected.append(("community", stage.data["community"]))
         expected.extend(("entries", item) for item in stage.data.get("entries", []))
+        if isinstance(stage.data.get("trigger"), str):
+            expected.append(("trigger", stage.data["trigger"]))
     elif stage.type == "leave_area":
         expected.extend(
             (field, stage.data[field]) for field in ("trigger", "objective")
@@ -1031,13 +1094,18 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
                 ("cleanup_community", stage.data["cleanup_community"])
             )
     elif stage.type == "read_shard":
-        expected.append(("journal_entry", stage.data["journal_entry"]))
-        if isinstance(stage.data.get("item"), str):
+        if stage.data.get("acquisition_fact"):
+            expected.append(("acquisition_fact", stage.data["acquisition_fact"]))
+        else:
             expected.append(("item", stage.data["item"]))
+        if stage.data.get("activate_entry", False):
+            expected.append(("journal_entry", stage.data["journal_entry"]))
     elif stage.type == "investigate_clues":
         for clue in stage.data.get("clues", []):
             expected.append(("clues", clue["object_ref"]))
-            for field in ("completion_fact", "journal_entry", "mappin"):
+            for field in (
+                "completion_fact", "grant_item", "journal_entry", "mappin"
+            ):
                 if isinstance(clue.get(field), str):
                     expected.append((f"clues.{field}", clue[field]))
     elif stage.type == "optional_condition":
@@ -1197,6 +1265,27 @@ def instantiate_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonO
     return result
 
 
+def quest_completion_node(
+    builder: PhaseGraphBuilder, quest_id: int, path: str
+) -> GraphNode:
+    node_type = builder.handles.wrap(
+        {
+            "$type": "questJournalQuestEntry_NodeType",
+            "optional": 0,
+            "path": journal_path(builder, path, "gameJournalQuest", 2),
+            "sendNotification": 1,
+            "trackQuest": 1,
+            "version": "Initial",
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questJournalNodeDefinition",
+        input_names=("Active", "Inactive", "Succeeded", "Failed"),
+        properties={"type": node_type},
+    )
+
+
 def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
     """Build a self-contained phone exchange with any number of response branches."""
     if stage.type != "phone_conversation":
@@ -1207,12 +1296,31 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
     builder = PhaseGraphBuilder()
     phase_input = input_node(builder)
     phase_output = output_node(builder)
+    previous: GraphNode = phase_input
+    next_id = 10
+    objective: GraphNode | None = None
+    if stage.data.get("objective"):
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder,
+            next_id,
+            stage.data["description_entry"],
+            "gameJournalQuestDescription",
+            2,
+        )
+        next_id += 1
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
     delay = realtime_delay_node(
-        builder, 10, seconds=int(stage.data.get("delay_seconds", 1))
+        builder, next_id, seconds=int(stage.data.get("delay_seconds", 1))
     )
-    builder.connect(phase_input, delay)
+    next_id += 1
+    builder.connect(previous, delay)
     previous = delay
-    next_id = 11
     for path in messages:
         message = journal_entry_node(
             builder, next_id, path, "gameJournalPhoneMessage", 1
@@ -1221,6 +1329,33 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         previous = message
         next_id += 1
 
+    opening_branches = stage.data.get("opening_branches", [])
+    if opening_branches:
+        branch_tails: list[GraphNode] = []
+        for opening in opening_branches:
+            condition = fact_condition_node(
+                builder, next_id, opening["condition"]
+            )
+            next_id += 1
+            builder.connect(previous, condition)
+            branch_previous = condition
+            for path in opening["messages"]:
+                message = journal_entry_node(
+                    builder, next_id, path, "gameJournalPhoneMessage", 1
+                )
+                next_id += 1
+                builder.connect(branch_previous, message, destination_socket="Active")
+                branch_previous = message
+            branch_tails.append(branch_previous)
+        opening_join = logical_xor_node(builder, next_id, len(branch_tails))
+        next_id += 1
+        for index, tail in enumerate(branch_tails, start=1):
+            builder.connect(tail, opening_join, destination_socket=f"In{index}")
+        previous = opening_join
+        previous_socket = "Out1"
+    else:
+        previous_socket = "Out"
+
     choice_group = journal_entry_node(
         builder,
         next_id,
@@ -1228,7 +1363,12 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         "gameJournalPhoneChoiceGroup",
         1,
     )
-    builder.connect(previous, choice_group, destination_socket="Active")
+    builder.connect(
+        previous,
+        choice_group,
+        source_socket=previous_socket,
+        destination_socket="Active",
+    )
     next_id += 1
 
     branch_nodes: list[tuple[GraphNode, GraphNode]] = []
@@ -1243,7 +1383,13 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         next_id += 1
         builder.connect(choice_group, succeeded)
         builder.connect(succeeded, reply, destination_socket="Active")
-        branch_nodes.append((succeeded, reply))
+        branch_tail = reply
+        if isinstance(choice.get("set_fact"), str):
+            branch_fact = fact_node(builder, next_id, choice["set_fact"])
+            next_id += 1
+            builder.connect(branch_tail, branch_fact)
+            branch_tail = branch_fact
+        branch_nodes.append((succeeded, branch_tail))
 
     join = logical_xor_node(builder, next_id, len(branch_nodes))
     next_id += 1
@@ -1258,22 +1404,34 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         1,
     )
     next_id += 1
-    final_visited = journal_entry_visited_node(
-        builder,
-        next_id,
-        stage.data["final_message"],
-        "gameJournalPhoneMessage",
-    )
+    final_delay = realtime_delay_node(builder, next_id, seconds=1)
     next_id += 1
     builder.connect(join, final_message, source_socket="Out1", destination_socket="Active")
-    builder.connect(final_message, final_visited)
-    previous = final_visited
+    builder.connect(final_message, final_delay)
+    previous = final_delay
 
+    if objective is not None:
+        objective_done = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective_done, destination_socket="Succeeded")
+        previous = objective_done
+    reward = stage.data.get("reward")
+    if isinstance(reward, str) and reward:
+        granted = reward_node(builder, next_id, reward)
+        next_id += 1
+        builder.connect(previous, granted)
+        previous = granted
     completion_fact = stage.data.get("completion_fact")
     if isinstance(completion_fact, str) and completion_fact:
         completed = fact_node(builder, next_id, completion_fact)
         builder.connect(previous, completed)
         previous = completed
+        next_id += 1
+    complete_quest = stage.data.get("complete_quest")
+    if isinstance(complete_quest, str) and complete_quest:
+        quest_done = quest_completion_node(builder, next_id, complete_quest)
+        builder.connect(previous, quest_done, destination_socket="Succeeded")
+        previous = quest_done
     builder.connect_to_earlier_output(previous, phase_output)
 
     return {
@@ -1471,17 +1629,26 @@ def build_reach_area_phase(stage: CompiledStage, archive_target: Path) -> JsonOb
     builder.connect(objective, description, destination_socket="Active")
     builder.connect(description, mappin, destination_socket="Active")
     previous: GraphNode = mappin
+    next_id = 14
     if stage.data.get("start_fact"):
-        started = fact_node(builder, 14, stage.data["start_fact"])
+        started = fact_node(builder, next_id, stage.data["start_fact"])
+        next_id += 1
         builder.connect(previous, started)
         previous = started
     builder.connect(previous, entered, destination_socket="In")
-    builder.connect_to_earlier_input(
-        entered, objective, destination_socket="Succeeded"
+    objective_done = objective_node(
+        builder, next_id, stage.data["objective"]
     )
-    builder.connect(objective, mappin, destination_socket="Inactive")
-    previous = mappin
-    builder.connect_to_earlier_output(previous, end)
+    next_id += 1
+    mappin_done = mappin_node(
+        builder,
+        next_id,
+        stage.data["mappin"],
+        disable_previous_mappins=False,
+    )
+    builder.connect(entered, objective_done, destination_socket="Succeeded")
+    builder.connect(objective_done, mappin_done, destination_socket="Inactive")
+    builder.connect_to_earlier_output(mappin_done, end)
     return phase_document(builder, archive_target)
 
 
@@ -1490,37 +1657,51 @@ def build_leave_area_phase(stage: CompiledStage, archive_target: Path) -> JsonOb
     start, end = input_node(builder), output_node(builder)
     objective: GraphNode | None = None
     previous: GraphNode = start
+    next_id = 10
     if stage.data.get("objective"):
-        objective = objective_node(builder, 10, stage.data["objective"])
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
         builder.connect(start, objective, destination_socket="Active")
         previous = objective
     if stage.data.get("description_entry"):
         description = journal_entry_node(
-            builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+            builder, next_id, stage.data["description_entry"], "gameJournalQuestDescription", 2
         )
+        next_id += 1
         builder.connect(previous, description, destination_socket="Active")
         previous = description
     mappin: GraphNode | None = None
     if stage.data.get("mappin"):
-        mappin = mappin_node(builder, 12, stage.data["mappin"])
+        mappin = mappin_node(builder, next_id, stage.data["mappin"])
+        next_id += 1
         builder.connect(previous, mappin, destination_socket="Active")
         previous = mappin
-    exited = trigger_condition_node(builder, 13, stage.data["trigger"], "Exited")
+    exited = trigger_condition_node(builder, next_id, stage.data["trigger"], "Exited")
+    next_id += 1
     builder.connect(previous, exited, destination_socket="In")
-    builder.connect_to_earlier_input(
-        exited, objective, destination_socket="Succeeded"
-    )
-    previous = objective
+    previous = exited
+    if objective is not None:
+        objective_done = objective_node(
+            builder, next_id, stage.data["objective"]
+        )
+        next_id += 1
+        builder.connect(previous, objective_done, destination_socket="Succeeded")
+        previous = objective_done
     if mappin is not None:
-        builder.connect(previous, mappin, destination_socket="Inactive")
-        previous = mappin
+        mappin_done = mappin_node(
+            builder, next_id, stage.data["mappin"]
+        )
+        next_id += 1
+        builder.connect(previous, mappin_done, destination_socket="Inactive")
+        previous = mappin_done
     if stage.data.get("completion_fact"):
-        completed = fact_node(builder, 14, stage.data["completion_fact"])
+        completed = fact_node(builder, next_id, stage.data["completion_fact"])
+        next_id += 1
         builder.connect(previous, completed)
         previous = completed
     if stage.data.get("cleanup_community"):
         cleanup = community_action_node(
-            builder, 15, stage.data["cleanup_community"], "Deactivate"
+            builder, next_id, stage.data["cleanup_community"], "Deactivate"
         )
         builder.connect(previous, cleanup)
         previous = cleanup
@@ -1533,42 +1714,54 @@ def build_acquire_item_phase(stage: CompiledStage, archive_target: Path) -> Json
     start, end = input_node(builder), output_node(builder)
     objective: GraphNode | None = None
     previous: GraphNode = start
+    next_id = 10
     if stage.data.get("objective"):
-        objective = objective_node(builder, 10, stage.data["objective"])
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
         builder.connect(start, objective, destination_socket="Active")
         previous = objective
     if stage.data.get("description_entry"):
         description = journal_entry_node(
-            builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+            builder, next_id, stage.data["description_entry"], "gameJournalQuestDescription", 2
         )
+        next_id += 1
         builder.connect(previous, description, destination_socket="Active")
         previous = description
     mappin: GraphNode | None = None
     if stage.data.get("mappin"):
-        mappin = mappin_node(builder, 12, stage.data["mappin"])
+        mappin = mappin_node(builder, next_id, stage.data["mappin"])
+        next_id += 1
         builder.connect(previous, mappin, destination_socket="Active")
         previous = mappin
     if stage.data["source"] == "grant":
         grant = add_item_node(
-            builder, 13, stage.data["item"], stage.data.get("quantity", 1)
+            builder, next_id, stage.data["item"], stage.data.get("quantity", 1)
         )
+        next_id += 1
         builder.connect(previous, grant)
         previous = grant
     acquired = inventory_condition_node(
-        builder, 14, stage.data["item"], quantity=stage.data.get("quantity", 1)
+        builder, next_id, stage.data["item"], quantity=stage.data.get("quantity", 1)
     )
+    next_id += 1
     builder.connect(previous, acquired, destination_socket="In")
     previous = acquired
     if objective is not None:
-        builder.connect_to_earlier_input(
-            previous, objective, destination_socket="Succeeded"
+        objective_done = objective_node(
+            builder, next_id, stage.data["objective"]
         )
-        previous = objective
+        next_id += 1
+        builder.connect(previous, objective_done, destination_socket="Succeeded")
+        previous = objective_done
     if mappin is not None:
-        builder.connect(previous, mappin, destination_socket="Inactive")
-        previous = mappin
+        mappin_done = mappin_node(
+            builder, next_id, stage.data["mappin"]
+        )
+        next_id += 1
+        builder.connect(previous, mappin_done, destination_socket="Inactive")
+        previous = mappin_done
     if stage.data.get("acquisition_fact"):
-        completed = fact_node(builder, 15, stage.data["acquisition_fact"])
+        completed = fact_node(builder, next_id, stage.data["acquisition_fact"])
         builder.connect(previous, completed)
         previous = completed
     builder.connect_to_earlier_output(previous, end)
@@ -1580,46 +1773,514 @@ def build_read_shard_phase(stage: CompiledStage, archive_target: Path) -> JsonOb
     start, end = input_node(builder), output_node(builder)
     previous: GraphNode = start
     objective: GraphNode | None = None
+    next_id = 10
     if stage.data.get("objective"):
-        objective = objective_node(builder, 10, stage.data["objective"])
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
         builder.connect(previous, objective, destination_socket="Active")
         previous = objective
     if stage.data.get("description_entry"):
         description = journal_entry_node(
-            builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+            builder, next_id, stage.data["description_entry"], "gameJournalQuestDescription", 2
         )
+        next_id += 1
         builder.connect(previous, description, destination_socket="Active")
         previous = description
     if stage.data.get("activate_entry", False):
         activate = journal_entry_node(
             builder,
-            12,
+            next_id,
             stage.data["journal_entry"],
             "gameJournalOnscreen",
             stage.data["file_entry_index"],
         )
+        next_id += 1
         builder.connect(previous, activate, destination_socket="Active")
         previous = activate
-    if stage.data.get("item"):
-        acquired = inventory_condition_node(builder, 13, stage.data["item"])
-        builder.connect(previous, acquired, destination_socket="In")
-        previous = acquired
-    visited = journal_entry_visited_node(
-        builder,
-        14,
-        stage.data["journal_entry"],
-        stage.data.get("journal_class", "gameJournalOnscreen"),
-        file_index=stage.data.get("file_entry_index", 1),
-    )
-    builder.connect(previous, visited, destination_socket="In")
-    previous = visited
-    if objective is not None:
-        builder.connect_to_earlier_input(
-            previous, objective, destination_socket="Succeeded"
+    acquisition_fact = stage.data.get("acquisition_fact")
+    if isinstance(acquisition_fact, str) and acquisition_fact:
+        acquired = fact_condition_node(builder, next_id, acquisition_fact)
+    else:
+        acquired = inventory_condition_node(builder, next_id, stage.data["item"])
+    next_id += 1
+    builder.connect(previous, acquired, destination_socket="In")
+    previous = acquired
+    presentation_delay = stage.data.get("presentation_delay_seconds", 0)
+    if presentation_delay:
+        delay = realtime_delay_node(
+            builder, next_id, seconds=presentation_delay
         )
-        previous = objective
+        next_id += 1
+        builder.connect(previous, delay, destination_socket="In")
+        previous = delay
+    if objective is not None:
+        objective_done = objective_node(
+            builder, next_id, stage.data["objective"]
+        )
+        next_id += 1
+        builder.connect(previous, objective_done, destination_socket="Succeeded")
+        previous = objective_done
     if stage.data.get("completion_fact"):
-        completed = fact_node(builder, 15, stage.data["completion_fact"])
+        completed = fact_node(builder, next_id, stage.data["completion_fact"])
+        builder.connect(previous, completed)
+        previous = completed
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def scan_started_node(
+    builder: PhaseGraphBuilder, quest_id: int, object_ref: str
+) -> GraphNode:
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questScan_ConditionType",
+            "eventType": "Finished",
+            "objectRef": entity_reference(object_ref),
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questObjectCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def quest_highlight_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    object_ref: str,
+    *,
+    revealed: bool = True,
+) -> GraphNode:
+    highlight_data = builder.handles.wrap(
+        {
+            "$type": "HighlightEditableData",
+            "highlightType": "QUEST",
+            "inTransitionTime": 0.5,
+            "isRevealed": int(revealed),
+            "outlineType": "QUEST",
+            "outTransitionTime": 0.5,
+            "patternType": "Default",
+            "priority": "VeryLow",
+        }
+    )
+    event = builder.handles.wrap(
+        {
+            "$type": "SetDefaultHighlightEvent",
+            "highlightData": highlight_data,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questEventManagerNodeDefinition",
+        input_names=("In",),
+        properties={
+            "componentName": cname("None"),
+            "event": event,
+            "isObjectPlayer": 0,
+            "isUiEvent": 0,
+            "managerName": "PlayerGuidance",
+            "objectRef": entity_reference(object_ref),
+            "PSClassName": cname("None"),
+        },
+    )
+
+
+def device_manager_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    *,
+    device: str,
+    controller: str,
+    action: str,
+) -> GraphNode:
+    params = builder.handles.wrap(
+        {
+            "$type": "questDeviceManager_NodeTypeParams",
+            "actionProperties": [],
+            "deviceAction": cname(action),
+            "deviceControllerClass": cname(controller),
+            "entityRef": entity_reference(),
+            "objectRef": node_ref(device),
+            "slotName": cname("None"),
+        }
+    )
+    node_type = builder.handles.wrap(
+        {"$type": "questDeviceManager_NodeType", "params": [params]}
+    )
+    return builder.node(
+        quest_id,
+        "questInteractiveObjectManagerNodeDefinition",
+        input_names=("In",),
+        properties={"type": node_type},
+    )
+
+
+def device_condition_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    *,
+    device: str,
+    controller: str,
+    function: str,
+) -> GraphNode:
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questDevice_ConditionType",
+            "deviceConditionFunction": cname(function),
+            "deviceControllerClass": cname(controller),
+            "functionParameters": [],
+            "objectRef": node_ref(device),
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questObjectCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def character_spawned_node(
+    builder: PhaseGraphBuilder, quest_id: int, community: str
+) -> GraphNode:
+    comparison = builder.handles.wrap(
+        {
+            "$type": "questComparisonParam",
+            "comparisonType": "Greater",
+            "count": 0,
+            "entireCommunity": 1,
+        }
+    )
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questCharacterSpawned_ConditionType",
+            "comparisonParams": comparison,
+            "objectRef": entity_reference(community),
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questCharacterCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def community_defeated_node(
+    builder: PhaseGraphBuilder, quest_id: int, community: str
+) -> GraphNode:
+    comparison = builder.handles.wrap(
+        {
+            "$type": "questComparisonParam",
+            "comparisonType": "GreaterOrEqual",
+            "count": 0,
+            "entireCommunity": 1,
+        }
+    )
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questCharacterKilled_ConditionType",
+            "comparisonParams": comparison,
+            "defeated": 1,
+            "killed": 1,
+            "objectRef": entity_reference(community),
+            "source": None,
+            "unconscious": 1,
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questCharacterCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def combat_threat_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+) -> GraphNode:
+    params = builder.handles.wrap(
+        {
+            "$type": "AIInjectCombatThreatCommandParams",
+            "dontForceHostileAttitude": 0,
+            "duration": 0,
+            "isPersistent": 0,
+            "targetNodeRef": node_ref("0", storage="uint64"),
+            "targetPuppetRef": entity_reference("#player"),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questCombatNodeDefinition",
+        input_names=("In",),
+        output_names=("Success",),
+        properties={
+            "entityReference": entity_reference(
+                community, names=[entry]
+            ),
+            "function": cname("questCombatNodeParams_ShootAt"),
+            "params": params,
+        },
+    )
+
+
+def build_interact_device_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    objective: GraphNode | None = None
+    next_id = 10
+    if stage.data.get("objective"):
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder,
+            next_id,
+            stage.data["description_entry"],
+            "gameJournalQuestDescription",
+            2,
+        )
+        next_id += 1
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    mappin: GraphNode | None = None
+    if stage.data.get("mappin"):
+        mappin = mappin_node(builder, next_id, stage.data["mappin"])
+        next_id += 1
+        builder.connect(previous, mappin, destination_socket="Active")
+        previous = mappin
+    action: GraphNode | None = None
+    if stage.data.get("send_action", True):
+        action = device_manager_node(
+            builder,
+            next_id,
+            device=stage.data["device"],
+            controller=stage.data["controller_class"],
+            action=stage.data["action"],
+        )
+        next_id += 1
+    completed = device_condition_node(
+        builder,
+        next_id,
+        device=stage.data["device"],
+        controller=stage.data["controller_class"],
+        function=stage.data["completion_function"],
+    )
+    next_id += 1
+    if action is not None:
+        builder.connect(previous, action)
+        builder.connect(action, completed)
+    else:
+        builder.connect(previous, completed)
+    previous = completed
+    if objective is not None:
+        objective_done = objective_node(
+            builder, next_id, stage.data["objective"]
+        )
+        next_id += 1
+        builder.connect(previous, objective_done, destination_socket="Succeeded")
+        previous = objective_done
+    if mappin is not None:
+        mappin_done = mappin_node(
+            builder, next_id, stage.data["mappin"]
+        )
+        next_id += 1
+        builder.connect(previous, mappin_done, destination_socket="Inactive")
+        previous = mappin_done
+    if stage.data.get("success_fact"):
+        succeeded = fact_node(builder, next_id, stage.data["success_fact"])
+        builder.connect(previous, succeeded)
+        previous = succeeded
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def build_combat_encounter_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    objective: GraphNode | None = None
+    next_id = 10
+    if stage.data.get("trigger"):
+        proximity = trigger_condition_node(
+            builder, next_id, stage.data["trigger"], "Entered"
+        )
+        next_id += 1
+        builder.connect(previous, proximity, destination_socket="In")
+        previous = proximity
+    if stage.data.get("objective"):
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder,
+            next_id,
+            stage.data["description_entry"],
+            "gameJournalQuestDescription",
+            2,
+        )
+        next_id += 1
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    activate = community_action_node(
+        builder, next_id, stage.data["community"], "Activate"
+    )
+    next_id += 1
+    spawned = character_spawned_node(
+        builder, next_id, stage.data["community"]
+    )
+    next_id += 1
+    defeated = community_defeated_node(
+        builder, next_id, stage.data["community"]
+    )
+    next_id += 1
+    builder.connect(previous, activate)
+    builder.connect(activate, spawned)
+    previous = spawned
+    previous_socket = "Out"
+    for entry in stage.data.get("entries", []):
+        attack = combat_threat_node(
+            builder, next_id, stage.data["community"], entry
+        )
+        next_id += 1
+        builder.connect(previous, attack, source_socket=previous_socket)
+        previous = attack
+        previous_socket = "Success"
+    if stage.data.get("entries"):
+        builder.connect_to_earlier_input(
+            previous,
+            defeated,
+            source_socket=previous_socket,
+            destination_socket="In",
+        )
+    else:
+        builder.connect(
+            previous,
+            defeated,
+            source_socket=previous_socket,
+            destination_socket="In",
+        )
+    previous = defeated
+    if objective is not None:
+        objective_done = objective_node(
+            builder, next_id, stage.data["objective"]
+        )
+        next_id += 1
+        builder.connect(previous, objective_done, destination_socket="Succeeded")
+        previous = objective_done
+    if stage.data.get("completion_fact"):
+        completed = fact_node(builder, next_id, stage.data["completion_fact"])
+        next_id += 1
+        builder.connect(previous, completed)
+        previous = completed
+    if stage.data.get("cleanup_on_exit"):
+        cleanup = community_action_node(
+            builder, next_id, stage.data["community"], "Deactivate"
+        )
+        builder.connect(previous, cleanup)
+        previous = cleanup
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def build_investigate_clues_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    """Generate an ordered scan flow for any positive number of clues."""
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    objective = objective_node(builder, 10, stage.data["objective"])
+    description = journal_entry_node(
+        builder, 11, stage.data["description_entry"], "gameJournalQuestDescription", 2
+    )
+    builder.connect(start, objective, destination_socket="Active")
+    builder.connect(objective, description, destination_socket="Active")
+    previous: GraphNode = description
+    next_id = 20
+
+    for clue in stage.data["clues"]:
+        if clue.get("mappin"):
+            clue_mappin = mappin_node(builder, next_id, clue["mappin"])
+            next_id += 1
+            builder.connect(
+                previous, clue_mappin, destination_socket="Active"
+            )
+            previous = clue_mappin
+
+        scanned = scan_started_node(builder, next_id, clue["object_ref"])
+        next_id += 1
+        builder.connect(previous, scanned, destination_socket="In")
+        previous = scanned
+
+        if clue.get("mappin"):
+            clue_mappin_done = mappin_node(
+                builder, next_id, clue["mappin"]
+            )
+            next_id += 1
+            builder.connect(
+                previous, clue_mappin_done, destination_socket="Inactive"
+            )
+            previous = clue_mappin_done
+        if clue.get("journal_entry"):
+            journal = journal_entry_node(
+                builder,
+                next_id,
+                clue["journal_entry"],
+                "gameJournalOnscreen",
+                5,
+            )
+            next_id += 1
+            builder.connect(
+                previous, journal, destination_socket="Active"
+            )
+            previous = journal
+        if clue.get("completion_fact"):
+            clue_fact = fact_node(builder, next_id, clue["completion_fact"])
+            next_id += 1
+            builder.connect(previous, clue_fact)
+            previous = clue_fact
+        if clue.get("grant_item"):
+            granted = add_item_node(
+                builder, next_id, clue["grant_item"], 1
+            )
+            next_id += 1
+            builder.connect(previous, granted)
+            previous = granted
+
+    objective_done = objective_node(
+        builder, next_id, stage.data["objective"]
+    )
+    next_id += 1
+    builder.connect(previous, objective_done, destination_socket="Succeeded")
+    previous = objective_done
+    if stage.data.get("completion_fact"):
+        completed = fact_node(builder, next_id, stage.data["completion_fact"])
         builder.connect(previous, completed)
         previous = completed
     builder.connect_to_earlier_output(previous, end)
@@ -1639,9 +2300,17 @@ def build_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         result = build_acquire_item_phase(stage, archive_target)
     elif stage.type == "read_shard" and not stage.data.get("phase_template"):
         result = build_read_shard_phase(stage, archive_target)
+    elif stage.type == "investigate_clues" and not stage.data.get("phase_template"):
+        result = build_investigate_clues_phase(stage, archive_target)
+    elif stage.type == "interact_device" and not stage.data.get("phase_template"):
+        result = build_interact_device_phase(stage, archive_target)
+    elif stage.type == "combat_encounter" and not stage.data.get("phase_template"):
+        result = build_combat_encounter_phase(stage, archive_target)
     else:
         result = instantiate_stage_phase(stage, archive_target)
     validate_handle_graph(result, context=f"Stage {stage.id}")
+    if stage.type in DIRECT_STAGE_TYPES and not stage.data.get("phase_template"):
+        validate_no_forward_handle_refs(result, context=f"Stage {stage.id}")
     validate_stage_contract(stage, result)
     return result
 

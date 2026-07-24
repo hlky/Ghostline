@@ -465,6 +465,41 @@ runtime-branching requirement.
 `tools/explore_world.py` inspects deserialized `.streamingblock` and
 `.streamingsector` CR2W-JSON.
 
+`tools/index_world_assets.py` turns exact vanilla depot paths into a reusable
+placement index. First binary-filter the extracted Night City sectors for the
+path and serialize only the matching sectors, then build the index:
+
+```powershell
+py .\tools\index_world_assets.py build `
+  --sectors H:\Ghostline-audits\antenna-access-points `
+  --resource 'base\gameplay\devices\masters\access_points\antenna_access_point_small.ent' `
+  --output .\reference\world\antenna-access-points.json
+
+py .\tools\index_world_assets.py list `
+  --manifest .\reference\world\antenna-access-points.json `
+  --near=-1111.060,1456.400,16.360 `
+  --radius 100
+```
+
+The checked Ghostline references currently cover 82 small antenna access
+points, 161 large gameplay antenna placements, and 387 decorative satellite
+dish placements. Exact transforms are discovery evidence, not proof of
+walkable access or a safe quest lifecycle; quest-owned devices and communities
+should be placed at a reviewed terrain candidate rather than mutating a vanilla
+activity.
+
+Loot containers are also useful as dense, city-wide sampling anchors when a
+quest needs a pseudo-random contact, encounter, or prop location. Index an
+exact container template such as
+`base\gameplay\loot\containers\weapon_cases\weapon_case_small.ent`, choose a
+deterministic random candidate using the quest/save seed, then place the
+quest-owned object at a reviewed nearby offset. Do not place a character at the
+container transform itself: first verify walking access, navmesh, clearance,
+ground height, streaming ownership, and conflicts with the vanilla encounter.
+The Kabuki World Inspector capture at
+`-1082.949, 1412.400, 21.773` (`weapon_case_small`) is the initial reference
+for this location-sampling pattern.
+
 ```powershell
 py .\tools\explore_world.py summary
 py .\tools\explore_world.py blocks

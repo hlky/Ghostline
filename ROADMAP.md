@@ -27,6 +27,177 @@ world-reference notes, and packaging instructions now live in focused docs:
 
 ## Current Status
 
+### GQ002 — The Machine Stops
+
+- `source/quests/gq002.quest.json` is an eleven-stage, shipping-valid typed
+  manifest covering Patch's phone offer, Cinder's meeting scene, area entry,
+  three ordered investigation clues, a readable shard, forced-hostile Tyger
+  Claw security, a phone choice, a fact-backed outcome gate, relay operation,
+  cleanup, and an outcome-aware Cinder debrief.
+- The compiler now directly generates variable-size `investigate_clues`,
+  `combat_encounter`, and `interact_device` phases. Phone choices may set
+  branch facts, and `opening_branches` provides fact-conditioned outcome
+  messages before a shared phone response group. Generated direct phases also
+  reject forward handle references that WolvenKit cannot deserialize.
+- Cinder's custom character resources, TweakXL record, scene, journal,
+  onscreen localization, subtitle map, VO map, Kabuki world resources, and all
+  eleven phase resources exist under their final `source/raw` and
+  `source/archive` depot paths. The scene audit passes, the world inspector
+  reports Cinder plus three security entries, all journal localization keys
+  resolve, and the full 158-test repository suite passes.
+- The selected native relay anchor is
+  `Devices.Antenna_AP` at `(-1111.06006, 1456.39990, 16.359997)`. Two nearby
+  native antenna access points provide the other scan targets. The reusable
+  indexes contain 82 small access points, 161 large antennas, and 387
+  decorative dishes. Loot containers are documented as deterministic sampling
+  anchors for future pseudo-random character and encounter locations.
+- Voice generation and selection are complete. The retained 72-WAV audition
+  bank contains three V takes per line from the existing `v.pt`, three Cinder
+  voice designs with three takes per spoken Cinder line, three reusable Cinder
+  embeddings, and three design references. The selected Cinder design is
+  `cinder-a-grounded-medic`; all eleven chosen takes are recorded with source
+  path, measured duration, and SHA-256 in
+  `source/raw/gq002_01_voice_selection.json`. The measured durations were
+  written back to the dialogue manifest, the scene was regenerated, all eleven
+  WEMs were converted successfully, and subtitle/VO coverage has no gaps or
+  duplicate IDs.
+- The final GQ002 static gate passes: all 21 CR2W resources serialize, all 158
+  repository tests pass, and the scoped 278-entry archive extracts with every
+  payload byte-identical to `source/archive`. The verified archive and
+  nine-file ZIP are retained at
+  `H:\Ghostline-builds\gq002-machine-stops-20260723`; archive SHA-256 is
+  `783A11CF8FF248FEDFC3CC190BDE357B9D4309B2DEBE0D13A95BC5E0D15251EA`.
+  The nine staged files are installed byte-identically under
+  `H:\Cyberpunk 2077`, with the previous install backed up at
+  `H:\Ghostline-backups\pre-gq002-machine-stops-20260723`.
+- The remaining gate is an in-game run from a clean/pre-GQ002 save. World
+  coordinates are extracted evidence and still require terrain, navmesh,
+  interaction, combat, branch, journal, VO, and completion validation.
+- The first runtime pass found Cinder intersecting rooftop geometry and exposed
+  a generated-phase lifecycle defect: active journal and mappin nodes were also
+  being used as completion signals, which immediately revealed later
+  objectives and reached Cinder's relay decision before the relay work. The
+  direct `reach_area`, `investigate_clues`, `read_shard`, `combat_encounter`,
+  `interact_device`, `leave_area`, and `acquire_item` builders now serialize
+  activation, the real condition, and separate completion-state nodes in strict
+  order. Cinder's anchor was moved into the open rooftop area.
+- The corrected 2026-07-23 runtime candidate is retained at
+  `H:\Ghostline-builds\gq002-sequencing-fix-20260723`. Its 278 extracted
+  payloads match `source/archive`, all 158 tests plus 80 subtests pass, and the
+  archive SHA-256 is
+  `E5BAA7FE06E2BBD85A6D094C897F1BF847C4B3076B57C0A8CE8749138E5A4D77`.
+  All nine staged files are installed byte-identically; the preceding install
+  is backed up at
+  `H:\Ghostline-backups\pre-gq002-sequencing-fix-20260723`.
+- The second runtime pass found Cinder and two security actors on invalid
+  surfaces, six-metre contact volumes still too permissive, scan targets
+  lacking vanilla quest highlighting, the shard activation swallowed by the
+  final clue, and the terminal phone phase exiting without succeeding the root
+  journal quest. The next candidate moves Cinder back onto the captured roof
+  plane, reduces her engage/awareness radii to three metres, places all guards
+  on the estimated walking plane around the relay, uses vanilla
+  `SetDefaultHighlightEvent`/`QUEST` outline data with `Finished` scan
+  conditions, activates the shard in its own stage, and explicitly succeeds
+  `quests/minor_quest/gq002` after the final message.
+- That candidate is retained at
+  `H:\Ghostline-builds\gq002-runtime-fixes-20260723`. All 278 archive payloads
+  match `source/archive`, 159 tests plus 80 subtests pass, and archive SHA-256
+  is `F8738A94773AFFD415BEEA2C6A77CB21C22CF3B375ECAB88DC0E1C3CE2B98BC7`.
+  The previous install is backed up at
+  `H:\Ghostline-backups\pre-gq002-runtime-fixes-20260723`.
+- The third runtime pass showed the original Kabuki rooftop remains unsuitable
+  as a contact location, the second clue's extracted mappin transform is not a
+  useful visual locator, shard journal activation alone does not produce the
+  expected acquisition notice, and security must wait until V returns from the
+  remote third clue. Cinder now uses the separately runtime-proven GQ001
+  contact pad, the second clue relies on its quest outline without an offset
+  pin, the last scan grants a real readable
+  `Items.GhostlineHostageCircuit` shard, and combat is gated by a dedicated
+  ten-metre trigger at the target relay. The guards are restored to the visible
+  rooftop plane at `z=16.36` using the tighter horizontal cluster.
+- The resulting candidate is retained at
+  `H:\Ghostline-builds\gq002-location-combat-fix-20260723`. Its 278 payloads
+  match `source/archive`; the source gate remains 159 tests plus 80 subtests.
+  Archive SHA-256 is
+  `34A7F1024B0BB5913F437CF63DEA9783E2636A064722D0E8A3416B0BEA20D0DF`,
+  and the previous install is backed up at
+  `H:\Ghostline-backups\pre-gq002-location-combat-fix-20260723`.
+- The fourth runtime pass confirmed the real shard item and pickup
+  notification, but exposed an incorrect `fileEntryIndex: 5` in the subsequent
+  visited condition. `onscreens/...` paths use their top-level journal file
+  entry at index `1`. The second relay pin is restored by binding its journal
+  mappin directly to the native access-point NodeRef instead of the offset
+  custom static marker. Every investigation clue now sends paired vanilla
+  `SetDefaultHighlightEvent` reveal/conceal events around its completed scan.
+- The resulting candidate is retained at
+  `H:\Ghostline-builds\gq002-journal-highlight-fix-20260723`. All 278 extracted
+  payloads match `source/archive`; 160 tests pass. Archive SHA-256 is
+  `50134BD2F8BD116BA133F4AD456DD877562CDBCE97C290D600FB615710535328`,
+  and the prior install is backed up at
+  `H:\Ghostline-backups\pre-gq002-journal-highlight-fix-20260723`.
+- Runtime clarified that opening a readable item from its pickup-notification
+  overlay does not set the journal `visited` flag that the full Journal reader
+  sets. GQ002 now explicitly accepts that preview route: it ensures the shard
+  entry is active without a second notification, waits three seconds for the
+  presentation, and completes the read stage from item ownership. Investigation
+  highlight concealment is delayed one second beyond the device scan's
+  `Finished` event so the vanilla device handler cannot immediately overwrite
+  it. The second clue keeps a world/map icon but disables its misleading GPS
+  projection to the native device's remote gameplay proxy.
+- This candidate is retained at
+  `H:\Ghostline-builds\gq002-preview-highlight-delay-20260723`. Its 278
+  extracted payloads match `source/archive`; 160 tests pass. Archive SHA-256
+  is `B2F418B7A80BA2950BC2A42C924A3D71061C45E0C55B2A0764935D835EC3C31D`.
+- Runtime proved that the delayed conceal still leaves Ghostline's yellow
+  quest highlight active on native antenna devices. The current candidate
+  removes the custom `SetDefaultHighlightEvent` layer entirely and relies on
+  the antennas' native blue scanner outline; `questScan Finished` remains the
+  clue-completion condition. The readable-shard stage now waits on ownership
+  of the real item instead of the Journal reader's visited flag, since the
+  pickup-notification overlay does not emit that full-reader state.
+- The verified and installed candidate is retained at
+  `H:\Ghostline-builds\gq002-native-scanner-20260723`. All 278 extracted
+  payloads match `source/archive`, all 160 tests pass, and the archive SHA-256
+  is `9291927EAF3059628AC57A97AB71C65D2424652258BEFD86B90025A546395DDC`.
+  The preceding nine-file install is backed up at
+  `H:\Ghostline-backups\pre-gq002-native-scanner-20260723`.
+- Runtime then proved that the readable shard's secondary action consumes it
+  into the Journal, so an inventory-count condition still cannot complete the
+  read stage. The current graph instead uses the final scan's
+  `gq002_clue_invoice_scanned` acquisition fact, waits three seconds for the
+  pickup presentation, succeeds the objective, and sets
+  `gq002_shard_read`. It deliberately does not claim to detect whether the
+  pickup overlay itself was read.
+- The verified and installed replacement is retained at
+  `H:\Ghostline-builds\gq002-shard-fact-20260723`. All 278 extracted payloads
+  match `source/archive`, all 160 tests pass, and the archive SHA-256 is
+  `82C221619EBA15D39D5F82D53B9CCE86AEEB9107AEC15166718143043284B312`.
+  The preceding install is backed up at
+  `H:\Ghostline-backups\pre-gq002-shard-fact-20260723`.
+- Runtime confirms that replacement advances beyond the shard objective, but
+  exposed the next security trigger waiting silently below the rooftop. Its
+  centre was four metres beneath the native relay's `z=16.36` walking plane,
+  leaving V on the boundary of the eight-metre-tall volume. The security
+  trigger is now centred on the relay anchor and is ten metres tall.
+- The verified and installed correction is retained at
+  `H:\Ghostline-builds\gq002-security-trigger-20260723`. All 278 extracted
+  payloads match `source/archive`, all 161 tests pass, and the archive SHA-256
+  is `8FF1835A73F93B032FC4E1602FA1CC80234779706B085C385EBB7DFB91CE945B`.
+  The preceding install is backed up at
+  `H:\Ghostline-backups\pre-gq002-security-trigger-20260723`.
+- Runtime confirms that entering the corrected trigger activates the security
+  encounter and that the remainder of the quest works, but the trigger wait
+  left the tracker blank after the shard stage. A dedicated generated
+  `reach_area` stage now activates `Return to the target relay.` and a yellow
+  GPS-enabled relay pin, succeeds and clears both on trigger entry, then hands
+  off to the trigger-free security phase.
+- The verified and installed navigation correction is retained at
+  `H:\Ghostline-builds\gq002-return-relay-20260723`. All 279 extracted payloads
+  match `source/archive`, all 162 tests pass, and the archive SHA-256 is
+  `8F84793C62FF446B5A54E30429B03FD3C5E483AE0998D78372B596B407D1BF50`.
+  The preceding install is backed up at
+  `H:\Ghostline-backups\pre-gq002-return-relay-20260723`.
+
 ### Recovered Quest Design
 
 - The original narrative brief has been recovered and normalized in
@@ -802,3 +973,18 @@ world-reference notes, and packaging instructions now live in focused docs:
   advances the quest, Morrow sends both opening messages, either V reply gets
   only its matching response, the final message and completion reward arrive,
   and `GHOSTLINE` moves to Completed.
+- The 2026-07-23 GQ002 final-polish candidate is built, payload-verified, and
+  installed. It moves the obstructed melee guard onto the open relay floor,
+  makes the final relay phase observe the native breach result without sending
+  a second `ToggleON` action, adds a visible `Respond to Cinder` objective
+  across the debrief exchange, and grants
+  `QuestRewards.gq002_completion` before quest completion. All 165 tests pass;
+  all 279 extracted archive payloads match `source/archive`; all nine staged,
+  ZIP, and installed files match. Installed archive SHA-256 is
+  `E37C3498B0AF0EE01697C4542D579252DE844E4D529F6381EDAF0D0CFCA1BF94`;
+  ZIP SHA-256 is
+  `AD8E9A0735F1F3984ABAAF503596A80756F39535119B74D3412C5E4D55C2939C`.
+  Evidence is retained at
+  `H:\Ghostline-builds\gq002-final-polish-20260723`; the replaced install is
+  backed up at
+  `H:\Ghostline-backups\pre-gq002-final-polish-20260723`.

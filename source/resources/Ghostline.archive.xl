@@ -2,27 +2,34 @@ quest:
   phases:
   - path: mod\gq001\phases\gq001.questphase
     parent: base\quest\cyberpunk2077.quest
+  - path: mod\gq002\phases\gq002.questphase
+    parent: base\quest\cyberpunk2077.quest
 journal:
 - mod\gq000\journal\gq000.journal
 - mod\gq001\journal\gq001.journal
+- mod\gq002\journal\gq002.journal
 localization:
   onscreens:
     en-us:
     - mod\ghostline\localization\en-us\onscreens\ghostline.json
     - mod\gq000\localization\en-us\onscreens\gq000.json
     - mod\gq001\localization\en-us\onscreens\gq001.json
+    - mod\gq002\localization\en-us\onscreens\gq002.json
   subtitles:
     en-us:
     - mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json
     - mod\gq001\localization\en-us\subtitles\gq001_03_subtitles_map.json
+    - mod\gq002\localization\en-us\subtitles\gq002_01_subtitles_map.json
   vomaps:
     en-us:
     - mod\gq000\localization\en-us\vo\gq000_01.json
     - mod\gq001\localization\en-us\vo\gq001_03.json
+    - mod\gq002\localization\en-us\vo\gq002_01.json
 streaming:
   blocks:
   - mod\gq000\world\gq000_patch_meet.streamingblock
   - mod\gq001\world\gq001_iris_meet.streamingblock
+  - mod\gq002\world\gq002_machine_stops.streamingblock
 resource:
   patch:
     mod\gq000\world\gq000_custom_devices.devices:
