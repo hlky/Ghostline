@@ -67,12 +67,18 @@ class AdvancedQuestBlockTemplateTests(unittest.TestCase):
     def test_vehicle_family_preserves_vanilla_condition_and_cleanup_shapes(self):
         enter = templates.build_enter_vehicle()
         ride = templates.build_ride_with_contact()
+        steal = templates.build_steal_vehicle()
         cleanup = templates.build_vehicle_cleanup()
         self.assertIn("questCharacterMount_ConditionType", json.dumps(enter))
         self.assertEqual(
             json.dumps(ride).count("questCharacterMount_ConditionType"), 2
         )
-        self.assertIn("questEnablePlayerVehicle_NodeType", json.dumps(cleanup))
+        self.assertNotIn("questSpawnManagerNodeDefinition", json.dumps(steal))
+        self.assertNotIn('"action": "Activate"', json.dumps(steal))
+        self.assertIn(templates.VEHICLE_COMMUNITY, json.dumps(steal))
+        self.assertIn(templates.VEHICLE_ENTRY, json.dumps(steal))
+        self.assertNotIn("questEnablePlayerVehicle_NodeType", json.dumps(cleanup))
+        self.assertIn(templates.COMPLETION_FACT, json.dumps(cleanup))
 
 
 if __name__ == "__main__":

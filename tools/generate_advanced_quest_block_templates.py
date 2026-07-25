@@ -21,6 +21,7 @@ from generate_cache_phase import (
     fact_node,
     input_node,
     local_player_reference,
+    mappin_node,
     node_ref,
     objective_node,
     output_node,
@@ -51,6 +52,9 @@ DESTINATION_1 = "{{destination_1}}"
 DESTINATION_2 = "{{destination_2}}"
 DESTINATION_3 = "{{destination_3}}"
 VEHICLE = "{{vehicle}}"
+VEHICLE_COMMUNITY = "{{vehicle_community}}"
+VEHICLE_ENTRY = "{{vehicle_entry}}"
+MAPPIN = "{{mappin}}"
 CONTACT_COMMUNITY = "{{contact_community}}"
 CONTACT_ENTRY = "{{contact_entry}}"
 PLAYER_VEHICLE_RECORD = "{{player_vehicle_record}}"
@@ -245,6 +249,8 @@ def mount_condition(
     quest_id: int,
     *,
     vehicle: str,
+    vehicle_community: str | None = None,
+    vehicle_entry: str | None = None,
     community: str | None = None,
     entry: str | None = None,
 ) -> GraphNode:
@@ -266,7 +272,14 @@ def mount_condition(
             "condition": "OnMount",
             "enterAnimationFinished": 0,
             "parentIsPlayer": 0,
-            "parentRef": entity_reference(vehicle),
+            "parentRef": (
+                entity_reference(
+                    vehicle_community,
+                    names=(vehicle_entry or "",),
+                )
+                if vehicle_community is not None
+                else entity_reference(vehicle)
+            ),
             "playerVehicleName": "",
             "role": "Driver",
             "usePlayersVehicle": 0,
@@ -326,6 +339,74 @@ def player_vehicle_node(
             "enable": int(not despawn),
             "makePlayerActiveVehicle": int(not despawn),
             "vehicle": record,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questVehicleNodeDefinition",
+        input_names=("In",),
+        properties={"type": node_type},
+    )
+
+
+def community_action_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community_ref: str,
+    action: str,
+    *,
+    entry: str = "None",
+    phase: str = "None",
+) -> GraphNode:
+    action_type = builder.handles.wrap(
+        {
+            "$type": "questCommunityTemplate_NodeType",
+            "action": action,
+            "communityEntryName": cname(entry),
+            "communityEntryPhaseName": cname(phase),
+            "spawnerReference": node_ref(community_ref),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questSpawnManagerNodeDefinition",
+        input_names=("In",),
+        properties={
+            "actions": [
+                {
+                    "$type": "questSpawnManagerNodeActionEntry",
+                    "type": action_type,
+                }
+            ]
+        },
+    )
+
+
+def assign_character_to_vehicle(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    *,
+    community: str,
+    entry: str,
+    vehicle: str,
+    vehicle_entry: str | None = None,
+    slot: str = "seat_front_right",
+) -> GraphNode:
+    node_type = builder.handles.wrap(
+        {
+            "$type": "questAssignCharacter_NodeType",
+            "assign": 1,
+            "characterRef": entity_reference(community, names=(entry,)),
+            "clearAssignedVehicleIdWhenUnmounting": 0,
+            "entryAnimName": cname("None"),
+            "entrySlotName": cname("default"),
+            "isInstant": 1,
+            "isPlayer": 0,
+            "slotName": cname(slot),
+            "vehicleRef": entity_reference(
+                vehicle,
+                names=(vehicle_entry,) if vehicle_entry is not None else (),
+            ),
         }
     )
     return builder.node(
@@ -471,12 +552,23 @@ def build_enter_vehicle() -> JsonObject:
     builder = PhaseGraphBuilder()
     start, end = input_node(builder), output_node(builder)
     active = objective_node(builder, 10, OBJECTIVE)
-    mounted = mount_condition(builder, 11, vehicle=VEHICLE)
-    done = objective_node(builder, 12, OBJECTIVE)
+    pin_on = mappin_node(builder, 11, MAPPIN)
+    mounted = mount_condition(
+        builder,
+        12,
+        vehicle=VEHICLE_COMMUNITY,
+        vehicle_community=VEHICLE_COMMUNITY,
+        vehicle_entry=VEHICLE_ENTRY,
+    )
+    mounted.data["condition"]["Data"]["type"]["Data"]["role"] = "Invalid"
+    done = objective_node(builder, 13, OBJECTIVE)
+    pin_off = mappin_node(builder, 14, MAPPIN)
     builder.connect(start, active, destination_socket="Active")
-    builder.connect(active, mounted)
+    builder.connect(active, pin_on, destination_socket="Active")
+    builder.connect(pin_on, mounted)
     builder.connect(mounted, done, destination_socket="Succeeded")
-    finish(builder, done, end)
+    builder.connect(done, pin_off, destination_socket="Inactive")
+    finish(builder, pin_off, end)
     return phase_document(builder, "enter_vehicle")
 
 
@@ -484,25 +576,43 @@ def build_ride_with_contact() -> JsonObject:
     builder = PhaseGraphBuilder()
     start, end = input_node(builder), output_node(builder)
     active = objective_node(builder, 10, OBJECTIVE)
-    player = mount_condition(builder, 11, vehicle=VEHICLE)
-    contact = mount_condition(
+    assign = assign_character_to_vehicle(
+        builder,
+        11,
+        community=CONTACT_COMMUNITY,
+        entry=CONTACT_ENTRY,
+        vehicle=VEHICLE_COMMUNITY,
+        vehicle_entry=VEHICLE_ENTRY,
+    )
+    player = mount_condition(
         builder,
         12,
         vehicle=VEHICLE,
+        vehicle_community=VEHICLE_COMMUNITY,
+        vehicle_entry=VEHICLE_ENTRY,
+    )
+    contact = mount_condition(
+        builder,
+        13,
+        vehicle=VEHICLE,
+        vehicle_community=VEHICLE_COMMUNITY,
+        vehicle_entry=VEHICLE_ENTRY,
         community=CONTACT_COMMUNITY,
         entry=CONTACT_ENTRY,
     )
+    contact.data["condition"]["Data"]["type"]["Data"]["role"] = "Passenger"
     join = builder.node(
-        13,
+        14,
         "questLogicalAndNodeDefinition",
         input_names=("In1", "In2"),
         output_names=("Out1",),
         properties={"inputSocketCount": 2, "outputSocketCount": 1},
     )
-    done = objective_node(builder, 14, OBJECTIVE)
+    done = objective_node(builder, 15, OBJECTIVE)
     builder.connect(start, active, destination_socket="Active")
-    builder.connect(active, player)
-    builder.connect(active, contact)
+    builder.connect(active, assign)
+    builder.connect(assign, player)
+    builder.connect(assign, contact)
     builder.connect(player, join, destination_socket="In1")
     builder.connect(contact, join, destination_socket="In2")
     builder.connect(join, done, source_socket="Out1", destination_socket="Succeeded")
@@ -514,36 +624,58 @@ def build_drive_to() -> JsonObject:
     builder = PhaseGraphBuilder()
     start, end = input_node(builder), output_node(builder)
     active = objective_node(builder, 10, OBJECTIVE)
+    pin_on = mappin_node(builder, 11, MAPPIN)
     arrived = trigger_condition(
-        builder, 11, DESTINATION_1, entity_reference(VEHICLE)
+        builder,
+        12,
+        DESTINATION_1,
+        entity_reference(VEHICLE_COMMUNITY, names=(VEHICLE_ENTRY,)),
     )
-    done = objective_node(builder, 12, OBJECTIVE)
-    fact = fact_node(builder, 13, COMPLETION_FACT)
+    done = objective_node(builder, 13, OBJECTIVE)
+    pin_off = mappin_node(builder, 14, MAPPIN)
+    fact = fact_node(builder, 15, COMPLETION_FACT)
     builder.connect(start, active, destination_socket="Active")
-    builder.connect(active, arrived)
+    builder.connect(active, pin_on, destination_socket="Active")
+    builder.connect(pin_on, arrived)
     builder.connect(arrived, done, destination_socket="Succeeded")
-    builder.connect(done, fact)
+    builder.connect(done, pin_off, destination_socket="Inactive")
+    builder.connect(pin_off, fact)
     finish(builder, fact, end)
     return phase_document(builder, "drive_to")
 
 
 def build_steal_vehicle() -> JsonObject:
-    result = build_enter_vehicle()
-    result["Header"]["ArchiveFileName"] = str(
-        (ARCHIVE_ROOT / "steal_vehicle.questphase").resolve()
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    active = objective_node(builder, 10, OBJECTIVE)
+    pin_on = mappin_node(builder, 11, MAPPIN)
+    mounted = mount_condition(
+        builder,
+        12,
+        vehicle=VEHICLE_COMMUNITY,
+        vehicle_community=VEHICLE_COMMUNITY,
+        vehicle_entry=VEHICLE_ENTRY,
     )
-    return result
+    mounted.data["condition"]["Data"]["type"]["Data"]["role"] = "Invalid"
+    done = objective_node(builder, 13, OBJECTIVE)
+    pin_off = mappin_node(builder, 14, MAPPIN)
+    builder.connect(start, active, destination_socket="Active")
+    builder.connect(active, pin_on, destination_socket="Active")
+    builder.connect(pin_on, mounted)
+    builder.connect(mounted, done, destination_socket="Succeeded")
+    builder.connect(done, pin_off, destination_socket="Inactive")
+    finish(builder, pin_off, end)
+    return phase_document(builder, "steal_vehicle")
 
 
 def build_vehicle_cleanup() -> JsonObject:
     builder = PhaseGraphBuilder()
     start, end = input_node(builder), output_node(builder)
-    cleanup = player_vehicle_node(
-        builder, 10, PLAYER_VEHICLE_RECORD, despawn=True
-    )
-    fact = fact_node(builder, 11, COMPLETION_FACT)
-    builder.connect(start, cleanup)
-    builder.connect(cleanup, fact)
+    # questEnablePlayerVehicle despawns every quest vehicle in this harness,
+    # not just the requested record. Keep intermediate cleanup non-destructive;
+    # the dedicated final-cleanup template still performs the actual despawn.
+    fact = fact_node(builder, 10, COMPLETION_FACT)
+    builder.connect(start, fact)
     finish(builder, fact, end)
     return phase_document(builder, "vehicle_cleanup")
 

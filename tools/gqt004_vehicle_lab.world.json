@@ -1,0 +1,107 @@
+{
+  "_note": "GQT004 vehicle lifecycle test. The origin is the runtime-verified Kabuki test placement supplied on 2026-07-24.",
+  "name": "gqt004",
+  "prefab_root": "$/mod/gqt004/#gqt004_pr_vehicle_lab",
+  "block_path": "mod\\gqt004\\world\\gqt004_vehicle_lab.streamingblock",
+  "quest_sector_path": "mod\\gqt004\\world\\gqt004_vehicle_lab.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt004\\world\\gqt004_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1078.2563,
+    "y": 1313.9362,
+    "z": 5.174843,
+    "yaw": -3.628360655
+  },
+  "markers": [
+    {
+      "ref": "#gqt004_01_mp_ride_vehicle",
+      "sector": "always_loaded",
+      "position": {"from": "origin"},
+      "yaw": "origin"
+    },
+    {
+      "ref": "#gqt004_03_mp_ride_destination",
+      "sector": "always_loaded",
+      "position": {"x": -1101.0, "y": 1424.0, "z": 5.23},
+      "yaw": 332.258165
+    },
+    {
+      "ref": "#gqt004_04_mp_theft_vehicle",
+      "sector": "always_loaded",
+      "position": {"x": -1115.9425, "y": 1431.5853, "z": 5.433075},
+      "yaw": 23.894821357
+    },
+    {
+      "ref": "#gqt004_05_mp_theft_destination",
+      "sector": "always_loaded",
+      "position": {"x": -1065.0, "y": 1405.0, "z": 5.23},
+      "yaw": 332.258165
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt004_03_tr_ride_destination",
+      "position": {"from": "#gqt004_03_mp_ride_destination", "up": -3},
+      "outline": {"type": "circle", "radius": 8, "segments": 12, "height": 6},
+      "notifiers": ["quest"]
+    },
+    {
+      "ref": "#gqt004_05_tr_theft_destination",
+      "position": {"from": "#gqt004_05_mp_theft_destination", "up": -3},
+      "outline": {"type": "circle", "radius": 8, "segments": 12, "height": 6},
+      "notifiers": ["quest"]
+    }
+  ],
+  "communities": [
+    {
+      "ref": "#gqt004_com_ride_vehicle",
+      "spawn_set_reference": "#gqt004_ride_vehicle",
+      "entry": "ride_vehicle",
+      "phase": "default",
+      "period": "Day",
+      "character": "Vehicle.GhostlineGQT004Ride",
+      "appearance": "default",
+      "active_on_start": 1,
+      "spot": {
+        "ref": "#gqt004_spot_ride_vehicle",
+        "position": {"from": "origin"},
+        "yaw": "origin",
+        "vehicle_spawn": true,
+        "is_workspot_infinite": 0
+      }
+    },
+    {
+      "ref": "#gqt004_com_theft_vehicle_r2",
+      "position": {"from": "#gqt004_04_mp_theft_vehicle"},
+      "spawn_set_reference": "#gqt004_theft_vehicle_r2",
+      "entry": "theft_vehicle_r2",
+      "phase": "default",
+      "period": "Day",
+      "character": "Vehicle.GhostlineGQT004Theft",
+      "appearance": "default",
+      "active_on_start": 1,
+      "always_spawned": "true_",
+      "spot": {
+        "ref": "#gqt004_spot_theft_vehicle_r2",
+        "position": {"from": "#gqt004_04_mp_theft_vehicle"},
+        "yaw": 23.894821357,
+        "vehicle_spawn": true,
+        "is_workspot_infinite": 1
+      }
+    },
+    {
+      "ref": "#gqt004_com_contact",
+      "entry": "patch",
+      "phase": "default",
+      "period": "Day",
+      "character": "Character.GhostlinePatch",
+      "appearance": "ghostline_patch_default",
+      "active_on_start": 1,
+      "spot": {
+        "ref": "#gqt004_spot_contact",
+        "position": {"from": "origin", "right": 3},
+        "yaw": "origin"
+      }
+    }
+  ]
+}

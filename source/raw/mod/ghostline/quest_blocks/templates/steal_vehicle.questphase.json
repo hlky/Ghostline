@@ -43,7 +43,7 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "31",
+                          "HandleId": "43",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
@@ -52,7 +52,7 @@
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "31"
+                                    "HandleRefId": "43"
                                   }
                                 ],
                                 "name": {
@@ -110,19 +110,19 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "34",
+                          "HandleId": "48",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
                               "HandleRefId": "6"
                             },
                             "source": {
-                              "HandleId": "30",
+                              "HandleId": "42",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "34"
+                                    "HandleRefId": "48"
                                   }
                                 ],
                                 "name": {
@@ -220,22 +220,22 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "32",
+                          "HandleId": "44",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
-                              "HandleId": "20",
+                              "HandleId": "19",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "32"
+                                    "HandleRefId": "44"
                                   }
                                 ],
                                 "name": {
                                   "$type": "CName",
                                   "$storage": "string",
-                                  "$value": "In"
+                                  "$value": "Active"
                                 },
                                 "type": "Input"
                               }
@@ -282,13 +282,13 @@
               }
             },
             {
-              "HandleId": "18",
+              "HandleId": "17",
               "Data": {
-                "$type": "questPauseConditionNodeDefinition",
+                "$type": "questMappinManagerNodeDefinition",
                 "id": 11,
                 "sockets": [
                   {
-                    "HandleId": "19",
+                    "HandleId": "18",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -301,7 +301,20 @@
                     }
                   },
                   {
-                    "HandleRefId": "20"
+                    "HandleRefId": "19"
+                  },
+                  {
+                    "HandleId": "20",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Inactive"
+                      },
+                      "type": "Input"
+                    }
                   },
                   {
                     "HandleId": "21",
@@ -309,22 +322,22 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "33",
+                          "HandleId": "45",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
-                              "HandleId": "28",
+                              "HandleId": "26",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "33"
+                                    "HandleRefId": "45"
                                   }
                                 ],
                                 "name": {
                                   "$type": "CName",
                                   "$storage": "string",
-                                  "$value": "Succeeded"
+                                  "$value": "In"
                                 },
                                 "type": "Input"
                               }
@@ -344,12 +357,92 @@
                     }
                   }
                 ],
+                "disablePreviousMappins": 0,
+                "path": {
+                  "HandleId": "16",
+                  "Data": {
+                    "$type": "gameJournalPath",
+                    "className": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "gameJournalQuestMapPin"
+                    },
+                    "editorPath": "",
+                    "fileEntryIndex": 2,
+                    "realPath": "{{mappin}}"
+                  }
+                }
+              }
+            },
+            {
+              "HandleId": "24",
+              "Data": {
+                "$type": "questPauseConditionNodeDefinition",
+                "id": 12,
+                "sockets": [
+                  {
+                    "HandleId": "25",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "26"
+                  },
+                  {
+                    "HandleId": "27",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "46",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "34",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "46"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "Succeeded"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "27"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ],
                 "condition": {
-                  "HandleId": "17",
+                  "HandleId": "23",
                   "Data": {
                     "$type": "questCharacterCondition",
                     "type": {
-                      "HandleId": "16",
+                      "HandleId": "22",
                       "Data": {
                         "$type": "questCharacterMount_ConditionType",
                         "anyChild": 0,
@@ -390,11 +483,17 @@
                             "$storage": "string",
                             "$value": "None"
                           },
-                          "names": [],
+                          "names": [
+                            {
+                              "$type": "CName",
+                              "$storage": "string",
+                              "$value": "{{vehicle_entry}}"
+                            }
+                          ],
                           "reference": {
                             "$type": "NodeRef",
                             "$storage": "string",
-                            "$value": "{{vehicle}}"
+                            "$value": "{{vehicle_community}}"
                           },
                           "sceneActorContextName": {
                             "$type": "CName",
@@ -409,7 +508,7 @@
                           "type": "EntityRef"
                         },
                         "playerVehicleName": "",
-                        "role": "Driver",
+                        "role": "Invalid",
                         "usePlayersVehicle": 0,
                         "vehicleAfiliation": "Invalid",
                         "vehicleOrigin": "Any",
@@ -421,13 +520,13 @@
               }
             },
             {
-              "HandleId": "24",
+              "HandleId": "30",
               "Data": {
                 "$type": "questJournalNodeDefinition",
-                "id": 12,
+                "id": 13,
                 "sockets": [
                   {
-                    "HandleId": "25",
+                    "HandleId": "31",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -440,7 +539,7 @@
                     }
                   },
                   {
-                    "HandleId": "26",
+                    "HandleId": "32",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -453,7 +552,7 @@
                     }
                   },
                   {
-                    "HandleId": "27",
+                    "HandleId": "33",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -466,10 +565,10 @@
                     }
                   },
                   {
-                    "HandleRefId": "28"
+                    "HandleRefId": "34"
                   },
                   {
-                    "HandleId": "29",
+                    "HandleId": "35",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -482,16 +581,53 @@
                     }
                   },
                   {
-                    "HandleRefId": "30"
+                    "HandleId": "36",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "47",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "41",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "47"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "Inactive"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "36"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
                   }
                 ],
                 "type": {
-                  "HandleId": "23",
+                  "HandleId": "29",
                   "Data": {
                     "$type": "questJournalQuestEntry_NodeType",
                     "optional": 0,
                     "path": {
-                      "HandleId": "22",
+                      "HandleId": "28",
                       "Data": {
                         "$type": "gameJournalPath",
                         "className": {
@@ -507,6 +643,62 @@
                     "sendNotification": 1,
                     "trackQuest": 1,
                     "version": "Initial"
+                  }
+                }
+              }
+            },
+            {
+              "HandleId": "38",
+              "Data": {
+                "$type": "questMappinManagerNodeDefinition",
+                "id": 14,
+                "sockets": [
+                  {
+                    "HandleId": "39",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleId": "40",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Active"
+                      },
+                      "type": "Input"
+                    }
+                  },
+                  {
+                    "HandleRefId": "41"
+                  },
+                  {
+                    "HandleRefId": "42"
+                  }
+                ],
+                "disablePreviousMappins": 0,
+                "path": {
+                  "HandleId": "37",
+                  "Data": {
+                    "$type": "gameJournalPath",
+                    "className": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "gameJournalQuestMapPin"
+                    },
+                    "editorPath": "",
+                    "fileEntryIndex": 2,
+                    "realPath": "{{mappin}}"
                   }
                 }
               }

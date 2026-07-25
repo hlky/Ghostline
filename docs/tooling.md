@@ -13,10 +13,12 @@ py -B -m unittest discover -s tests -v
 
 ## Native Archive And CR2W Inspection
 
-`tools/ghostline-red` is a focused Rust CLI for fast archive and CR2W
-operations. Build and test it with:
+`tools/ghostline-red` is a submodule of the independently maintained
+[hlky/ghostline-red](https://github.com/hlky/ghostline-red) Rust CLI. Initialize
+it after cloning Ghostline, then build and test it with:
 
 ```powershell
+git submodule update --init --recursive .\tools\ghostline-red
 cargo test --manifest-path .\tools\ghostline-red\Cargo.toml
 cargo build --release --manifest-path .\tools\ghostline-red\Cargo.toml
 ```
@@ -41,14 +43,10 @@ Pack and extract the authored depot tree:
   -o H:\Ghostline-builds\native-candidate\extracted
 ```
 
-The native packer uses the pinned Kraken DLL through small, crash-isolated
-parallel worker batches. Each worker handles at most two payloads, uses
-WolvenKit's exact output-capacity formula, and accepts compressed data only
-after a decompression byte comparison. Worker failures fall back to an
-uncompressed segment without exposing the parent packer's heap. The current
-301-file archive is about 68.53 MiB and WolvenKit extracts every payload
-byte-identically. Kraken owns the SIMD-sensitive compression loop; explicit
-SIMD in the much smaller Rust CRC/path loops did not justify added complexity.
+The native packer uses ghostline-red's clean-room Kraken encoder and decoder;
+no proprietary DLL is required for normal archive workflows. The current
+301-file archive extracts every payload byte-identically, and WolvenKit remains
+useful as an independent interoperability oracle.
 
 Inspect the structural tables of a packed CR2W resource:
 
@@ -76,11 +74,11 @@ schema generated from the pinned WolvenKit submodule:
 
 The writer supports shifted strings and arrays, new CName/import entries,
 typed world-node data, and typed RedPackage edits across all package-bearing
-authored resources. It can grow a non-empty handle array and allocate the
-corresponding export when that class already has a template instance. The
-current 80-resource binary-to-native-JSON corpus rebuilds byte-identically.
-Novel class layouts and RedPackage chunk-topology changes still require a
-matching template or WolvenKit.
+authored resources. Template-backed packages can grow existing non-empty
+arrays, allocate new chunks and nested handles from an existing class
+template, rebuild handle indices, and preserve untouched package chunks.
+The current 80-resource binary-to-native-JSON corpus rebuilds byte-identically.
+Novel class layouts still require a matching template or WolvenKit.
 
 On the base-game `03_night_city.streamingworld` fixture, three warm CLI runs
 averaged 85.5 ms serialize and 81.2 ms deserialize, versus WolvenKit 8.17.4 at

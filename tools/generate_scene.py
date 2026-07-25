@@ -2,7 +2,7 @@
 """Generate Ghostline .scene CR2W-JSON from a compact scene spec.
 
 The generator intentionally emits raw CR2W-JSON under source/raw. Packed CR2W
-files are produced only by WolvenKit CLI.
+files are produced by the template-backed ghostline-red CLI.
 """
 
 from __future__ import annotations
@@ -17,10 +17,10 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from cr2w_helpers import load_json, print_json
+from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, deserialize as deserialize_cr2w
 
 
 DEFAULT_SPEC = Path("tools/gq000_patch_meet.scene-spec.json")
-DEFAULT_WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 DEFAULT_EXPORTED_DATETIME = "1970-01-01T00:00:00Z"
 UINT32_NONE = 4294967295
 PERFORMER_NONE = 4294967040
@@ -1120,12 +1120,10 @@ def write_scene(path: Path, scene: dict[str, Any]) -> None:
     path.write_text(json.dumps(scene, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def deserialize(spec: dict[str, Any], wolvenkit: Path) -> None:
+def deserialize(spec: dict[str, Any], red_cli: Path, schema: Path) -> None:
     raw_path = path_from_spec(spec, "raw_path")
-    output_dir = Path(spec["archive_path"]).parent
-    output_dir.mkdir(parents=True, exist_ok=True)
-    command = [str(wolvenkit), "convert", "deserialize", str(raw_path), "-o", str(output_dir), "-v", "Minimal"]
-    subprocess.run(command, check=True)
+    archive_path = Path(spec["archive_path"])
+    deserialize_cr2w(raw_path, archive_path, red_cli=red_cli, schema=schema)
 
 
 def command_example(_: argparse.Namespace) -> None:
@@ -1188,7 +1186,7 @@ def command_generate(args: argparse.Namespace) -> None:
     write_scene(path_from_spec(spec, "raw_path"), scene)
     print(f"Wrote {spec['raw_path']}")
     if args.deserialize:
-        deserialize(spec, Path(args.wolvenkit))
+        deserialize(spec, args.red_cli, args.schema)
 
 
 def command_validate(args: argparse.Namespace) -> None:
@@ -1215,7 +1213,8 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser.add_argument("--spec", default=str(DEFAULT_SPEC))
     generate_parser.add_argument("--dry-run", action="store_true")
     generate_parser.add_argument("--deserialize", action="store_true")
-    generate_parser.add_argument("--wolvenkit", default=str(DEFAULT_WOLVENKIT))
+    generate_parser.add_argument("--red-cli", type=Path, default=DEFAULT_RED_CLI)
+    generate_parser.add_argument("--schema", type=Path, default=DEFAULT_RED_SCHEMA)
     generate_parser.set_defaults(func=command_generate)
 
     validate_parser = subparsers.add_parser("validate", help="Validate a generated raw .scene JSON file")
@@ -1235,7 +1234,7 @@ def main(argv: list[str] | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 1
     except subprocess.CalledProcessError as exc:
-        print(f"WolvenKit command failed with exit code {exc.returncode}", file=sys.stderr)
+        print(f"ghostline-red command failed with exit code {exc.returncode}", file=sys.stderr)
         return exc.returncode
     return 0
 

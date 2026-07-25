@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "quest": {
+    "id": "gqt004_vehicle_lab",
+    "title": "Vehicle Lab",
+    "manifest": "H:\\projects\\Ghostline\\source\\quests\\tests\\gqt004_vehicle_lab.quest.json"
+  },
+  "linear_flow": [
+    "enter_contact_vehicle",
+    "ride_with_patch",
+    "drive_contact_to_destination",
+    "cleanup_contact_vehicle",
+    "steal_test_vehicle",
+    "deliver_test_vehicle",
+    "cleanup_test_vehicle"
+  ],
+  "stages": [
+    {
+      "index": 0,
+      "node_id": 10,
+      "id": "enter_contact_vehicle",
+      "type": "enter_vehicle",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_enter_contact_vehicle.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\enter_vehicle.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "enter_contact_vehicle",
+        "type": "enter_vehicle",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_enter_contact_vehicle.questphase",
+        "vehicle_community": "#gqt004_com_ride_vehicle",
+        "vehicle_entry": "ride_vehicle",
+        "objective": "quests/minor_quest/gqt004/gqt004_01/gqt004_01_obj_enter_vehicle",
+        "mappin": "quests/minor_quest/gqt004/gqt004_01/gqt004_01_obj_enter_vehicle/gqt004_01_qmp_enter_vehicle"
+      }
+    },
+    {
+      "index": 1,
+      "node_id": 11,
+      "id": "ride_with_patch",
+      "type": "ride_with_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_ride_with_patch.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\ride_with_contact.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "ride_with_patch",
+        "type": "ride_with_contact",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_ride_with_patch.questphase",
+        "vehicle_community": "#gqt004_com_ride_vehicle",
+        "vehicle_entry": "ride_vehicle",
+        "contact_community": "#gqt004_com_contact",
+        "contact_entry": "patch",
+        "objective": "quests/minor_quest/gqt004/gqt004_02/gqt004_02_obj_ride_with_patch"
+      }
+    },
+    {
+      "index": 2,
+      "node_id": 12,
+      "id": "drive_contact_to_destination",
+      "type": "drive_to",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_drive_contact_to_destination.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\drive_to.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "drive_contact_to_destination",
+        "type": "drive_to",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_drive_contact_to_destination.questphase",
+        "vehicle_community": "#gqt004_com_ride_vehicle",
+        "vehicle_entry": "ride_vehicle",
+        "destination": "#gqt004_03_tr_ride_destination",
+        "completion_fact": "gqt004_contact_ride_complete",
+        "objective": "quests/minor_quest/gqt004/gqt004_03/gqt004_03_obj_drive_contact",
+        "mappin": "quests/minor_quest/gqt004/gqt004_03/gqt004_03_obj_drive_contact/gqt004_03_qmp_drive_contact"
+      }
+    },
+    {
+      "index": 3,
+      "node_id": 13,
+      "id": "cleanup_contact_vehicle",
+      "type": "vehicle_cleanup",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_cleanup_contact_vehicle.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\vehicle_cleanup.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "cleanup_contact_vehicle",
+        "type": "vehicle_cleanup",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_cleanup_contact_vehicle.questphase",
+        "player_vehicle_record": "Vehicle.GhostlineGQT004Ride",
+        "completion_fact": "gqt004_contact_cleanup_complete"
+      }
+    },
+    {
+      "index": 4,
+      "node_id": 14,
+      "id": "steal_test_vehicle",
+      "type": "steal_vehicle",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_steal_test_vehicle.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\steal_vehicle.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "steal_test_vehicle",
+        "type": "steal_vehicle",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_steal_test_vehicle.questphase",
+        "vehicle_community": "$/mod/gqt004/#gqt004_pr_vehicle_lab/#gqt004_com_theft_vehicle_r2",
+        "vehicle_entry": "theft_vehicle_r2",
+        "objective": "quests/minor_quest/gqt004/gqt004_04/gqt004_04_obj_steal_vehicle",
+        "mappin": "quests/minor_quest/gqt004/gqt004_04/gqt004_04_obj_steal_vehicle/gqt004_04_qmp_steal_vehicle"
+      }
+    },
+    {
+      "index": 5,
+      "node_id": 15,
+      "id": "deliver_test_vehicle",
+      "type": "drive_to",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_deliver_test_vehicle.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\drive_to.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "deliver_test_vehicle",
+        "type": "drive_to",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_deliver_test_vehicle.questphase",
+        "vehicle_community": "$/mod/gqt004/#gqt004_pr_vehicle_lab/#gqt004_com_theft_vehicle_r2",
+        "vehicle_entry": "theft_vehicle_r2",
+        "destination": "#gqt004_05_tr_theft_destination",
+        "completion_fact": "gqt004_theft_delivery_complete",
+        "objective": "quests/minor_quest/gqt004/gqt004_05/gqt004_05_obj_deliver_vehicle",
+        "mappin": "quests/minor_quest/gqt004/gqt004_05/gqt004_05_obj_deliver_vehicle/gqt004_05_qmp_deliver_vehicle"
+      }
+    },
+    {
+      "index": 6,
+      "node_id": 16,
+      "id": "cleanup_test_vehicle",
+      "type": "vehicle_cleanup",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_cleanup_test_vehicle.questphase",
+      "phase_template": "mod\\gqt004\\templates\\gqt004_final_cleanup.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "cleanup_test_vehicle",
+        "type": "vehicle_cleanup",
+        "status": "ready",
+        "phase_resource": "mod\\gqt004\\phases\\gqt004_cleanup_test_vehicle.questphase",
+        "phase_template": "mod\\gqt004\\templates\\gqt004_final_cleanup.questphase",
+        "player_vehicle_record": "Vehicle.GhostlineGQT004Theft",
+        "completion_fact": "gqt004_completed"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "shipping_ready": true
+}

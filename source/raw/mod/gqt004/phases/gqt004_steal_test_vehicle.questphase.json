@@ -1,0 +1,629 @@
+{
+  "Data": {
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "questQuestPhaseResource",
+      "cookingPlatform": "PLATFORM_PC",
+      "graph": {
+        "Data": {
+          "$type": "questGraphDefinition",
+          "nodes": [
+            {
+              "Data": {
+                "$type": "questInputNodeDefinition",
+                "id": 0,
+                "socketName": {
+                  "$storage": "string",
+                  "$type": "CName",
+                  "$value": "In1"
+                },
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "2"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "4"
+                                  }
+                                ],
+                                "name": {
+                                  "$storage": "string",
+                                  "$type": "CName",
+                                  "$value": "Active"
+                                },
+                                "type": "Input"
+                              },
+                              "HandleId": "5"
+                            },
+                            "source": {
+                              "HandleRefId": "3"
+                            }
+                          },
+                          "HandleId": "4"
+                        }
+                      ],
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    },
+                    "HandleId": "3"
+                  }
+                ]
+              },
+              "HandleId": "1"
+            },
+            {
+              "Data": {
+                "$type": "questOutputNodeDefinition",
+                "id": 1,
+                "socketName": {
+                  "$storage": "string",
+                  "$type": "CName",
+                  "$value": "Out1"
+                },
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "7"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleRefId": "8"
+                            },
+                            "source": {
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "9"
+                                  }
+                                ],
+                                "name": {
+                                  "$storage": "string",
+                                  "$type": "CName",
+                                  "$value": "Out"
+                                },
+                                "type": "Output"
+                              },
+                              "HandleId": "10"
+                            }
+                          },
+                          "HandleId": "9"
+                        }
+                      ],
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "In"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "8"
+                  }
+                ]
+              },
+              "HandleId": "6"
+            },
+            {
+              "Data": {
+                "$type": "questJournalNodeDefinition",
+                "id": 10,
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "12"
+                  },
+                  {
+                    "HandleRefId": "5"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Inactive"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "13"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Succeeded"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "14"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Failed"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "15"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "17"
+                                  }
+                                ],
+                                "name": {
+                                  "$storage": "string",
+                                  "$type": "CName",
+                                  "$value": "Active"
+                                },
+                                "type": "Input"
+                              },
+                              "HandleId": "18"
+                            },
+                            "source": {
+                              "HandleRefId": "16"
+                            }
+                          },
+                          "HandleId": "17"
+                        }
+                      ],
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    },
+                    "HandleId": "16"
+                  }
+                ],
+                "type": {
+                  "Data": {
+                    "$type": "questJournalQuestEntry_NodeType",
+                    "path": {
+                      "Data": {
+                        "$type": "gameJournalPath",
+                        "className": {
+                          "$storage": "string",
+                          "$type": "CName",
+                          "$value": "gameJournalQuestObjective"
+                        },
+                        "fileEntryIndex": 2,
+                        "realPath": "quests/minor_quest/gqt004/gqt004_04/gqt004_04_obj_steal_vehicle"
+                      },
+                      "HandleId": "20"
+                    }
+                  },
+                  "HandleId": "19"
+                }
+              },
+              "HandleId": "11"
+            },
+            {
+              "Data": {
+                "$type": "questMappinManagerNodeDefinition",
+                "id": 11,
+                "path": {
+                  "Data": {
+                    "$type": "gameJournalPath",
+                    "className": {
+                      "$storage": "string",
+                      "$type": "CName",
+                      "$value": "gameJournalQuestMapPin"
+                    },
+                    "fileEntryIndex": 2,
+                    "realPath": "quests/minor_quest/gqt004/gqt004_04/gqt004_04_obj_steal_vehicle/gqt004_04_qmp_steal_vehicle"
+                  },
+                  "HandleId": "27"
+                },
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "22"
+                  },
+                  {
+                    "HandleRefId": "18"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Inactive"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "23"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "25"
+                                  }
+                                ],
+                                "name": {
+                                  "$storage": "string",
+                                  "$type": "CName",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              },
+                              "HandleId": "26"
+                            },
+                            "source": {
+                              "HandleRefId": "24"
+                            }
+                          },
+                          "HandleId": "25"
+                        }
+                      ],
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    },
+                    "HandleId": "24"
+                  }
+                ]
+              },
+              "HandleId": "21"
+            },
+            {
+              "Data": {
+                "$type": "questPauseConditionNodeDefinition",
+                "condition": {
+                  "Data": {
+                    "$type": "questCharacterCondition",
+                    "type": {
+                      "Data": {
+                        "$type": "questCharacterMount_ConditionType",
+                        "childIsPlayer": true,
+                        "parentRef": {
+                          "$type": "gameEntityReference",
+                          "names": [
+                            {
+                              "$storage": "string",
+                              "$type": "CName",
+                              "$value": "theft_vehicle_r2"
+                            }
+                          ],
+                          "reference": {
+                            "$storage": "string",
+                            "$type": "NodeRef",
+                            "$value": "#gqt004_com_theft_vehicle_r2"
+                          }
+                        }
+                      },
+                      "HandleId": "34"
+                    }
+                  },
+                  "HandleId": "33"
+                },
+                "id": 12,
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "29"
+                  },
+                  {
+                    "HandleRefId": "26"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "31"
+                                  }
+                                ],
+                                "name": {
+                                  "$storage": "string",
+                                  "$type": "CName",
+                                  "$value": "Succeeded"
+                                },
+                                "type": "Input"
+                              },
+                              "HandleId": "32"
+                            },
+                            "source": {
+                              "HandleRefId": "30"
+                            }
+                          },
+                          "HandleId": "31"
+                        }
+                      ],
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    },
+                    "HandleId": "30"
+                  }
+                ]
+              },
+              "HandleId": "28"
+            },
+            {
+              "Data": {
+                "$type": "questJournalNodeDefinition",
+                "id": 13,
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "36"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Active"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "37"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Inactive"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "38"
+                  },
+                  {
+                    "HandleRefId": "32"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Failed"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "39"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "41"
+                                  }
+                                ],
+                                "name": {
+                                  "$storage": "string",
+                                  "$type": "CName",
+                                  "$value": "Inactive"
+                                },
+                                "type": "Input"
+                              },
+                              "HandleId": "42"
+                            },
+                            "source": {
+                              "HandleRefId": "40"
+                            }
+                          },
+                          "HandleId": "41"
+                        }
+                      ],
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    },
+                    "HandleId": "40"
+                  }
+                ],
+                "type": {
+                  "Data": {
+                    "$type": "questJournalQuestEntry_NodeType",
+                    "path": {
+                      "Data": {
+                        "$type": "gameJournalPath",
+                        "className": {
+                          "$storage": "string",
+                          "$type": "CName",
+                          "$value": "gameJournalQuestObjective"
+                        },
+                        "fileEntryIndex": 2,
+                        "realPath": "quests/minor_quest/gqt004/gqt004_04/gqt004_04_obj_steal_vehicle"
+                      },
+                      "HandleId": "44"
+                    }
+                  },
+                  "HandleId": "43"
+                }
+              },
+              "HandleId": "35"
+            },
+            {
+              "Data": {
+                "$type": "questMappinManagerNodeDefinition",
+                "id": 14,
+                "path": {
+                  "Data": {
+                    "$type": "gameJournalPath",
+                    "className": {
+                      "$storage": "string",
+                      "$type": "CName",
+                      "$value": "gameJournalQuestMapPin"
+                    },
+                    "fileEntryIndex": 2,
+                    "realPath": "quests/minor_quest/gqt004/gqt004_04/gqt004_04_obj_steal_vehicle/gqt004_04_qmp_steal_vehicle"
+                  },
+                  "HandleId": "48"
+                },
+                "sockets": [
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    },
+                    "HandleId": "46"
+                  },
+                  {
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "name": {
+                        "$storage": "string",
+                        "$type": "CName",
+                        "$value": "Active"
+                      },
+                      "type": "Input"
+                    },
+                    "HandleId": "47"
+                  },
+                  {
+                    "HandleRefId": "42"
+                  },
+                  {
+                    "HandleRefId": "10"
+                  }
+                ]
+              },
+              "HandleId": "45"
+            }
+          ]
+        },
+        "HandleId": "0"
+      }
+    },
+    "Version": 195
+  },
+  "Header": {
+    "ArchiveFileName": "H:\\projects\\Ghostline\\source\\archive\\mod\\gqt004\\phases\\gqt004_steal_test_vehicle.questphase",
+    "DataType": "CR2W",
+    "ExportedDateTime": "1970-01-01T00:00:00Z",
+    "GameVersion": 2310,
+    "WKitJsonVersion": "0.0.9",
+    "WolvenKitVersion": "ghostline-red 0.1.0"
+  }
+}

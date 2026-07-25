@@ -43,7 +43,7 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "17",
+                          "HandleId": "12",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
@@ -52,7 +52,7 @@
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "17"
+                                    "HandleRefId": "12"
                                   }
                                 ],
                                 "name": {
@@ -110,19 +110,19 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "19",
+                          "HandleId": "13",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
                               "HandleRefId": "6"
                             },
                             "source": {
-                              "HandleId": "16",
+                              "HandleId": "11",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "19"
+                                    "HandleRefId": "13"
                                   }
                                 ],
                                 "name": {
@@ -156,7 +156,7 @@
             {
               "HandleId": "8",
               "Data": {
-                "$type": "questVehicleNodeDefinition",
+                "$type": "questFactsDBManagerNodeDefinition",
                 "id": 10,
                 "sockets": [
                   {
@@ -176,86 +176,11 @@
                     "HandleRefId": "10"
                   },
                   {
-                    "HandleId": "11",
-                    "Data": {
-                      "$type": "questSocketDefinition",
-                      "connections": [
-                        {
-                          "HandleId": "18",
-                          "Data": {
-                            "$type": "graphGraphConnectionDefinition",
-                            "destination": {
-                              "HandleId": "15",
-                              "Data": {
-                                "$type": "questSocketDefinition",
-                                "connections": [
-                                  {
-                                    "HandleRefId": "18"
-                                  }
-                                ],
-                                "name": {
-                                  "$type": "CName",
-                                  "$storage": "string",
-                                  "$value": "In"
-                                },
-                                "type": "Input"
-                              }
-                            },
-                            "source": {
-                              "HandleRefId": "11"
-                            }
-                          }
-                        }
-                      ],
-                      "name": {
-                        "$type": "CName",
-                        "$storage": "string",
-                        "$value": "Out"
-                      },
-                      "type": "Output"
-                    }
+                    "HandleRefId": "11"
                   }
                 ],
                 "type": {
                   "HandleId": "7",
-                  "Data": {
-                    "$type": "questEnablePlayerVehicle_NodeType",
-                    "despawn": 1,
-                    "enable": 0,
-                    "makePlayerActiveVehicle": 0,
-                    "vehicle": "{{player_vehicle_record}}"
-                  }
-                }
-              }
-            },
-            {
-              "HandleId": "13",
-              "Data": {
-                "$type": "questFactsDBManagerNodeDefinition",
-                "id": 11,
-                "sockets": [
-                  {
-                    "HandleId": "14",
-                    "Data": {
-                      "$type": "questSocketDefinition",
-                      "connections": [],
-                      "name": {
-                        "$type": "CName",
-                        "$storage": "string",
-                        "$value": "CutDestination"
-                      },
-                      "type": "CutDestination"
-                    }
-                  },
-                  {
-                    "HandleRefId": "15"
-                  },
-                  {
-                    "HandleRefId": "16"
-                  }
-                ],
-                "type": {
-                  "HandleId": "12",
                   "Data": {
                     "$type": "questSetVar_NodeType",
                     "factName": "{{completion_fact}}",

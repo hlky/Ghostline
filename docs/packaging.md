@@ -12,7 +12,7 @@ belong in `ROADMAP.md` and `docs/testing.md`, not here.
   resources that must be staged separately from a manual archive pack.
 - `packed` is ignored generated install/ZIP staging. Never edit it as source.
 
-Do not pack from the repository root. `WolvenKit.CLI build .` previously swept
+Do not pack from the repository root. An old `WolvenKit.CLI build .` workflow swept
 support paths such as `reference`, `source/raw`, `generated`,
 `GraphEditorStates`, `tools`, and `modding_docs` into an archive.
 
@@ -41,14 +41,14 @@ NodeRefs are valid.
 
 ## Scoped Archive Build
 
-Use the known local CLI and pack only `source/archive`:
+Use the repository-pinned native CLI and pack only `source/archive`:
 
 ```powershell
-$wk = 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe'
+$red = '.\tools\ghostline-red\target\release\ghostline-red.exe'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $buildDir = Join-Path 'H:\Ghostline-builds' "manual-$stamp"
 New-Item -ItemType Directory -Path $buildDir | Out-Null
-& $wk pack .\source\archive -o $buildDir
+& $red pack .\source\archive -o $buildDir
 $candidate = Join-Path $buildDir 'archive.archive'
 ```
 
@@ -61,16 +61,15 @@ Expected depot roots are:
 - `mod\ghostline\...`
 - `base\...` only for a deliberate test or validated dependency.
 
-WolvenKit does not pack arbitrary support files. The Patch `.tmp` file and two
-head readmes currently remain in `source/archive` but are absent from the
-archive payload; account for those known exclusions when comparing counts.
+Keep arbitrary support files out of `source/archive`; the native packer treats
+the directory as the intended depot payload tree.
 
 ## Archive Verification
 
 List the candidate and inspect the depot paths before installing it:
 
 ```powershell
-& $wk archive $candidate --list
+& $red archive-list $candidate --paths-root .\source\archive
 ```
 
 Reject a build containing repository/support roots such as `source\raw`,
@@ -81,7 +80,7 @@ Extract the candidate to a new verification directory:
 ```powershell
 $verifyDir = Join-Path $buildDir 'extracted'
 New-Item -ItemType Directory -Path $verifyDir | Out-Null
-& $wk extract $candidate -o $verifyDir
+& $red extract $candidate -o $verifyDir --paths-root .\source\archive
 ```
 
 Then verify:

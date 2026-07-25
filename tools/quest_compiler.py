@@ -188,12 +188,20 @@ STAGE_REQUIRED_FIELDS = {
         "community", "entry", "device", "controller_class", "action",
         "completion_function", "completion_fact", "objective",
     },
-    "enter_vehicle": {"vehicle", "objective"},
-    "ride_with_contact": {
-        "vehicle", "contact_community", "contact_entry", "objective",
+    "enter_vehicle": {
+        "vehicle_community", "vehicle_entry", "objective", "mappin",
     },
-    "drive_to": {"vehicle", "destination", "completion_fact", "objective"},
-    "steal_vehicle": {"vehicle", "objective"},
+    "ride_with_contact": {
+        "vehicle_community", "vehicle_entry", "contact_community",
+        "contact_entry", "objective",
+    },
+    "drive_to": {
+        "vehicle_community", "vehicle_entry", "destination",
+        "completion_fact", "objective", "mappin",
+    },
+    "steal_vehicle": {
+        "vehicle_community", "vehicle_entry", "objective", "mappin",
+    },
     "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
 }
 TOP_LEVEL_FIELDS = {
@@ -202,6 +210,7 @@ TOP_LEVEL_FIELDS = {
     "title",
     "description",
     "phase_prefabs",
+    "debug_fact",
     "stages",
 }
 COMMON_STAGE_FIELDS = {
@@ -210,6 +219,7 @@ COMMON_STAGE_FIELDS = {
     "status",
     "phase_resource",
     "phase_template",
+    "inherit_phase_prefabs",
     "template_bindings",
     "required_assets",
     "notes",
@@ -307,16 +317,23 @@ STAGE_TYPE_FIELDS = {
         "completion_function", "completion_fact", "objective",
         "description_entry",
     },
-    "enter_vehicle": {"vehicle", "objective", "description_entry"},
+    "enter_vehicle": {
+        "vehicle_community", "vehicle_entry", "objective", "mappin",
+        "description_entry",
+    },
     "ride_with_contact": {
-        "vehicle", "contact_community", "contact_entry", "objective",
+        "vehicle_community", "vehicle_entry", "contact_community",
+        "contact_entry", "objective",
         "description_entry",
     },
     "drive_to": {
-        "vehicle", "destination", "completion_fact", "objective",
+        "vehicle_community", "vehicle_entry", "destination",
+        "completion_fact", "objective", "mappin", "description_entry",
+    },
+    "steal_vehicle": {
+        "vehicle_community", "vehicle_entry", "objective", "mappin",
         "description_entry",
     },
-    "steal_vehicle": {"vehicle", "objective", "description_entry"},
     "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
 }
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -366,6 +383,7 @@ class QuestSpec:
     title: str
     description: str
     phase_prefabs: tuple[str, ...]
+    debug_fact: str | None
     stages: tuple[CompiledStage, ...]
 
 
@@ -447,6 +465,21 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
         )
     title = require_string(raw, "title", context="quest", diagnostics=diagnostics)
     description = str(raw.get("description", ""))
+    debug_fact_value = raw.get("debug_fact")
+    debug_fact: str | None = None
+    if debug_fact_value is not None:
+        if not isinstance(debug_fact_value, str) or not ID_RE.fullmatch(
+            debug_fact_value
+        ):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "invalid_debug_fact",
+                    "debug_fact must be a lowercase fact name",
+                )
+            )
+        else:
+            debug_fact = debug_fact_value
 
     prefabs_value = raw.get("phase_prefabs", [])
     phase_prefabs: list[str] = []
@@ -1021,6 +1054,7 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             title=title,
             description=description,
             phase_prefabs=tuple(phase_prefabs),
+            debug_fact=debug_fact,
             stages=tuple(stages),
         ),
         diagnostics,
@@ -1296,27 +1330,27 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         )
     elif stage.type in {"enter_vehicle", "steal_vehicle"}:
         expected.extend(
-            (field, stage.data[field]) for field in ("vehicle", "objective")
+            (field, stage.data[field])
+            for field in ("vehicle_community", "vehicle_entry", "objective", "mappin")
         )
     elif stage.type == "ride_with_contact":
         expected.extend(
             (field, stage.data[field])
             for field in (
-                "vehicle", "contact_community", "contact_entry", "objective",
+                "vehicle_community", "vehicle_entry", "contact_community",
+                "contact_entry", "objective",
             )
         )
     elif stage.type == "drive_to":
         expected.extend(
             (field, stage.data[field])
             for field in (
-                "vehicle", "destination", "completion_fact", "objective",
+                "vehicle_community", "vehicle_entry", "destination",
+                "completion_fact", "objective", "mappin",
             )
         )
     elif stage.type == "vehicle_cleanup":
-        expected.extend(
-            (field, stage.data[field])
-            for field in ("player_vehicle_record", "completion_fact")
-        )
+        expected.append(("completion_fact", stage.data["completion_fact"]))
 
     if stage.type in SUPPORTED_STAGE_TYPES - {
         "phone_job_offer",
@@ -1448,25 +1482,29 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
     if stage.type in {"enter_vehicle", "steal_vehicle"}:
         return {
             "{{objective}}": stage.data["objective"],
-            "{{vehicle}}": stage.data["vehicle"],
+            "{{vehicle_community}}": stage.data["vehicle_community"],
+            "{{vehicle_entry}}": stage.data["vehicle_entry"],
+            "{{mappin}}": stage.data["mappin"],
         }
     if stage.type == "ride_with_contact":
         return {
             "{{objective}}": stage.data["objective"],
-            "{{vehicle}}": stage.data["vehicle"],
+            "{{vehicle_community}}": stage.data["vehicle_community"],
+            "{{vehicle_entry}}": stage.data["vehicle_entry"],
             "{{contact_community}}": stage.data["contact_community"],
             "{{contact_entry}}": stage.data["contact_entry"],
         }
     if stage.type == "drive_to":
         return {
             "{{objective}}": stage.data["objective"],
-            "{{vehicle}}": stage.data["vehicle"],
+            "{{vehicle_community}}": stage.data["vehicle_community"],
+            "{{vehicle_entry}}": stage.data["vehicle_entry"],
             "{{destination_1}}": stage.data["destination"],
             "{{completion_fact}}": stage.data["completion_fact"],
+            "{{mappin}}": stage.data["mappin"],
         }
     if stage.type == "vehicle_cleanup":
         return {
-            "{{player_vehicle_record}}": stage.data["player_vehicle_record"],
             "{{completion_fact}}": stage.data["completion_fact"],
         }
     return {}
@@ -2616,7 +2654,11 @@ def build_investigate_clues_phase(
     return phase_document(builder, archive_target)
 
 
-def build_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+def build_stage_phase(
+    stage: CompiledStage,
+    archive_target: Path,
+    phase_prefabs: tuple[str, ...] = (),
+) -> JsonObject:
     if stage.type == "phone_job_offer" and not stage.data.get("phase_template"):
         result = build_phone_job_offer_phase(stage, archive_target)
     elif stage.type == "phone_conversation" and not stage.data.get("phase_template"):
@@ -2644,6 +2686,16 @@ def build_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         result = build_read_terminal_document_phase(stage, archive_target)
     else:
         result = instantiate_stage_phase(stage, archive_target)
+    inherited_prefabs = (
+        phase_prefabs if stage.data.get("inherit_phase_prefabs", True) else ()
+    )
+    result["Data"]["RootChunk"]["phasePrefabs"] = [
+        {
+            "$type": "questQuestPrefabEntry",
+            "prefabNodeRef": node_ref(prefab),
+        }
+        for prefab in inherited_prefabs
+    ]
     validate_handle_graph(result, context=f"Stage {stage.id}")
     if stage.type in DIRECT_STAGE_TYPES and not stage.data.get("phase_template"):
         validate_no_forward_handle_refs(result, context=f"Stage {stage.id}")
@@ -2676,6 +2728,19 @@ def phase_node(builder: PhaseGraphBuilder, node_id: int, path: str) -> GraphNode
             "unfreezingTriggerNodeRef": node_ref("0", storage="uint64"),
         },
     )
+
+
+def debug_step_node(
+    builder: PhaseGraphBuilder,
+    node_id: int,
+    fact_name: str,
+    value: int,
+) -> GraphNode:
+    node = fact_node(builder, node_id, fact_name)
+    node_type = node.data["type"]["Data"]
+    node_type["setExactValue"] = value
+    node_type["value"] = value
+    return node
 
 
 def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObject:
@@ -2716,6 +2781,21 @@ def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObje
             builder.connect(objective, description, destination_socket="Active")
             builder.connect(description, mappin, destination_socket="Active")
             previous = mappin
+            source_socket = "Out"
+        if spec.debug_fact is not None:
+            debug = debug_step_node(
+                builder,
+                500 + stage.index,
+                spec.debug_fact,
+                (stage.index + 1) * 10,
+            )
+            builder.connect(
+                previous,
+                debug,
+                source_socket=source_socket,
+                destination_socket="In",
+            )
+            previous = debug
             source_socket = "Out"
         current = phase_node(builder, stage.node_id, stage.phase_resource)
         builder.connect(
@@ -2850,7 +2930,10 @@ def command_compile(args: argparse.Namespace) -> int:
         relative = Path(*stage.phase_resource.split("\\"))
         child_output = child_root / Path(f"{relative}.json")
         child_archive = ROOT / "source" / "archive" / relative
-        write_json(child_output, build_stage_phase(stage, child_archive))
+        write_json(
+            child_output,
+            build_stage_phase(stage, child_archive, spec.phase_prefabs),
+        )
         children.append(
             {
                 "stage": stage.id,

@@ -4,7 +4,7 @@
 Binary discovery is deliberately separate from detailed CR2W-JSON indexing.
 The former cheaply identifies every sector that contains a category token; the
 latter records concrete node placements after selected sectors are serialized
-with WolvenKit. Only reviewed, quest-safe records are eligible for default
+with ghostline-red. Only reviewed, quest-safe records are eligible for default
 selection.
 """
 
@@ -16,18 +16,18 @@ import json
 import math
 import random
 import shutil
-import subprocess
 import tempfile
 from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
+
+from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, serialize as serialize_cr2w
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DISCOVERY = ROOT / "reference" / "world" / "world-sector-candidates.json"
 DEFAULT_CATALOG = ROOT / "reference" / "world" / "world-assets.json"
 DEFAULT_CURATION = ROOT / "reference" / "world" / "world-assets-curation.json"
-DEFAULT_WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 WORLD_SECTOR_PREFIX = r"base\worlds\03_night_city\_compiled\default"
 
 
@@ -230,26 +230,20 @@ def stage_discovered_sectors(
     return staged
 
 
-def serialize_staging(staging: Path, output: Path, wolvenkit: Path) -> None:
-    if not wolvenkit.is_file():
-        raise FileNotFoundError(f"WolvenKit CLI not found: {wolvenkit}")
-    output.mkdir(parents=True, exist_ok=True)
-    command = [
-        str(wolvenkit),
-        "convert",
-        "serialize",
-        str(staging),
-        "-o",
-        str(output),
-        "-w",
-        "*.streamingsector",
-        "-v",
-        "Minimal",
-    ]
-    result = subprocess.run(command, capture_output=True, text=True, check=False)
-    combined = result.stdout + result.stderr
-    if result.returncode != 0 or "Error" in combined:
-        raise RuntimeError(f"WolvenKit serialization failed:\n{combined}")
+def serialize_staging(
+    staging: Path,
+    output: Path,
+    red_cli: Path,
+    schema: Path,
+) -> None:
+    for resource in staging.rglob("*.streamingsector"):
+        relative = resource.relative_to(staging)
+        serialize_cr2w(
+            resource,
+            output / Path(f"{relative}.json"),
+            red_cli=red_cli,
+            schema=schema,
+        )
 
 
 def classification_text(data: dict[str, Any], node_ref: str, resource: str) -> str:
@@ -537,7 +531,7 @@ def command_serialize(args: argparse.Namespace) -> None:
             args.limit_per_category,
             args.seed,
         )
-        serialize_staging(staging, args.output, args.wolvenkit)
+        serialize_staging(staging, args.output, args.red_cli, args.schema)
     print(json.dumps({"staged": len(staged), "output": str(args.output)}, indent=2))
 
 
@@ -579,14 +573,15 @@ def build_parser() -> argparse.ArgumentParser:
     discover.add_argument("--output", type=Path, default=DEFAULT_DISCOVERY)
     discover.set_defaults(func=command_discover)
 
-    serialize = subparsers.add_parser("serialize", help="Serialize discovered candidate sectors with WolvenKit.")
+    serialize = subparsers.add_parser("serialize", help="Serialize discovered candidate sectors with ghostline-red.")
     serialize.add_argument("--discovery", type=Path, default=DEFAULT_DISCOVERY)
     serialize.add_argument("--binaries", type=Path, required=True)
     serialize.add_argument("--output", type=Path, required=True)
     serialize.add_argument("--category", action="append", choices=sorted(DISCOVERY_TOKENS), default=[])
     serialize.add_argument("--limit-per-category", type=int)
     serialize.add_argument("--seed", default="ghostline")
-    serialize.add_argument("--wolvenkit", type=Path, default=DEFAULT_WOLVENKIT)
+    serialize.add_argument("--red-cli", type=Path, default=DEFAULT_RED_CLI)
+    serialize.add_argument("--schema", type=Path, default=DEFAULT_RED_SCHEMA)
     serialize.set_defaults(func=command_serialize)
 
     build = subparsers.add_parser("build", help="Build the normalized catalog from serialized sectors.")

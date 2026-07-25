@@ -3,7 +3,7 @@
 
 The input spec is intentionally small: capture a world origin in game, describe
 markers/triggers as absolute positions or local offsets from that origin, and
-let this tool emit the raw CR2W-JSON that WolvenKit can deserialize.
+let this tool emit raw CR2W-JSON for template-backed ghostline-red writes.
 """
 
 from __future__ import annotations
@@ -13,16 +13,15 @@ import base64
 import json
 import math
 import struct
-import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from cr2w_helpers import load_json, print_json, print_table
+from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, deserialize as deserialize_cr2w
 
 
-DEFAULT_WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 DEFAULT_RAW_ROOT = Path("source/raw")
 DEFAULT_ARCHIVE_ROOT = Path("source/archive")
 DEFAULT_ARCHIVE_XL = Path("source/resources/Ghostline.archive.xl")
@@ -566,6 +565,7 @@ def device_registry(archive_path: Path, entries: list[DeviceRegistryEntry]) -> d
 
 
 def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dict[str, Any]:
+    vehicle_spawn = bool(spec.get("vehicle_spawn", False))
     workspot = spec.get(
         "workspot",
         r"base\workspots\common\wall\generic__stand_wall_lean_back_cigarette__smoke__01.workspot",
@@ -586,7 +586,7 @@ def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> di
             "markings": [cname(marking) for marking in spec.get("markings", [])],
             "proxyScale": None,
             "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
-            "spot": {
+            "spot": None if vehicle_spawn else {
                 "HandleId": handles.take(),
                 "Data": {
                     "$type": "AIActionSpot",
@@ -603,8 +603,8 @@ def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> di
             "spotDef": None,
             "tag": spec.get("tag", "None"),
             "tagExt": spec.get("tag_ext", "None"),
-            "useCrowdBlacklist": 1,
-            "useCrowdWhitelist": 1,
+            "useCrowdBlacklist": int(spec.get("use_crowd_blacklist", not vehicle_spawn)),
+            "useCrowdWhitelist": int(spec.get("use_crowd_whitelist", not vehicle_spawn)),
         },
     }
 
@@ -743,6 +743,22 @@ def community_registry_node(
                     "yaw": spot.yaw,
                 }
             )
+    spawn_set_reference = spec.get("spawn_set_reference", "None")
+    spawn_set_entries = []
+    if spawn_set_reference != "None":
+        spawn_set_entries.append(
+            {
+                "$type": "gameCommunitySpawnSetNameToIDEntry",
+                "communityId": {
+                    "$type": "gameCommunityID",
+                    "entityId": {
+                        "$type": "entEntityID",
+                        "hash": str(source_object_id),
+                    },
+                },
+                "nameReference": cname(spawn_set_reference),
+            }
+        )
     return {
         "HandleId": registry_handle,
         "Data": {
@@ -759,7 +775,7 @@ def community_registry_node(
                             "$type": "communityCommunityTemplateData",
                             "crowdEntries": [],
                             "entries": spawn_entries,
-                            "spawnSetReference": cname(spec.get("spawn_set_reference", "None")),
+                            "spawnSetReference": cname(spawn_set_reference),
                         },
                     },
                 }
@@ -771,7 +787,10 @@ def community_registry_node(
             "proxyScale": None,
             "representsCrowd": 0,
             "sourcePrefabHash": str(spec.get("registry_source_prefab_hash", "0")),
-            "spawnSetNameToCommunityID": {"$type": "gameCommunitySpawnSetNameToID", "entries": []},
+            "spawnSetNameToCommunityID": {
+                "$type": "gameCommunitySpawnSetNameToID",
+                "entries": spawn_set_entries,
+            },
             "tag": "None",
             "tagExt": "None",
             "workspotsPersistentData": persistent_spots,
@@ -1282,24 +1301,14 @@ def register_archive_xl(
     archive_xl.write_text(yaml.safe_dump(data, sort_keys=False, width=120), encoding="utf-8")
 
 
-def deserialize(generated: list[GeneratedFile], wolvenkit: Path) -> None:
-    if not wolvenkit.exists():
-        raise SystemExit(f"WolvenKit CLI not found: {wolvenkit}")
+def deserialize(generated: list[GeneratedFile], red_cli: Path, schema: Path) -> None:
     for item in generated:
-        item.archive_path.parent.mkdir(parents=True, exist_ok=True)
-        command = [
-            str(wolvenkit),
-            "convert",
-            "deserialize",
-            str(item.raw_path),
-            "-o",
-            str(item.archive_path.parent),
-            "-v",
-            "Minimal",
-        ]
-        result = subprocess.run(command, text=True)
-        if result.returncode != 0:
-            raise SystemExit(f"WolvenKit deserialize failed for {item.raw_path}")
+        deserialize_cr2w(
+            item.raw_path,
+            item.archive_path,
+            red_cli=red_cli,
+            schema=schema,
+        )
 
 
 def command_generate(args: argparse.Namespace) -> None:
@@ -1315,7 +1324,7 @@ def command_generate(args: argparse.Namespace) -> None:
             registry.depot_path if registry else None,
         )
     if args.deserialize and not args.dry_run:
-        deserialize(generated, args.wolvenkit)
+        deserialize(generated, args.red_cli, args.schema)
     rows = [
         {
             "kind": item.kind,
@@ -1406,8 +1415,9 @@ def build_parser() -> argparse.ArgumentParser:
     generate.add_argument("--archive-root", type=Path, default=DEFAULT_ARCHIVE_ROOT, help=f"Archive target root. Default: {DEFAULT_ARCHIVE_ROOT}")
     generate.add_argument("--register", action="store_true", help="Add the generated streaming block to Ghostline.archive.xl.")
     generate.add_argument("--archive-xl", type=Path, default=DEFAULT_ARCHIVE_XL, help=f"ArchiveXL YAML path. Default: {DEFAULT_ARCHIVE_XL}")
-    generate.add_argument("--deserialize", action="store_true", help="Run WolvenKit CLI to convert generated raw JSON into CR2W binaries.")
-    generate.add_argument("--wolvenkit", type=Path, default=DEFAULT_WOLVENKIT, help=f"WolvenKit CLI path. Default: {DEFAULT_WOLVENKIT}")
+    generate.add_argument("--deserialize", action="store_true", help="Run ghostline-red to convert generated raw JSON into CR2W binaries.")
+    generate.add_argument("--red-cli", type=Path, default=DEFAULT_RED_CLI, help=f"ghostline-red CLI path. Default: {DEFAULT_RED_CLI}")
+    generate.add_argument("--schema", type=Path, default=DEFAULT_RED_SCHEMA, help=f"RED schema path. Default: {DEFAULT_RED_SCHEMA}")
     generate.add_argument("--dry-run", action="store_true", help="Print planned outputs without writing files.")
     generate.add_argument("--json", action="store_true", help="Emit machine-readable JSON summary.")
     generate.set_defaults(func=command_generate)

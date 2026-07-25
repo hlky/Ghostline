@@ -5,13 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
+from ghostline_red import deserialize as deserialize_cr2w
 
 ROOT = Path(__file__).resolve().parents[1]
-WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 
 
 def header(archive_path: Path) -> dict[str, Any]:
@@ -61,20 +60,7 @@ def write(path: Path, value: dict[str, Any]) -> None:
 
 
 def deserialize(raw_path: Path, archive_dir: Path) -> None:
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        [
-            str(WOLVENKIT),
-            "convert",
-            "deserialize",
-            str(raw_path),
-            "-o",
-            str(archive_dir),
-            "-v",
-            "Minimal",
-        ],
-        check=True,
-    )
+    deserialize_cr2w(raw_path, archive_dir / raw_path.name.removesuffix(".json"))
 
 
 def main() -> int:

@@ -1,6 +1,301 @@
 # Ghostline Roadmap
 
-Last audited: 2026-07-24
+## Vehicle building-block fixture
+
+- `gqt004_vehicle_lab` is runtime-proven. It exercises a named contact vehicle,
+  instant Patch passenger assignment, correct-vehicle arrival gates, a
+  designated theft vehicle, delivery, and player-vehicle cleanup.
+- The world generator now emits vanilla-compatible vehicle community spots
+  (`worldAISpotNode.spot = null`) and named spawn-set registry mappings.
+- Both vehicles use runtime-verified road-level Kabuki transforms. The theft
+  community's streaming origin is colocated with its vehicle so approaching
+  the objective cannot cross the community's 120-metre streaming boundary.
+- Installed candidate:
+  `H:\Ghostline-builds\gqt004-20260724-230339\archive.archive`
+  (`SHA-256 355C442781509F69B61745AF0889CDD32EEA825BA0E480AAD97A8DAF2CCE90BE`).
+- Native generation now expands the GQT001 journal template from two objective
+  phases to GQT004's five while preserving every nested cloned handle as an
+  independent export. The remaining completing-cleanup fallback is a distinct
+  template-layout limitation: its added `questJournalNodeDefinition` has no
+  export exemplar in the generic vehicle-cleanup template.
+- The first GQT004 install crashed reproducibly on save load. Round-trip
+  inspection found that other successful native writes had silently retained
+  smaller template topologies: the seven-stage root contained four phase
+  nodes, the ride phase omitted its assignment node, and the always-loaded
+  sector omitted both named vehicle spawn-set mappings. Those resources were
+  rebuilt with WolvenKit. The native writer now claims template exports once,
+  allocates independent clones from the richest class exemplar, and rebuilds
+  the streaming-sector appendix. Compatible root, journal, and scalar-bound
+  resources round-trip completely; templates missing a required class
+  exemplar now fail explicitly instead of emitting truncated resources.
+- Current crash-fix candidate:
+  `H:\Ghostline-builds\gqt004-crashfix-20260724-231914\archive.archive`
+  (`SHA-256 BA94F1F88E91DA2E5C1E15D956E1AE867048029F4894C65F0A7B6DA6403436C1`).
+- The crash-fix build loaded, but the quest and both vehicles were absent.
+  Packed-child round trips showed six successful native writes still contained
+  literal template tokens such as `{{objective}}`, `{{vehicle}}`, destination,
+  completion-fact, and player-vehicle-record placeholders. Those six phases
+  were rebuilt from the authored raw JSON with WolvenKit.
+- Current installed scalar-fix candidate:
+  `H:\Ghostline-builds\gqt004-scalar-fix-20260724-233038\archive.archive`
+  (`SHA-256 B5C9527AEAC233D3D9885B276E4898EE67114CA0FBDE3A7EBC57413EC06AB04A`).
+  All seven production child phases now serialize without unresolved template
+  tokens, all 181 tests pass, and the installed archive matches the candidate.
+- Runtime of the scalar-fix candidate activated the quest and spawned the
+  contact vehicle, but the first journal map pin was absent, the vehicle
+  overlapped a destroyed ambient vehicle, and entering it did not advance.
+  The next candidate moves the test origin to the runtime-verified transform
+  `(-1078.2563, 1313.9362, 5.174843)` at yaw `-3.628360655`, explicitly
+  activates/deactivates the first and theft objective map pins, and accepts
+  any player seat in the designated vehicle rather than requiring Driver.
+- The pinned `ghostline-red` submodule is now at `58ce37c` ("Preserve
+  template-backed topology writes"). Re-run the topology/scalar acceptance
+  fixtures before returning GQT004 CR2W generation to the native writer.
+- Installed placement/mappin/mount candidate:
+  `H:\Ghostline-builds\gqt004-pin-mount-placement-20260724-234904\archive.archive`
+  (`SHA-256 E5F4F03A4D9FDF99DDD385AC8F070D4F439BFF48D3242E399C83208E61E4FAAB`).
+  All 316 packed payloads extract byte-identically, all 181 repository tests
+  pass, and the previous install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-pin-mount-placement-20260724-234904`.
+- Runtime confirmed the map pin and corrected placement, but entering the
+  contact vehicle still did not advance. The next focused candidate resolves
+  the mount parent through the concrete vehicle community and entry
+  (`#gqt004_com_ride_vehicle`, `ride_vehicle`) instead of the spawn-set alias.
+  The same correction is applied to the later theft-vehicle gate.
+- Native semantic verification exposed one remaining writer gap: a
+  template-backed `gameEntityReference.names` value was omitted even though
+  the community NodeRef changed correctly. The affected enter/steal templates
+  and production phases were therefore rebuilt with WolvenKit; their
+  serialized output retains both the community NodeRef and entry CName.
+- Installed community-mount candidate:
+  `H:\Ghostline-builds\gqt004-community-mount-20260724-235810\archive.archive`
+  (`SHA-256 314C986B05B54B2F19C692E6FA8E278FD650EE7B3E9E7A6E5A42C1B75F658BDE`).
+  All 316 packed payloads extract byte-identically, all 181 tests pass, and
+  the prior install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-community-mount-20260724-235810`.
+- Runtime confirmed that entering the designated car advances to "Ride with
+  Patch". V is intentionally the driver. Patch failed to board because the
+  reusable assignment and completion gate both treated Patch as the driver:
+  `seat_front_left` plus role `Driver`. The corrected ride block assigns Patch
+  instantly to `seat_front_right`, waits for role `Passenger`, and resolves
+  the car through `#gqt004_com_ride_vehicle` entry `ride_vehicle`.
+- The preceding GQT001 Signal Delay questphase, journal, onscreen
+  localization, streaming block, and device patch registrations have been
+  removed from `Ghostline.archive.xl`; its authored assets remain in the
+  archive, but only GQT004 remains registered as an active test harness.
+- Installed Patch-passenger candidate:
+  `H:\Ghostline-builds\gqt004-patch-passenger-20260725-072506\archive.archive`
+  (`SHA-256 98768C46916777FF84FF78921445F9B2074884A3CB5D6A2BFD82C9DB01B72754`).
+  Its cleaned `Ghostline.archive.xl` has SHA-256
+  `5376325E6616174D14875E0162B2D32FFA10BA49BB79EF4B9B9F8B3A456860B6`.
+  Both installed files match the candidate, all 316 archive payloads verify,
+  all 181 tests pass, and the prior install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-patch-passenger-20260725-072506`.
+- Runtime confirmed Patch's passenger assignment and the transition to the
+  first driving objective, but that objective did not activate its destination
+  map pin. Both `drive_to` uses now explicitly activate and clear their
+  journal map pin and resolve the arriving car through its concrete community
+  entry. This covers the contact destination and the later theft-vehicle
+  delivery destination. The final CR2W writes and semantic round trips use
+  `ghostline-red`; all community names, entry names, map-pin paths, and eight
+  graph nodes are retained.
+- Installed destination-pin candidate:
+  `H:\Ghostline-builds\gqt004-destination-pins-20260725-073342\archive.archive`
+  (`SHA-256 66113E1312939FBA9A28232004D06BC5751C8DF3EE919D66F4E05A967F9BB27D`).
+  All 181 tests and all 316 extracted-payload comparisons pass; the prior
+  archive is backed up at
+  `H:\Ghostline-backups\pre-gqt004-destination-pins-20260725-073342`.
+- Runtime progressed through the contact drive, but the theft vehicle spawned
+  inside a wall. Its marker and vehicle workspot now use the runtime-verified
+  transform `(-1115.9425, 1431.5853, 5.433075)` at yaw
+  `23.894821357`. Native round trips retain the float32 transform in both the
+  quest and always-loaded sectors.
+- Installed theft-placement candidate:
+  `H:\Ghostline-builds\gqt004-theft-placement-20260725-073938\archive.archive`
+  (`SHA-256 09942F16604CB79311AA08255A5B64944F77FF6ED96A1A58B312E472FE256C0A`).
+  All 181 tests and all 316 payload comparisons pass; the prior install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-placement-20260725-073938`.
+- Runtime of that candidate reached the theft objective and its relocated
+  marker, but no theft vehicle was present. Because the same save had already
+  streamed the vehicle under its original identity, the next candidate rotates
+  the theft community, spawn set, entry, and AI spot to fresh `_r2` NodeRefs
+  while retaining the verified marker and transform. This forces the current
+  save to instantiate a new vehicle instead of reusing persisted streamed
+  community state.
+- Installed fresh-identity candidate:
+  `H:\Ghostline-builds\gqt004-theft-r2-20260725-074544\archive.archive`
+  (`SHA-256 707CA5603E84D802B11400CF98761624A1B9156E56BF6752B695C30AA29B5D19`).
+  `ghostline-red` semantic round trips retain the `_r2` community, spawn set,
+  entry, and AI spot in both world sectors and both affected child phases.
+  All 181 tests and all 316 emitted payload comparisons pass; the previous
+  install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-r2-20260725-074544`.
+- Runtime isolated the remaining disappearance: the `_r2` theft car existed
+  during the contact drive but vanished exactly when the contact-vehicle
+  cleanup phase handed off to the theft objective. Both custom cars were
+  active from save load, so the broad `questEnablePlayerVehicle` despawn ran
+  while both player-vehicle records had live instances. The theft community
+  now starts inactive, and the reusable `steal_vehicle` phase explicitly
+  activates its designated community before activating the objective and map
+  pin. This preserves the contact cleanup test without exposing the theft car
+  to it.
+- Installed lifecycle-boundary candidate:
+  `H:\Ghostline-builds\gqt004-theft-lifecycle-20260725-084753\archive.archive`
+  (`SHA-256 F36985C13C56D7A5D9901B467DAD991FDF940AD05CCA8EE97700E1410301ADC2`).
+  Native semantic round trips retain the eight-node theft phase, its explicit
+  community activation, and the inactive-on-start theft entry. All 181 tests
+  and all 316 emitted payload comparisons pass; the prior install is backed up
+  at
+  `H:\Ghostline-backups\pre-gqt004-theft-lifecycle-20260725-084753`.
+- Runtime reached the lifecycle boundary but then showed a blank tracker and no
+  theft car. That localizes the stall to the new activation node before its
+  journal node. The whole-community activation used `None` for both entry and
+  phase while the theft entry was explicitly inactive. The corrected action
+  now targets entry `theft_vehicle_r2` and phase `default`, matching the
+  runtime-proven Patch community activation contract.
+- Installed entry-specific activation candidate:
+  `H:\Ghostline-builds\gqt004-theft-entry-activation-20260725-125542\archive.archive`
+  (`SHA-256 4E8378255AFBA3D93079FEC31460920C8AA0516B6580175C8F13BE7B5328B476`).
+  The packed theft phase round-trips with the explicit community, entry, and
+  phase values; all 181 tests and 316 payload comparisons pass. The prior
+  install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-entry-activation-20260725-125542`.
+- Runtime still stalled before the theft objective. Comparison with the
+  runtime-proven Patch activation found the generated child phase itself had
+  no `phasePrefabs`, so its SpawnManager could not resolve the prefab-scoped
+  community even though the root declared it. The compiler now propagates
+  manifest prefab entries into generated child phases, with a regression test.
+  Native verification also caught that a template lacking a prefab-entry
+  exemplar silently omitted the new array; the production theft phase is
+  therefore written from a compatible vanilla template and round-trips with
+  one `#gqt004_pr_vehicle_lab` prefab entry.
+- Installed prefab-scoped activation candidate:
+  `H:\Ghostline-builds\gqt004-theft-prefab-scope-20260725-130136\archive.archive`
+  (`SHA-256 775AB14CA3F95CF908142290C8054847E6D23F4A13BFEFAC66B41D0D1844CE3A`).
+  All 182 tests and 316 payload comparisons pass; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-prefab-scope-20260725-130136`.
+- The typed manifest/compiler now supports an optional `debug_fact`. GQT004
+  sets `gqt004_debug_step` to `10, 20, ... 70` immediately before entering
+  each of its seven child phases, allowing CET to identify the active/stalled
+  phase without inferring it from tracker state. The diagnostic root has 16
+  nodes and 15 edges. Native template-backed attempts either dropped an edge
+  or produced malformed output, so this novel topology was seeded with
+  WolvenKit and then serialized and semantically verified with
+  `ghostline-red`.
+- Installed breadcrumb candidate:
+  `H:\Ghostline-builds\gqt004-debug-breadcrumbs-20260725-131153\archive.archive`
+  (`SHA-256 4DF99DE3F86C6FC006C3F6C6F8B7407F0A2E528F2F2964EC7DDE21CCA1E05D33`).
+  All 183 tests and 316 payload comparisons pass; the previous install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-debug-breadcrumbs-20260725-131153`.
+- Runtime breadcrumb values at the blank-tracker boundary are
+  `gqt004_debug_step = 50`, `gqt004_contact_ride_complete = 1`, and
+  `gqt004_contact_cleanup_complete = 1`. This proves the root reaches the
+  steal phase and that its leading SpawnManager activation node is the stall.
+  The focused next candidate replaces the shorthand theft-community reference
+  with the fully qualified prefab/community NodeRef in the steal and delivery
+  phases; both outputs retain that reference after `ghostline-red`
+  serialization and semantic round-trip.
+- Installed the full-NodeRef candidate:
+  `H:\Ghostline-builds\gqt004-theft-full-noderef-20260725-131844\archive.archive`
+  (`SHA-256 2E1C323B7D5C5F5D4D2A43F350B0205B7F9143450B0EE7119A9A9BD08E72E858`).
+  All 183 tests and 316 payload comparisons pass; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-full-noderef-20260725-131844`.
+- The full-NodeRef candidate still reports `50, 1, 1`, proving community-path
+  resolution is not the issue and the SpawnManager node itself never exits.
+  The next candidate removes that node, restores the theft community to
+  active-on-start, and makes intermediate contact cleanup fact-only. This
+  avoids the broad `questEnablePlayerVehicle` despawn that runtime previously
+  proved removes the separately authored theft vehicle. The dedicated final
+  cleanup remains responsible for actual vehicle cleanup.
+- Installed the stage-50 bypass candidate:
+  `H:\Ghostline-builds\gqt004-stage50-bypass-20260725-132512\archive.archive`
+  (`SHA-256 0BB4540D0EF1C74BFBAF3BEA3F84CF290A72CF62B10D4C1DA473602F57E815A8`).
+  All 183 tests and 316 payload comparisons pass; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-stage50-bypass-20260725-132512`.
+- Runtime instead stopped at `40, 1, 0`: even the fact-only intermediate
+  cleanup child failed to exit, and the theft vehicle disappeared as that
+  child was entered. The contact-cleanup stage is therefore removed entirely;
+  the six-stage root now hands off directly from the first destination to the
+  theft objective. Its `ghostline-red` round-trip contains 14 nodes, 13 edges,
+  six breadcrumb nodes, six phase nodes, and the vehicle-lab prefab.
+- Installed the direct-handoff candidate:
+  `H:\Ghostline-builds\gqt004-skip-contact-cleanup-20260725-132956\archive.archive`
+  (`SHA-256 1E599D8747295164AE2734EBC857EFD872EDC44C50CB7C269F57B8BEFFCA797E`).
+  All 183 tests and 316 payload comparisons pass; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-skip-contact-cleanup-20260725-132956`.
+- The direct handoff still stops at breadcrumb `40`, which now identifies the
+  theft child itself. The compiler/schema now support
+  `inherit_phase_prefabs: false`; GQT004 uses it for theft and delivery so the
+  root phase is the sole owner of the world prefab. Both packed child phases
+  round-trip with zero `phasePrefabs`, preventing a child transition from
+  tearing down and recreating the already active theft community.
+- Installed the root-owned-prefab candidate:
+  `H:\Ghostline-builds\gqt004-root-owned-prefab-20260725-133434\archive.archive`
+  (`SHA-256 F6E115253A5ED8DA45C26D04C387BBED4228AB30DF3CFD2B173FB4E3E7493BF3`).
+  All 183 tests and 316 payload comparisons pass; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-root-owned-prefab-20260725-133434`.
+- That candidate still stopped at `40`. Comparison against the
+  `gqt004-theft-r2-20260725-074544` archive identified a stronger control:
+  its exact seven-node theft phase previously activated the theft objective
+  and mappin at runtime. The next candidate restores that exact packed phase
+  (`SHA-256 A3A776FE7A10EA46463B9F94030B9FE61B508175BFA73B75CD5650CC245D47D6`)
+  and its shorthand community reference, while retaining the later
+  direct-handoff root with no intermediate cleanup phase.
+- Installed the proven-theft/direct-handoff candidate:
+  `H:\Ghostline-builds\gqt004-proven-theft-direct-20260725-134454\archive.archive`
+  (`SHA-256 5953407A7CAC89B8B6FC1787971C3F5861999AE3D997F88D7D8B19641AC1BA8A`).
+  All 183 tests and 316 payload comparisons pass; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt004-proven-theft-direct-20260725-134454`.
+- Runtime now reaches and displays the theft objective, proving the restored
+  phase and direct root handoff. The remaining failure is world lifecycle:
+  the community vehicle is culled as V reaches it. The theft spawn phase now
+  uses vanilla's persistent `alwaysSpawned = true_` state and its vehicle spot
+  is infinite. Packed semantic audits confirm native `alwaysSpawned = true`
+  and `isWorkspotInfinite = true`.
+- `ghostline-red` previously encoded WolvenKit's escaped boolean enum name
+  `true_` literally instead of RED's `true`. Fixed with a regression test,
+  all 56 non-fixture Rust tests and strict Clippy passing, and pushed upstream
+  as `a34201f` (`Normalize WolvenKit boolean enum names`). WolvenKit was still
+  required once to introduce the non-default enum/property layout into an
+  older template; the fixed native writer then reproduced that binary
+  byte-for-byte.
+- Installed the persistent-theft candidate:
+  `H:\Ghostline-builds\gqt004-theft-persistent-20260725-140014\archive.archive`
+  (`SHA-256 7874AED7FFD361E4290434B82055BDF99648C9688F4EDDB035EE2C5FBA7BAB33`).
+  All 184 Python tests and 316 payload comparisons pass; the preceding
+  install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-persistent-20260725-140014`.
+- Runtime proved the persistent theft vehicle still disappeared on approach.
+  World inspection identified the exact spatial boundary: the theft vehicle is
+  at `(-1115.9425, 1431.5853, 5.433075)`, but its compiled community-area node
+  remained at the contact-vehicle origin
+  `(-1078.2563, 1313.9362, 5.174843)`. Those points are approximately 124
+  metres apart while the area node's `MaxStreamingDistance` is 120 metres.
+  The theft community is now anchored to
+  `#gqt004_04_mp_theft_vehicle`, keeping its streaming origin on the vehicle.
+  Native semantic round-trip verification retains that position, the 120-metre
+  streaming distance, `alwaysSpawned = true`, and
+  `isWorkspotInfinite = true`.
+- Installed the theft-area-position candidate:
+  `H:\Ghostline-builds\gqt004-theft-area-position-20260725-140637\archive.archive`
+  (`SHA-256 84BA33E902360BC4F1ED32A0865CE8B15C35D9442FD519CC6C3E85A06D1AE77B`).
+  All 184 Python tests and all 316 extracted payload comparisons pass; the
+  preceding install is backed up at
+  `H:\Ghostline-backups\pre-gqt004-theft-area-position-20260725-140637`.
+- Runtime confirmed the final candidate keeps the theft vehicle loaded on
+  approach and the previously blocked flow now works. GQT004 is complete as a
+  runtime-proven vehicle building-block harness; the next planned harness is
+  `gqt003_extract_and_hold`.
+
+Last audited: 2026-07-25
 
 This file tracks the current state and the next work needed to turn `gq000`
 from a dialogue prototype into a playable quest slice. The current 2026-07-22
@@ -29,17 +324,18 @@ world-reference notes, and packaging instructions now live in focused docs:
 
 ### Native archive and CR2W tooling
 
-- `tools/ghostline-red` is the focused Rust replacement for
-  WolvenKit's command-line archive and CR2W conversion path. Its first working
-  slice reads archive indexes, resolves depot paths from `source/archive`, and
-  inspects CR2W headers plus string, name, import, export, and buffer tables.
+- `tools/ghostline-red` is a pinned submodule of the independently maintained
+  `hlky/ghostline-red` Rust replacement for WolvenKit's command-line archive
+  and CR2W conversion path. It reads archive indexes, resolves depot paths from
+  `source/archive`, and inspects CR2W headers plus string, name, import, export,
+  and buffer tables.
 - The current 301-entry `packed` archive is parsed with every path resolved.
   Its schema-driven CR2W codec now consumes the complete 80-resource authored
   corpus, including typed RedPackage buffers and the required custom
   appendices. Binary-to-native-JSON round trips are byte-identical. The writer
-  supports new CName/import entries and template-class handle exports; novel
-  class layouts and package topology changes intentionally remain
-  template-bound.
+  supports new CName/import entries, template-class handle exports, non-empty
+  RedPackage array growth, and consistent package chunk/handle index rebuilds.
+  Novel class layouts intentionally remain template-bound.
 - Native `pack` and `extract` commands now reproduce the current archive's 301
   entries and 1,048 CR2W segments. A full native pack/extract returns all 301
   payloads byte-identically, and WolvenKit independently extracts the native

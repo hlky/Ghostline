@@ -1,132 +1,99 @@
 ---
 name: ghostline-wolvenkit-cr2w
-description: Use for Ghostline WolvenKit CLI work, especially serializing CR2W binaries to raw JSON, deserializing raw CR2W-JSON back to packed resources, keeping source/raw and source/archive synchronized, and verifying CR2W outputs.
+description: Use for Ghostline CR2W/raw conversion and verification. Prefer the pinned ghostline-red submodule; use WolvenKit only for unsupported editor, mesh, or novel-layout work.
 ---
 
-# Ghostline WolvenKit CR2W Workflow
+# Ghostline Native CR2W Workflow
 
 ## CLI Setup
 
-Use the local console build:
+Build the pinned submodule and generate the ignored schema when needed:
 
 ```powershell
-$wk = 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe'
+git submodule update --init --recursive .\tools\ghostline-red
+cargo build --release --manifest-path .\tools\ghostline-red\Cargo.toml
+$red = '.\tools\ghostline-red\target\release\ghostline-red.exe'
+& $red schema-generate .\WolvenKit .\red-schema.json
 ```
 
-WolvenKit command names are easy to invert:
-
-- `convert serialize` means CR2W binary to JSON.
-- `convert deserialize` means JSON to CR2W binary.
-
-When converting more than one file, avoid a single flat output directory if
-assets share a basename. Subtitles and VO both output as `gq000_01.json.json`,
-so use separate output directories.
-
-WolvenKit CLI serialization expects the `-o` output directory to exist for new
-raw resource trees:
-
-```powershell
-New-Item -ItemType Directory -Force .\source\raw\mod\ghostline\characters\patch
-```
+`tools/ghostline_red.py` centralizes these paths and generates the schema on
+demand for Python generators.
 
 ## CR2W To Raw JSON
 
-Use this when a resource was changed in WolvenKit and the editable JSON needs
-to be refreshed.
+Use the native serializer and give the complete output filename:
 
 ```powershell
-& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\subtitles\gq000_01.json -o .\source\raw\mod\gq000\localization\en-us\subtitles -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\vo\gq000_01.json -o .\source\raw\mod\gq000\localization\en-us\vo -v Minimal
-& $wk convert serialize .\source\archive\mod\ghostline\localization\en-us\onscreens\ghostline.json -o .\source\raw\mod\ghostline\localization\en-us\onscreens -v Minimal
-& $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.ent -o .\source\raw\mod\ghostline\characters\patch -v Minimal
-& $wk convert serialize .\source\archive\mod\ghostline\characters\patch\patch.app -o .\source\raw\mod\ghostline\characters\patch -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000_post_accept.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\phases\gq000_delivery.questphase -o .\source\raw\mod\gq000\phases -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\scenes\gq000_patch_meet.scene -o .\source\raw\mod\gq000\scenes -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\journal\gq000.journal -o .\source\raw\mod\gq000\journal -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json -o .\source\raw\mod\gq000\localization\en-us\onscreens -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json -o .\source\raw\mod\gq000\localization\en-us\subtitles -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\world\gq000_patch_meet.streamingblock -o .\source\raw\mod\gq000\world -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\world\gq000_patch_meet.streamingsector -o .\source\raw\mod\gq000\world -v Minimal
-& $wk convert serialize .\source\archive\mod\gq000\world\gq000_always_loaded.streamingsector -o .\source\raw\mod\gq000\world -v Minimal
+& $red cr2w-serialize `
+  .\source\archive\mod\gq000\phases\gq000.questphase `
+  .\source\raw\mod\gq000\phases\gq000.questphase.json `
+  --schema .\red-schema.json
 ```
 
-These commands are an inventory of the current editable CR2W resources, not an
-instruction to overwrite generated raw sources after every build. The meeting
-scene and world resources are authored through their checked-in specs; only
-serialize their packed binaries back into `source/raw` when deliberately
-importing a WolvenKit/editor change.
-
-For reference world resources under `reference/world`, use the helper script so
-duplicate basenames such as `all.streamingblock` are serialized beside their
-source binaries:
+For reference world resources, use:
 
 ```powershell
 .\tools\serialize_reference_world.ps1
 ```
 
-Expected raw outputs:
-
-- `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json`
-- `source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json`
-- `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
-- `source/raw/mod/ghostline/characters/patch/patch.ent.json`
-- `source/raw/mod/ghostline/characters/patch/patch.app.json`
-- `source/raw/mod/gq000/phases/gq000.questphase.json`
-- `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
-- `source/raw/mod/gq000/phases/gq000_post_accept.questphase.json`
-- `source/raw/mod/gq000/phases/gq000_delivery.questphase.json`
-- `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
-- `source/raw/mod/gq000/journal/gq000.journal.json`
-- `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
-- `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json.json`
-- `source/raw/mod/gq000/world/gq000_patch_meet.streamingblock.json`
-- `source/raw/mod/gq000/world/gq000_patch_meet.streamingsector.json`
-- `source/raw/mod/gq000/world/gq000_always_loaded.streamingsector.json`
-- `reference/world/**/<name>.streamingsector.json`
-- `reference/world/**/<name>.streamingblock.json`
+The meeting scene and world resources are authored through checked-in specs.
+Only serialize packed binaries back into `source/raw` when deliberately
+importing an editor or runtime-tested binary change.
 
 ## Raw JSON To CR2W
 
-Use this before packing or testing the asset in game.
+Native writes are template-backed. Use the current packed resource as the
+template and output target:
 
 ```powershell
-& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json -o .\source\archive\mod\gq000\localization\en-us\subtitles -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json -o .\source\archive\mod\gq000\localization\en-us\vo -v Minimal
-& $wk convert deserialize .\source\raw\mod\ghostline\localization\en-us\onscreens\ghostline.json.json -o .\source\archive\mod\ghostline\localization\en-us\onscreens -v Minimal
-& $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.ent.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
-& $wk convert deserialize .\source\raw\mod\ghostline\characters\patch\patch.app.json -o .\source\archive\mod\ghostline\characters\patch -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_patch_meet.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_post_accept.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\phases\gq000_delivery.questphase.json -o .\source\archive\mod\gq000\phases -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json -o .\source\archive\mod\gq000\scenes -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\journal\gq000.journal.json -o .\source\archive\mod\gq000\journal -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\onscreens\gq000.json.json -o .\source\archive\mod\gq000\localization\en-us\onscreens -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json.json -o .\source\archive\mod\gq000\localization\en-us\subtitles -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\world\gq000_patch_meet.streamingblock.json -o .\source\archive\mod\gq000\world -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\world\gq000_patch_meet.streamingsector.json -o .\source\archive\mod\gq000\world -v Minimal
-& $wk convert deserialize .\source\raw\mod\gq000\world\gq000_always_loaded.streamingsector.json -o .\source\archive\mod\gq000\world -v Minimal
+& $red cr2w-deserialize `
+  .\source\raw\mod\gq000\phases\gq000.questphase.json `
+  .\source\archive\mod\gq000\phases\gq000.questphase `
+  --template .\source\archive\mod\gq000\phases\gq000.questphase `
+  --schema .\red-schema.json
 ```
 
-Before deserializing a generated scene or world change, run its audit/dry-run,
-validator, explorer checks, and the Python regression suite documented in
-`docs/tooling.md`. Do not use a successful CR2W conversion as a substitute for
-graph, handle, NodeRef, or locStore validation.
+The writer supports shifted strings and arrays, new CName/import entries,
+typed world-node data, RedPackage buffer identity resolution, non-empty
+RedPackage array growth, new chunks and nested handles backed by an existing
+class template, null/shared handles, and handle/chunk index rebuilding.
+Untouched template chunks and metadata are preserved.
 
-WolvenKit may print `Oodle couldn't be loaded. Using Kraken.dll instead could
-cause errors.` during JSON to CR2W conversion. This warning appeared during
-testing, but the round-tripped `gq000_patch_meet.scene` binary matched the
-original SHA256 hash.
+Before writing a generated scene or world change, run its audit/dry-run,
+validator, explorer checks, and the Python regression suite. A successful CR2W
+conversion is not a substitute for graph, handle, NodeRef, or locStore
+validation.
+
+## Archive Operations
+
+```powershell
+& $red pack .\source\archive -o H:\Ghostline-builds\native-candidate
+& $red archive-list H:\Ghostline-builds\native-candidate\archive.archive `
+  --paths-root .\source\archive
+& $red extract H:\Ghostline-builds\native-candidate\archive.archive `
+  -o H:\Ghostline-builds\native-candidate\extracted `
+  --paths-root .\source\archive
+```
+
+## WolvenKit Fallback Boundary
+
+Keep WolvenKit for:
+
+- the graphical CR2W, graph, scene, and Tweak Browser editors;
+- mesh and morphtarget GLB import/export and garment-support rebuilding;
+- creating a class layout that has no compatible binary template;
+- authoring a non-empty array when the template has no element from which the
+  native writer can derive its binary layout;
+- comparison/oracle testing when investigating a new RED or Kraken format.
+
+Do not use WolvenKit CLI for routine pack, extract, archive listing, reflected
+CR2W serialization, or template-backed deserialization.
 
 ## Verification
 
 - A CR2W binary starts with `CR2W`; verify with `Format-Hex -Count 4`.
-- A raw CR2W-JSON file should begin with `{` and contain `Header` and `Data`.
-- For exact round-trip checks, compare hashes with `Get-FileHash`.
+- Raw CR2W-JSON begins with `{` and contains `Header` and `Data`.
+- Compare exact round trips with `Get-FileHash`.
 - Keep `Header.ArchiveFileName` pointed at the intended `source/archive`
-  target when editing raw JSON.
-- Follow `docs/packaging.md` for isolated round-trip directories, scoped archive
-  packing, extraction, and payload verification.
+  target.
+- Follow `docs/packaging.md` for isolated pack/extract and payload verification.

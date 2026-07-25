@@ -1,16 +1,20 @@
 param(
     [string]$ReferenceRoot = "reference\world",
-    [string]$WolvenKit = $env:WOLVENKIT_CLI
+    [string]$RedCli = "tools\ghostline-red\target\release\ghostline-red.exe",
+    [string]$Schema = "red-schema.json"
 )
 
 $ErrorActionPreference = "Stop"
 
-if (-not $WolvenKit) {
-    $WolvenKit = "H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe"
+if (-not (Test-Path -LiteralPath $RedCli)) {
+    throw "ghostline-red release not found: $RedCli"
 }
 
-if (-not (Test-Path -LiteralPath $WolvenKit)) {
-    throw "WolvenKit CLI not found: $WolvenKit"
+if (-not (Test-Path -LiteralPath $Schema)) {
+    & $RedCli schema-generate ".\WolvenKit" $Schema
+    if ($LASTEXITCODE -ne 0) {
+        throw "ghostline-red schema generation failed"
+    }
 }
 
 if (-not (Test-Path -LiteralPath $ReferenceRoot)) {
@@ -21,8 +25,9 @@ $resources = Get-ChildItem -LiteralPath $ReferenceRoot -Recurse -File |
     Where-Object { $_.Name -match "\.(streamingsector|streamingblock)$" }
 
 foreach ($resource in $resources) {
-    & $WolvenKit convert serialize $resource.FullName -o $resource.DirectoryName -v Minimal
+    $output = "$($resource.FullName).json"
+    & $RedCli cr2w-serialize $resource.FullName $output --schema $Schema
     if ($LASTEXITCODE -ne 0) {
-        throw "WolvenKit serialization failed for $($resource.FullName)"
+        throw "ghostline-red serialization failed for $($resource.FullName)"
     }
 }

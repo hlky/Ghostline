@@ -4,13 +4,13 @@ quest:
     parent: base\quest\cyberpunk2077.quest
   - path: mod\gq002\phases\gq002.questphase
     parent: base\quest\cyberpunk2077.quest
-  - path: mod\gqt001_signal_delay\phases\gqt001_signal_delay.questphase
+  - path: mod\gqt004_vehicle_lab\phases\gqt004_vehicle_lab.questphase
     parent: base\quest\cyberpunk2077.quest
 journal:
 - mod\gq000\journal\gq000.journal
 - mod\gq001\journal\gq001.journal
 - mod\gq002\journal\gq002.journal
-- mod\gqt001\journal\gqt001.journal
+- mod\gqt004\journal\gqt004.journal
 localization:
   onscreens:
     en-us:
@@ -18,7 +18,7 @@ localization:
     - mod\gq000\localization\en-us\onscreens\gq000.json
     - mod\gq001\localization\en-us\onscreens\gq001.json
     - mod\gq002\localization\en-us\onscreens\gq002.json
-    - mod\gqt001\localization\en-us\onscreens\gqt001.json
+    - mod\gqt004\localization\en-us\onscreens\gqt004.json
   subtitles:
     en-us:
     - mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json
@@ -34,10 +34,8 @@ streaming:
   - mod\gq000\world\gq000_patch_meet.streamingblock
   - mod\gq001\world\gq001_iris_meet.streamingblock
   - mod\gq002\world\gq002_machine_stops.streamingblock
-  - mod\gqt001\world\gqt001_signal_delay.streamingblock
+  - mod\gqt004\world\gqt004_vehicle_lab.streamingblock
 resource:
   patch:
     mod\gq000\world\gq000_custom_devices.devices:
-    - base\worlds\03_night_city\_compiled\default\03_night_city.devices
-    mod\gqt001\world\gqt001_custom_devices.devices:
     - base\worlds\03_night_city\_compiled\default\03_night_city.devices

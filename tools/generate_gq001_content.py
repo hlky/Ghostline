@@ -5,13 +5,12 @@ from __future__ import annotations
 
 import copy
 import json
-import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
+from ghostline_red import deserialize as deserialize_cr2w
 
 ROOT = Path(__file__).resolve().parents[1]
-WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 JOURNAL_TEMPLATE = ROOT / "source/raw/mod/gq000/journal/gq000.journal.json"
 ONSCREEN_TEMPLATE = ROOT / "source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json"
 JOURNAL_RAW = ROOT / "source/raw/mod/gq001/journal/gq001.journal.json"
@@ -170,20 +169,7 @@ def generate_onscreens() -> dict[str, Any]:
 
 
 def deserialize(raw_path: Path, archive_path: Path) -> None:
-    archive_path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        [
-            str(WOLVENKIT),
-            "convert",
-            "deserialize",
-            str(raw_path),
-            "-o",
-            str(archive_path.parent),
-            "-v",
-            "Minimal",
-        ],
-        check=True,
-    )
+    deserialize_cr2w(raw_path, archive_path)
 
 
 def main() -> int:

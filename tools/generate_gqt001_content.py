@@ -11,14 +11,13 @@ from __future__ import annotations
 import argparse
 import copy
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
 from generate_world import DeviceRegistryEntry, Vec3, device_registry, node_ref_hash
+from ghostline_red import deserialize as deserialize_cr2w
 
 ROOT = Path(__file__).resolve().parents[1]
-WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 SECTOR_TEMPLATE = (
     ROOT
     / "reference/world/terminal-templates"
@@ -592,20 +591,7 @@ def generate_device_registry() -> dict[str, Any]:
 
 
 def deserialize(raw_path: Path, archive_path: Path) -> None:
-    archive_path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        [
-            str(WOLVENKIT),
-            "convert",
-            "deserialize",
-            str(raw_path),
-            "-o",
-            str(archive_path.parent),
-            "-v",
-            "Minimal",
-        ],
-        check=True,
-    )
+    deserialize_cr2w(raw_path, archive_path)
 
 
 def main() -> int:

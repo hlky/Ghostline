@@ -86,6 +86,68 @@ class QuestCompilerTests(unittest.TestCase):
             "#gq000_pr_patch_meet",
         )
 
+    def test_child_phase_can_opt_out_of_manifest_prefabs(self) -> None:
+        path = ROOT / "source/quests/tests/gqt004_vehicle_lab.quest.json"
+        spec, diagnostics = quest_compiler.load_spec(path)
+        self.assertFalse([item for item in diagnostics if item.level == "error"])
+        assert spec is not None
+        stage = next(item for item in spec.stages if item.id == "steal_test_vehicle")
+        phase = quest_compiler.build_stage_phase(
+            stage,
+            ROOT / "source/archive/mod/gqt004/phases/gqt004_steal_test_vehicle.questphase",
+            spec.phase_prefabs,
+        )
+        self.assertEqual(
+            [
+                item["prefabNodeRef"]["$value"]
+                for item in phase["Data"]["RootChunk"]["phasePrefabs"]
+            ],
+            [],
+        )
+
+    def test_debug_fact_marks_each_stage_entry(self) -> None:
+        path = ROOT / "source/quests/tests/gqt004_vehicle_lab.quest.json"
+        spec, diagnostics = quest_compiler.load_spec(path)
+        self.assertFalse([item for item in diagnostics if item.level == "error"])
+        assert spec is not None
+        phase = quest_compiler.build_orchestration_phase(
+            spec,
+            ROOT
+            / "source/archive/mod/gqt004_vehicle_lab/phases/gqt004_vehicle_lab.questphase",
+        )
+        nodes = [
+            item["Data"]
+            for item in phase["Data"]["RootChunk"]["graph"]["Data"]["nodes"]
+        ]
+        debug_nodes = [
+            item
+            for item in nodes
+            if item["$type"] == "questFactsDBManagerNodeDefinition"
+            and item["type"]["Data"]["factName"] == "gqt004_debug_step"
+        ]
+        self.assertEqual(
+            [item["type"]["Data"]["setExactValue"] for item in debug_nodes],
+            [10, 20, 30, 40, 50, 60],
+        )
+
+    def test_gqt004_theft_vehicle_is_persistent_until_mount(self) -> None:
+        world = json.loads(
+            (ROOT / "tools/gqt004_vehicle_lab.world.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        theft = next(
+            item
+            for item in world["communities"]
+            if item["entry"] == "theft_vehicle_r2"
+        )
+
+        self.assertEqual(theft["always_spawned"], "true_")
+        self.assertEqual(
+            theft["position"]["from"], "#gqt004_04_mp_theft_vehicle"
+        )
+        self.assertEqual(theft["spot"]["is_workspot_infinite"], 1)
+
     def test_duplicate_stage_ids_are_rejected(self) -> None:
         value = copy.deepcopy(self.raw)
         value["stages"][1]["id"] = value["stages"][0]["id"]
