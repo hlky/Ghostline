@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "gqt002_quiet_install",
+  "title": "Quiet Install",
+  "description": "Runtime fixture for monitoring stealth while planting a quest item on a guarded computer.",
+  "phase_prefabs": ["#gqt002_pr_quiet_install"],
+  "stages": [
+    {
+      "id": "remain_undetected",
+      "type": "stealth_monitor",
+      "status": "ready",
+      "phase_resource": "mod\\gqt002\\phases\\gqt002_remain_undetected.questphase",
+      "inherit_phase_prefabs": false,
+      "objective": "quests/minor_quest/gqt002/gqt002_01/gqt002_01_obj_remain_undetected",
+      "failure_fact": "gqt002_stealth_failed",
+      "success_fact": "gqt002_stealth_succeeded",
+      "stop_fact": "gqt002_plant_complete",
+      "notes": "The custom root runs this monitor in parallel with the plant phase and a real guard-combat detector."
+    },
+    {
+      "id": "plant_keylogger",
+      "type": "plant_item",
+      "status": "ready",
+      "phase_resource": "mod\\gqt002\\phases\\gqt002_plant_keylogger.questphase",
+      "phase_template": "mod\\gqt002\\templates\\gqt002_guarded_plant.questphase",
+      "inherit_phase_prefabs": false,
+      "item": "Items.GhostlineGQT002Keylogger",
+      "device": "#gqt002_02_computer_target_r2",
+      "controller_class": "ScriptableDeviceComponentPS",
+      "action": "QuestForceDisconnectPersonalLink",
+      "completion_function": "IsPersonalLinkConnected",
+      "completion_fact": "gqt002_plant_complete",
+      "objective": "quests/minor_quest/gqt002/gqt002_02/gqt002_02_obj_plant_keylogger",
+      "notes": "The custom harness template waits for V to connect the laptop personal link, presents a timed install overlay, force-disconnects, and completes from the quest fact."
+    }
+  ]
+}

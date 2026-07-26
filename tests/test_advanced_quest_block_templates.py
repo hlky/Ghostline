@@ -64,6 +64,19 @@ class AdvancedQuestBlockTemplateTests(unittest.TestCase):
             encoded = json.dumps(document)
             self.assertIn(templates.FAILURE_FACT, encoded)
 
+    def test_escort_assigns_and_clears_follower_role(self):
+        document = templates.build_escort()
+        encoded = json.dumps(document)
+        self.assertIn("AIFollowerRole", encoded)
+        self.assertIn('"$value": "#player"', encoded)
+        self.assertEqual(encoded.count("AIAssignRoleCommandParams"), 1)
+        self.assertEqual(encoded.count('"$type": "AIClearRoleCommandParams"'), 1)
+        self.assertEqual(encoded.count("questMiscAICommandNode"), 2)
+        self.assertEqual(encoded.count("questMappinManagerNodeDefinition"), 6)
+        self.assertIn(templates.ESCORT_MAPPIN_1, encoded)
+        self.assertIn(templates.ESCORT_MAPPIN_2, encoded)
+        self.assertIn(templates.ESCORT_MAPPIN_3, encoded)
+
     def test_vehicle_family_preserves_vanilla_condition_and_cleanup_shapes(self):
         enter = templates.build_enter_vehicle()
         ride = templates.build_ride_with_contact()

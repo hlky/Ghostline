@@ -458,6 +458,8 @@ def attitude_group_node(
     quest_id: int,
     entry_name: str,
     group_name: str,
+    *,
+    community_ref: str = GUARD_COMMUNITY_REF,
 ) -> GraphNode:
     """Force one named community puppet through a vanilla attitude transition."""
 
@@ -467,7 +469,7 @@ def attitude_group_node(
             "groupName": cname(group_name),
             "isPlayer": 0,
             "puppetRef": entity_reference(
-                GUARD_COMMUNITY_REF, names=(entry_name,)
+                community_ref, names=(entry_name,)
             ),
         }
     )

@@ -425,6 +425,9 @@
                 "objective": {
                   "$ref": "#/$defs/journalPath"
                 },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
                 },
@@ -893,6 +896,17 @@
                 "objective": {
                   "$ref": "#/$defs/journalPath"
                 },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "route_mappins": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "$ref": "#/$defs/journalPath"
+                  }
+                },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
                 },
@@ -912,6 +926,7 @@
                 "entry",
                 "destinations",
                 "objective",
+                "mappin",
                 "completion_fact"
               ]
             }

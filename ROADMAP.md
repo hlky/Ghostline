@@ -1,5 +1,275 @@
 # Ghostline Roadmap
 
+## Quiet-install building-block fixture
+
+- `gqt002_quiet_install` is implemented and runtime-proven. It exercises
+  `stealth_monitor` in parallel with a guarded
+  `plant_item`: three named Tyger Claws are connected through a dangerous
+  security area to a security system, and the detector fails stealth when
+  `SecuritySystemControllerPS.IsSystemInCombat` becomes true.
+- Planting now follows a vanilla-style device flow rather than a proximity
+  trigger. The barrel-mounted laptop exposes the same
+  `Interactions.StealData` custom personal-link action as a working vanilla
+  computer, is quest-marked, and uses the fresh
+  `#gqt002_02_computer_target_r2` NodeRef so saved device state cannot retain
+  the preceding broken action setup. The quest waits for vanilla's
+  `ScriptableDeviceComponentPS.IsPersonalLinkConnected`, displays a five-second
+  `INSTALLING KEYLOGGER...` / `DO NOT DISCONNECT` progress overlay, forces the
+  personal link to disconnect, consumes the quest package, and completes the
+  plant objective.
+- The optional stealth objective and required plant objective converge on
+  quest success so both detected and undetected routes can prove their engine
+  behavior. The custom root activates the inactive guard community, waits for
+  it to spawn, applies the project-proven `neutral -> hostile` refresh to each
+  named Tyger Claw so ordinary sight can drive awareness, grants
+  `Items.GhostlineGQT002Keylogger`, runs the detector, monitor, and plant phases
+  through a three-input AND join, then deactivates the guards and succeeds
+  `quests/minor_quest/gqt002`.
+- The user-selected vertical layout places the three guards at
+  `(-1075.0364, 1289.4619, 5.1435165)`,
+  `(-1057.992, 1290.2759, 5.1403656)`, and
+  `(-1045.4014, 1292.3683, 5.1375046)`. Runtime testing confirmed guard
+  activation, the undetected route, and target approach, but the first laptop
+  placement sat directly on the raised platform and its interaction workspot
+  was unusable. The owned laptop and map marker now sit on the barrel at
+  `(-1052.1395, 1283.3362, 12.46019)`, with laptop orientation
+  `(i=0, j=0, k=-0.4137633, r=0.9103846)`.
+- The security system now links directly to both
+  `SecurityAreaControllerPS` and `CommunityProxyPS`, matching the working
+  vanilla security-system example, while the dangerous area retains its own
+  community link. Its area covers the guard/laptop encounter, and the security
+  system, security area, and laptop are all registered in the scoped device
+  registry. The streaming block contains four sector descriptors.
+- The current native/WolvenKit audit retains root
+  `18 nodes / 19 edges / 1 prefab`, detector `6 / 6`, stealth monitor `9 / 9`,
+  guarded plant `11 / 10`, the 20-entry journal, the custom personal-link
+  laptop, and the two-device security sector. WolvenKit independently rebuilt
+  controls from the authored JSON and serialized both controls and production
+  binaries with identical semantic `Data` for all six affected resources.
+  Evidence is retained at
+  `H:\Ghostline-audits\gqt002-custom-interaction-hostility-final-20260726`;
+  repeat native generation is byte-stable.
+- GQT002 exposed two additional `ghostline-red` issues. Commit `0fb0995`
+  seeds export discovery with every authored handle definition so socket
+  rewiring and array growth cannot introduce second-pass references to pruned
+  exports, and decodes CR2W zero handles as JSON `null`. The fix is pushed to
+  `main`; 65 active Rust tests pass with 27 ignored fixtures, formatting,
+  strict Clippy, and the release build clean. No further `ghostline-red`
+  changes were needed for the personal-link/security revision. All 198
+  Ghostline Python tests pass.
+- Previous runtime baseline:
+  `H:\Ghostline-builds\gqt002-quiet-install-20260725-205139\archive.archive`
+  (`SHA-256 384792DEC37908EE718B0247CC1EE49D4C8FF7A9C9C2657FAAFE0383BB92D8A8`).
+- Previous installed barrel-placement candidate:
+  `H:\Ghostline-builds\gqt002-barrel-placement-20260726-194231\archive.archive`
+  (`SHA-256 2A901A1280FF3482A502CEE6797A9A0DF6ACA7B9D8FF142F94F5340ADB910549`).
+- Previous installed personal-link/security candidate:
+  `H:\Ghostline-builds\gqt002-personallink-security-20260726-203827\archive.archive`
+  (`SHA-256 24C494BBCAD9A8A5BCF82D787CC90DC290D1C4A71F47A2F33A3D1C4AF5134F7F`).
+  All 342 packed payloads extract byte-identically with no missing, extra, or
+  differing files; only the known Patch `.tmp` and two readmes are omitted by
+  the packer. Relative to the preceding barrel candidate, exactly eight
+  payloads changed: onscreen localization, detector phase, plant phase, plant
+  template, device registry, laptop sector, streaming block, and the added
+  security sector. Installed ArchiveXL SHA-256 remains
+  `BBE631CBBB2524BC60579908CEB444700E13219FE8F8E75265E2D5A358EF02AF`,
+  and the GQT002 TweakXL record is
+  `34D9E7389418FE980CCDA3399730E2B4007122932D428DB898239CB9570F8BE7`.
+  The preceding install is backed up at
+  `H:\Ghostline-backups\pre-gqt002-personallink-security-20260726-204101`.
+- Current installed custom-interaction/hostility candidate:
+  `H:\Ghostline-builds\gqt002-custom-interaction-hostility-r2-20260726-212545\archive.archive`
+  (`SHA-256 C3F7608385CDA9E4436AF92E5DA23B866D47504BE889058E0527457470BE71AD`).
+  All 342 packed payloads extract byte-identically with no extra or differing
+  files; only the known Patch `.tmp` and two readmes are omitted. Exactly five
+  payloads differ from the preceding candidate: the root and plant phases,
+  laptop and security sectors, and device registry. All 198 Python tests pass.
+  The preceding install is backed up at
+  `H:\Ghostline-backups\pre-gqt002-custom-interaction-hostility-r2-20260726-212617`.
+- Runtime acceptance is complete. From a clean pre-GQT002 save, the guards
+  react through ordinary awareness, alerted combat fails the optional stealth
+  objective, and the quiet route exposes the laptop's `Steal Data`
+  personal-link interaction. The five-second install overlay, automatic
+  disconnect, keylogger consumption, guard cleanup, and quest completion all
+  work in game.
+
+## Extraction/escort/hold building-block fixture
+
+- `gqt003_extract_and_hold` is implemented and runtime-proven, but inactive
+  while GQT002 is installed. It exercises a native access-point hack, persistent Patch
+  community, player-follower role assignment, three ordered escort gates, and
+  a 20-second defend-target success/failure race.
+- The root alone owns `#gqt003_pr_extract_and_hold`; all four child phases opt
+  out of phase-prefab inheritance so the community remains loaded across the
+  whole flow without stage-boundary prefab churn.
+- The provisional world reuses the runtime-proven GQT004 Kabuki corridor.
+  Patch and the extraction relay start at
+  `(-1078.2563, 1313.9362, 5.174843)`, and the final hold is at
+  `(-1115.9425, 1431.5853, 5.433075)`. Patch is `alwaysSpawned`, uses an
+  infinite AI spot, and has 320/280-metre streaming bounds.
+- GQT003's authored assets remain packed, but ArchiveXL now registers GQT002
+  as the active test quest.
+- Native generation exposed and fixed two `ghostline-red` writer gaps:
+  WolvenKit-style full handle definitions may omit redundant `HandleId`, and
+  `gameDeviceResourceData` plus `AreaShapeOutline` custom data must be rebuilt
+  rather than retained from the template. The fixes are pushed in submodule
+  commits `8c089fe` and `e6b213d`.
+- The load-crash investigation also produced and pushed submodule commit
+  `9b23d90`, which prunes exports disconnected from the authored CR2W handle
+  graph and compacts handle, parent, and embedded-file chunk indices. It
+  reproduces WolvenKit's 53/85/106 export counts for the GQT003 root, escort,
+  and defend phases and passes WolvenKit semantic comparison. Commit
+  `02f35fe` additionally inserts non-default fixed-size properties that are
+  absent from a template using generated-schema types and ordinals; this
+  restores GQT003's active-on-start, always-spawned, and appearance values from
+  the known-bad sector template. Commit `2b2e1d7` removes unused top-level CR2W
+  imports and remaps resource and embedded-file indices. The complete native
+  rebuild now matches both WolvenKit's export/import counts and its semantic
+  `Data` across every GQT003 resource.
+- Final semantic audit:
+  `H:\Ghostline-audits\gqt003-final-20260725-145839`. It verifies four root
+  phases, no child-owned prefabs, the access-point controller/action/condition,
+  follower assign/clear, all three gates, the timer and both outcomes, the
+  device hash, and byte-identical authored trigger-outline buffers.
+- The initial escort stage activated only the final-hold map pin before
+  assigning Patch's follower role and cleared it after Patch crossed the third
+  gate. The focused packed-phase/journal audit is
+  `H:\Ghostline-audits\gqt003-escort-pin-20260725`.
+- The first installed candidate crashed while loading a save with
+  `EXCEPTION_ACCESS_VIOLATION` reading `0xFFFFFFFFFFFFFFFF`
+  (`Cyberpunk2077-20260725-151831-28504-15292`). ArchiveXL completed every
+  GQT003 merge before the crash. Binary comparison exposed another
+  `ghostline-red` template-pruning gap: the native root retained 86 exports
+  versus WolvenKit's 53, the escort retained 1,949 versus 85, and the defend
+  phase retained 1,970 versus 106. The journal and world sectors likewise
+  retained stale, unreferenced template topology despite correct semantic
+  serialization.
+- Crash-fix candidate:
+  `H:\Ghostline-builds\gqt003-crashfix-20260725-153319\archive.archive`
+  (`SHA-256 1B0E429FC00B228EA5A7ED5819CD89802992DD661D144D3C476A5EAAB655C00E`).
+  All twelve GQT003 CR2W resources were rebuilt from the authored raw JSON
+  with WolvenKit, then independently serialized and inspected. The audit
+  preserves the crashing native fixtures at
+  `H:\Ghostline-audits\gqt003-crash-20260725-153000` and the corrected
+  round trips at
+  `H:\Ghostline-audits\gqt003-wkit-roundtrip-20260725`. All 190 Python tests
+  pass and all 328 packable archive payloads extract byte-identically. The
+  candidate is installed; the preceding install is backed up at
+  `H:\Ghostline-backups\pre-gqt003-crashfix-20260725-153430`.
+- Runtime confirmed that the WolvenKit crash-fix loads the existing save and
+  advances through the native access-point hack into "Escort Patch". This is
+  the first in-game proof that the pruned/compacted GQT003 resource set clears
+  the preceding save-load crash. The relay itself was authored exactly at road
+  level, so its personal-link exit dropped V through the surface after the
+  hack. The focused placement candidate raises only the device by 1.2 units to
+  `(-1078.00317, 1317.92822, 6.37484312)`; Patch, the marker, and all escort
+  gates are unchanged.
+- Relay-height candidate:
+  `H:\Ghostline-builds\gqt003-relay-height-20260725-163110\archive.archive`
+  (`SHA-256 D87292F59BE26D3402C0886D42C86148AF6E79A51F585E8592F61BAB19EB2520`).
+  The fixed native writer produced all four generated world containers, and
+  WolvenKit independently serialized both the native binaries and its own
+  authored-JSON controls with identical semantic `Data`. All 190 Python tests
+  and the Rust suite (64 passed, 26 ignored) pass. All 328 packable payloads
+  extract byte-identically; compared with the installed WolvenKit control,
+  only the quest sector, always-loaded sector, and device registry differ,
+  while the streaming block remains byte-identical. Native and WolvenKit
+  audit artifacts are retained under
+  `H:\Ghostline-audits\gqt003-relay-height-*-20260725`. The candidate is
+  installed with matching archive and ArchiveXL hashes; the successful
+  WolvenKit control is backed up at
+  `H:\Ghostline-backups\pre-gqt003-relay-height-20260725-163500`.
+- Runtime of the raised-relay candidate confirms Patch receives the follower
+  role, but the first ordered escort gate does not advance. The three 8-unit
+  gate volumes were authored with their bases at road height, unlike the
+  correctly centered relay-arrival volume; a ground actor could therefore sit
+  on or just below the bottom plane. The focused correction lowers each gate
+  by half its height while preserving XY placement, radius, NodeRef, and the
+  named-Patch trigger conditions. Candidate:
+  `H:\Ghostline-builds\gqt003-escort-gate-height-20260725-165940\archive.archive`
+  (`SHA-256 1EDC0122471FEE5D2E4D4FEE89B01F4253BAAEF45CC0D44C3068D467DE6CF299`).
+  WolvenKit independently produces identical sector `Data`; all 190 Python
+  tests pass, all 328 payloads extract byte-identically, and only
+  `gqt003_extract_and_hold.streamingsector` differs from the installed
+  raised-relay candidate. The correction is installed with matching hashes;
+  the preceding candidate is backed up at
+  `H:\Ghostline-backups\pre-gqt003-escort-gate-height-20260725-170000`.
+- World Inspector exposed a separate routing defect in that candidate: only
+  the third escort trigger and final-hold marker were streamed near the player,
+  because the quest activated a single pin at gate 3 even though its trigger
+  graph waits for gate 1, then gate 2, then gate 3. The reusable escort block
+  now accepts three ordered `route_mappins` while retaining its singular-pin
+  fallback for existing manifests. GQT003 activates and clears each gate pin
+  in sequence, owns three journal map-pin entries and three always-loaded
+  marker nodes, and gives all three gate triggers 320/280-metre streaming
+  bounds. Its escort graph is 17 nodes and 16 edges with six mappin-manager
+  nodes. WolvenKit independently deserialized the authored controls and
+  serialized both native and control binaries; semantic `Data` matches for the
+  escort template, production escort phase, journal, always-loaded sector, and
+  quest sector. Evidence is retained at
+  `H:\Ghostline-audits\gqt003-sequential-route-native-20260725`. This confirms
+  the routing error was authored quest/world data, not another
+  `ghostline-red` writer defect.
+- Sequential-route candidate:
+  `H:\Ghostline-builds\gqt003-sequential-route-20260725-173458\archive.archive`
+  (`SHA-256 3EB9FCB4DBD1CA8BA6730C02CDF81B8A89B855C75372FFF8927DC66F0423D597`).
+  All 190 Python tests and all 64 active Rust tests pass. All 328 packed
+  payloads extract byte-identically to `source/archive`, with only the expected
+  Patch `.tmp` and two readmes omitted. Relative to the preceding install,
+  exactly five payloads changed: the reusable escort template, GQT003 escort
+  phase, journal, always-loaded sector, and quest sector. The candidate and
+  unchanged ArchiveXL file are installed with matching hashes; the preceding
+  install is backed up at
+  `H:\Ghostline-backups\pre-gqt003-sequential-route-20260725-173558`.
+- Runtime confirms the sequential-route candidate advances correctly through
+  gate 1, gate 2, and gate 3. The first two provisional trigger placements
+  intersect nearby walls but remain reachable and are deliberately unchanged.
+  The remaining lifecycle defect was that the generic escort phase cleared
+  Patch's follower role at gate 3, causing her persistent community AI to walk
+  back toward its original workspot as the hold began. GQT003 now uses a
+  dedicated 16-node retain-follower escort template; the timed defend phase
+  clears that role only after successful survival.
+- The hold is now an actual defend encounter rather than an unopposed timer.
+  It activates a three-entry Tyger Claw community beyond the final gate, waits
+  for all attackers to spawn, directs two at Patch and one at V, and only then
+  starts the 20-second success/failure race. Success deactivates the surviving
+  attackers before clearing Patch's role; Patch being killed or incapacitated
+  still fails the quest and deactivates the wave. The production defend phase
+  has 22 nodes and 22 edges, including three combat nodes and three spawn
+  manager nodes.
+- Hold-wave candidate:
+  `H:\Ghostline-builds\gqt003-hold-wave-final-20260725-180409\archive.archive`
+  (`SHA-256 B082D157978347A126DAACB0A5404AF298B88E549731609D81D5A569CBA81FDF`).
+  WolvenKit supplied structural controls for the larger combat phase and
+  two-community world sectors; `ghostline-red` authored all six production
+  resources from those adequate exemplars, and WolvenKit independently
+  serialized native and control binaries with identical semantic `Data`.
+  Native and control evidence is retained at
+  `H:\Ghostline-audits\gqt003-hold-wave-native-20260725`. All 190 Python tests
+  and all 64 active Rust tests pass. All 329 packed payloads extract
+  byte-identically from the 332-file source tree, with only the known Patch
+  `.tmp` and two readmes omitted. Relative to the runtime-proven sequential
+  candidate, exactly six archive resources differ: the two production phases,
+  two GQT003 templates, and two world sectors. The archive and unchanged
+  ArchiveXL file are installed with matching hashes; the preceding install is
+  backed up at
+  `H:\Ghostline-backups\pre-gqt003-hold-wave-20260725-180447`.
+- Runtime confirms the hold-wave candidate works end to end. All three Tyger
+  Claws spawn and engage during the timed defend, the combat version completes
+  successfully, and Patch remains lifecycle-correct across the escort/defend
+  handoff. Patch temporarily moved away from the exact hold point during
+  combat and returned afterward; this is follower/combat AI repositioning,
+  not the earlier cleared-role walk back toward the original spawn. GQT003 is
+  now a runtime-proven `release_or_rescue_npc`, expanded `escort_npc`, and
+  hostile `defend_target` building-block harness.
+- A fully native post-fix candidate is also built and verified, but is not
+  installed while the WolvenKit crash-fix awaits its first runtime result:
+  `H:\Ghostline-builds\gqt003-native-fixed-20260725-161339\archive.archive`
+  (`SHA-256 6AD5FE4F27103C4571B7F2CBD2ECE4749B520966537F33E43F696CC621F14BA7`).
+  Extracting it returns all 328 packable payloads byte-identically to its
+  staging tree; the only three staging files omitted by the archive are the
+  expected Patch `.tmp` and two `00_readme.txt` files.
+
 ## Vehicle building-block fixture
 
 - `gqt004_vehicle_lab` is runtime-proven. It exercises a named contact vehicle,
@@ -292,10 +562,10 @@
   `H:\Ghostline-backups\pre-gqt004-theft-area-position-20260725-140637`.
 - Runtime confirmed the final candidate keeps the theft vehicle loaded on
   approach and the previously blocked flow now works. GQT004 is complete as a
-  runtime-proven vehicle building-block harness; the next planned harness is
-  `gqt003_extract_and_hold`.
+  runtime-proven vehicle building-block harness. GQT002 is the active installed
+  runtime harness.
 
-Last audited: 2026-07-25
+Last audited: 2026-07-26
 
 This file tracks the current state and the next work needed to turn `gq000`
 from a dialogue prototype into a playable quest slice. The current 2026-07-22

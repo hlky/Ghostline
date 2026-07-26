@@ -106,6 +106,7 @@ def stage(stage_type: str) -> dict:
                 "#test_destination_c",
             ],
             "objective": OBJECTIVE,
+            "mappin": MAPPIN,
             "completion_fact": "test_escort_complete",
         },
         "carry_npc": {

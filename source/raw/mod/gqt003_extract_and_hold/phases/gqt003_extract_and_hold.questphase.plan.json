@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "quest": {
+    "id": "gqt003_extract_and_hold",
+    "title": "Extract and Hold",
+    "manifest": "H:\\projects\\Ghostline\\source\\quests\\tests\\gqt003_extract_and_hold.quest.json"
+  },
+  "linear_flow": [
+    "reach_extraction_relay",
+    "release_patch",
+    "escort_patch",
+    "defend_patch"
+  ],
+  "stages": [
+    {
+      "index": 0,
+      "node_id": 10,
+      "id": "reach_extraction_relay",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_reach_extraction_relay.questphase",
+      "phase_template": null,
+      "implementation": "generated",
+      "data": {
+        "id": "reach_extraction_relay",
+        "type": "reach_area",
+        "status": "ready",
+        "phase_resource": "mod\\gqt003\\phases\\gqt003_reach_extraction_relay.questphase",
+        "inherit_phase_prefabs": false,
+        "trigger": "#gqt003_01_tr_relay",
+        "objective": "quests/minor_quest/gqt003/gqt003_01/gqt003_01_obj_reach_relay",
+        "description_entry": "quests/minor_quest/gqt003/gqt003_01/gqt003_01_obj_reach_relay/gqt003_01_desc_reach_relay",
+        "mappin": "quests/minor_quest/gqt003/gqt003_01/gqt003_01_obj_reach_relay/gqt003_01_qmp_reach_relay"
+      }
+    },
+    {
+      "index": 1,
+      "node_id": 11,
+      "id": "release_patch",
+      "type": "release_or_rescue_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_release_patch.questphase",
+      "phase_template": "mod\\ghostline\\quest_blocks\\templates\\release_or_rescue_npc.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "release_patch",
+        "type": "release_or_rescue_npc",
+        "status": "ready",
+        "phase_resource": "mod\\gqt003\\phases\\gqt003_release_patch.questphase",
+        "inherit_phase_prefabs": false,
+        "community": "#gqt003_com_patch",
+        "entry": "patch",
+        "device": "#gqt003_01_ap_relay",
+        "controller_class": "AccessPointControllerPS",
+        "action": "ForceEnabled",
+        "completion_function": "WasHackingMinigameSucceeded",
+        "completion_fact": "gqt003_release_complete",
+        "objective": "quests/minor_quest/gqt003/gqt003_02/gqt003_02_obj_release_patch"
+      }
+    },
+    {
+      "index": 2,
+      "node_id": 12,
+      "id": "escort_patch",
+      "type": "escort_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_escort_patch.questphase",
+      "phase_template": "mod\\gqt003\\templates\\gqt003_escort_retain.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "escort_patch",
+        "type": "escort_npc",
+        "status": "ready",
+        "phase_resource": "mod\\gqt003\\phases\\gqt003_escort_patch.questphase",
+        "phase_template": "mod\\gqt003\\templates\\gqt003_escort_retain.questphase",
+        "inherit_phase_prefabs": false,
+        "community": "#gqt003_com_patch",
+        "entry": "patch",
+        "destinations": [
+          "#gqt003_03_tr_escort_gate_01",
+          "#gqt003_03_tr_escort_gate_02",
+          "#gqt003_03_tr_escort_gate_03"
+        ],
+        "objective": "quests/minor_quest/gqt003/gqt003_03/gqt003_03_obj_escort_patch",
+        "mappin": "quests/minor_quest/gqt003/gqt003_03/gqt003_03_obj_escort_patch/gqt003_03_qmp_escort_gate_01",
+        "route_mappins": [
+          "quests/minor_quest/gqt003/gqt003_03/gqt003_03_obj_escort_patch/gqt003_03_qmp_escort_gate_01",
+          "quests/minor_quest/gqt003/gqt003_03/gqt003_03_obj_escort_patch/gqt003_03_qmp_escort_gate_02",
+          "quests/minor_quest/gqt003/gqt003_03/gqt003_03_obj_escort_patch/gqt003_03_qmp_escort_gate_03"
+        ],
+        "completion_fact": "gqt003_escort_complete"
+      }
+    },
+    {
+      "index": 3,
+      "node_id": 13,
+      "id": "defend_patch",
+      "type": "defend_target",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_defend_patch.questphase",
+      "phase_template": "mod\\gqt003\\templates\\gqt003_timed_defend.questphase",
+      "implementation": "template",
+      "data": {
+        "id": "defend_patch",
+        "type": "defend_target",
+        "status": "ready",
+        "phase_resource": "mod\\gqt003\\phases\\gqt003_defend_patch.questphase",
+        "inherit_phase_prefabs": false,
+        "phase_template": "mod\\gqt003\\templates\\gqt003_timed_defend.questphase",
+        "community": "#gqt003_com_patch",
+        "entry": "patch",
+        "completion_fact": "gqt003_hold_complete",
+        "failure_fact": "gqt003_patch_lost",
+        "objective": "quests/minor_quest/gqt003/gqt003_04/gqt003_04_obj_defend_patch"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "shipping_ready": true
+}

@@ -1,0 +1,108 @@
+{
+  "_note": "User-selected GQT002 stealth layout. Three street-level Tyger Claw guards protect an elevated quest-owned laptop target.",
+  "name": "gqt002",
+  "prefab_root": "$/mod/gqt002/#gqt002_pr_quiet_install",
+  "block_path": "mod\\gqt002\\world\\gqt002_quiet_install.streamingblock",
+  "quest_sector_path": "mod\\gqt002\\world\\gqt002_quiet_install.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt002\\world\\gqt002_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1052.1395,
+    "y": 1283.3362,
+    "z": 12.46019,
+    "yaw": -48.882914515
+  },
+  "markers": [
+    {
+      "ref": "#gqt002_02_mp_target",
+      "sector": "always_loaded",
+      "position": {"from": "origin"},
+      "yaw": "origin",
+      "node_data": {"max_streaming_distance": 320, "streaming_distance": 280}
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt002_02_tr_plant_target",
+      "position": {"from": "origin", "up": -1.5},
+      "outline": {"type": "circle", "radius": 2.25, "segments": 12, "height": 3.5},
+      "notifiers": ["quest"],
+      "node_data": {"max_streaming_distance": 320, "streaming_distance": 280}
+    }
+  ],
+  "security": {
+    "system_ref": "#gqt002_01_dvc_security_system",
+    "area_ref": "#gqt002_01_dvc_security_area",
+    "position": {"x": -1060.0, "y": 1287.0, "z": 5.5},
+    "type": "DANGEROUS",
+    "outline": {
+      "height": 12.0,
+      "points": [
+        {"x": -22.0, "y": -12.0, "z": -1.5},
+        {"x": 22.0, "y": -12.0, "z": -1.5},
+        {"x": 22.0, "y": 12.0, "z": -1.5},
+        {"x": -22.0, "y": 12.0, "z": -1.5}
+      ]
+    },
+    "node_data": {"max_streaming_distance": 320, "streaming_distance": 280}
+  },
+  "communities": [
+    {
+      "ref": "#gqt002_01_com_guards",
+      "position": {"x": -1052.7932, "y": 1283.967, "z": 11.76162},
+      "yaw": -5.5959,
+      "phase": "A",
+      "period": "Day",
+      "source_object_id": "auto",
+      "registry_node_id": "auto",
+      "registry_debug_name": "gqt002_quiet_install_guards_registry",
+      "active_on_start": 0,
+      "streaming_distance": 220,
+      "node_data": {"max_streaming_distance": 320, "streaming_distance": 280},
+      "entries": [
+        {
+          "entry": "guard_ranged_m",
+          "character": "Character.jpn_tyger_claws_gangster2_ranged2_sidewinder_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gqt002_01_spot_guard_ranged_m",
+              "position": {"x": -1075.0364, "y": 1289.4619, "z": 5.1435165},
+              "yaw": -37.7774,
+              "workspot": "base\\workspots\\patrolling\\guard_stand.workspot"
+            }
+          ]
+        },
+        {
+          "entry": "guard_ranged_f",
+          "character": "Character.jpn_tyger_claws_biker2_ranged2_copperhead_wa",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gqt002_01_spot_guard_ranged_f",
+              "position": {"x": -1057.992, "y": 1290.2759, "z": 5.1403656},
+              "yaw": 179.6375,
+              "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__02.workspot"
+            }
+          ]
+        },
+        {
+          "entry": "guard_melee",
+          "character": "Character.jpn_tyger_claws_biker1_melee1_baseball_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gqt002_01_spot_guard_melee",
+              "position": {"x": -1045.4014, "y": 1292.3683, "z": 5.1375046},
+              "yaw": -178.6803,
+              "workspot": "base\\workspots\\master\\master_generic__stand_ground__guard__01.workspot"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

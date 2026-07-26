@@ -1,0 +1,230 @@
+{
+  "_note": "GQT003 uses the runtime-verified GQT004 Kabuki road corridor. Patch starts beside a Ghostline access point, follows V through three ordered gates, and finishes at the former theft-vehicle position.",
+  "name": "gqt003",
+  "prefab_root": "$/mod/gqt003/#gqt003_pr_extract_and_hold",
+  "block_path": "mod\\gqt003\\world\\gqt003_extract_and_hold.streamingblock",
+  "quest_sector_path": "mod\\gqt003\\world\\gqt003_extract_and_hold.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt003\\world\\gqt003_always_loaded.streamingsector",
+  "device_registry_path": "mod\\gqt003\\world\\gqt003_custom_devices.devices",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1078.2563,
+    "y": 1313.9362,
+    "z": 5.174843,
+    "yaw": -3.628360655
+  },
+  "markers": [
+    {
+      "ref": "#gqt003_01_mp_relay",
+      "sector": "always_loaded",
+      "position": {"from": "origin"},
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt003_03_mp_gate_01",
+      "sector": "always_loaded",
+      "position": {"x": -1087.5, "y": 1343.5, "z": 5.24},
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt003_03_mp_gate_02",
+      "sector": "always_loaded",
+      "position": {"x": -1097.0, "y": 1373.0, "z": 5.3},
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt003_03_mp_gate_03",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1115.9425,
+        "y": 1431.5853,
+        "z": 5.433075
+      },
+      "yaw": 23.894821357,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt003_01_tr_relay",
+      "position": {"from": "origin", "up": -3},
+      "outline": {
+        "type": "circle",
+        "radius": 8,
+        "segments": 12,
+        "height": 6
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt003_03_tr_escort_gate_01",
+      "position": {"x": -1087.5, "y": 1343.5, "z": 1.24},
+      "outline": {
+        "type": "circle",
+        "radius": 7,
+        "segments": 12,
+        "height": 8
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt003_03_tr_escort_gate_02",
+      "position": {"x": -1097.0, "y": 1373.0, "z": 1.3},
+      "outline": {
+        "type": "circle",
+        "radius": 7,
+        "segments": 12,
+        "height": 8
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt003_03_tr_escort_gate_03",
+      "position": {"x": -1115.9425, "y": 1431.5853, "z": 1.433075},
+      "outline": {
+        "type": "circle",
+        "radius": 9,
+        "segments": 12,
+        "height": 8
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    }
+  ],
+  "devices": [
+    {
+      "ref": "#gqt003_01_ap_relay",
+      "kind": "access_point",
+      "position": {"from": "origin", "right": 4, "up": 1.2},
+      "yaw": 176.371639345,
+      "appearance": "access_point_access_point_socket_f_neomil",
+      "buffer_id": 1,
+      "content_scale": "DeviceContentAssignment.Autoscaling",
+      "initial_state": "OFF",
+      "network_name": "EXTRACTION RELAY",
+      "controller_class": "AccessPointControllerPS",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    }
+  ],
+  "communities": [
+    {
+      "ref": "#gqt003_com_patch",
+      "position": {"from": "origin"},
+      "entry": "patch",
+      "phase": "default",
+      "period": "Day",
+      "character": "Character.GhostlinePatch",
+      "appearance": "ghostline_patch_default",
+      "active_on_start": 1,
+      "always_spawned": "true_",
+      "streaming_distance": 220,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "spot": {
+        "ref": "#gqt003_spot_patch",
+        "position": {"from": "origin", "right": 7},
+        "yaw": "origin",
+        "is_workspot_infinite": 1,
+        "node_data": {
+          "max_streaming_distance": 320,
+          "streaming_distance": 280
+        }
+      }
+    },
+    {
+      "ref": "#gqt003_04_com_attackers",
+      "position": {"from": "#gqt003_03_mp_gate_03"},
+      "yaw": 23.894821357,
+      "phase": "A",
+      "period": "Day",
+      "source_object_id": "auto",
+      "registry_node_id": "auto",
+      "registry_debug_name": "gqt003_hold_attackers_registry",
+      "active_on_start": 0,
+      "streaming_distance": 220,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "entries": [
+        {
+          "entry": "attacker_ranged_m",
+          "character": "Character.jpn_tyger_claws_gangster2_ranged2_sidewinder_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gqt003_04_spot_attacker_ranged_m",
+              "position": {"x": -1120.0, "y": 1444.0, "z": 5.43},
+              "yaw": -155,
+              "workspot": "base\\workspots\\patrolling\\guard_stand.workspot"
+            }
+          ]
+        },
+        {
+          "entry": "attacker_ranged_f",
+          "character": "Character.jpn_tyger_claws_biker2_ranged2_copperhead_wa",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gqt003_04_spot_attacker_ranged_f",
+              "position": {"x": -1112.0, "y": 1445.5, "z": 5.43},
+              "yaw": -170,
+              "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__02.workspot"
+            }
+          ]
+        },
+        {
+          "entry": "attacker_melee",
+          "character": "Character.jpn_tyger_claws_biker1_melee1_baseball_ma",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gqt003_04_spot_attacker_melee",
+              "position": {"x": -1127.0, "y": 1438.0, "z": 5.43},
+              "yaw": -125,
+              "workspot": "base\\workspots\\master\\master_generic__stand_ground__guard__01.workspot"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

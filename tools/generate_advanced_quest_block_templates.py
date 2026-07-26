@@ -55,6 +55,9 @@ VEHICLE = "{{vehicle}}"
 VEHICLE_COMMUNITY = "{{vehicle_community}}"
 VEHICLE_ENTRY = "{{vehicle_entry}}"
 MAPPIN = "{{mappin}}"
+ESCORT_MAPPIN_1 = "{{route_mappin_1}}"
+ESCORT_MAPPIN_2 = "{{route_mappin_2}}"
+ESCORT_MAPPIN_3 = "{{route_mappin_3}}"
 CONTACT_COMMUNITY = "{{contact_community}}"
 CONTACT_ENTRY = "{{contact_entry}}"
 PLAYER_VEHICLE_RECORD = "{{player_vehicle_record}}"
@@ -382,6 +385,65 @@ def community_action_node(
     )
 
 
+def assign_follower_role(
+    builder: PhaseGraphBuilder, quest_id: int, community: str, entry: str
+) -> GraphNode:
+    """Assign the named actor the vanilla follower role targeting V."""
+
+    role = builder.handles.wrap(
+        {
+            "$type": "AIFollowerRole",
+            "attitudeGroupName": cname("None"),
+            "followerRef": entity_reference("#player"),
+            "followTarget": None,
+            "followTargetSquads": [],
+            "friendlyTargetSlotListener": None,
+            "isFriendMelee": 0,
+            "isOwnerSniper": 0,
+            "lastStealthLeaveTimeStamp": {"$type": "EngineTime"},
+            "owner": None,
+            "ownerTargetSlotListener": None,
+            "playerCombatListener": None,
+        }
+    )
+    params = builder.handles.wrap(
+        {
+            "$type": "AIAssignRoleCommandParams",
+            "role": role,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questMiscAICommandNode",
+        input_names=("In",),
+        output_names=("Success",),
+        properties={
+            "entityReference": entity_reference(community, names=(entry,)),
+            # Vanilla follower assignments retain this reflected function name
+            # while dispatching from the concrete params class above.
+            "function": cname("AIClearRoleCommandParams"),
+            "params": params,
+        },
+    )
+
+
+def clear_ai_role(
+    builder: PhaseGraphBuilder, quest_id: int, community: str, entry: str
+) -> GraphNode:
+    params = builder.handles.wrap({"$type": "AIClearRoleCommandParams"})
+    return builder.node(
+        quest_id,
+        "questMiscAICommandNode",
+        input_names=("In",),
+        output_names=("Success",),
+        properties={
+            "entityReference": entity_reference(community, names=(entry,)),
+            "function": cname("AIClearRoleCommandParams"),
+            "params": params,
+        },
+    )
+
+
 def assign_character_to_vehicle(
     builder: PhaseGraphBuilder,
     quest_id: int,
@@ -528,22 +590,36 @@ def build_escort() -> JsonObject:
     builder = PhaseGraphBuilder()
     start, end = input_node(builder), output_node(builder)
     active = objective_node(builder, 10, OBJECTIVE)
-    ai = puppet_ai_tier(builder, 11, COMMUNITY, ENTRY)
+    pin_1_on = mappin_node(builder, 11, ESCORT_MAPPIN_1)
+    ai = puppet_ai_tier(builder, 12, COMMUNITY, ENTRY)
+    follow = assign_follower_role(builder, 13, COMMUNITY, ENTRY)
     actor = entity_reference(COMMUNITY, names=(ENTRY,))
-    gates = [
-        trigger_condition(builder, 12, DESTINATION_1, actor),
-        trigger_condition(builder, 13, DESTINATION_2, actor),
-        trigger_condition(builder, 14, DESTINATION_3, actor),
-    ]
-    done = objective_node(builder, 15, OBJECTIVE)
-    fact = fact_node(builder, 16, COMPLETION_FACT)
+    gate_1 = trigger_condition(builder, 14, DESTINATION_1, actor)
+    pin_1_off = mappin_node(builder, 15, ESCORT_MAPPIN_1)
+    pin_2_on = mappin_node(builder, 16, ESCORT_MAPPIN_2)
+    gate_2 = trigger_condition(builder, 17, DESTINATION_2, actor)
+    pin_2_off = mappin_node(builder, 18, ESCORT_MAPPIN_2)
+    pin_3_on = mappin_node(builder, 19, ESCORT_MAPPIN_3)
+    gate_3 = trigger_condition(builder, 20, DESTINATION_3, actor)
+    clear = clear_ai_role(builder, 21, COMMUNITY, ENTRY)
+    done = objective_node(builder, 22, OBJECTIVE)
+    pin_3_off = mappin_node(builder, 23, ESCORT_MAPPIN_3)
+    fact = fact_node(builder, 24, COMPLETION_FACT)
     builder.connect(start, active, destination_socket="Active")
-    builder.connect(active, ai)
-    builder.connect(ai, gates[0])
-    builder.connect(gates[0], gates[1])
-    builder.connect(gates[1], gates[2])
-    builder.connect(gates[2], done, destination_socket="Succeeded")
-    builder.connect(done, fact)
+    builder.connect(active, pin_1_on, destination_socket="Active")
+    builder.connect(pin_1_on, ai)
+    builder.connect(ai, follow)
+    builder.connect(follow, gate_1, source_socket="Success")
+    builder.connect(gate_1, pin_1_off, destination_socket="Inactive")
+    builder.connect(pin_1_off, pin_2_on, destination_socket="Active")
+    builder.connect(pin_2_on, gate_2)
+    builder.connect(gate_2, pin_2_off, destination_socket="Inactive")
+    builder.connect(pin_2_off, pin_3_on, destination_socket="Active")
+    builder.connect(pin_3_on, gate_3)
+    builder.connect(gate_3, clear)
+    builder.connect(clear, done, source_socket="Success", destination_socket="Succeeded")
+    builder.connect(done, pin_3_off, destination_socket="Inactive")
+    builder.connect(pin_3_off, fact)
     finish(builder, fact, end)
     return phase_document(builder, "escort_npc")
 

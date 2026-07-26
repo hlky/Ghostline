@@ -167,7 +167,9 @@ STAGE_REQUIRED_FIELDS = {
         "objective", "success_fact", "failure_fact", "evaluation",
     },
     "choice_gate": {"gate_kind"},
-    "escort_npc": {"community", "entry", "objective", "completion_fact"},
+    "escort_npc": {
+        "community", "entry", "objective", "mappin", "completion_fact",
+    },
     "carry_npc": {"community", "entry", "destination", "objective"},
     "deliver_vehicle": {"vehicle", "destination", "objective"},
     "time_gate": set(),
@@ -282,7 +284,8 @@ STAGE_TYPE_FIELDS = {
     },
     "escort_npc": {
         "community", "entry", "destinations", "objective", "description_entry",
-        "failure_fact", "allow_combat_interrupt", "completion_fact",
+        "mappin", "route_mappins", "failure_fact", "allow_combat_interrupt",
+        "completion_fact",
     },
     "carry_npc": {
         "community", "entry", "destination", "objective", "description_entry",
@@ -1277,6 +1280,10 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             for field in ("community", "entry", "objective", "completion_fact")
         )
         expected.extend(("destinations", item) for item in stage.data["destinations"])
+        expected.extend(
+            ("route_mappins", item)
+            for item in stage.data.get("route_mappins", [])
+        )
     elif stage.type == "carry_npc":
         expected.extend(
             (field, stage.data[field])
@@ -1421,6 +1428,9 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{branch_b_set_fact}}": second["set_fact"],
         }
     if stage.type == "escort_npc":
+        route_mappins = stage.data.get("route_mappins")
+        if route_mappins is None:
+            route_mappins = [stage.data["mappin"]] * 3
         return {
             "{{community}}": stage.data["community"],
             "{{entry}}": stage.data["entry"],
@@ -1428,6 +1438,9 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{destination_2}}": stage.data["destinations"][1],
             "{{destination_3}}": stage.data["destinations"][2],
             "{{objective}}": stage.data["objective"],
+            "{{route_mappin_1}}": route_mappins[0],
+            "{{route_mappin_2}}": route_mappins[1],
+            "{{route_mappin_3}}": route_mappins[2],
             "{{completion_fact}}": stage.data["completion_fact"],
         }
     if stage.type == "carry_npc":

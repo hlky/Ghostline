@@ -36,7 +36,7 @@ an editor or an optional schema library.
 | `investigate_clues` | generated | `objective`, `description_entry`, `clues` |
 | `optional_condition` | template | `objective`, `condition`, `success_fact`, `failure_fact`, `evaluation` |
 | `choice_gate` | template | `gate_kind`, `branches`, `join` |
-| `escort_npc` | template | `community`, `entry`, three `destinations`, `objective`, `completion_fact` |
+| `escort_npc` | template | `community`, `entry`, three `destinations`, `objective`, `mappin`, optional three `route_mappins`, `completion_fact` |
 | `carry_npc` | template | `community`, `entry`, `destination`, `objective` |
 | `deliver_vehicle` | template | `vehicle`, `destination`, `objective` |
 | `time_gate` | generated | A non-zero combination of `days`, `hours`, `minutes`, and `seconds`; optional `completion_fact` |
