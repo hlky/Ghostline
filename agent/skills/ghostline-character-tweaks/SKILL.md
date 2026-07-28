@@ -132,12 +132,13 @@ searchable candidates from the current installed archives and can uncook a
 selected mesh for a neutral-material preview. It also serializes the exact
 cooked mesh to ignored CR2W-JSON so the UI can enumerate real
 `meshMeshAppearance` names. PMA primary meshes in `torso`, `legs`, and `feet`
-may be assigned for Patch; PWA primary meshes in `torso` and `legs` may be
-assigned for the female example. The server re-resolves them against its
+may be assigned for Patch; PWA primary meshes in `torso`, `legs`, and `feet`
+may be assigned for female characters. The server re-resolves them against its
 installed index and the generator replaces the primary component in both normal
 and `compiledData` copies. The corresponding curated bundle's cuff/shadow
-companion is retained provisionally. Female indexed feet remain preview-only
-because the tutorial boot is not a validated garment anchor.
+companion is retained provisionally. Female footwear uses the tutorial boot as
+a provisional anchor and still requires in-game foot-state, clipping, and
+deformation validation.
 
 Curated hair options may describe binding topology as well as resource paths.
 The `patch_dread_undercut` option changes the primary component class, rewires
@@ -201,7 +202,6 @@ Important NPC fields include:
 
 Useful docs:
 
-- `ROADMAP.md`
 - `docs/packaging.md`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/entity-.ent-files`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/appearance-.app-files`

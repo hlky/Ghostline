@@ -2,7 +2,7 @@
 
 This document defines the manual scoped build, verification, staging, and
 install workflow. Current archive/ZIP hashes and retained build directories
-belong in `ROADMAP.md` and `docs/testing.md`, not here.
+belong in `docs/testing.md`, not here.
 
 ## Sources Of Truth
 
@@ -41,14 +41,15 @@ NodeRefs are valid.
 
 ## Scoped Archive Build
 
-Use the repository-pinned native CLI and pack only `source/archive`:
+Use WolvenKit for the current runtime candidate and pack only
+`source/archive`:
 
 ```powershell
-$red = '.\tools\ghostline-red\target\release\ghostline-red.exe'
+$wolvenkit = '.\WolvenKit\WolvenKit.CLI\bin\Release\net8.0\WolvenKit.CLI.exe'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $buildDir = Join-Path 'H:\Ghostline-builds' "manual-$stamp"
 New-Item -ItemType Directory -Path $buildDir | Out-Null
-& $red pack .\source\archive -o $buildDir
+& $wolvenkit pack .\source\archive -o $buildDir
 $candidate = Join-Path $buildDir 'archive.archive'
 ```
 
@@ -61,8 +62,9 @@ Expected depot roots are:
 - `mod\ghostline\...`
 - `base\...` only for a deliberate test or validated dependency.
 
-Keep arbitrary support files out of `source/archive`; the native packer treats
-the directory as the intended depot payload tree.
+Keep arbitrary support files out of `source/archive`; the packer treats the
+directory as the intended depot payload tree. `ghostline-red pack` remains a
+development path and is not used for the current game-tested package.
 
 ## Archive Verification
 
@@ -90,8 +92,7 @@ Then verify:
   length and SHA-256;
 - no expected depot path was added or removed relative to the intended
   baseline;
-- the candidate archive SHA-256 is recorded in `ROADMAP.md` or
-  `docs/testing.md`;
+- the candidate archive SHA-256 is recorded in `docs/testing.md`;
 - the installed archive is byte-identical to the verified candidate.
 
 For a scene-only candidate, explicitly prove that only the intended scene

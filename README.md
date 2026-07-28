@@ -14,7 +14,6 @@ route is in `docs/testing.md`.
 
 ## Working Docs
 
-- `ROADMAP.md` - current project state, blockers, and next milestones.
 - `docs/quest-design.md` - recovered faction, character, story, shard, and
   completion-message writing for `gq000`.
 - `docs/quest-scene-flow.md` - the concrete root phase, meeting phase, scene,
@@ -100,8 +99,7 @@ equivalent to their applied shipping sources.
   Ghostline faction records, and the two readable Quiet Spine items defined in
   `source/resources/r6/tweaks/ghostline/gq000_shards.yaml`. The local test
   install uses TweakXL 1.11.3.
-- Patch still references some `ep1\...` resources. Whether Phantom Liberty is
-  a final hard dependency remains an open validation item in `ROADMAP.md`.
+
 
 ## Source Rules
 

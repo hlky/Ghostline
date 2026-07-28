@@ -1,8 +1,5 @@
 # World And NodeRef References
 
-This document preserves the resolved world, prefab, marker, trigger, and
-community findings that were moved out of `ROADMAP.md`.
-
 ## Reference Sets
 
 `reference/world` contains two useful deserialized reference sets:

@@ -201,6 +201,29 @@ proven. An abridged representative shape is:
 geometry does not record the original character-creator preset. The migration
 must recover or deliberately choose those values before regenerating his head.
 
+The optional `tweak.combat` object generates named TweakXL records for a
+character's combat profile instead of depending on update-sensitive vanilla
+`inline#` records. Goth Baddie is the first authored example. Her manifest binds:
+
+- `ArchetypeData.NetrunnerT3` and `GangNetrunner.Map`, which provide the
+  high-tier NPC netrunner action map and the vanilla tier-3 quickhack ability
+  group;
+- boss rarity, the `Cyberpsycho` tag, and both vanilla Cyberpsycho modifier
+  groups, plus the default hostile target-tracking preset required by the boss
+  health HUD;
+- a fixed Phantom Liberty power level of 60 and an additional `10.0` health
+  multiplier;
+- a guaranteed primary equipment record for Errata,
+  `Items.Preset_Katana_E3`, using the standard katana body/equip slots and
+  melee equip conditions.
+
+The fixed-level content assignment uses a custom named constant
+`BaseStats.PowerLevel` modifier. Validation caps non-Phantom-Liberty manifests
+at 50 and Phantom Liberty manifests at 60. The extra health multiplier stacks
+with `Character.Cyberpsycho_ModGroup`'s vanilla `1.5` multiplier, so Goth Baddie's
+current authored value is intentionally extreme. Keep iconic boss weapons from
+dropping unless the encounter explicitly intends to award or duplicate them.
+
 Catalog entries should contain the verbose CR2W details so manifests can stay
 small. A clothing selection should resolve to a complete component bundle,
 including shadows, cuffs, feet state, garment components and chunk masks where
@@ -352,9 +375,10 @@ that can be previewed. The JSON lives under ignored
 source.
 
 PMA primary clothing meshes in the indexed `torso`, `legs`, and `feet` slots
-are directly selectable for Patch. PWA `torso` and `legs` meshes are selectable
-for the female example. Female indexed feet remain preview-only because the
-tutorial boot is an NPC-skinned component rather than a reviewed garment anchor.
+are directly selectable for Patch. PWA `torso`, `legs`, and `feet` meshes are
+selectable for female characters. The tutorial boot now serves as the
+provisional female indexed-footwear anchor; high heels and other footwear still
+require in-game validation for foot state, clipping, and deformation.
 Preview preparation serializes the exact cooked `.mesh` to ignored CR2W-JSON
 metadata, reads its real
 `meshMeshAppearance.name` values, and lets the user assign one of those values
@@ -427,6 +451,16 @@ multilayer garment presentation requires RED material extraction/conversion or
 baking. Preview fit also does not establish NPC runtime fit: player garment
 support is driven by the equipped item system and is not automatically applied
 to NPC appearance components.
+
+`Prepare full character` adds a neutral-material composition pass. It generates
+the selected appearance in the character's ignored output tree, exports the
+four morphable head cores, packs that isolated tree into a temporary WolvenKit
+archive, and batch-exports the enabled body, hair, and clothing silhouette
+meshes into one Three.js scene. The cache is keyed by the generated mesh
+identities, selected layers, game archive root, and WolvenKit executable. The
+pass deliberately omits makeup/piercing head overlays, nail meshes, and shadow
+proxies; it is intended for face, silhouette, outfit, and clipping review
+rather than material or runtime proof.
 
 The HTTP boundary is local-only and server-owned. It rejects non-loopback bind
 addresses, ignores client attempts to replace template/source/tool paths,
@@ -540,21 +574,24 @@ The first male/female slice is complete:
    and the generated `.ent` and `.app` passed WolvenKit
    deserialize/serialize validation with only the 18 known target-path hashes.
 
-The next slice is typed catalog enrichment and whole-character composition:
+The next slice is typed catalog enrichment and material-aware composition:
 replace the provisional primary-mesh-plus-curated-companion model with full
 clothing/control-entity bundles, carry material and visibility metadata,
-assemble compatible head/body/clothing layers in one preview scene, and add a
-fresh-character command that derives all output paths and record names from a
-new identity. Indexed hair, head, arms, and player-item appearance resources
-remain discovery/preview-only; reviewed hair options can already be added as
-complete curated bundles. Patch's actual five shape values and the documented
-option-22 mismatch must be resolved before replacing his current head meshes.
+add omitted facial overlay layers, and add a fresh-character command that
+derives all output paths and record names from a new identity. The current
+neutral whole-character scene already assembles compatible morphable
+head/body/clothing layers for silhouette review. Indexed hair, head, arms, and
+player-item appearance resources remain discovery/preview-only; reviewed hair
+options can already be added as complete curated bundles. Patch's actual five
+shape values and the documented option-22 mismatch must be resolved before
+replacing his current head meshes.
 The female example is an authoring/validation fixture, not a shipping NPC: it
 still needs in-game appearance, animation, LOD, and deformation testing. Its
 full-body mesh retains internal references to the tutorial texture namespace,
 so those dependencies are staged at that source path for now; custom-pathing
 them requires patching the mesh's internal resource references. Female indexed
-feet also remain preview-only until a valid PWA garment anchor is reviewed.
+feet use the tutorial boot as a provisional PWA garment anchor and still
+require in-game foot-state, clipping, and deformation validation.
 
 ## References
 

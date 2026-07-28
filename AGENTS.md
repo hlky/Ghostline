@@ -7,9 +7,6 @@ skill-style files under `agent/skills`.
 ## First Rules
 
 - Work from the repository root unless a command says otherwise.
-- Read `ROADMAP.md` before broad quest, world, journal, scene, or packaging
-  work. Update it when work changes quest status, adds or removes resources,
-  resolves a listed gap, or discovers a new blocker.
 - Read `docs/quest-scene-flow.md` before changing the current root/child phase
   handoff, meeting lifecycle, scene exits, triggers, or localization lookup
   paths.

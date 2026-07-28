@@ -7,8 +7,6 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
 
 ## Before Editing
 
-- Read `ROADMAP.md` before broad quest, world, journal, scene, or packaging
-  work.
 - Use `docs/tooling.md` explorer commands before loading full CR2W-JSON files into
   context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal
