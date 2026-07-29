@@ -50,13 +50,17 @@ gq003_clinic_security_resolved
 gq003_jammer_disabled
 gq003_mara_lost
 gq003_safe_site_briefed
+gq003_scene_choice_preserve
+gq003_scene_choice_burn
 gq003_patch_ride_complete
+gq003_patch_vehicle_cleaned
 gq003_relay_entered
 gq003_retrieval_team_resolved
 gq003_clue_carrier_rack_scanned
 gq003_clue_core_scanned
 gq003_clue_ledger_scanned
 gq003_relay_investigation_complete
+gq003_core_operated
 gq003_relay_cleared
 ```
 

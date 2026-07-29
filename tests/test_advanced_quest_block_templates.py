@@ -30,7 +30,7 @@ class AdvancedQuestBlockTemplateTests(unittest.TestCase):
         first = templates.generate(write=False)
         second = templates.generate(write=False)
         self.assertEqual(first, second)
-        self.assertEqual(len(first), 12)
+        self.assertEqual(len(first), 13)
         for name, document in first.items():
             checked = json.loads(
                 (templates.RAW_ROOT / f"{name}.questphase.json").read_text(
@@ -94,6 +94,7 @@ class AdvancedQuestBlockTemplateTests(unittest.TestCase):
         self.assertNotIn('"action": "Activate"', json.dumps(steal))
         self.assertIn(templates.VEHICLE_COMMUNITY, json.dumps(steal))
         self.assertIn(templates.VEHICLE_ENTRY, json.dumps(steal))
+        self.assertIn(templates.COMPLETION_FACT, json.dumps(steal))
         self.assertNotIn("questEnablePlayerVehicle_NodeType", json.dumps(cleanup))
         self.assertIn(templates.COMPLETION_FACT, json.dumps(cleanup))
 

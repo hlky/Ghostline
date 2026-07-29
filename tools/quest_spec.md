@@ -29,8 +29,8 @@ an editor or an optional schema library.
 | `acquire_item` | generated | `item`, `source` |
 | `read_shard` | generated | `item`, `journal_entry`, `file_entry_index`; use `acquisition_fact` for readable shards that are consumed into the Journal and `presentation_delay_seconds` when the pickup overlay needs time |
 | `meet_contact` | template | `contact`, `scene`, `community`, `objective`, `description_entry`, `mappin` |
-| `hack_access_point` | template | `device`, `success_fact` |
-| `deliver_drop_point` | template | `item`, `drop_point`, `deposit_fact` |
+| `hack_access_point` | template or generated | `device`, `success_fact`; adding the device action/condition fields selects the generated form |
+| `deliver_drop_point` | template or generated | `item`, `drop_point`, `deposit_fact`; two `item_branches` select outcome-dependent inventory |
 | `interact_device` | generated | `device`, `controller_class`, `action`, `completion_function` |
 | `combat_encounter` | generated | `community`, `entries`, `hostility`, `completion` |
 | `cyberpsycho_encounter` | generated | `community`, `boss_entry`, `boss_character`, `activation_trigger`, `reveal`, `resolution` |
@@ -44,19 +44,19 @@ an editor or an optional schema library.
 | `read_terminal_document` | template | `computer`, `completion_fact`, `objective`; optional `scene`, `output_socket`, `document_entry` |
 | `stealth_monitor` | template | `objective`, `failure_fact`, `success_fact`, `stop_fact` |
 | `plant_item` | template | `item`, device action/condition fields, `completion_fact`, `objective` |
-| `defend_target` | template | `community`, `entry`, `completion_fact`, `failure_fact`, `objective` |
+| `defend_target` | template | `community`, `entry`, `completion_fact`, `failure_fact`, `objective`; `block_on_failure` selects the retry-safe variant |
 | `release_or_rescue_npc` | template | target fields, device action/condition fields, `completion_fact`, `objective` |
 | `enter_vehicle` | template | `vehicle`, `objective` |
 | `ride_with_contact` | template | `vehicle`, `contact_community`, `contact_entry`, `objective` |
 | `drive_to` | template | `vehicle`, `destination`, `completion_fact`, `objective` |
-| `steal_vehicle` | template | `vehicle`, `objective` |
+| `steal_vehicle` | template | `vehicle`, `objective`, `completion_fact` |
 | `vehicle_cleanup` | template | `player_vehicle_record`, `completion_fact` |
 | `braindance_analysis` | template | `scene`, `scene_origin`, safe `player_anchor`, `player_replacer`, three `clue_facts`, `objective`, `completion_fact` |
 
 `generated` means the compiler constructs the complete child graph from typed
 fields. `template` means it resolves a reduced raw CR2W-JSON template,
 performs exact scalar replacement, validates the handle graph, and checks the
-typed contract after instantiation. The twelve advanced complex blocks resolve
+typed contract after instantiation. The thirteen advanced complex blocks resolve
 Ghostline-owned built-in templates automatically; authors normally provide
 only the typed fields shown above. An explicit `phase_template` plus
 `template_bindings` can override the built-in for an advanced shape.
@@ -69,6 +69,12 @@ Every stage also requires:
 - a unique lowercase `id`;
 - a `status` of `ready` or `planned`; and
 - a child `phase_resource` exposing conventional `In1` and `Out1` sockets.
+
+A stage may narrow the quest-level prefab list with `phase_prefabs`; an empty
+list deliberately binds no world prefab. `checkpoint` inserts a root checkpoint
+immediately before the stage, and `retry_checkpoint: true` sets its
+`retryOnFailure` contract. Use the latter with a failure-blocking child rather
+than allowing a failed defense to emit normal progression.
 
 `required_assets` provides additional depot paths that must exist before a
 ready stage can compile. Missing resources are errors for `ready` stages and
@@ -100,8 +106,11 @@ the phase cannot infer a read from generic journal state.
 
 `stealth_monitor` and `defend_target` race explicit success/stop and failure
 signals and preserve the result. Their surrounding encounter owns those
-signals. The vehicle lifecycle is split into mounting, riding with a contact,
-driving to a trigger, stealing by mounting, and player-vehicle cleanup.
+signals. With `block_on_failure`, the defend child fails the objective and sets
+the failure fact but does not emit `Out1`; pair it with a retry-enabled
+checkpoint and confirm reload behavior in game. The vehicle lifecycle is split
+into mounting, riding with a contact, driving to a trigger, stealing by
+mounting and setting its completion fact, and player-vehicle cleanup.
 `vehicle_cleanup` uses the `sq031_porsche` player-vehicle record shape and is
 not a generic despawner for arbitrary world NodeRefs.
 
@@ -186,6 +195,12 @@ sequences between the common opening messages and the response group. This is
 the generated pattern for outcome-specific debriefs: each branch contains a
 unique `condition` fact and one or more journal `messages`, and all branches
 reconverge before the shared choices.
+`conditional_message_groups` generalizes this to multiple sequential
+fact-conditioned groups, avoiding a cross-product for independent outcomes.
+`postscript_messages` activates additional messages after the required final
+message without making them separate progression gates. Journal paths may
+belong to different contacts, so alternating Morrow/Iris exchanges do not
+require a custom child phase.
 `quests/examples/phone_conversation.quest.json` is the standalone
 authoring example.
 
@@ -195,15 +210,20 @@ general generated blocks, and
 specialized boss lifecycle. `quests/examples/template_building_blocks.quest.json`
 compiles the original eight building-block stages without author-written
 template paths or placeholder maps. The advanced-template regression suite
-instantiates every built-in template, including the twelve advanced blocks.
+instantiates every built-in template, including the thirteen advanced blocks.
 
-The orchestration layer remains intentionally linear. `choice_gate` is a
-converging child block: its alternatives must rejoin before `Out1`.
+The orchestration layer is linear except for declared `parallel_groups`. Each
+group replaces one contiguous stage span with two or more ordered branches and
+joins every branch through a logical all-of before progression resumes. A
+stage may belong to only one group; meeting stages, checkpoints, and debug-fact
+instrumentation are intentionally rejected inside a group.
+`choice_gate` is a converging child block: its alternatives must rejoin
+before `Out1`.
 `optional_condition` evaluates inside its child phase rather than running as a
 parallel monitor. Dialogue choices remain inside scene or phone blocks;
 combat, breach outcomes, and deposit completion remain inside their child
-phases. A future schema version can add named stage outcomes and graph edges
-without changing these linear manifests.
+phases. `interact_device.outcome_branches` can perform fact-selected inventory
+mutations and set outcome facts after one common device completion.
 
 ## Commands
 

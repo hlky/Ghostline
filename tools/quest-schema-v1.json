@@ -33,6 +33,36 @@
         "pattern": "^#"
       }
     },
+    "parallel_groups": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "branches"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "branches": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            }
+          }
+        }
+      }
+    },
     "debug_fact": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]*$"
@@ -108,6 +138,22 @@
         "inherit_phase_prefabs": {
           "type": "boolean",
           "default": true
+        },
+        "phase_prefabs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^#"
+          }
+        },
+        "checkpoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retry_checkpoint": {
+          "type": "boolean",
+          "default": false
         },
         "template_bindings": {
           "type": "object",
@@ -328,6 +374,31 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "controller_class": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "completion_function": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "send_action": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
                 }
               },
               "required": [
@@ -359,12 +430,59 @@
                 "deposit_fact": {
                   "type": "string",
                   "minLength": 1
+                },
+                "item_branches": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "condition",
+                      "item"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/factName"
+                      },
+                      "item": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
                 }
               },
               "required": [
-                "item",
                 "drop_point",
                 "deposit_fact"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "item"
+                  ]
+                },
+                {
+                  "required": [
+                    "item_branches"
+                  ]
+                }
               ]
             }
           ],
@@ -390,7 +508,56 @@
                 },
                 "messages": {
                   "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "conditional_message_groups": {
+                  "type": "array",
                   "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "branches"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "branches": {
+                        "type": "array",
+                        "minItems": 2,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "condition",
+                            "messages"
+                          ],
+                          "properties": {
+                            "condition": {
+                              "$ref": "#/$defs/factName"
+                            },
+                            "messages": {
+                              "type": "array",
+                              "minItems": 1,
+                              "items": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "postscript_messages": {
+                  "type": "array",
                   "items": {
                     "type": "string",
                     "minLength": 1
@@ -708,6 +875,46 @@
                 "send_action": {
                   "type": "boolean",
                   "default": true
+                },
+                "outcome_branches": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "condition",
+                      "set_fact"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "condition": {
+                        "$ref": "#/$defs/factName"
+                      },
+                      "set_fact": {
+                        "$ref": "#/$defs/factName"
+                      },
+                      "add_items": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "remove_items": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    }
+                  }
                 }
               },
               "required": [
@@ -1321,6 +1528,10 @@
                 },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "block_on_failure": {
+                  "type": "boolean",
+                  "default": false
                 }
               },
               "required": [
@@ -1539,11 +1750,15 @@
                 },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
                 }
               },
               "required": [
                 "vehicle_community",
                 "vehicle_entry",
+                "completion_fact",
                 "objective",
                 "mappin"
               ]
@@ -1819,6 +2034,15 @@
         "grant_item": {
           "type": "string",
           "minLength": 1
+        },
+        "grant_items": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "journal_entry": {
           "$ref": "#/$defs/journalPath"

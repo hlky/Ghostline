@@ -443,7 +443,9 @@ require in-game validation for foot state, clipping, and deformation.
 Preview preparation serializes the exact cooked `.mesh` to ignored CR2W-JSON
 metadata, reads its real
 `meshMeshAppearance.name` values, and lets the user assign one of those values
-to the outfit. Generation updates the slot's primary component in both the
+to the outfit. Indexed torso meshes expose both the inner- and outer-torso
+destinations when the active catalog supplies compatible anchors, so shirts and
+jackets can remain separate layers. Generation updates the selected slot's primary component in both the
 normal and `compiledData` appearance copies. It deliberately keeps the curated
 slot's cuff/shadow companion, so each new combination still needs in-game fit
 validation.

@@ -146,6 +146,25 @@ class CharacterAssetIndexTests(unittest.TestCase):
         self.assertEqual(assignment["manifest_category"], "inner_torso")
         self.assertFalse(character_asset_index.selection_support(asset, "pma")["supported"])
 
+    def test_pwa_torso_clothing_can_target_outer_torso(self) -> None:
+        asset = character_asset_index.classify_asset(
+            r"base\characters\garment\player_equipment\torso\jacket\t2_001_pwa_jacket.mesh",
+            "base",
+        )
+        assignment = character_asset_index.canonical_indexed_override(
+            asset,
+            "black",
+            ["default", "black"],
+            "pwa",
+            "outer_torso",
+        )
+
+        self.assertEqual(assignment["manifest_category"], "outer_torso")
+        with self.assertRaises(character_asset_index.CharacterAssetIndexError):
+            character_asset_index.canonical_indexed_override(
+                asset, "black", ["black"], "pwa", "feet"
+            )
+
     def test_assignment_rejects_wrong_frame_companion_and_unknown_appearance(self) -> None:
         wrong_frame = character_asset_index.classify_asset(
             r"base\characters\garment\player_equipment\feet\boots\s1_001_pwa_boots.mesh",

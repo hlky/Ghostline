@@ -100,11 +100,28 @@ function renderAssets(data) {
         appearance.addEventListener("change", () => { preview.selectedAppearance = appearance.value; });
         actions.append(appearance);
         if (preview.assignment?.supported) {
+          const destinations = preview.assignment.manifest_categories || [manifestCategory];
+          const destination = document.createElement("select");
+          destination.className = "asset-destination";
+          destination.setAttribute("aria-label", `Outfit slot for ${asset.family || asset.depot_path}`);
+          for (const categoryId of destinations) {
+            const option = document.createElement("option");
+            option.value = categoryId;
+            option.textContent = state.catalog.categories[categoryId]?.label || categoryId;
+            destination.append(option);
+          }
+          const assignedCategory = destinations.find((categoryId) => (
+            state.manifest.appearance.indexed_overrides?.[categoryId]?.depot_path === asset.depot_path
+          ));
+          if (assignedCategory) destination.value = assignedCategory;
+          actions.append(destination);
           const use = document.createElement("button");
           use.type = "button";
           use.className = "primary";
           use.textContent = "Use in outfit";
-          use.addEventListener("click", () => assignAsset(asset.depot_path, appearance.value, use));
+          use.addEventListener("click", () => (
+            assignAsset(asset.depot_path, appearance.value, destination.value, use)
+          ));
           actions.append(use);
         }
       }
@@ -157,12 +174,13 @@ async function previewAsset(depotPath, button) {
   }
 }
 
-async function assignAsset(depotPath, meshAppearance, button) {
+async function assignAsset(depotPath, meshAppearance, manifestCategory, button) {
   button.disabled = true;
   try {
     const result = await post("/api/assets/assign", {
       depot_path: depotPath,
       mesh_appearance: meshAppearance,
+      manifest_category: manifestCategory,
     });
     const category = result.manifest_category;
     const curated = byId(`catalog-${category}`);

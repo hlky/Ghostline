@@ -11,7 +11,7 @@
 | 5 | I | `receive_yard_identifier` | `phone_conversation` | Read Patch's message. | Supplies yard alias, access phrase, and mappin activation. |
 | 6 | II | `reach_freight_yard` | `reach_area` | Reach the Black Lantern freight yard. | Starts the yard compound root. |
 | 7 | II | `remain_undetected` | `stealth_monitor` | Optional: Remain undetected. | Runs parallel to stages 8-12; sets exactly one stealth outcome when stopped. |
-| 8 | II | `investigate_yard` | `investigate_clues` | Investigate the transfer yard. | Three clues; restraint case grants `Items.GhostlineBlackLanternRouteAuth`. |
+| 8 | II | `investigate_yard` | `investigate_clues` | Investigate the transfer yard. | Three clues; restraint case grants `Items.GhostlineBlackLanternRouteAuth` and the readable `Items.GhostlineExpeditedHandoff`. |
 | 9 | II | `read_expedited_handoff` | `read_shard` | Read the archived conversation. | Sets `gq003_yard_shard_read`. |
 | 10 | II | `plant_routing_beacon` | `plant_item` | Install the routing beacon. | Sets `gq003_beacon_planted`. |
 | 11 | II | `breach_dispatch_relay` | `hack_access_point` | Breach the dispatch relay. | Identifies carrier `PAIR 07-B`; sets `gq003_dispatch_breached`. |

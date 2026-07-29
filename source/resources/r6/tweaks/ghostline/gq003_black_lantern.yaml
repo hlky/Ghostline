@@ -1,0 +1,44 @@
+# Route authorization and the physical beacon are ordinary quest datachips.
+# Their behavior remains game-owned; Ghostline supplies stable IDs and names.
+Items.GhostlineBlackLanternRouteAuth:
+  $base: Items.sts_std_rcr_05_datachip
+  friendlyName: GhostlineBlackLanternRouteAuth
+  localizedName: gl_gq003_item_route_auth_name
+
+Items.GhostlineBlackLanternRouteBeacon:
+  $base: Items.sts_std_rcr_05_datachip
+  friendlyName: GhostlineBlackLanternRouteBeacon
+  localizedName: gl_gq003_item_route_beacon_name
+
+# The expedited-handoff clue is a readable shard. Its title and body live in
+# GQ003's quest-owned onscreen localization resource.
+Items.GhostlineExpeditedHandoff:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: Items.GhostlineExpeditedHandoff_inline0
+  localizedName: gl_onscreens_emails_quests_minor_quest_gq003_shards_expedited_handoff_title
+
+Items.GhostlineExpeditedHandoff_inline0:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq003/shards/expedited_handoff
+
+# Only one of these two mutually exclusive delivery items exists at stage 35.
+# The shared friendlyName is the drop-point contract used by the generated
+# outcome-aware delivery phase.
+Items.GhostlineBlackLanternCipher:
+  $base: Items.sts_std_rcr_05_datachip
+  friendlyName: gq003_cipher_delivered
+  localizedName: gl_gq003_item_cipher_name
+
+Items.GhostlineBlackLanternReceipt:
+  $base: Items.sts_std_rcr_05_datachip
+  friendlyName: gq003_cipher_delivered
+  localizedName: gl_gq003_item_receipt_name
+
+QuestRewards.gq003_completion:
+  $base: QuestRewards.sts_wat_kab_05_completion
+
+# Provisional ordinary panel van used for Patch's temporary player vehicle.
+# The record is intentionally quest-owned so cleanup cannot target a permanent
+# player garage record. Appearance tuning can change without changing the ID.
+Vehicle.GhostlineBlackLanternPatchVan:
+  $base: Vehicle.v_standard25_villefort_columbus_player

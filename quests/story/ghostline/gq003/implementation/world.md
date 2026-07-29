@@ -2,9 +2,10 @@
 
 ## Location Selection And World Origins
 
-Select and review locations before writing the typed manifest. Use the opening
-Iris site again as the later safe site so the quest has five principal sites
-plus one drop point. Each chosen site becomes a world origin; all
+The typed manifest is complete with explicit placeholder NodeRefs. Select and
+review locations before promoting or registering runtime resources. Use the
+opening Iris site again as the later safe site so the quest has five principal
+sites plus one drop point. Each chosen site becomes a world origin; all
 Ghostline-owned triggers, devices, communities, markers, routes, and scene
 placements use relative offsets.
 

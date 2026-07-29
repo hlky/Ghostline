@@ -50,9 +50,9 @@ FRAME_LABELS = {
     "wb": "female_big",
 }
 SUPPORTED_CLOTHING_SLOTS = {
-    "torso": "inner_torso",
-    "legs": "legs",
-    "feet": "feet",
+    "torso": ("inner_torso", "outer_torso"),
+    "legs": ("legs",),
+    "feet": ("feet",),
 }
 
 
@@ -349,7 +349,8 @@ def selection_support(asset: dict[str, Any], required_frame_token: str = "pma") 
             f"Indexed clothing assignment does not support frame token {required_frame_token!r}"
         )
     slot = str(asset.get("slot") or "")
-    manifest_category = SUPPORTED_CLOTHING_SLOTS.get(slot)
+    manifest_categories = list(SUPPORTED_CLOTHING_SLOTS.get(slot, ()))
+    manifest_category = manifest_categories[0] if manifest_categories else None
     if asset.get("category") != "clothing":
         reasons.append("only indexed player-equipment clothing is assignable")
     if asset.get("resource_type") != "mesh":
@@ -367,6 +368,7 @@ def selection_support(asset: dict[str, Any], required_frame_token: str = "pma") 
     return {
         "supported": not reasons,
         "manifest_category": manifest_category,
+        "manifest_categories": manifest_categories,
         "asset_slot": slot or None,
         "required_frame": required_frame_token,
         "reasons": reasons,
@@ -420,6 +422,7 @@ def canonical_indexed_override(
     mesh_appearance: str,
     appearances: Iterable[str],
     required_frame_token: str = "pma",
+    manifest_category: str | None = None,
 ) -> dict[str, Any]:
     support = selection_support(asset, required_frame_token)
     if not support["supported"]:
@@ -429,8 +432,13 @@ def canonical_indexed_override(
         raise CharacterAssetIndexError(
             f"Mesh appearance {mesh_appearance!r} is not advertised by {asset.get('depot_path')}"
         )
+    target_category = manifest_category or support["manifest_category"]
+    if target_category not in support["manifest_categories"]:
+        raise CharacterAssetIndexError(
+            f"Asset cannot be assigned to manifest category {target_category!r}"
+        )
     return {
-        "manifest_category": support["manifest_category"],
+        "manifest_category": target_category,
         "override": {
             "depot_path": str(asset["depot_path"]),
             "mesh_appearance": mesh_appearance,

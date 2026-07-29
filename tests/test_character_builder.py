@@ -1007,6 +1007,25 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertEqual(merged["catalog"], self.female_manifest["catalog"])
         self.assertEqual(merged["templates"], self.female_manifest["templates"])
 
+    def test_ui_female_catalog_supports_both_indexed_torso_layers(self) -> None:
+        asset = character_ui.character_asset_index.classify_asset(
+            r"base\characters\garment\player_equipment\torso\jacket\t2_001_pwa_jacket.mesh",
+            "base",
+        )
+        support = character_ui.character_asset_index.selection_support(asset, "pwa")
+
+        available = character_ui.catalog_assignment_support(self.female_manifest, support)
+        outer = character_ui.catalog_assignment_support(
+            self.female_manifest, support, "outer_torso"
+        )
+
+        self.assertTrue(available["supported"], available["reasons"])
+        self.assertEqual(
+            available["manifest_categories"], ["inner_torso", "outer_torso"]
+        )
+        self.assertTrue(outer["supported"], outer["reasons"])
+        self.assertEqual(outer["manifest_category"], "outer_torso")
+
     def test_ui_manifest_retains_only_canonical_indexed_override_fields(self) -> None:
         posted = copy.deepcopy(self.manifest)
         posted["appearance"]["indexed_overrides"] = {

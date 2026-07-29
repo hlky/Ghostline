@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "mara",
+  "display_name": "Mara Venn",
+  "namespace": "mod\\ghostline\\characters\\mara",
+  "frame": "female_average",
+  "catalog": "characters/female-catalog.json",
+  "templates": {
+    "entity": "characters/templates/npv-female.ent-shell.json",
+    "appearance_shell": "characters/templates/npv-female.app-shell.json",
+    "component_library": "characters/components/npv-female.components.json",
+    "localization": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
+  },
+  "template_identity": {
+    "frame": "female_average",
+    "namespace": "tutorial\\npv\\your_female_character"
+  },
+  "template_assets": {
+    "source_root": "@npv/source/archive/tutorial/npv/your_female_character",
+    "source_depot_root": "tutorial\\npv\\your_female_character",
+    "dependency_globs": [
+      "body/textures/*.xbm",
+      "head/textures/*.xbm"
+    ]
+  },
+  "outputs": {
+    "entity_raw": "source/raw/mod/ghostline/characters/mara/mara.ent.json",
+    "appearance_raw": "source/raw/mod/ghostline/characters/mara/mara.app.json",
+    "localization_raw": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json",
+    "tweak": "source/resources/r6/tweaks/ghostline/character_mara.yaml"
+  },
+  "entity": {
+    "file_name": "mara.ent",
+    "root_appearance": "ghostline_mara_default",
+    "appearance_name": "default",
+    "appearance_file": "mara.app"
+  },
+  "appearance": {
+    "name": "default",
+    "selections": {
+      "hair": "tutorial_judy_variant",
+      "inner_torso": "tutorial_casual_tank",
+      "outer_torso": "tutorial_business_outer",
+      "business_extras": "none",
+      "legs": "tutorial_casual_pants",
+      "feet": "tutorial_casual_boots"
+    },
+    "indexed_overrides": {
+      "inner_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t1_079_tshirt__casual\\t1_079_pwa_tshirt__casual.mesh",
+        "mesh_appearance": "white_black_dirt"
+      },
+      "outer_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t2_093_jacket__collar\\t2_093_pwa_jacket__collar.mesh",
+        "mesh_appearance": "leather"
+      },
+      "legs": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\legs\\l1_065_pants__pockets\\l1_065_pwa_pants__pockets.mesh",
+        "mesh_appearance": "military_dirty"
+      },
+      "feet": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\feet\\s1_077_boot__blackwater\\s1_077_pwa_boot__blackwater.mesh",
+        "mesh_appearance": "gray"
+      }
+    }
+  },
+  "head": {
+    "blend_template": "@npv/source/raw/tutorial/npv/your_female_character/head/head_import.blend",
+    "morphtarget_source": "@npv/source/archive/tutorial/npv/your_female_character/head/morphtargets",
+    "mesh_source": "@npv/source/archive/tutorial/npv/your_female_character/head",
+    "preview_morphtargets": [
+      "h0_000_pwa__morphs.morphtarget"
+    ],
+    "morphtargets": [
+      "h0_000_pwa__morphs.morphtarget",
+      "he_000_pwa__morphs.morphtarget",
+      "heb_000_pwa__morphs.morphtarget",
+      "ht_000_pwa__morphs.morphtarget"
+    ],
+    "shapes": {
+      "eyes": 4,
+      "nose": 8,
+      "mouth": 3,
+      "jaw": 6,
+      "ears": 1
+    }
+  },
+  "tweak": {
+    "record": "Character.GhostlineMara",
+    "base": "Character.Quest_NPC_Base",
+    "display_name": "gq_npc_mara",
+    "affiliation": "Factions.Ghostline",
+    "voice_tag": "gq_mara"
+  },
+  "localization": {
+    "secondary_key": "gq_npc_mara",
+    "female_variant": "Mara Venn",
+    "male_variant": ""
+  },
+  "requirements": {
+    "phantom_liberty": true
+  }
+}

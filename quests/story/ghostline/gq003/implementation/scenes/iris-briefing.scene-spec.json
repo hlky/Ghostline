@@ -1,0 +1,119 @@
+{
+  "name": "gq003_iris_briefing",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "quests/story/ghostline/gq003/script/gq003_02_manifest.json",
+  "raw_path": "source/raw/mod/gq003/scenes/gq003_iris_briefing.scene.json",
+  "archive_path": "source/archive/mod/gq003/scenes/gq003_iris_briefing.scene",
+  "exported_datetime": "2026-07-29T00:00:00Z",
+  "choice_locales": ["db_db", "pl_pl", "en_us"],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "actors": [
+    {
+      "key": "iris",
+      "name": "iris",
+      "kind": "community",
+      "id": 0,
+      "entry": "iris",
+      "community_ref": "#gq003_02_com_iris",
+      "appearance": "default",
+      "lipsync": 0
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 0
+    }
+  ],
+  "spoken_line_order": [
+    "gq003_02_iris_intro_01",
+    "gq003_02_v_choice_quiet_spine_line",
+    "gq003_02_iris_rsp_quiet_spine_01",
+    "gq003_02_v_choice_memory_courier_line",
+    "gq003_02_iris_rsp_memory_courier_01",
+    "gq003_02_v_choice_kabuki_line",
+    "gq003_02_iris_rsp_kabuki_01",
+    "gq003_02_iris_rsp_kabuki_02",
+    "gq003_02_v_choice_patch_knowledge_line",
+    "gq003_02_iris_rsp_patch_knowledge_01",
+    "gq003_02_v_choice_mara_line",
+    "gq003_02_iris_rsp_mara_01",
+    "gq003_02_iris_rsp_mara_02",
+    "gq003_02_v_choice_accept_line",
+    "gq003_02_iris_rsp_accept_01",
+    "gq003_02_v_rsp_accept_01",
+    "gq003_02_iris_rsp_accept_02"
+  ],
+  "choice_line_order": [
+    "gq003_02_v_choice_quiet_spine_short",
+    "gq003_02_v_choice_memory_courier_short",
+    "gq003_02_v_choice_kabuki_short",
+    "gq003_02_v_choice_patch_knowledge_short",
+    "gq003_02_v_choice_mara_short",
+    "gq003_02_v_choice_accept_short"
+  ],
+  "entry_point": {"name": "start", "node_id": 1},
+  "exit_points": [
+    {"name": "end", "node_id": 18},
+    {"name": "job_accept", "node_id": 19}
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {"node_id": 10, "input_name": 0, "input_ordinal": 1},
+      {"node_id": 11, "input_name": 0, "input_ordinal": 1}
+    ]
+  },
+  "graph_order": [1, 10, 11, 13, 2, 22, 8, 3, 4, 5, 9, 6, 7, 12, 14, 18, 19],
+  "sections": [
+    {"key": "opening", "node_id": 2, "lines": ["gq003_02_iris_intro_01"], "on_end": [{"node_id": 22}]},
+    {"key": "quiet_spine", "node_id": 3, "lines": ["gq003_02_v_choice_quiet_spine_line", "gq003_02_iris_rsp_quiet_spine_01"], "on_end": [{"node_id": 8}]},
+    {"key": "memory_courier", "node_id": 4, "lines": ["gq003_02_v_choice_memory_courier_line", "gq003_02_iris_rsp_memory_courier_01"], "on_end": [{"node_id": 8}]},
+    {"key": "kabuki", "node_id": 5, "lines": ["gq003_02_v_choice_kabuki_line", "gq003_02_iris_rsp_kabuki_01", "gq003_02_iris_rsp_kabuki_02"], "on_end": [{"node_id": 9}]},
+    {"key": "patch_knowledge", "node_id": 6, "lines": ["gq003_02_v_choice_patch_knowledge_line", "gq003_02_iris_rsp_patch_knowledge_01"], "on_end": [{"node_id": 9}]},
+    {"key": "mara", "node_id": 7, "lines": ["gq003_02_v_choice_mara_line", "gq003_02_iris_rsp_mara_01", "gq003_02_iris_rsp_mara_02"], "on_end": [{"node_id": 12}]},
+    {"key": "accept", "node_id": 14, "lines": ["gq003_02_v_choice_accept_line", "gq003_02_iris_rsp_accept_01", "gq003_02_v_rsp_accept_01", "gq003_02_iris_rsp_accept_02"], "on_end": [{"node_id": 19}]}
+  ],
+  "choices": [
+    {
+      "key": "background",
+      "node_id": 8,
+      "actor_id": 0,
+      "options": [
+        {"choice_key": "gq003_02_v_choice_quiet_spine_short", "caption": "What did Quiet Spine move?", "single_choice": false, "choice_type": 0, "target_node_id": 3},
+        {"choice_key": "gq003_02_v_choice_memory_courier_short", "caption": "How does someone carry a memory?", "single_choice": false, "choice_type": 0, "target_node_id": 4},
+        {"choice_key": "gq003_02_v_choice_kabuki_short", "caption": "Where did the Kabuki relay fit?", "single_choice": false, "choice_type": 1, "target_node_id": 5}
+      ]
+    },
+    {
+      "key": "mara",
+      "node_id": 9,
+      "actor_id": 0,
+      "options": [
+        {"choice_key": "gq003_02_v_choice_patch_knowledge_short", "caption": "How much did Patch know?", "single_choice": false, "choice_type": 0, "target_node_id": 6},
+        {"choice_key": "gq003_02_v_choice_mara_short", "caption": "Where is Mara?", "single_choice": false, "choice_type": 1, "target_node_id": 7}
+      ]
+    },
+    {
+      "key": "accept",
+      "node_id": 12,
+      "actor_id": 0,
+      "options": [
+        {"choice_key": "gq003_02_v_choice_accept_short", "caption": "I'll bring her out.", "single_choice": false, "choice_type": 1, "target_node_id": 14}
+      ]
+    }
+  ],
+  "quest_nodes": [
+    {"kind": "puppet_ai", "node_id": 10, "entity_ref": "#gq003_02_com_iris", "entry": "iris", "ai_tier": "Cinematic"},
+    {"kind": "pause_condition", "node_id": 11, "trigger_ref": "#gq003_02_tr_mood", "require_player_not_in_combat": true, "on_out": [{"node_id": 13, "input_name": 0, "input_ordinal": 1}]},
+    {"kind": "pause_condition", "node_id": 13, "trigger_ref": "#gq003_02_tr_awareness", "on_out": [{"node_id": 2}]},
+    {"kind": "pause_condition", "node_id": 22, "trigger_ref": "#gq003_02_tr_engage", "on_out": [{"node_id": 8}]}
+  ],
+  "xor_nodes": [],
+  "end_nodes": [{"node_id": 18}, {"node_id": 19}]
+}

@@ -835,6 +835,29 @@ def build_defend_target() -> JsonObject:
     return phase_document(builder, "defend_target")
 
 
+def build_defend_target_retry() -> JsonObject:
+    """Fail the objective without emitting Out1 so a retry checkpoint can reload."""
+
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    active = objective_node(builder, 10, OBJECTIVE)
+    complete = fact_condition_node(
+        builder, 11, COMPLETION_FACT, comparison="Greater", value=0
+    )
+    killed = character_killed(builder, 12, COMMUNITY, ENTRY)
+    success = objective_node(builder, 13, OBJECTIVE)
+    failure = objective_node(builder, 14, OBJECTIVE)
+    failed_fact = fact_node(builder, 15, FAILURE_FACT)
+    builder.connect(start, active, destination_socket="Active")
+    builder.connect(active, complete)
+    builder.connect(active, killed)
+    builder.connect(complete, success, destination_socket="Succeeded")
+    builder.connect(killed, failure, destination_socket="Failed")
+    builder.connect(failure, failed_fact)
+    finish(builder, success, end)
+    return phase_document(builder, "defend_target_retry")
+
+
 def build_release_or_rescue() -> JsonObject:
     builder = PhaseGraphBuilder()
     start, end = input_node(builder), output_node(builder)
@@ -1005,12 +1028,14 @@ def build_steal_vehicle() -> JsonObject:
     mounted.data["condition"]["Data"]["type"]["Data"]["role"] = "Invalid"
     done = objective_node(builder, 13, OBJECTIVE)
     pin_off = mappin_node(builder, 14, MAPPIN)
+    completed = fact_node(builder, 15, COMPLETION_FACT)
     builder.connect(start, active, destination_socket="Active")
     builder.connect(active, pin_on, destination_socket="Active")
     builder.connect(pin_on, mounted)
     builder.connect(mounted, done, destination_socket="Succeeded")
     builder.connect(done, pin_off, destination_socket="Inactive")
-    finish(builder, pin_off, end)
+    builder.connect(pin_off, completed)
+    finish(builder, completed, end)
     return phase_document(builder, "steal_vehicle")
 
 
@@ -1176,6 +1201,7 @@ BUILDERS = {
     "stealth_monitor": build_stealth_monitor,
     "plant_item": build_plant_item,
     "defend_target": build_defend_target,
+    "defend_target_retry": build_defend_target_retry,
     "release_or_rescue_npc": build_release_or_rescue,
     "escort_npc": build_escort,
     "enter_vehicle": build_enter_vehicle,

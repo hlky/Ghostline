@@ -2,14 +2,24 @@
 
 ## Status And Scope
 
-This is the narrative and implementation preproduction brief for the first
-90-120 minute Ghostline quest. It defines the canonical 36-stage route,
-objective copy, persistent state, text-only dialogue, readable documents,
-ambient lines, choice consequences, and the remaining tooling decisions.
+This is the narrative and implementation authoring package for the first
+90-120 minute Ghostline quest. The canonical 36-stage compiler manifest,
+objective copy, persistent state, phone threads, readable documents, two Iris
+scenes, choice consequences, item/reward records, and provisional Mara
+character manifest are authored and validated.
 
-No locations, world origins, NodeRefs, communities, journal entries,
-localization IDs, scene specs, quest manifest, or packed resources are selected
-yet. The poster reference is `images/gq003-black-lantern-poster.png`.
+No final world origins are selected yet. The manifest therefore keeps all 36
+stages `planned` and uses clearly named placeholder NodeRefs, communities,
+prefabs, devices, triggers, routes, and vehicle records. Its complete graph
+compiles for inspection, including the freight-yard parallel monitor,
+stage-scoped prefab bindings, retry-blocking Mara defense, outcome-dependent
+core/delivery, and multi-contact debrief topology.
+
+The generated journal contains 28 objective phases, 23 quest mappins, ten phone
+conversations, and five readable/computer entries. Both Iris scenes have scene
+specs, CR2W-JSON, subtitles, subtitle maps, and VO maps. They deliberately have
+no WEM audio yet. The poster reference is
+`images/gq003-black-lantern-poster.png`.
 
 ## Narrative Contract
 
@@ -76,18 +86,38 @@ new dialogue or visual information.
 
 ## Build
 
-Black Lantern is not buildable yet. It has no checked quest manifest, scene
-specs, world origins, localization IDs, or CR2W resources.
+Black Lantern is not shipping-buildable yet. Its complete planned graph and
+location-independent content can be generated and validated, but world
+selection, world/AI authoring, promoted CR2W binaries, ArchiveXL registration,
+voice production, and in-game verification remain.
 
-The first build command becomes available after
-`implementation/quest.json` is authored and every unresolved NodeRef or asset
-is either selected or explicitly marked planned:
+Validate the preproduction manifest with:
 
 ```powershell
 py -B .\tools\quest_compiler.py validate `
   .\quests\story\ghostline\gq003\implementation\quest.json
 ```
 
-Do not create placeholder packed resources merely to make this section
-executable; the remaining authoring sequence is tracked in
-[the implementation plan](implementation/plan.md).
+Validation succeeds while every stage remains explicitly `planned`. Generate
+the inspectable graph with:
+
+```powershell
+py -B .\tools\quest_compiler.py compile `
+  .\quests\story\ghostline\gq003\implementation\quest.json `
+  --out .\generated\gq003\gq003.questphase.json `
+  --plan .\generated\gq003\gq003.plan.json `
+  --allow-planned
+```
+
+Regenerate the journal and onscreen localization with:
+
+```powershell
+py -B .\quests\story\ghostline\gq003\implementation\build.py
+```
+
+Do not treat generated output as playable: placeholder world NodeRefs and
+missing world/AI resources still prevent runtime integration. The Mara stage
+emits no normal progression on failure and is preceded by a checkpoint with
+`retryOnFailure`; automatic reload remains an explicit in-game validation item.
+Do not register or pack the partial quest to silence warnings; the remaining
+sequence is tracked in [the implementation plan](implementation/plan.md).

@@ -25,6 +25,7 @@ from generate_cache_phase import (  # noqa: E402
     input_node,
     journal_entry_node,
     journal_path,
+    logical_and_node,
     mappin_node,
     node_ref,
     objective_node,
@@ -40,6 +41,7 @@ from generate_delivery_phase import (  # noqa: E402
     journal_choice_succeeded_node,
     journal_entry_visited_node,
     logical_xor_node,
+    reserve_drop_point_node,
     reward_node,
 )
 
@@ -156,7 +158,7 @@ STAGE_REQUIRED_FIELDS = {
         "mappin",
     },
     "hack_access_point": {"device", "success_fact"},
-    "deliver_drop_point": {"item", "drop_point", "deposit_fact"},
+    "deliver_drop_point": {"drop_point", "deposit_fact"},
     "phone_conversation": {"contact", "thread", "choice_group", "final_message"},
     "reach_area": {"trigger", "objective", "description_entry", "mappin"},
     "interact_device": {
@@ -213,6 +215,7 @@ STAGE_REQUIRED_FIELDS = {
     },
     "steal_vehicle": {
         "vehicle_community", "vehicle_entry", "objective", "mappin",
+        "completion_fact",
     },
     "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
     "braindance_analysis": {
@@ -230,6 +233,7 @@ TOP_LEVEL_FIELDS = {
     "title",
     "description",
     "phase_prefabs",
+    "parallel_groups",
     "debug_fact",
     "stages",
 }
@@ -240,6 +244,9 @@ COMMON_STAGE_FIELDS = {
     "phase_resource",
     "phase_template",
     "inherit_phase_prefabs",
+    "phase_prefabs",
+    "checkpoint",
+    "retry_checkpoint",
     "template_bindings",
     "required_assets",
     "notes",
@@ -255,12 +262,18 @@ STAGE_TYPE_FIELDS = {
     },
     "hack_access_point": {
         "device", "success_fact", "guard_community", "grants",
+        "controller_class", "action", "completion_function", "send_action",
+        "objective", "description_entry", "mappin",
     },
-    "deliver_drop_point": {"item", "drop_point", "deposit_fact"},
+    "deliver_drop_point": {
+        "item", "drop_point", "deposit_fact", "item_branches",
+        "objective", "description_entry", "mappin",
+    },
     "phone_conversation": {
         "contact", "thread", "choice_group", "messages", "choices",
-        "opening_branches", "final_message", "completion_fact", "complete_quest",
-        "delay_seconds", "objective", "description_entry", "reward",
+        "opening_branches", "conditional_message_groups", "postscript_messages",
+        "final_message", "completion_fact", "complete_quest", "delay_seconds",
+        "objective", "description_entry", "reward",
     },
     "reach_area": {
         "trigger", "objective", "description_entry", "mappin",
@@ -269,7 +282,7 @@ STAGE_TYPE_FIELDS = {
     "interact_device": {
         "device", "controller_class", "action", "completion_function",
         "objective", "description_entry", "mappin", "success_fact",
-        "send_action",
+        "send_action", "outcome_branches",
     },
     "acquire_item": {
         "item", "source", "quantity", "objective", "description_entry", "mappin",
@@ -337,7 +350,7 @@ STAGE_TYPE_FIELDS = {
     },
     "defend_target": {
         "community", "entry", "completion_fact", "failure_fact", "objective",
-        "description_entry",
+        "description_entry", "block_on_failure",
     },
     "release_or_rescue_npc": {
         "community", "entry", "device", "controller_class", "action",
@@ -359,7 +372,7 @@ STAGE_TYPE_FIELDS = {
     },
     "steal_vehicle": {
         "vehicle_community", "vehicle_entry", "objective", "mappin",
-        "description_entry",
+        "description_entry", "completion_fact",
     },
     "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
     "braindance_analysis": {
@@ -413,12 +426,19 @@ class CompiledStage:
 
 
 @dataclass(frozen=True)
+class ParallelGroup:
+    id: str
+    branches: tuple[tuple[str, ...], ...]
+
+
+@dataclass(frozen=True)
 class QuestSpec:
     path: Path
     id: str
     title: str
     description: str
     phase_prefabs: tuple[str, ...]
+    parallel_groups: tuple[ParallelGroup, ...]
     debug_fact: str | None
     stages: tuple[CompiledStage, ...]
 
@@ -608,6 +628,73 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                     stage_id or None,
                 )
             )
+        stage_prefabs = stage.get("phase_prefabs")
+        if stage_prefabs is not None:
+            if (
+                not isinstance(stage_prefabs, list)
+                or any(
+                    not isinstance(value, str) or not value.startswith("#")
+                    for value in stage_prefabs
+                )
+                or len(set(stage_prefabs)) != len(stage_prefabs)
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_stage_phase_prefabs",
+                        f"{context}.phase_prefabs must contain unique shorthand NodeRefs",
+                        stage_id or None,
+                    )
+                )
+            elif any(value not in phase_prefabs for value in stage_prefabs):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unknown_stage_phase_prefab",
+                        f"{context}.phase_prefabs must be selected from the quest phase_prefabs",
+                        stage_id or None,
+                    )
+                )
+            if "inherit_phase_prefabs" in stage:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "conflicting_stage_phase_prefabs",
+                        f"{context} cannot combine phase_prefabs with inherit_phase_prefabs",
+                        stage_id or None,
+                    )
+                )
+        checkpoint = stage.get("checkpoint")
+        retry_checkpoint = stage.get("retry_checkpoint", False)
+        if checkpoint is not None and (
+            not isinstance(checkpoint, str) or not checkpoint.strip()
+        ):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "invalid_checkpoint",
+                    f"{context}.checkpoint must be a non-empty string",
+                    stage_id or None,
+                )
+            )
+        if not isinstance(retry_checkpoint, bool):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "invalid_retry_checkpoint",
+                    f"{context}.retry_checkpoint must be a boolean",
+                    stage_id or None,
+                )
+            )
+        elif retry_checkpoint and not isinstance(checkpoint, str):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "missing_retry_checkpoint",
+                    f"{context}.retry_checkpoint requires checkpoint",
+                    stage_id or None,
+                )
+            )
         for field in sorted(STAGE_REQUIRED_FIELDS.get(stage_type, set())):
             require_string(stage, field, context=context, diagnostics=diagnostics)
 
@@ -710,14 +797,37 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
 
         if stage_type == "investigate_clues":
             clues = stage.get("clues")
+            clue_fields = {
+                "id",
+                "object_ref",
+                "completion_fact",
+                "grant_item",
+                "grant_items",
+                "journal_entry",
+                "mappin",
+            }
             if (
                 not isinstance(clues, list)
                 or not clues
                 or not all(
                     isinstance(item, dict)
+                    and set(item) <= clue_fields
                     and isinstance(item.get("id"), str)
                     and ID_RE.fullmatch(item["id"])
                     and isinstance(item.get("object_ref"), str)
+                    and (
+                        "grant_items" not in item
+                        or (
+                            isinstance(item["grant_items"], list)
+                            and bool(item["grant_items"])
+                            and all(
+                                isinstance(value, str) and value.strip()
+                                for value in item["grant_items"]
+                            )
+                            and len(set(item["grant_items"]))
+                            == len(item["grant_items"])
+                        )
+                    )
                     for item in clues
                 )
                 or len({item["id"] for item in clues if isinstance(item, dict)}) != len(clues)
@@ -726,7 +836,7 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                     Diagnostic(
                         "error",
                         "invalid_clues",
-                        f"{context}.clues must contain unique id/object_ref objects",
+                        f"{context}.clues must contain typed unique id/object_ref objects",
                         stage_id or None,
                     )
                 )
@@ -815,6 +925,144 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                         "error",
                         "duplicate_gate_choice",
                         f"{context}.branches must use unique ids and outcome facts",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "interact_device" and "outcome_branches" in stage:
+            branches = stage.get("outcome_branches")
+            allowed_branch_fields = {
+                "id", "condition", "set_fact", "add_items", "remove_items",
+            }
+            if (
+                not isinstance(branches, list)
+                or len(branches) != 2
+                or not all(
+                    isinstance(item, dict)
+                    and set(item) <= allowed_branch_fields
+                    and {"id", "condition", "set_fact"} <= set(item)
+                    and isinstance(item["id"], str)
+                    and ID_RE.fullmatch(item["id"])
+                    and isinstance(item["condition"], str)
+                    and item["condition"].strip()
+                    and isinstance(item["set_fact"], str)
+                    and item["set_fact"].strip()
+                    and all(
+                        isinstance(values, list)
+                        and all(isinstance(value, str) and value.strip() for value in values)
+                        for values in (
+                            item.get("add_items", []),
+                            item.get("remove_items", []),
+                        )
+                    )
+                    for item in branches
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_interact_outcomes",
+                        f"{context}.outcome_branches must contain exactly two typed fact branches",
+                        stage_id or None,
+                    )
+                )
+            elif (
+                len({item["id"] for item in branches}) != 2
+                or len({item["condition"] for item in branches}) != 2
+                or len({item["set_fact"] for item in branches}) != 2
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "duplicate_interact_outcome",
+                        f"{context}.outcome_branches must use unique ids, conditions, and facts",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "hack_access_point" and "completion_function" in stage:
+            for field in ("controller_class", "action", "completion_function"):
+                require_string(stage, field, context=context, diagnostics=diagnostics)
+            if "send_action" in stage and not isinstance(stage["send_action"], bool):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_hack_send_action",
+                        f"{context}.send_action must be a boolean",
+                        stage_id or None,
+                    )
+                )
+
+        if stage_type == "deliver_drop_point" and "item_branches" in stage:
+            branches = stage.get("item_branches")
+            if (
+                not isinstance(branches, list)
+                or len(branches) != 2
+                or not all(
+                    isinstance(item, dict)
+                    and set(item) == {"id", "condition", "item"}
+                    and isinstance(item["id"], str)
+                    and ID_RE.fullmatch(item["id"])
+                    and isinstance(item["condition"], str)
+                    and item["condition"].strip()
+                    and isinstance(item["item"], str)
+                    and item["item"].strip()
+                    for item in branches
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_delivery_item_branches",
+                        f"{context}.item_branches must contain exactly two id/condition/item branches",
+                        stage_id or None,
+                    )
+                )
+            elif (
+                len({item["id"] for item in branches}) != 2
+                or len({item["condition"] for item in branches}) != 2
+                or len({item["item"] for item in branches}) != 2
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "duplicate_delivery_item_branch",
+                        f"{context}.item_branches must use unique ids, conditions, and items",
+                        stage_id or None,
+                    )
+                )
+
+        if (
+            stage_type == "deliver_drop_point"
+            and not stage.get("item")
+            and not stage.get("item_branches")
+        ):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "missing_delivery_item",
+                    f"{context} requires item or item_branches",
+                    stage_id or None,
+                )
+            )
+
+        if stage_type == "defend_target":
+            block_on_failure = stage.get("block_on_failure", False)
+            if not isinstance(block_on_failure, bool):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_block_on_failure",
+                        f"{context}.block_on_failure must be a boolean",
+                        stage_id or None,
+                    )
+                )
+            elif block_on_failure and not stage.get("retry_checkpoint", False):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "blocked_defense_without_retry",
+                        f"{context}.block_on_failure requires retry_checkpoint",
                         stage_id or None,
                     )
                 )
@@ -1264,14 +1512,18 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             messages = stage.get("messages")
             if (
                 not isinstance(messages, list)
-                or not messages
                 or not all(isinstance(item, str) and item.strip() for item in messages)
+                or (
+                    not messages
+                    and not stage.get("opening_branches")
+                    and not stage.get("conditional_message_groups")
+                )
             ):
                 diagnostics.append(
                     Diagnostic(
                         "error",
                         "invalid_phone_messages",
-                        f"{context}.messages must be a non-empty string array",
+                        f"{context}.messages must be a string array and may be empty only when conditional messages exist",
                         stage_id or None,
                     )
                 )
@@ -1332,6 +1584,63 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                         "invalid_phone_opening_branches",
                         f"{context}.opening_branches must contain at least two "
                         "unique fact conditions with non-empty message arrays",
+                        stage_id or None,
+                    )
+                )
+            conditional_groups = stage.get("conditional_message_groups", [])
+            if (
+                not isinstance(conditional_groups, list)
+                or any(
+                    not isinstance(group, dict)
+                    or set(group) != {"id", "branches"}
+                    or not isinstance(group["id"], str)
+                    or not ID_RE.fullmatch(group["id"])
+                    or not isinstance(group["branches"], list)
+                    or len(group["branches"]) < 2
+                    or any(
+                        not isinstance(branch, dict)
+                        or set(branch) != {"condition", "messages"}
+                        or not isinstance(branch["condition"], str)
+                        or not branch["condition"].strip()
+                        or not isinstance(branch["messages"], list)
+                        or not branch["messages"]
+                        or any(
+                            not isinstance(message, str) or not message.strip()
+                            for message in branch["messages"]
+                        )
+                        for branch in group["branches"]
+                    )
+                    or len(
+                        {branch["condition"] for branch in group["branches"]}
+                    ) != len(group["branches"])
+                    for group in conditional_groups
+                )
+                or len(
+                    {
+                        group["id"]
+                        for group in conditional_groups
+                        if isinstance(group, dict) and isinstance(group.get("id"), str)
+                    }
+                ) != len(conditional_groups)
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_phone_conditional_groups",
+                        f"{context}.conditional_message_groups must contain uniquely named branch groups",
+                        stage_id or None,
+                    )
+                )
+            postscripts = stage.get("postscript_messages", [])
+            if not isinstance(postscripts, list) or any(
+                not isinstance(message, str) or not message.strip()
+                for message in postscripts
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_phone_postscripts",
+                        f"{context}.postscript_messages must be a string array",
                         stage_id or None,
                     )
                 )
@@ -1405,6 +1714,125 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             )
         )
 
+    parallel_groups: list[ParallelGroup] = []
+    parallel_value = raw.get("parallel_groups", [])
+    stage_by_id = {stage.id: stage for stage in stages}
+    stage_order = {stage.id: stage.index for stage in stages}
+    claimed_parallel_stages: set[str] = set()
+    seen_group_ids: set[str] = set()
+    if not isinstance(parallel_value, list):
+        diagnostics.append(
+            Diagnostic(
+                "error",
+                "invalid_parallel_groups",
+                "parallel_groups must be an array",
+            )
+        )
+    else:
+        for group_index, group in enumerate(parallel_value):
+            context = f"parallel_groups[{group_index}]"
+            if (
+                not isinstance(group, dict)
+                or set(group) != {"id", "branches"}
+                or not isinstance(group.get("id"), str)
+                or not ID_RE.fullmatch(group["id"])
+                or not isinstance(group.get("branches"), list)
+                or len(group["branches"]) < 2
+                or any(
+                    not isinstance(branch, list)
+                    or not branch
+                    or any(
+                        not isinstance(stage_id, str) or not ID_RE.fullmatch(stage_id)
+                        for stage_id in branch
+                    )
+                    for branch in group["branches"]
+                )
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_parallel_group",
+                        f"{context} must contain an id and at least two non-empty stage-id branches",
+                    )
+                )
+                continue
+            group_id = group["id"]
+            branches = tuple(tuple(branch) for branch in group["branches"])
+            members = [stage_id for branch in branches for stage_id in branch]
+            if group_id in seen_group_ids:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "duplicate_parallel_group",
+                        f"Duplicate parallel group id: {group_id}",
+                    )
+                )
+            seen_group_ids.add(group_id)
+            unknown_members = sorted(set(members) - set(stage_by_id))
+            if unknown_members:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unknown_parallel_stage",
+                        f"{context} references unknown stages: {', '.join(unknown_members)}",
+                    )
+                )
+                continue
+            if len(set(members)) != len(members):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "duplicate_parallel_stage",
+                        f"{context} repeats a stage across branches",
+                    )
+                )
+                continue
+            overlap = sorted(set(members) & claimed_parallel_stages)
+            if overlap:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "overlapping_parallel_group",
+                        f"{context} reuses stages from another group: {', '.join(overlap)}",
+                    )
+                )
+                continue
+            indices = sorted(stage_order[stage_id] for stage_id in members)
+            if indices != list(range(indices[0], indices[-1] + 1)):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "noncontiguous_parallel_group",
+                        f"{context} stages must occupy one contiguous manifest span",
+                    )
+                )
+                continue
+            unsupported = sorted(
+                stage_id
+                for stage_id in members
+                if stage_by_id[stage_id].type == "meet_contact"
+                or stage_by_id[stage_id].data.get("checkpoint")
+            )
+            if unsupported:
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "unsupported_parallel_stage",
+                        f"{context} cannot contain meeting or checkpoint stages: {', '.join(unsupported)}",
+                    )
+                )
+                continue
+            claimed_parallel_stages.update(members)
+            parallel_groups.append(ParallelGroup(group_id, branches))
+    if parallel_groups and debug_fact is not None:
+        diagnostics.append(
+            Diagnostic(
+                "error",
+                "parallel_debug_unsupported",
+                "debug_fact is not supported with parallel_groups",
+            )
+        )
+
     if diagnostics and any(item.level == "error" for item in diagnostics):
         return None, diagnostics
     return (
@@ -1414,6 +1842,7 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             title=title,
             description=description,
             phase_prefabs=tuple(phase_prefabs),
+            parallel_groups=tuple(parallel_groups),
             debug_fact=debug_fact,
             stages=tuple(stages),
         ),
@@ -1691,7 +2120,17 @@ def audit_resources(spec: QuestSpec, *, root: Path = ROOT) -> list[Diagnostic]:
         template = stage_template_resource(stage)
         if template is not None:
             resources.append(template)
-        elif stage.type not in DIRECT_STAGE_TYPES:
+        elif (
+            stage.type not in DIRECT_STAGE_TYPES
+            and not (
+                stage.type == "hack_access_point"
+                and stage.data.get("completion_function")
+            )
+            and not (
+                stage.type == "deliver_drop_point"
+                and stage.data.get("item_branches")
+            )
+        ):
             resources.append(stage.phase_resource)
         if isinstance(stage.data.get("scene"), str):
             resources.append(stage.data["scene"])
@@ -1825,11 +2264,28 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         if isinstance(stage.data.get("guard_community"), str):
             expected.append(("guard_community", stage.data["guard_community"]))
         expected.extend(("grants", item) for item in stage.data.get("grants", []))
+        if stage.data.get("completion_function"):
+            expected.extend(
+                (field, stage.data[field])
+                for field in ("controller_class", "completion_function")
+            )
+            if stage.data.get("send_action", True):
+                expected.append(("action", stage.data["action"]))
     elif stage.type == "deliver_drop_point":
         expected.extend(
-            (field, stage.data[field])
-            for field in ("item", "drop_point", "deposit_fact")
+            (field, stage.data[field]) for field in ("drop_point", "deposit_fact")
         )
+        if stage.data.get("item_branches"):
+            expected.extend(
+                ("item_branches.condition", branch["condition"])
+                for branch in stage.data["item_branches"]
+            )
+            expected.extend(
+                ("item_branches.item", branch["item"])
+                for branch in stage.data["item_branches"]
+            )
+        else:
+            expected.append(("item", stage.data["item"]))
     elif stage.type == "phone_conversation":
         expected.extend(
             ("choices.set_fact", choice["set_fact"])
@@ -1842,6 +2298,19 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
                 ("opening_branches.messages", message)
                 for message in opening["messages"]
             )
+        for group in stage.data.get("conditional_message_groups", []):
+            for branch in group["branches"]:
+                expected.append(
+                    ("conditional_message_groups.condition", branch["condition"])
+                )
+                expected.extend(
+                    ("conditional_message_groups.messages", message)
+                    for message in branch["messages"]
+                )
+        expected.extend(
+            ("postscript_messages", message)
+            for message in stage.data.get("postscript_messages", [])
+        )
     elif stage.type == "reach_area":
         expected.extend(
             (field, stage.data[field])
@@ -1854,6 +2323,21 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         )
         if stage.data.get("send_action", True):
             expected.append(("action", stage.data["action"]))
+        for branch in stage.data.get("outcome_branches", []):
+            expected.extend(
+                (
+                    ("outcome_branches.condition", branch["condition"]),
+                    ("outcome_branches.set_fact", branch["set_fact"]),
+                )
+            )
+            expected.extend(
+                ("outcome_branches.add_items", item)
+                for item in branch.get("add_items", [])
+            )
+            expected.extend(
+                ("outcome_branches.remove_items", item)
+                for item in branch.get("remove_items", [])
+            )
     elif stage.type == "acquire_item":
         expected.append(("item", stage.data["item"]))
     elif stage.type == "combat_encounter":
@@ -1914,6 +2398,10 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             ):
                 if isinstance(clue.get(field), str):
                     expected.append((f"clues.{field}", clue[field]))
+            expected.extend(
+                ("clues.grant_items", item)
+                for item in clue.get("grant_items", [])
+            )
     elif stage.type == "optional_condition":
         expected.extend(
             (field, stage.data[field])
@@ -1996,6 +2484,8 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             (field, stage.data[field])
             for field in ("vehicle_community", "vehicle_entry", "objective", "mappin")
         )
+        if stage.type == "steal_vehicle":
+            expected.append(("completion_fact", stage.data["completion_fact"]))
     elif stage.type == "ride_with_contact":
         expected.extend(
             (field, stage.data[field])
@@ -2065,6 +2555,8 @@ def stage_template_resource(stage: CompiledStage) -> str | None:
     explicit = stage.data.get("phase_template")
     if isinstance(explicit, str):
         return explicit
+    if stage.type == "defend_target" and stage.data.get("block_on_failure", False):
+        return r"mod\ghostline\quest_blocks\templates\defend_target_retry.questphase"
     return BUILTIN_TEMPLATE_RESOURCES.get(stage.type)
 
 
@@ -2165,12 +2657,15 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{completion_fact}}": stage.data["completion_fact"],
         }
     if stage.type in {"enter_vehicle", "steal_vehicle"}:
-        return {
+        bindings = {
             "{{objective}}": stage.data["objective"],
             "{{vehicle_community}}": stage.data["vehicle_community"],
             "{{vehicle_entry}}": stage.data["vehicle_entry"],
             "{{mappin}}": stage.data["mappin"],
         }
+        if stage.type == "steal_vehicle":
+            bindings["{{completion_fact}}"] = stage.data["completion_fact"]
+        return bindings
     if stage.type == "ride_with_contact":
         return {
             "{{objective}}": stage.data["objective"],
@@ -2303,15 +2798,23 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
         previous = message
         next_id += 1
 
+    conditional_groups: list[list[dict[str, Any]]] = []
     opening_branches = stage.data.get("opening_branches", [])
     if opening_branches:
+        conditional_groups.append(opening_branches)
+    conditional_groups.extend(
+        group["branches"]
+        for group in stage.data.get("conditional_message_groups", [])
+    )
+    previous_socket = "Out"
+    for branches in conditional_groups:
         branch_tails: list[GraphNode] = []
-        for opening in opening_branches:
+        for opening in branches:
             condition = fact_condition_node(
                 builder, next_id, opening["condition"]
             )
             next_id += 1
-            builder.connect(previous, condition)
+            builder.connect(previous, condition, source_socket=previous_socket)
             branch_previous = condition
             for path in opening["messages"]:
                 message = journal_entry_node(
@@ -2327,8 +2830,6 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
             builder.connect(tail, opening_join, destination_socket=f"In{index}")
         previous = opening_join
         previous_socket = "Out1"
-    else:
-        previous_socket = "Out"
 
     choice_group = journal_entry_node(
         builder,
@@ -2383,6 +2884,14 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
     builder.connect(join, final_message, source_socket="Out1", destination_socket="Active")
     builder.connect(final_message, final_delay)
     previous = final_delay
+
+    for path in stage.data.get("postscript_messages", []):
+        message = journal_entry_node(
+            builder, next_id, path, "gameJournalPhoneMessage", 1
+        )
+        next_id += 1
+        builder.connect(previous, message, destination_socket="Active")
+        previous = message
 
     if objective is not None:
         objective_done = objective_node(builder, next_id, stage.data["objective"])
@@ -2555,6 +3064,62 @@ def add_item_node(
     )
 
 
+def remove_item_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    item_id: str,
+) -> GraphNode:
+    params = builder.handles.wrap(
+        {
+            "$type": "questAddRemoveItem_NodeTypeParams",
+            "entityRef": local_player_reference(builder),
+            "flagItemAddedCallbackAsSilent": 1,
+            "isPlayer": 0,
+            "itemID": tweakdbid(item_id),
+            "itemIDsToIgnoreOnRemove": [],
+            "nodeType": "RemoveAll",
+            "objectRef": entity_reference(),
+            "quantity": 1,
+            "removeAllQuantity": 0,
+            "sendNotification": 0,
+            "tagsToIgnoreOnRemove": [],
+            "tagToRemove": cname("None"),
+        }
+    )
+    node_type = builder.handles.wrap(
+        {"$type": "questAddRemoveItem_NodeType", "params": [params]}
+    )
+    return builder.node(
+        quest_id,
+        "questItemManagerNodeDefinition",
+        input_names=("In",),
+        properties={"type": node_type},
+    )
+
+
+def checkpoint_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    name: str,
+    *,
+    retry_on_failure: bool = False,
+) -> GraphNode:
+    return builder.node(
+        quest_id,
+        "questCheckpointNodeDefinition",
+        input_names=("In",),
+        properties={
+            "additionalEndGameRewardsTweak": [],
+            "debugString": name,
+            "endGameSave": 0,
+            "ignoreSaveLocks": 0,
+            "pointOfNoReturn": 0,
+            "retryOnFailure": int(retry_on_failure),
+            "saveLock": 0,
+        },
+    )
+
+
 def community_action_node(
     builder: PhaseGraphBuilder,
     quest_id: int,
@@ -2609,7 +3174,10 @@ def build_reach_area_phase(stage: CompiledStage, archive_target: Path) -> JsonOb
         next_id += 1
         builder.connect(previous, started)
         previous = started
-    builder.connect(previous, entered, destination_socket="In")
+    if stage.data.get("start_fact"):
+        builder.connect_to_earlier_input(previous, entered, destination_socket="In")
+    else:
+        builder.connect(previous, entered, destination_socket="In")
     objective_done = objective_node(
         builder, next_id, stage.data["objective"]
     )
@@ -3478,6 +4046,204 @@ def build_interact_device_phase(
     return phase_document(builder, archive_target)
 
 
+def build_outcome_interact_device_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    objective: GraphNode | None = None
+    mappin: GraphNode | None = None
+    next_id = 10
+    if stage.data.get("objective"):
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder,
+            next_id,
+            stage.data["description_entry"],
+            "gameJournalQuestDescription",
+            2,
+        )
+        next_id += 1
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    if stage.data.get("mappin"):
+        mappin = mappin_node(builder, next_id, stage.data["mappin"])
+        next_id += 1
+        builder.connect(previous, mappin, destination_socket="Active")
+        previous = mappin
+    action: GraphNode | None = None
+    if stage.data.get("send_action", True):
+        action = device_manager_node(
+            builder,
+            next_id,
+            device=stage.data["device"],
+            controller=stage.data["controller_class"],
+            action=stage.data["action"],
+        )
+        next_id += 1
+    completed = device_condition_node(
+        builder,
+        next_id,
+        device=stage.data["device"],
+        controller=stage.data["controller_class"],
+        function=stage.data["completion_function"],
+    )
+    next_id += 1
+    if action is not None:
+        builder.connect(previous, action)
+        builder.connect(action, completed)
+    else:
+        builder.connect(previous, completed)
+
+    branch_tails: list[GraphNode] = []
+    for branch in stage.data["outcome_branches"]:
+        condition = fact_condition_node(builder, next_id, branch["condition"])
+        next_id += 1
+        builder.connect(completed, condition)
+        branch_previous: GraphNode = condition
+        for item in branch.get("remove_items", []):
+            removed = remove_item_node(builder, next_id, item)
+            next_id += 1
+            builder.connect(branch_previous, removed)
+            branch_previous = removed
+        for item in branch.get("add_items", []):
+            added = add_item_node(builder, next_id, item, 1)
+            next_id += 1
+            builder.connect(branch_previous, added)
+            branch_previous = added
+        outcome = fact_node(builder, next_id, branch["set_fact"])
+        next_id += 1
+        builder.connect(branch_previous, outcome)
+        branch_tails.append(outcome)
+
+    join = logical_xor_node(builder, next_id, len(branch_tails))
+    next_id += 1
+    for index, tail in enumerate(branch_tails, start=1):
+        builder.connect(tail, join, destination_socket=f"In{index}")
+    previous = join
+    previous_socket = "Out1"
+    if objective is not None:
+        objective_done = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(
+            previous,
+            objective_done,
+            source_socket=previous_socket,
+            destination_socket="Succeeded",
+        )
+        previous = objective_done
+        previous_socket = "Out"
+    if mappin is not None:
+        mappin_done = mappin_node(builder, next_id, stage.data["mappin"])
+        next_id += 1
+        builder.connect(
+            previous,
+            mappin_done,
+            source_socket=previous_socket,
+            destination_socket="Inactive",
+        )
+        previous = mappin_done
+        previous_socket = "Out"
+    if stage.data.get("success_fact"):
+        succeeded = fact_node(builder, next_id, stage.data["success_fact"])
+        builder.connect(previous, succeeded, source_socket=previous_socket)
+        previous = succeeded
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
+def build_outcome_delivery_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    objective: GraphNode | None = None
+    mappin: GraphNode | None = None
+    next_id = 10
+    if stage.data.get("objective"):
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder,
+            next_id,
+            stage.data["description_entry"],
+            "gameJournalQuestDescription",
+            2,
+        )
+        next_id += 1
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    if stage.data.get("mappin"):
+        mappin = mappin_node(
+            builder,
+            next_id,
+            stage.data["mappin"],
+            disable_previous_mappins=True,
+        )
+        next_id += 1
+        builder.connect(previous, mappin, destination_socket="Active")
+        previous = mappin
+
+    branch_tails: list[GraphNode] = []
+    for branch in stage.data["item_branches"]:
+        condition = fact_condition_node(builder, next_id, branch["condition"])
+        next_id += 1
+        inventory = inventory_condition_node(builder, next_id, branch["item"])
+        next_id += 1
+        reserve = reserve_drop_point_node(
+            builder,
+            next_id,
+            branch["item"],
+            stage.data["drop_point"],
+        )
+        next_id += 1
+        deposited = fact_condition_node(builder, next_id, stage.data["deposit_fact"])
+        next_id += 1
+        builder.connect(previous, condition)
+        builder.connect(condition, inventory)
+        builder.connect(inventory, reserve)
+        builder.connect(inventory, deposited)
+        branch_tails.append(deposited)
+
+    join = logical_xor_node(builder, next_id, len(branch_tails))
+    next_id += 1
+    for index, tail in enumerate(branch_tails, start=1):
+        builder.connect(tail, join, destination_socket=f"In{index}")
+    previous = join
+    previous_socket = "Out1"
+    if objective is not None:
+        objective_done = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(
+            previous,
+            objective_done,
+            source_socket=previous_socket,
+            destination_socket="Succeeded",
+        )
+        previous = objective_done
+        previous_socket = "Out"
+    if mappin is not None:
+        mappin_done = mappin_node(builder, next_id, stage.data["mappin"])
+        builder.connect(
+            previous,
+            mappin_done,
+            source_socket=previous_socket,
+            destination_socket="Inactive",
+        )
+        previous = mappin_done
+    builder.connect_to_earlier_output(previous, end)
+    return phase_document(builder, archive_target)
+
+
 def build_combat_encounter_phase(
     stage: CompiledStage, archive_target: Path
 ) -> JsonObject:
@@ -3946,6 +4712,11 @@ def build_investigate_clues_phase(
             next_id += 1
             builder.connect(previous, granted)
             previous = granted
+        for item in clue.get("grant_items", []):
+            granted = add_item_node(builder, next_id, item, 1)
+            next_id += 1
+            builder.connect(previous, granted)
+            previous = granted
 
     objective_done = objective_node(
         builder, next_id, stage.data["objective"]
@@ -3981,7 +4752,22 @@ def build_stage_phase(
     elif stage.type == "investigate_clues" and not stage.data.get("phase_template"):
         result = build_investigate_clues_phase(stage, archive_target)
     elif stage.type == "interact_device" and not stage.data.get("phase_template"):
+        if stage.data.get("outcome_branches"):
+            result = build_outcome_interact_device_phase(stage, archive_target)
+        else:
+            result = build_interact_device_phase(stage, archive_target)
+    elif (
+        stage.type == "hack_access_point"
+        and stage.data.get("completion_function")
+        and not stage.data.get("phase_template")
+    ):
         result = build_interact_device_phase(stage, archive_target)
+    elif (
+        stage.type == "deliver_drop_point"
+        and stage.data.get("item_branches")
+        and not stage.data.get("phase_template")
+    ):
+        result = build_outcome_delivery_phase(stage, archive_target)
     elif stage.type == "combat_encounter" and not stage.data.get("phase_template"):
         result = build_combat_encounter_phase(stage, archive_target)
     elif (
@@ -3998,9 +4784,13 @@ def build_stage_phase(
         result = build_read_terminal_document_phase(stage, archive_target)
     else:
         result = instantiate_stage_phase(stage, archive_target)
-    inherited_prefabs = (
-        phase_prefabs if stage.data.get("inherit_phase_prefabs", True) else ()
-    )
+    scoped_prefabs = stage.data.get("phase_prefabs")
+    if isinstance(scoped_prefabs, list):
+        inherited_prefabs = tuple(scoped_prefabs)
+    else:
+        inherited_prefabs = (
+            phase_prefabs if stage.data.get("inherit_phase_prefabs", True) else ()
+        )
     result["Data"]["RootChunk"]["phasePrefabs"] = [
         {
             "$type": "questQuestPrefabEntry",
@@ -4009,7 +4799,14 @@ def build_stage_phase(
         for prefab in inherited_prefabs
     ]
     validate_handle_graph(result, context=f"Stage {stage.id}")
-    if stage.type in DIRECT_STAGE_TYPES and not stage.data.get("phase_template"):
+    if (
+        stage.type in DIRECT_STAGE_TYPES
+        or (
+            stage.type == "hack_access_point"
+            and stage.data.get("completion_function")
+        )
+        or (stage.type == "deliver_drop_point" and stage.data.get("item_branches"))
+    ) and not stage.data.get("phase_template"):
         validate_no_forward_handle_refs(result, context=f"Stage {stage.id}")
     validate_stage_contract(stage, result)
     return result
@@ -4060,7 +4857,66 @@ def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObje
     start = input_node(builder)
     end = output_node(builder)
     previous = start
-    for stage in spec.stages:
+    stage_by_id = {stage.id: stage for stage in spec.stages}
+    group_by_first_index = {
+        min(stage_by_id[stage_id].index for branch in group.branches for stage_id in branch): group
+        for group in spec.parallel_groups
+    }
+    grouped_indices = {
+        stage_by_id[stage_id].index
+        for group in spec.parallel_groups
+        for branch in group.branches
+        for stage_id in branch
+    }
+    stage_index = 0
+    while stage_index < len(spec.stages):
+        group = group_by_first_index.get(stage_index)
+        if group is not None:
+            source_socket = "Out" if previous is start else "Out1"
+            branch_tails: list[GraphNode] = []
+            for branch in group.branches:
+                branch_previous: GraphNode | None = None
+                for stage_id in branch:
+                    stage = stage_by_id[stage_id]
+                    current = phase_node(builder, stage.node_id, stage.phase_resource)
+                    if branch_previous is None:
+                        builder.connect(
+                            previous,
+                            current,
+                            source_socket=source_socket,
+                            destination_socket="In1",
+                        )
+                    else:
+                        builder.connect(
+                            branch_previous,
+                            current,
+                            source_socket="Out1",
+                            destination_socket="In1",
+                        )
+                    branch_previous = current
+                if branch_previous is None:
+                    raise QuestSpecError(f"Parallel group {group.id} has an empty branch")
+                branch_tails.append(branch_previous)
+            join = logical_and_node(builder, 800 + len(branch_tails) + stage_index, len(branch_tails))
+            for branch_index, tail in enumerate(branch_tails, start=1):
+                builder.connect(
+                    tail,
+                    join,
+                    source_socket="Out1",
+                    destination_socket=f"In{branch_index}",
+                )
+            previous = join
+            stage_index = max(
+                stage_by_id[stage_id].index
+                for branch in group.branches
+                for stage_id in branch
+            ) + 1
+            continue
+
+        if stage_index in grouped_indices:
+            stage_index += 1
+            continue
+        stage = spec.stages[stage_index]
         source_socket = "Out" if previous is start else "Out1"
         if stage.type == "meet_contact":
             journal_base = 100 + stage.index * 3
@@ -4094,6 +4950,21 @@ def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObje
             builder.connect(description, mappin, destination_socket="Active")
             previous = mappin
             source_socket = "Out"
+        if isinstance(stage.data.get("checkpoint"), str):
+            checkpoint = checkpoint_node(
+                builder,
+                700 + stage.index,
+                stage.data["checkpoint"],
+                retry_on_failure=stage.data.get("retry_checkpoint", False),
+            )
+            builder.connect(
+                previous,
+                checkpoint,
+                source_socket=source_socket,
+                destination_socket="In",
+            )
+            previous = checkpoint
+            source_socket = "Out"
         if spec.debug_fact is not None:
             debug = debug_step_node(
                 builder,
@@ -4117,6 +4988,7 @@ def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObje
             destination_socket="In1",
         )
         previous = current
+        stage_index += 1
     builder.connect_to_earlier_output(previous, end, source_socket="Out1")
 
     result = {
@@ -4160,6 +5032,13 @@ def build_plan(spec: QuestSpec, diagnostics: Iterable[Diagnostic]) -> dict[str, 
             "manifest": str(spec.path),
         },
         "linear_flow": [stage.id for stage in spec.stages],
+        "parallel_groups": [
+            {
+                "id": group.id,
+                "branches": [list(branch) for branch in group.branches],
+            }
+            for group in spec.parallel_groups
+        ],
         "stages": [
             {
                 "index": stage.index,
@@ -4169,7 +5048,18 @@ def build_plan(spec: QuestSpec, diagnostics: Iterable[Diagnostic]) -> dict[str, 
                 "status": stage.status,
                 "phase_resource": stage.phase_resource,
                 "phase_template": stage_template_resource(stage),
-                "implementation": STAGE_IMPLEMENTATION_MODE[stage.type],
+                "implementation": (
+                    "generated"
+                    if (
+                        stage.type == "deliver_drop_point"
+                        and stage.data.get("item_branches")
+                    )
+                    or (
+                        stage.type == "hack_access_point"
+                        and stage.data.get("completion_function")
+                    )
+                    else STAGE_IMPLEMENTATION_MODE[stage.type]
+                ),
                 "data": stage.data,
             }
             for stage in spec.stages
@@ -4237,6 +5127,14 @@ def command_compile(args: argparse.Namespace) -> int:
         if (
             stage_template_resource(stage) is None
             and stage.type not in DIRECT_STAGE_TYPES
+            and not (
+                stage.type == "hack_access_point"
+                and stage.data.get("completion_function")
+            )
+            and not (
+                stage.type == "deliver_drop_point"
+                and stage.data.get("item_branches")
+            )
         ):
             continue
         relative = Path(*stage.phase_resource.split("\\"))

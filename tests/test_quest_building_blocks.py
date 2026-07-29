@@ -222,6 +222,7 @@ def stage(stage_type: str) -> dict:
             "vehicle_entry": "test_vehicle",
             "objective": OBJECTIVE,
             "mappin": f"{OBJECTIVE}/test_vehicle_mappin",
+            "completion_fact": "test_vehicle_stolen",
         },
         "vehicle_cleanup": {
             "player_vehicle_record": "Vehicle.test_vehicle",

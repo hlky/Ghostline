@@ -41,24 +41,40 @@ def player_frame_token(manifest: dict[str, Any]) -> str:
 
 
 def catalog_assignment_support(
-    manifest: dict[str, Any], support: dict[str, Any]
+    manifest: dict[str, Any],
+    support: dict[str, Any],
+    manifest_category: str | None = None,
 ) -> dict[str, Any]:
     constrained = dict(support)
     constrained["reasons"] = list(support.get("reasons", []))
     if not constrained.get("supported"):
         return constrained
-    category_id = constrained.get("manifest_category")
     catalog = character_builder.load_catalog(manifest)
-    category = catalog.get("categories", {}).get(category_id)
-    config = category.get("indexed_override") if isinstance(category, dict) else None
-    if not isinstance(config, dict):
+    categories = catalog.get("categories", {})
+    candidates = constrained.get("manifest_categories") or [
+        constrained.get("manifest_category")
+    ]
+    valid_categories: list[str] = []
+    for category_id in candidates:
+        category = categories.get(category_id) if isinstance(categories, dict) else None
+        config = category.get("indexed_override") if isinstance(category, dict) else None
+        if (
+            isinstance(config, dict)
+            and str(config.get("frame_token", "")).casefold() == player_frame_token(manifest)
+            and config.get("asset_slot") == constrained.get("asset_slot")
+        ):
+            valid_categories.append(category_id)
+    constrained["manifest_categories"] = valid_categories
+    if manifest_category is not None and manifest_category not in valid_categories:
         constrained["supported"] = False
         constrained["reasons"].append(
-            f"the active character catalog does not support indexed {category_id} assignment"
+            f"the active character catalog does not support indexed {manifest_category} assignment"
         )
-    elif str(config.get("frame_token", "")).casefold() != player_frame_token(manifest):
+    elif not valid_categories:
         constrained["supported"] = False
-        constrained["reasons"].append("the catalog slot is configured for a different body frame")
+        constrained["reasons"].append("the active character catalog has no compatible destination slot")
+    else:
+        constrained["manifest_category"] = manifest_category or valid_categories[0]
     return constrained
 
 
@@ -137,6 +153,7 @@ def validate_installed_overrides(manifest: dict[str, Any], character_id: str) ->
             mesh_appearance,
             preview["mesh_appearances"],
             player_frame_token(manifest),
+            category_id,
         )
         if assignment["manifest_category"] != category_id:
             raise character_builder.CharacterBuildError(
@@ -457,11 +474,16 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
             if self.path == "/api/assets/assign":
                 depot_path = request.get("depot_path")
                 mesh_appearance = request.get("mesh_appearance")
+                manifest_category = request.get("manifest_category")
                 if not isinstance(depot_path, str) or not depot_path:
                     raise character_builder.CharacterBuildError("Asset assignment requires a depot_path")
                 if not isinstance(mesh_appearance, str) or not mesh_appearance:
                     raise character_builder.CharacterBuildError(
                         "Asset assignment requires a mesh_appearance"
+                    )
+                if manifest_category is not None and not isinstance(manifest_category, str):
+                    raise character_builder.CharacterBuildError(
+                        "Asset assignment manifest_category must be a string"
                     )
                 if not ASSET_INDEX_PATH.is_file():
                     raise character_builder.CharacterBuildError("Asset index has not been generated")
@@ -482,12 +504,14 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                         mesh_appearance,
                         preview["mesh_appearances"],
                         player_frame_token(manifest),
+                        manifest_category,
                     )
                     constrained = catalog_assignment_support(
                         manifest,
                         character_asset_index.selection_support(
                             preview["asset"], player_frame_token(manifest)
                         ),
+                        assignment["manifest_category"],
                     )
                     if not constrained["supported"]:
                         raise character_asset_index.CharacterAssetIndexError(
