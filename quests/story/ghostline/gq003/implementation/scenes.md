@@ -2,7 +2,8 @@
 
 ## Scene And Tooling Decisions
 
-The two formal scene dialogue sources and generated scene specs now exist at:
+The quest has eight dialogue manifests containing 128 spoken lines. The two
+formal scene sources and generated scene specs are:
 
 - `quests/story/ghostline/gq003/script/gq003_02_manifest.json` for the opening
   Iris briefing;
@@ -14,6 +15,16 @@ The scene specs generate and validate as `gq003_iris_briefing.scene.json` and
 `gq003_iris_safe_site.scene.json`, including embedded choice labels and named
 exits. The checked durations and WEM paths remain planning values until voice
 production replaces them; no audio asset is implied to exist yet.
+
+The remaining manifests cover the stage 1/5 phone beats, freight-yard
+feedback, Mara rescue and defense, Patch confession and drives, relay
+investigation and choice, and final debrief. Generated subtitle, subtitle-map,
+and VO-map resources exist for all of them. Their `runtime_pending` marker is
+intentional: localization coverage does not imply that gameplay, ambient, or
+holocall playback has been wired into a questphase.
+
+The complete inventory and delivery classification lives in
+`quests/story/ghostline/gq003/script/voice-production.json`.
 
 ### Reuse now
 
@@ -39,6 +50,8 @@ production replaces them; no audio asset is implied to exist yet.
    activating and acquiring Iris. Keep the formal scene two-performer for the
    first implementation. A speaking Mara inside the scene would require a
    multi-community spawn rendezvous and three-performer scene spec.
+   Her pre-scene and post-scene ambient lines are nevertheless authored in
+   `gq003_17_manifest.json` for the later ambient hook.
 4. **Transfer window semantics:** the current `time_gate` represents elapsed
    game time. If the objective must open at a specific hour of night, add an
    absolute time-of-day contract instead of describing a fixed delay as a clock

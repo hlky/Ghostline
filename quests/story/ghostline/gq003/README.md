@@ -4,9 +4,10 @@
 
 This is the narrative and implementation authoring package for the first
 90-120 minute Ghostline quest. The canonical 36-stage compiler manifest,
-objective copy, persistent state, phone threads, readable documents, two Iris
-scenes, choice consequences, item/reward records, and provisional Mara
-character manifest are authored and validated.
+objective copy, persistent state, phone threads, readable documents, the full
+128-line spoken-dialogue inventory, two formal Iris scenes, choice
+consequences, item/reward records, and provisional Mara character manifest
+are authored and validated.
 
 No final world origins are selected yet. The manifest therefore keeps all 36
 stages `planned` and uses clearly named placeholder NodeRefs, communities,
@@ -16,9 +17,11 @@ stage-scoped prefab bindings, retry-blocking Mara defense, outcome-dependent
 core/delivery, and multi-contact debrief topology.
 
 The generated journal contains 28 objective phases, 23 quest mappins, ten phone
-conversations, and five readable/computer entries. Both Iris scenes have scene
-specs, CR2W-JSON, subtitles, subtitle maps, and VO maps. They deliberately have
-no WEM audio yet. The poster reference is
+conversations, and five readable/computer entries. Eight dialogue manifests
+cover every authored spoken beat across all six acts; each has subtitles, a
+subtitle map, and a VO map. The two Iris conversations additionally have scene
+specs and CR2W-JSON. No WEM audio exists yet, and the non-scene dialogue still
+needs runtime delivery hooks after world selection. The poster reference is
 `images/gq003-black-lantern-poster.png`.
 
 ## Narrative Contract
@@ -114,6 +117,19 @@ Regenerate the journal and onscreen localization with:
 ```powershell
 py -B .\quests\story\ghostline\gq003\implementation\build.py
 ```
+
+Regenerate one dialogue localization set with:
+
+```powershell
+py -B .\tools\generate_dialogue_localization.py `
+  --manifest .\quests\story\ghostline\gq003\script\gq003_17_manifest.json `
+  --quest gq003 `
+  --dialogue gq003_17
+```
+
+[`script/voice-production.json`](script/voice-production.json) is the complete
+voice-production index and records which sequences already have formal scene
+runtime versus pending gameplay, ambient, or holocall integration.
 
 Do not treat generated output as playable: placeholder world NodeRefs and
 missing world/AI resources still prevent runtime integration. The Mara stage

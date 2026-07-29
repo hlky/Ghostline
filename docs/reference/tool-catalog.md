@@ -820,6 +820,24 @@ py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\impl
 
 ## Voiceover WEM Conversion
 
+`tools/ghostline-voice` is the Rust authoring pipeline for dialogue-manifest
+validation, DinoML speaker-embedding conversion, persistent local Qwen3-TTS
+rendering, localization CR2W-JSON generation, and template-backed CR2W
+serialization with semantic round-trip verification:
+
+```powershell
+cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- validate
+cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- localize
+cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- serialize
+```
+
+The GQ003 `gq003_17` subtitle and VO binaries provide the largest required
+23-entry layouts. WolvenKit was used once to bootstrap those layouts; routine
+regeneration uses the pinned `ghostline-red` crate. See
+`tools/ghostline-voice/README.md` for persistent rendering and embedding
+conversion commands. Audition WAVs and derived embeddings belong under the
+ignored `generated-voices` directory.
+
 `tools/convert_wavs_to_wem.ps1` converts the current quest WAV voiceover files
 into Wwise `.wem` files. The authored WAVs live in each quest's `voice/source`
 alongside legacy duplicates; the script reads `quests/story/ghostline/gq000/script/gq000_01_manifest.json`

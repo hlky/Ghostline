@@ -13,9 +13,11 @@
 4. **Complete:** the generated journal contains all 28 objective phases, 23
    quest mappins, three contacts, ten phone conversations, and five
    readable/computer entries; quest-owned onscreen localization is authored.
-5. **Text/scene-complete:** both Iris manifests, scene specs, scene CR2W-JSON,
-   subtitles, subtitle maps, and VO maps validate. Record/render WEMs only after
-   final performance review.
+5. **Dialogue-authoring complete:** eight manifests cover 128 spoken lines
+   across all six acts, and every manifest has generated subtitles, subtitle
+   maps, and VO maps. Both Iris manifests additionally have scene specs and
+   scene CR2W-JSON. Wire the six non-scene delivery sets after world selection;
+   record/render WEMs only after final performance review.
 6. **Compiler-complete:** the freight-yard root runs its stealth monitor beside
    the ordered yard objectives and joins both branches. Runtime-prove its
    stop/success behavior after world placement.

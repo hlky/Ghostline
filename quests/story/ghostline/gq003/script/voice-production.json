@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "quest": "gq003",
+  "spoken_line_count": 128,
+  "manifests": [
+    {"id": "gq003_01", "file": "gq003_01_manifest.json", "delivery": "journal_phone_vo", "runtime_status": "runtime_pending", "line_count": 7, "speakers": ["Patch", "V"]},
+    {"id": "gq003_02", "file": "gq003_02_manifest.json", "delivery": "formal_scene", "runtime_status": "implemented", "line_count": 17, "speakers": ["Iris", "V"]},
+    {"id": "gq003_06", "file": "gq003_06_manifest.json", "delivery": "gameplay_and_holocall", "runtime_status": "runtime_pending", "line_count": 15, "speakers": ["Iris", "Patch", "V"]},
+    {"id": "gq003_17", "file": "gq003_17_manifest.json", "delivery": "gameplay_ambient", "runtime_status": "runtime_pending", "line_count": 23, "speakers": ["Iris", "Mara", "V"]},
+    {"id": "gq003_20", "file": "gq003_20_manifest.json", "delivery": "formal_scene", "runtime_status": "implemented", "line_count": 14, "speakers": ["Iris", "V"]},
+    {"id": "gq003_21", "file": "gq003_21_manifest.json", "delivery": "holocall_and_vehicle_ambient", "runtime_status": "runtime_pending", "line_count": 18, "speakers": ["Patch", "V"]},
+    {"id": "gq003_30", "file": "gq003_30_manifest.json", "delivery": "gameplay_holocall_and_choice", "runtime_status": "runtime_pending", "line_count": 22, "speakers": ["Iris", "Morrow", "System", "V"]},
+    {"id": "gq003_36", "file": "gq003_36_manifest.json", "delivery": "holocall_debrief", "runtime_status": "runtime_pending", "line_count": 12, "speakers": ["Iris", "Morrow", "Patch", "V"]}
+  ],
+  "voice_sources": {
+    "V": {"mode": "speaker_embedding", "source": "quests/story/ghostline/shared/voice/embeddings/v.safetensors"},
+    "Patch": {"mode": "speaker_embedding", "source": "quests/story/ghostline/shared/voice/embeddings/patch.safetensors"},
+    "Iris": {"mode": "designed_reference", "source": "generated-voices/iris_reference.wav", "status": "generate_and_review"},
+    "Mara": {"mode": "designed_reference", "status": "design_and_review"},
+    "Morrow": {"mode": "designed_reference", "status": "design_and_review"},
+    "System": {"mode": "designed_reference", "status": "design_and_review"}
+  },
+  "notes": [
+    "Authored subtitle and VO-map resources exist for every listed line.",
+    "Only gq003_02 and gq003_20 currently have formal scene resources; all other deliveries require runtime hooks after world selection.",
+    "WEM paths and duration estimates are production contracts, not claims that rendered audio exists."
+  ]
+}
