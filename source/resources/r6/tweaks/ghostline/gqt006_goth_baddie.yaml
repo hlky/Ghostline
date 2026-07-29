@@ -1,0 +1,15 @@
+# Goth Baddie's recovered combat log uses a vanilla readable-shard base so inventory
+# behavior and UI presentation remain game-owned.
+Items.GhostlineGothBaddieDatashard:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: Items.GhostlineGothBaddieDatashard_inline0
+  localizedName: gl_gqt006_shard_goth_baddie_title
+
+Items.GhostlineGothBaddieDatashard_inline0:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gqt006/shards/goth_baddie_datashard
+
+# Keep the first Cyberpsycho test payout in the same modest side-job economy as
+# the existing Ghostline test quests while retaining a dedicated tuning point.
+QuestRewards.gqt006_completion:
+  $base: QuestRewards.sts_wat_kab_05_completion

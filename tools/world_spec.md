@@ -7,12 +7,12 @@ offsets and trigger shapes in JSON, dry-run the output, then generate raw
 resources and deserialize them with WolvenKit.
 
 The production `gq000` meeting source of truth is
-`tools/gq000_patch_meet.world.json`. It currently describes the tested
+`quests/story/ghostline/gq000/implementation/world/patch-meet.world.json`. It currently describes the tested
 `90/10/60/20`-radius, 12-unit-high trigger layout, an inactive-on-start
 `patch/default` community, and the `Character.GhostlinePatch` runtime actor.
 The preceding `Character.Judy` mapping remains the historical crash-isolation
 baseline.
-The checked-in `tools/gq000_world_spec.example.json` uses reference coordinates
+The checked-in `quests/story/ghostline/_quest-template/implementation/world/example.world.json` uses reference coordinates
 and is tutorial input only.
 
 ## Commands
@@ -21,18 +21,18 @@ and is tutorial input only.
 py .\tools\generate_world.py example
 py .\tools\generate_world.py hash "$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge"
 py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
-py .\tools\generate_world.py generate --spec .\tools\gq000_world_spec.example.json --dry-run
-py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --dry-run
+py .\tools\generate_world.py generate --spec .\quests\story\ghostline\_quest-template\implementation\world\example.world.json --dry-run
+py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json --dry-run
 ```
 
 For an intentional production update, write and inspect raw output before the
 final registration/deserialization pass:
 
 ```powershell
-py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json
+py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json
 py -B -m unittest discover -s tests -v
 py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
-py .\tools\generate_world.py generate --spec .\tools\gq000_patch_meet.world.json --register --deserialize
+py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json --register --deserialize
 ```
 
 `--register` adds the generated block path to `source/resources/Ghostline.archive.xl`.
@@ -263,6 +263,7 @@ that is a mismatch to fix, not the target pattern.
   },
   "yaw": "origin",
   "debug_name": "{gq000_01_mp_patch_bridge}",
+  "scene_marker": false,
   "tag": "None",
   "tag_ext": "None",
   "source_prefab_hash": "0",
@@ -279,6 +280,9 @@ that is a mismatch to fix, not the target pattern.
 | `position` | No | `origin` | Absolute or relative position. |
 | `yaw` | No | Position anchor yaw | Node yaw. |
 | `debug_name` | No | `{local_ref}` | `worldStaticMarkerNode.debugName`. |
+| `scene_marker` | No | `false` | Add a nested `scnSceneMarker` payload. Use this for scene and spawned-scene-prop reference points; vanilla braindance view/fog/setup spawners use an empty scene marker in an always-loaded sector. |
+| `scene_marker_entries` | No | `[]` | Authored `scnSceneMarker` internals. Entries must be generated for the owning scene's animation events; never copy another scene's transforms. Requires `scene_marker = true`. |
+| `marker_type` | No | omitted | Add a vanilla teleport marker payload. Use `spawn_point` for `worldSpawnPointMarker type=0` entry/hold destinations or `null` for `worldNullMarker` return destinations. It cannot be combined with `scene_marker`. |
 | `tag` | No | `None` | Node tag. |
 | `tag_ext` | No | `None` | Node `tagExt`. |
 | `source_prefab_hash` | No | `0` | Node `sourcePrefabHash`. |
@@ -717,7 +721,7 @@ Archive targets mirror the depot paths under `source/archive`.
 
 ## Validation Workflow
 
-1. Start from `tools/gq000_world_spec.example.json` for a new quest, or edit the
+1. Start from `quests/story/ghostline/_quest-template/implementation/world/example.world.json` for a new quest, or edit the
    existing production spec for an intentional `gq000` world change.
 2. Replace or confirm `origin` with coordinates captured in game.
 3. Use `measure` to compare captured points and planned offsets.

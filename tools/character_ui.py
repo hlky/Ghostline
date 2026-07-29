@@ -21,11 +21,12 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 import character_builder
 import character_asset_index
+import character_full_preview
 
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_ROOT = Path(__file__).with_name("character_ui")
-DEFAULT_MANIFEST = ROOT / "source/characters/patch.character.json"
+DEFAULT_MANIFEST = ROOT / "characters/patch.character.json"
 PREVIEW_ROOT = ROOT / "converted/characters"
 ASSET_INDEX_PATH = ROOT / "converted/character-index/assets.json"
 BUILD_LOCK = threading.Lock()
@@ -224,6 +225,9 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
             report = character_builder.validate_manifest(manifest, catalog)
             character_id = safe_id(manifest.get("id"))
             preview_manifest = PREVIEW_ROOT / character_id / "preview" / "preview-manifest.json"
+            full_preview_manifest = (
+                PREVIEW_ROOT / character_id / "full-preview" / "preview-manifest.json"
+            )
             asset_index = (
                 character_asset_index.read_json(ASSET_INDEX_PATH)
                 if ASSET_INDEX_PATH.is_file()
@@ -238,6 +242,11 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                     "preview_url": (
                         f"/preview/{character_id}/preview/preview-manifest.json"
                         if preview_manifest.is_file()
+                        else None
+                    ),
+                    "full_preview_url": (
+                        f"/preview/{character_id}/full-preview/preview-manifest.json"
+                        if full_preview_manifest.is_file()
                         else None
                     ),
                     "asset_index": {
@@ -368,6 +377,46 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                 self.send_json(result)
                 return
 
+            if self.path == "/api/preview/full":
+                character_root = PREVIEW_ROOT / character_id
+                head_output = character_root / "preview"
+                full_output = character_root / "full-preview"
+                with BUILD_LOCK:
+                    validate_installed_overrides(manifest, character_id)
+                    generation = with_temp_manifest(
+                        manifest,
+                        lambda path: character_builder.generate(path, character_root),
+                    )
+                    with_temp_manifest(
+                        manifest,
+                        lambda path: character_builder.prepare_head_preview(
+                            path,
+                            head_output,
+                            character_builder.DEFAULT_WOLVENKIT,
+                            character_builder.DEFAULT_GAME,
+                            True,
+                        ),
+                    )
+                    app_path = character_builder.output_path(
+                        character_root, manifest["outputs"]["appearance_raw"]
+                    )
+                    app_document = character_builder.read_json(app_path)
+                    result = character_full_preview.prepare_full_preview(
+                        manifest,
+                        app_document,
+                        character_root,
+                        head_output / "preview-manifest.json",
+                        full_output,
+                        character_builder.DEFAULT_WOLVENKIT,
+                        character_builder.DEFAULT_GAME,
+                    )
+                result["generation_validation"] = generation["validation"]
+                result["preview_url"] = (
+                    f"/preview/{character_id}/full-preview/preview-manifest.json"
+                )
+                self.send_json(result)
+                return
+
             if self.path == "/api/assets/index":
                 with BUILD_LOCK:
                     index = character_asset_index.build_asset_index(
@@ -456,6 +505,7 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
         except (
             character_builder.CharacterBuildError,
             character_asset_index.CharacterAssetIndexError,
+            character_full_preview.CharacterFullPreviewError,
             json.JSONDecodeError,
             OSError,
         ) as exc:

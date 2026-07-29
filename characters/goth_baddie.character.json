@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "id": "goth_baddie",
+  "display_name": "Goth Baddie",
+  "namespace": "mod\\ghostline\\characters\\goth_baddie",
+  "frame": "female_average",
+  "catalog": "characters/female-catalog.json",
+  "templates": {
+    "entity": "characters/templates/npv-female.ent-shell.json",
+    "appearance_shell": "characters/templates/npv-female.app-shell.json",
+    "component_library": "characters/components/npv-female.components.json",
+    "localization": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
+  },
+  "template_identity": {
+    "frame": "female_average",
+    "namespace": "tutorial\\npv\\your_female_character"
+  },
+  "template_assets": {
+    "source_root": "@npv/source/archive/tutorial/npv/your_female_character",
+    "source_depot_root": "tutorial\\npv\\your_female_character",
+    "dependency_globs": [
+      "body/textures/*.xbm",
+      "head/textures/*.xbm"
+    ]
+  },
+  "outputs": {
+    "entity_raw": "source/raw/mod/ghostline/characters/goth_baddie/goth_baddie.ent.json",
+    "appearance_raw": "source/raw/mod/ghostline/characters/goth_baddie/goth_baddie.app.json",
+    "localization_raw": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json",
+    "tweak": "source/resources/r6/tweaks/ghostline/character_goth_baddie.yaml"
+  },
+  "entity": {
+    "file_name": "goth_baddie.ent",
+    "root_appearance": "ghostline_goth_baddie_default",
+    "appearance_name": "default",
+    "appearance_file": "goth_baddie.app"
+  },
+  "appearance": {
+    "name": "default",
+    "selections": {
+      "hair": "goth_baddie_long_bangs_black",
+      "inner_torso": "tutorial_casual_tank",
+      "outer_torso": "tutorial_business_outer",
+      "business_extras": "none",
+      "legs": "tutorial_casual_pants",
+      "feet": "tutorial_casual_boots"
+    },
+    "indexed_overrides": {
+      "inner_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t1_097_tank__corset_doll_prostitute\\t1_097_pwa_tank__corset_doll_prostitute.mesh",
+        "mesh_appearance": "black_gold"
+      },
+      "outer_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t2_127_jacket__evelyn\\t2_127_pwa_jacket__evelyn.mesh",
+        "mesh_appearance": "black_croc"
+      },
+      "legs": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\legs\\l1_078_pants__militech_small_caps\\l1_078_pwa_pants__militech.mesh",
+        "mesh_appearance": "maelstrom_leather"
+      },
+      "feet": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\feet\\s1_073_shoe__high_heels\\s1_073_pwa_shoe__high_heels.mesh",
+        "mesh_appearance": "silver_purple"
+      }
+    }
+  },
+  "head": {
+    "blend_template": "@npv/source/raw/tutorial/npv/your_female_character/head/head_import.blend",
+    "morphtarget_source": "@npv/source/archive/tutorial/npv/your_female_character/head/morphtargets",
+    "mesh_source": "@npv/source/archive/tutorial/npv/your_female_character/head",
+    "preview_morphtargets": [
+      "h0_000_pwa__morphs.morphtarget"
+    ],
+    "morphtargets": [
+      "h0_000_pwa__morphs.morphtarget",
+      "he_000_pwa__morphs.morphtarget",
+      "heb_000_pwa__morphs.morphtarget",
+      "ht_000_pwa__morphs.morphtarget"
+    ],
+    "shapes": {
+      "eyes": 8,
+      "nose": 5,
+      "mouth": 10,
+      "jaw": 8,
+      "ears": 2
+    }
+  },
+  "tweak": {
+    "record": "Character.GhostlineGothBaddie",
+    "base": "Character.Quest_Combat_NPC_Base",
+    "display_name": "gq_npc_goth_baddie",
+    "affiliation": "Factions.Ghostline",
+    "voice_tag": "gq_goth_baddie",
+    "combat": {
+      "level": 60,
+      "health_multiplier": 10.0,
+      "action_map": "GangNetrunner.Map",
+      "archetype_data": "ArchetypeData.NetrunnerT3",
+      "base_attitude_group": "hostile",
+      "rarity": "NPCRarity.Boss",
+      "reaction_preset": "ReactionPresets.Ganger_Aggressive",
+      "scanner_module_preset": "ScanningNPCPresets.ScannerPreset_NPCFull",
+      "threat_tracking_preset": "TargetTracking.DefaultPreset",
+      "ui_nameplate": "UINameplate.CombatSettings",
+      "disable_defeated_state": false,
+      "drops_weapon_on_death": false,
+      "skip_display_archetype": true,
+      "abilities": [
+        "Ability.CanCrouch",
+        "Ability.CanSprint",
+        "Ability.CanSwitchWeapon",
+        "Ability.CanShootWhileMoving",
+        "Ability.CanPreciseShoot",
+        "Ability.CanChargedShoot",
+        "Ability.CanSmartShoot",
+        "Ability.CanUseLeftHand",
+        "Ability.CanUseRightHand",
+        "Ability.CanUseLegs",
+        "Ability.CanTaunt",
+        "Ability.CanCloseCombat",
+        "Ability.IsReckless"
+      ],
+      "effectors": [
+        "Effectors.HitReactionTBHIncrease"
+      ],
+      "stat_modifier_groups": [
+        "Character.NPC_Base_Primary_Stat_ModGroup",
+        "Character.Cyberpsycho_ModGroup",
+        "Character.Cyberpsycho_HitReaction_Resistance"
+      ],
+      "tags": [
+        "Cyberpsycho"
+      ],
+      "visual_tags": [
+        "Netrunner",
+        "Lvl3"
+      ],
+      "primary_weapon": {
+        "item": "Items.Preset_Katana_E3",
+        "equip_slot": "AttachmentSlots.WeaponRight",
+        "on_body_slot": "AttachmentSlots.ItemSlotKatana",
+        "equip_condition": "WeaponConditions.BaseMeleePrimaryWeaponEquipCondition",
+        "unequip_condition": "WeaponConditions.BaseMeleePrimaryWeaponUnequipCondition"
+      }
+    }
+  },
+  "localization": {
+    "secondary_key": "gq_npc_goth_baddie",
+    "female_variant": "Goth Baddie",
+    "male_variant": ""
+  },
+  "requirements": {
+    "phantom_liberty": true
+  }
+}

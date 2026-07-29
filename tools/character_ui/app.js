@@ -5,6 +5,7 @@ const state = {
   catalog: null,
   frameProfile: null,
   headPreviewUrl: null,
+  fullPreviewUrl: null,
   assetIndex: null,
   assetResults: [],
   assetSummary: {},
@@ -171,6 +172,7 @@ async function assignAsset(depotPath, meshAppearance, button) {
     }
     state.manifest.appearance.selections[category] = result.anchor_option;
     state.manifest.appearance.indexed_overrides[category] = result.override;
+    state.fullPreviewUrl = null;
     renderSelectedOverrides();
     renderAssets({ summary: state.assetSummary, assets: state.assetResults });
     setResult(result);
@@ -205,6 +207,7 @@ function renderSelectedOverrides() {
     remove.textContent = "Remove";
     remove.addEventListener("click", () => {
       delete state.manifest.appearance.indexed_overrides[categoryId];
+      state.fullPreviewUrl = null;
       renderSelectedOverrides();
       renderAssets({ summary: state.assetSummary, assets: state.assetResults });
     });
@@ -248,6 +251,7 @@ function render(data) {
   state.frameProfile = frameProfile;
   state.assetIndex = data.asset_index;
   state.headPreviewUrl = data.preview_url;
+  state.fullPreviewUrl = data.full_preview_url;
   state.manifest.appearance.indexed_overrides ||= {};
   byId("character-id").value = state.manifest.id;
   byId("display-name").value = state.manifest.display_name;
@@ -299,6 +303,7 @@ function render(data) {
     };
     select.addEventListener("change", () => {
       state.manifest.appearance.selections[categoryId] = select.value;
+      state.fullPreviewUrl = null;
       if (state.manifest.appearance.indexed_overrides[categoryId]) {
         delete state.manifest.appearance.indexed_overrides[categoryId];
         renderSelectedOverrides();
@@ -363,6 +368,14 @@ async function action(name) {
       await viewer.load(result.preview_url);
       return;
     }
+    if (name === "preview-full") {
+      viewer.setStatus("Assembling full character…");
+      const result = await post("/api/preview/full");
+      state.headPreviewUrl = `/preview/${collectManifest().id}/preview/preview-manifest.json`;
+      state.fullPreviewUrl = result.preview_url;
+      await viewer.load(result.preview_url);
+      return;
+    }
     if (name === "asset-index") {
       const result = await post("/api/assets/index");
       state.assetIndex = { available: true, summary: result.summary };
@@ -387,6 +400,13 @@ byId("viewport-reset").addEventListener("click", () => viewer.resetView());
 byId("viewport-head").addEventListener("click", () => {
   if (state.headPreviewUrl) viewer.load(state.headPreviewUrl).catch((error) => viewer.setStatus(String(error), true));
   else viewer.setStatus("Prepare the live head preview first", true);
+});
+byId("viewport-full").addEventListener("click", () => {
+  if (state.fullPreviewUrl) {
+    viewer.load(state.fullPreviewUrl).catch((error) => viewer.setStatus(String(error), true));
+  } else {
+    viewer.setStatus("Prepare the full-character preview first", true);
+  }
 });
 byId("viewport-wireframe").addEventListener("click", (event) => {
   const enabled = event.currentTarget.getAttribute("aria-pressed") !== "true";

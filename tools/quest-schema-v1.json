@@ -71,6 +71,7 @@
             "read_shard",
             "interact_device",
             "combat_encounter",
+            "cyberpsycho_encounter",
             "investigate_clues",
             "optional_condition",
             "choice_gate",
@@ -87,7 +88,8 @@
             "ride_with_contact",
             "drive_to",
             "steal_vehicle",
-            "vehicle_cleanup"
+            "vehicle_cleanup",
+            "braindance_analysis"
           ]
         },
         "status": {
@@ -170,6 +172,84 @@
                 "objective",
                 "description_entry",
                 "mappin"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "cyberpsycho_encounter"
+                },
+                "community": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "boss_entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "boss_character": {
+                  "$ref": "#/$defs/tweakDbId"
+                },
+                "activation_trigger": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "activate": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "reveal": {
+                  "$ref": "#/$defs/cyberpsychoReveal"
+                },
+                "arena_trigger": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "alerted_path": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "alerted_spots": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/nodeRef"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                },
+                "resolution": {
+                  "$ref": "#/$defs/cyberpsychoResolution"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "description_entry": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "cleanup": {
+                  "$ref": "#/$defs/cyberpsychoCleanup"
+                },
+                "authoring": {
+                  "$ref": "#/$defs/cyberpsychoAuthoring"
+                }
+              },
+              "required": [
+                "community",
+                "boss_entry",
+                "boss_character",
+                "activation_trigger",
+                "reveal",
+                "resolution"
               ]
             }
           ],
@@ -1496,6 +1576,57 @@
             }
           ],
           "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "braindance_analysis"
+                },
+                "scene": {
+                  "$ref": "#/$defs/depotPath"
+                },
+                "scene_origin": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "player_anchor": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "player_return": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "clue_facts": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/factName"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "uniqueItems": true
+                },
+                "completion_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "objective": {
+                  "$ref": "#/$defs/journalPath"
+                }
+              },
+              "required": [
+                "scene",
+                "scene_origin",
+                "player_anchor",
+                "player_return",
+                "clue_facts",
+                "completion_fact",
+                "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
         }
       ]
     },
@@ -1514,6 +1645,131 @@
     "tweakDbId": {
       "type": "string",
       "pattern": "^[A-Za-z][A-Za-z0-9_]*\\.[A-Za-z0-9_.]+$"
+    },
+    "cyberpsychoReveal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trigger": {
+          "$ref": "#/$defs/nodeRef"
+        },
+        "scan": {
+          "type": "boolean",
+          "default": false
+        },
+        "attacked_by_boss": {
+          "type": "boolean",
+          "default": false
+        },
+        "boss_hit_by_player": {
+          "type": "boolean",
+          "default": false
+        },
+        "boss_sees_player": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "trigger"
+          ]
+        },
+        {
+          "properties": {
+            "scan": {
+              "const": true
+            }
+          },
+          "required": [
+            "scan"
+          ]
+        },
+        {
+          "properties": {
+            "attacked_by_boss": {
+              "const": true
+            }
+          },
+          "required": [
+            "attacked_by_boss"
+          ]
+        },
+        {
+          "properties": {
+            "boss_hit_by_player": {
+              "const": true
+            }
+          },
+          "required": [
+            "boss_hit_by_player"
+          ]
+        },
+        {
+          "properties": {
+            "boss_sees_player": {
+              "const": true
+            }
+          },
+          "required": [
+            "boss_sees_player"
+          ]
+        }
+      ]
+    },
+    "cyberpsychoResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allow_nonlethal": {
+          "const": true,
+          "default": true
+        },
+        "spared_fact": {
+          "$ref": "#/$defs/factName"
+        },
+        "killed_fact": {
+          "$ref": "#/$defs/factName"
+        }
+      },
+      "required": [
+        "spared_fact",
+        "killed_fact"
+      ]
+    },
+    "cyberpsychoCleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trigger": {
+          "$ref": "#/$defs/nodeRef"
+        },
+        "deactivate_community": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "cyberpsychoAuthoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "world_spec": {
+          "$ref": "#/$defs/workspacePath"
+        },
+        "tweak_file": {
+          "$ref": "#/$defs/workspacePath"
+        }
+      },
+      "minProperties": 1
+    },
+    "workspacePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "(^[/\\\\]|^[A-Za-z]:|(^|[/\\\\])\\.\\.([/\\\\]|$))"
+      }
     },
     "condition": {
       "type": "object",

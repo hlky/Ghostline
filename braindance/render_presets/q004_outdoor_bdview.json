@@ -1,0 +1,883 @@
+{
+  "override": 1,
+  "renderSettingsFPP": {
+    "$type": "WorldRenderAreaSettings",
+    "areaParameters": [
+      {
+        "HandleId": "984",
+        "Data": {
+          "$type": "BloomAreaSettings",
+          "bloomColorScale": 0.379999995,
+          "blurSizeX": 1,
+          "blurSizeY": 1,
+          "disabledIndexedProperties": "0",
+          "enable": 1,
+          "luminanceThresholdMax": 0,
+          "luminanceThresholdMin": 0,
+          "mipColors": {
+            "Elements": [
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              }
+            ]
+          },
+          "mipLuminanceClamp": {
+            "Elements": [
+              0,
+              0,
+              0
+            ]
+          },
+          "numDownsamplePasses": 6,
+          "sceneColorScale": 0.725000024,
+          "shaftsAreaSettings": {
+            "$type": "ShaftsAreaSettings",
+            "shaftsIntensity": 1,
+            "shaftsLevelIndex": 1,
+            "shaftsThresholdsScale": 1
+          }
+        }
+      },
+      {
+        "HandleId": "985",
+        "Data": {
+          "$type": "ChromaticAberrationAreaSettings",
+          "chromaticAberrationEnabled": 1,
+          "chromaticAberrationExp": 1.79999995,
+          "chromaticAberrationMargin": 0,
+          "chromaticAberrationSize": {
+            "$type": "Vector2",
+            "X": 2.70000005,
+            "Y": 2.70000005
+          },
+          "disabledIndexedProperties": "0",
+          "enable": 1,
+          "subpixelDispersal": 0
+        }
+      },
+      {
+        "HandleId": "986",
+        "Data": {
+          "$type": "ColorGradingAreaSettings",
+          "brightness": 1,
+          "contrast": 1,
+          "contrastPivot": 0.435000002,
+          "disabledIndexedProperties": "0",
+          "enable": 1,
+          "forceHdrLut": 1,
+          "gain": {
+            "$type": "ColorBalance",
+            "Blue": 1.29999995,
+            "Green": 1.29999995,
+            "Luminance": 1,
+            "Red": 1
+          },
+          "gammaValue": {
+            "$type": "ColorBalance",
+            "Blue": 1,
+            "Green": 1,
+            "Luminance": 0.959999979,
+            "Red": 1
+          },
+          "hdrLut": {
+            "$type": "ColorGradingLutParams",
+            "inputMapping": "CMF_ArriLogC",
+            "LUT": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\weather\\24h_basic\\luts\\hdri\\cp2077_gen_lut_warmsquare_hdr_acess_v0005.xbm"
+              },
+              "Flags": "Default"
+            },
+            "outputMapping": "CMF_Linear"
+          },
+          "highlightOffset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "highRange": 0.449999988,
+          "hue": 0,
+          "ldrLut": {
+            "$type": "ColorGradingLutParams",
+            "inputMapping": "CMF_ArriLogC",
+            "LUT": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\weather\\24h_basic\\luts\\cp2077_gen_lut_warmsquare_v0005.xbm"
+              },
+              "Flags": "Default"
+            },
+            "outputMapping": "CMF_Linear"
+          },
+          "lift": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "lowRange": 0.100000001,
+          "midtoneOffset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "offset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "saturation": 1.29999995,
+          "shadowOffset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          }
+        }
+      },
+      {
+        "HandleId": "987",
+        "Data": {
+          "$type": "ImageBasedFlareAreaSettings",
+          "curve": 1,
+          "disabledIndexedProperties": "0",
+          "dispersal": 0.300000012,
+          "distortion": 1,
+          "enable": 1,
+          "haloWidth": 0.550000012,
+          "saturation": null,
+          "scale": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 0
+              }
+            ]
+          },
+          "tint": {
+            "Elements": [
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              }
+            ]
+          },
+          "treshold": 2
+        }
+      },
+      {
+        "HandleId": "988",
+        "Data": {
+          "$type": "VolumetricFogAreaSettings",
+          "absorption": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 0.0599999987
+              }
+            ]
+          },
+          "albedo": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 11.943022,
+                "Value": {
+                  "$type": "HDRColor",
+                  "Alpha": 1,
+                  "Blue": 0.91900003,
+                  "Green": 0.91900003,
+                  "Red": 0.91900003
+                }
+              }
+            ]
+          },
+          "ambientScale": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 3,
+                "Value": 1
+              },
+              {
+                "Point": 4,
+                "Value": 1
+              },
+              {
+                "Point": 5,
+                "Value": 1
+              },
+              {
+                "Point": 12.546419,
+                "Value": 1
+              },
+              {
+                "Point": 19,
+                "Value": 1
+              },
+              {
+                "Point": 21,
+                "Value": 1
+              },
+              {
+                "Point": 22,
+                "Value": 1
+              }
+            ]
+          },
+          "density": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 0.00300000003
+              }
+            ]
+          },
+          "disabledIndexedProperties": "0",
+          "distantAlbedo": null,
+          "distantGlobalLightScale": null,
+          "distantGroundIrradiance": null,
+          "distantGroundSaturation": null,
+          "distantShadowAmbientDarkening": null,
+          "distantSkyIrradiance": null,
+          "enable": 1,
+          "fogHeight": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 125
+              }
+            ]
+          },
+          "fogHeightFalloff": null,
+          "fogHeightMaxCut": null,
+          "globalLightAnisotropy": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 3,
+                "Value": 0.850000024
+              },
+              {
+                "Point": 7.973475,
+                "Value": 0.75
+              },
+              {
+                "Point": 12,
+                "Value": 0.75
+              },
+              {
+                "Point": 17,
+                "Value": 0.75
+              },
+              {
+                "Point": 19.074272,
+                "Value": 0.850000024
+              }
+            ]
+          },
+          "globalLightAnisotropyBase": null,
+          "globalLightAnisotropyScale": null,
+          "globalLightScale": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 6.013872,
+                "Value": 0.0450000018
+              },
+              {
+                "Point": 12,
+                "Value": 0.0299999993
+              },
+              {
+                "Point": 17.042227,
+                "Value": 0.0450000018
+              },
+              {
+                "Point": 19,
+                "Value": 0.0350000001
+              },
+              {
+                "Point": 19.2,
+                "Value": 0.200000003
+              },
+              {
+                "Point": 19.4,
+                "Value": 0.0500000007
+              }
+            ]
+          },
+          "localAmbientScale": null,
+          "localLightRange": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 100
+              }
+            ]
+          },
+          "localLightScale": null,
+          "range": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 512
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "renderSettingsTPP": {
+    "$type": "WorldRenderAreaSettings",
+    "areaParameters": [
+      {
+        "HandleId": "989",
+        "Data": {
+          "$type": "BloomAreaSettings",
+          "bloomColorScale": 0.44551301,
+          "blurSizeX": 1,
+          "blurSizeY": 1,
+          "disabledIndexedProperties": "0",
+          "enable": 1,
+          "luminanceThresholdMax": 0,
+          "luminanceThresholdMin": 0,
+          "mipColors": {
+            "Elements": [
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              }
+            ]
+          },
+          "mipLuminanceClamp": {
+            "Elements": [
+              0,
+              0,
+              0
+            ]
+          },
+          "numDownsamplePasses": 6,
+          "sceneColorScale": 0.673076987,
+          "shaftsAreaSettings": {
+            "$type": "ShaftsAreaSettings",
+            "shaftsIntensity": 1,
+            "shaftsLevelIndex": 1,
+            "shaftsThresholdsScale": 1
+          }
+        }
+      },
+      {
+        "HandleId": "990",
+        "Data": {
+          "$type": "ChromaticAberrationAreaSettings",
+          "chromaticAberrationEnabled": 1,
+          "chromaticAberrationExp": 1.79999995,
+          "chromaticAberrationMargin": 0,
+          "chromaticAberrationSize": {
+            "$type": "Vector2",
+            "X": 2.70000005,
+            "Y": 2.70000005
+          },
+          "disabledIndexedProperties": "0",
+          "enable": 1,
+          "subpixelDispersal": 0
+        }
+      },
+      {
+        "HandleId": "991",
+        "Data": {
+          "$type": "ColorGradingAreaSettings",
+          "brightness": 1,
+          "contrast": 1,
+          "contrastPivot": 0.435000002,
+          "disabledIndexedProperties": "0",
+          "enable": 1,
+          "forceHdrLut": 1,
+          "gain": {
+            "$type": "ColorBalance",
+            "Blue": 1.29999995,
+            "Green": 1.29999995,
+            "Luminance": 1,
+            "Red": 1
+          },
+          "gammaValue": {
+            "$type": "ColorBalance",
+            "Blue": 1,
+            "Green": 1,
+            "Luminance": 0.959999979,
+            "Red": 1
+          },
+          "hdrLut": {
+            "$type": "ColorGradingLutParams",
+            "inputMapping": "CMF_ArriLogC",
+            "LUT": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\weather\\24h_basic\\luts\\hdri\\cp2077_gen_lut_warmsquare_hdr_acess_v0005.xbm"
+              },
+              "Flags": "Default"
+            },
+            "outputMapping": "CMF_Linear"
+          },
+          "highlightOffset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "highRange": 0.449999988,
+          "hue": 0,
+          "ldrLut": {
+            "$type": "ColorGradingLutParams",
+            "inputMapping": "CMF_ArriLogC",
+            "LUT": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\weather\\24h_basic\\luts\\cp2077_gen_lut_warmsquare_v0005.xbm"
+              },
+              "Flags": "Default"
+            },
+            "outputMapping": "CMF_Linear"
+          },
+          "lift": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "lowRange": 0.100000001,
+          "midtoneOffset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "offset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          },
+          "saturation": 1.29999995,
+          "shadowOffset": {
+            "$type": "ColorBalance",
+            "Blue": 0,
+            "Green": 0,
+            "Luminance": 0,
+            "Red": 0
+          }
+        }
+      },
+      {
+        "HandleId": "992",
+        "Data": {
+          "$type": "ImageBasedFlareAreaSettings",
+          "curve": 1,
+          "disabledIndexedProperties": "0",
+          "dispersal": 0.300000012,
+          "distortion": 1,
+          "enable": 1,
+          "haloWidth": 0.550000012,
+          "saturation": null,
+          "scale": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 0
+              }
+            ]
+          },
+          "tint": {
+            "Elements": [
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              },
+              {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0
+              }
+            ]
+          },
+          "treshold": 2
+        }
+      },
+      {
+        "HandleId": "993",
+        "Data": {
+          "$type": "VolumetricFogAreaSettings",
+          "absorption": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 0.0599999987
+              }
+            ]
+          },
+          "albedo": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 11.943022,
+                "Value": {
+                  "$type": "HDRColor",
+                  "Alpha": 1,
+                  "Blue": 0.91900003,
+                  "Green": 0.91900003,
+                  "Red": 0.91900003
+                }
+              }
+            ]
+          },
+          "ambientScale": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 3,
+                "Value": 1
+              },
+              {
+                "Point": 4,
+                "Value": 1
+              },
+              {
+                "Point": 5,
+                "Value": 1
+              },
+              {
+                "Point": 12.546419,
+                "Value": 1
+              },
+              {
+                "Point": 19,
+                "Value": 1
+              },
+              {
+                "Point": 21,
+                "Value": 1
+              },
+              {
+                "Point": 22,
+                "Value": 1
+              }
+            ]
+          },
+          "density": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 0.00300000003
+              }
+            ]
+          },
+          "disabledIndexedProperties": "0",
+          "distantAlbedo": null,
+          "distantGlobalLightScale": null,
+          "distantGroundIrradiance": null,
+          "distantGroundSaturation": null,
+          "distantShadowAmbientDarkening": null,
+          "distantSkyIrradiance": null,
+          "enable": 1,
+          "fogHeight": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 125
+              }
+            ]
+          },
+          "fogHeightFalloff": null,
+          "fogHeightMaxCut": null,
+          "globalLightAnisotropy": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 3,
+                "Value": 0.850000024
+              },
+              {
+                "Point": 7.973475,
+                "Value": 0.75
+              },
+              {
+                "Point": 12,
+                "Value": 0.75
+              },
+              {
+                "Point": 17,
+                "Value": 0.75
+              },
+              {
+                "Point": 19.074272,
+                "Value": 0.850000024
+              }
+            ]
+          },
+          "globalLightAnisotropyBase": null,
+          "globalLightAnisotropyScale": null,
+          "globalLightScale": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 6.013872,
+                "Value": 0.0450000018
+              },
+              {
+                "Point": 12,
+                "Value": 0.0299999993
+              },
+              {
+                "Point": 17.042227,
+                "Value": 0.0450000018
+              },
+              {
+                "Point": 19,
+                "Value": 0.0350000001
+              },
+              {
+                "Point": 19.2,
+                "Value": 0.200000003
+              },
+              {
+                "Point": 19.4,
+                "Value": 0.0500000007
+              }
+            ]
+          },
+          "localAmbientScale": null,
+          "localLightRange": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 100
+              }
+            ]
+          },
+          "localLightScale": null,
+          "range": {
+            "InterpolationType": "Linear",
+            "LinkType": "ESLT_Normal",
+            "Elements": [
+              {
+                "Point": 12,
+                "Value": 512
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

@@ -5,7 +5,8 @@ description: Use for Ghostline ArchiveXL registration, resource patching, locali
 
 # Ghostline ArchiveXL And Packaging Workflow
 
-Read `docs/packaging.md` before building or installing an archive, and use
+Read `docs/workflows/build-and-package.md` before building or installing an
+archive, and use
 `agent/skills/ghostline-wolvenkit-cr2w/SKILL.md` to synchronize changed raw
 CR2W assets first. This file records ArchiveXL ownership rules; the packaging
 document owns the exact scoped build, extraction, payload-hash, and staging
@@ -60,7 +61,7 @@ Useful docs:
 - A manual `WolvenKit.CLI pack .\source\archive` build contains only archive
   payloads. It does not copy `source/resources/Ghostline.archive.xl`, TweakXL
   YAML, REDscript, or config files; stage those separately as documented in
-  `docs/packaging.md`.
+  `docs/workflows/build-and-package.md`.
 - A scoped pack from a directory named `archive` normally produces
   `archive.archive`. List and extract that file, compare extracted payload
   hashes with `source/archive`, and only then rename/stage it as

@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "id": "gqt006_goth_baddie_cyberpsycho",
+  "title": "Cyberpsycho Sighting: Goth Baddie",
+  "description": "Relocatable Cyberpsycho encounter with a selected world origin, readable evidence shard, and outcome-sensitive Patch debrief.",
+  "phase_prefabs": [
+    "#gqt006_pr_goth_baddie_cyberpsycho"
+  ],
+  "debug_fact": "gqt006_debug_start",
+  "stages": [
+    {
+      "id": "neutralize_goth_baddie",
+      "type": "cyberpsycho_encounter",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+      "community": "#gqt006_com_goth_baddie",
+      "boss_entry": "goth_baddie",
+      "boss_character": "Character.GhostlineGothBaddie",
+      "activation_trigger": "#gqt006_tr_outer",
+      "activate": true,
+      "reveal": {
+        "trigger": "#gqt006_tr_reveal",
+        "scan": true,
+        "attacked_by_boss": true,
+        "boss_hit_by_player": true,
+        "boss_sees_player": true
+      },
+      "arena_trigger": "#gqt006_tr_arena",
+      "alerted_path": "#gqt006_spl_goth_baddie_alerted",
+      "alerted_spots": [
+        "#gqt006_ws_goth_baddie_alerted_001",
+        "#gqt006_ws_goth_baddie_alerted_002"
+      ],
+      "resolution": {
+        "allow_nonlethal": true,
+        "spared_fact": "gqt006_goth_baddie_spared",
+        "killed_fact": "gqt006_goth_baddie_killed"
+      },
+      "objective": "quests/minor_quest/gqt006/gqt006_01/gqt006_01_obj_neutralize_goth_baddie",
+      "description_entry": "quests/minor_quest/gqt006/gqt006_01/gqt006_01_obj_neutralize_goth_baddie/gqt006_01_desc_neutralize_goth_baddie",
+      "mappin": "quests/minor_quest/gqt006/gqt006_01/gqt006_01_obj_neutralize_goth_baddie/gqt006_01_qmp_goth_baddie",
+      "completion_fact": "gqt006_goth_baddie_resolved",
+      "authoring": {
+        "world_spec": "quests/tests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json",
+        "tweak_file": "source/resources/r6/tweaks/ghostline/character_goth_baddie.yaml"
+      },
+      "required_assets": [
+        "mod\\ghostline\\characters\\goth_baddie\\goth_baddie.ent"
+      ],
+      "notes": "Cleanup is intentionally deferred until after the shard is read and V exits the arena."
+    },
+    {
+      "id": "recover_goth_baddie_shard",
+      "type": "acquire_item",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_recover_goth_baddie_shard.questphase",
+      "item": "Items.GhostlineGothBaddieDatashard",
+      "source": "grant",
+      "quantity": 1,
+      "acquisition_fact": "gqt006_goth_baddie_shard_acquired",
+      "notes": "Reliable evidence delivery: the shard is granted after either lethal or nonlethal resolution."
+    },
+    {
+      "id": "read_goth_baddie_shard",
+      "type": "read_shard",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_read_goth_baddie_shard.questphase",
+      "journal_entry": "onscreens/emails/quests/minor_quest/gqt006/shards/goth_baddie_datashard",
+      "file_entry_index": 1,
+      "item": "Items.GhostlineGothBaddieDatashard",
+      "acquisition_fact": "gqt006_goth_baddie_shard_acquired",
+      "activate_entry": true,
+      "presentation_delay_seconds": 1,
+      "objective": "quests/minor_quest/gqt006/gqt006_02/gqt006_02_obj_read_goth_baddie_shard",
+      "description_entry": "quests/minor_quest/gqt006/gqt006_02/gqt006_02_obj_read_goth_baddie_shard/gqt006_02_desc_read_goth_baddie_shard",
+      "completion_fact": "gqt006_goth_baddie_shard_read"
+    },
+    {
+      "id": "leave_goth_baddie_site",
+      "type": "leave_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_leave_goth_baddie_site.questphase",
+      "trigger": "#gqt006_tr_cleanup",
+      "objective": "quests/minor_quest/gqt006/gqt006_03/gqt006_03_obj_leave_goth_baddie_site",
+      "description_entry": "quests/minor_quest/gqt006/gqt006_03/gqt006_03_obj_leave_goth_baddie_site/gqt006_03_desc_leave_goth_baddie_site",
+      "completion_fact": "gqt006_left_goth_baddie_site",
+      "cleanup_community": "#gqt006_com_goth_baddie"
+    },
+    {
+      "id": "report_goth_baddie_outcome",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_report_goth_baddie_outcome.questphase",
+      "contact": "patch",
+      "thread": "contacts/patch/gqt006_04_report",
+      "messages": [
+        "contacts/patch/gqt006_04_report/01_msg_status"
+      ],
+      "opening_branches": [
+        {
+          "condition": "gqt006_goth_baddie_killed",
+          "messages": [
+            "contacts/patch/gqt006_04_report/02a_msg_killed"
+          ]
+        },
+        {
+          "condition": "gqt006_goth_baddie_spared",
+          "messages": [
+            "contacts/patch/gqt006_04_report/02b_msg_spared"
+          ]
+        }
+      ],
+      "choice_group": "contacts/patch/gqt006_04_report/03_ch_response",
+      "choices": [
+        {
+          "choice": "contacts/patch/gqt006_04_report/03_ch_response/03a_ch_send_shard",
+          "reply": "contacts/patch/gqt006_04_report/04a_msg_shard"
+        },
+        {
+          "choice": "contacts/patch/gqt006_04_report/03_ch_response/03b_ch_ask_context",
+          "reply": "contacts/patch/gqt006_04_report/04b_msg_context"
+        }
+      ],
+      "final_message": "contacts/patch/gqt006_04_report/05_msg_complete",
+      "objective": "quests/minor_quest/gqt006/gqt006_04/gqt006_04_obj_report_goth_baddie",
+      "description_entry": "quests/minor_quest/gqt006/gqt006_04/gqt006_04_obj_report_goth_baddie/gqt006_04_desc_report_goth_baddie",
+      "reward": "QuestRewards.gqt006_completion",
+      "completion_fact": "gqt006_completed",
+      "complete_quest": "quests/minor_quest/gqt006"
+    }
+  ]
+}

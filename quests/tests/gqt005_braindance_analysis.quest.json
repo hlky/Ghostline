@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gqt005_braindance_analysis",
+  "title": "Braindance Analysis",
+  "description": "Runtime fixture for authored RID animation, rewindable playback, clue layers, and scene cleanup.",
+  "phase_prefabs": ["#gqt005_pr_braindance_analysis"],
+  "debug_fact": "gqt005_debug_step",
+  "stages": [
+    {
+      "id": "approach_patch",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt005\\phases\\gqt005_approach_patch.questphase",
+      "trigger": "#gqt005_tr_wake",
+      "objective": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance",
+      "description_entry": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance/gqt005_01_desc_review_braindance",
+      "mappin": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance/gqt005_01_qmp_braindance",
+      "disable_previous_mappins": true
+    },
+    {
+      "id": "meet_patch",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt005\\phases\\gqt005_meet_patch.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "#gqt005_com_contact",
+        "#gq000_01_sm_patch_bridge": "#gqt005_bd_origin",
+        "#gq000_01_tr_setup": "#gqt005_tr_setup",
+        "#gq000_pr_patch_meet": "#gqt005_pr_braindance_analysis",
+        "gq000_job_accepted": "gqt005_braindance_started",
+        "gq000_patch_meet": "gqt005_patch_meet",
+        "job_accept": "play_braindance",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gqt005\\scenes\\gqt005_patch_start.scene",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance/gqt005_01_qmp_braindance"
+      },
+      "contact": "patch",
+      "scene": "mod\\gqt005\\scenes\\gqt005_patch_start.scene",
+      "community": "#gqt005_com_contact",
+      "appearance": "ghostline_patch_default",
+      "objective": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance",
+      "description_entry": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance/gqt005_01_desc_review_braindance",
+      "mappin": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance/gqt005_01_qmp_braindance",
+      "required_assets": [
+        "mod\\ghostline\\characters\\patch\\patch.ent"
+      ]
+    },
+    {
+      "id": "review_braindance",
+      "type": "braindance_analysis",
+      "status": "ready",
+      "phase_resource": "mod\\gqt005\\phases\\gqt005_review_braindance.questphase",
+      "scene": "mod\\gqt005\\scenes\\gqt005_braindance_analysis.scene",
+      "scene_origin": "#gqt005_bd_origin",
+      "player_anchor": "#gqt005_bd_player_hold",
+      "player_return": "#gqt005_bd_player_return",
+      "objective": "quests/minor_quest/gqt005/gqt005_01/gqt005_01_obj_review_braindance",
+      "clue_facts": [
+        "gqt005_bd_encrypted_shard_found",
+        "gqt005_bd_guard_warning_found",
+        "gqt005_bd_guard_implant_heat_found"
+      ],
+      "completion_fact": "gqt005_completed"
+    }
+  ]
+}

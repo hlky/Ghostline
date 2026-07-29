@@ -7,7 +7,7 @@ skill-style files under `agent/skills`.
 ## First Rules
 
 - Work from the repository root unless a command says otherwise.
-- Read `docs/quest-scene-flow.md` before changing the current root/child phase
+- Read `quests/story/ghostline/gq000/implementation/runtime-flow.md` before changing the current root/child phase
   handoff, meeting lifecycle, scene exits, triggers, or localization lookup
   paths.
 - Treat `modding_docs` as a local reference submodule, not Ghostline-owned
@@ -16,13 +16,12 @@ skill-style files under `agent/skills`.
   `modding_docs`.
 - Do not edit `source/archive` resources as text. They are CR2W binaries,
   including resource paths ending in `.json`.
-- Edit `source/raw` CR2W-JSON when changing packed resources. The exception is
-  `source/raw/gq000_01_manifest.json`, which is a plain generated manifest and
-  is not serialized back to CR2W.
-- Prefer `source/raw` over `generated` when preparing CR2W assets for use.
-  `generated` contains older/generated CR2W snapshots. The current authored
-  WAV bank is a temporary exception; follow the manifest-filtered workflow in
-  `agent/skills/ghostline-localization-audio/SKILL.md`.
+- Edit `source/raw` CR2W-JSON when changing packed resources. Plain quest,
+  dialogue, voice-selection, character, and braindance authoring manifests live
+  outside `source` and are not serialized directly back to CR2W.
+- Treat `generated` as ignored, reproducible scratch output. Authored CR2W-JSON
+  belongs under `source/raw`; reviewed source WAVs belong under the owning
+  quest's `voice/source` directory.
 - Treat `GraphEditorStates` as WolvenKit editor support data, not packed asset
   source of truth.
 
@@ -47,13 +46,20 @@ global Codex skills, so use the paths above as explicit references.
 ## Project Map
 
 - `source/archive` contains packed/game-ready CR2W resources.
+- `source/raw` contains editable CR2W-JSON for packed resources.
 - `source/resources` contains WolvenKit loose resources, including ArchiveXL
   `.xl`, TweakXL YAML, REDscript, and engine config files. Project
   builds/staging copy them, but a manual scoped `pack source/archive` command
   does not.
-- `source/characters` contains plain character manifests and curated component
+- `characters` contains plain character manifests and curated component
   catalogs consumed by `tools/character_builder.py` and the local character UI.
   They are authoring inputs, not directly packed game resources.
+- `braindance` contains braindance performance specs, rig contracts, templates,
+  and render presets. These are authoring inputs, not WolvenKit project source.
+- `quests/story/ghostline` contains the series bible and per-quest narrative,
+  script, compiler-manifest, and implementation documentation.
+- `quests/examples` and `quests/tests` contain generic compiler examples and
+  `gqt###` test-quest manifests and build plans.
 - `source/archive/base` may contain supporting base-game files. It currently
   contains base player-head mesh and morphtarget support resources. Treat them
   as unvalidated global overrides, not normal shipping content.
@@ -62,8 +68,9 @@ global Codex skills, so use the paths above as explicit references.
   across the quest series, such as characters.
 - `source/archive/mod/ghostline/characters/patch` contains Patch's custom NPC
   template set.
-- `source/archive/mod/gq000` contains the first Ghostline quest. `gq` means
-  Ghostline quest, and `000` identifies the first quest.
+- `source/archive/mod/gq000` contains the superseded prototype and reusable
+  runtime baseline. `gq001` extends it and is the first canonical Ghostline
+  story quest.
 - `source/archive/mod/gq000/phases` contains the main and stage questphase
   resources.
 - `source/archive/mod/gq000/scenes` contains scene resources for dialogue,
@@ -93,7 +100,7 @@ Useful starting points:
 
 ## Helper Tools
 
-Use the explorer tools documented in `docs/tooling.md` instead of dumping large
+Use the explorer tools documented in `docs/reference/tool-catalog.md` instead of dumping large
 CR2W-JSON files into context:
 
 - `tools/explore_questphase.py`

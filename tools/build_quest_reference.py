@@ -178,15 +178,15 @@ def render_category(
     label: str,
     index_url: str,
     records: list[dict],
-    quest_json_link: str,
+    quest_json_source: str,
 ) -> str:
     lines = [
-        f"# Cyberpunk 2077 {label}",
+        f"# Cyberpunk 2077 {label} Reference",
         "",
         f"Source index: [IGN — {label}]({index_url})",
         "",
         "This is a structural reference derived from IGN's walkthrough index and",
-        f"the local [`quest.json`]({quest_json_link}) journal export. It summarizes",
+        f"the local `{quest_json_source}` journal export. It summarizes",
         "vanilla quest objectives and links to IGN; it does not reproduce IGN's",
         "walkthrough prose.",
         "",
@@ -260,7 +260,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("docs/vanilla-quest-reference"),
+        default=Path("docs/reference/vanilla-quests"),
     )
     parser.add_argument(
         "--link-map",
@@ -300,10 +300,10 @@ def main() -> int:
         unmatched[slug] = misses
 
     args.output.mkdir(parents=True, exist_ok=True)
-    quest_link = "../../../quest.json"
+    quest_json_source = str(args.quest_json)
     for slug, (label, index_url, _) in INDEXES.items():
         (args.output / f"{slug}.md").write_text(
-            render_category(label, index_url, all_records[slug], quest_link),
+            render_category(label, index_url, all_records[slug], quest_json_source),
             encoding="utf-8",
             newline="\n",
         )
@@ -341,6 +341,9 @@ def main() -> int:
     readme = [
         "# Vanilla Quest Reference",
         "",
+        "These files are generated research material. Regenerate them from their",
+        "source indexes; do not maintain individual quest entries by hand.",
+        "",
         "IGN's walkthrough indexes provide the curated quest lists and source URLs.",
         "The local `H:\\projects\\quest.json` export provides the exact vanilla",
         "journal paths, hashes, descriptions, objectives, and map-pin references.",
@@ -354,7 +357,7 @@ def main() -> int:
         [
             "",
             "Machine-readable linkage:",
-            "[`reference/quests/ign-link-map.json`](../../reference/quests/ign-link-map.json).",
+            "[`reference/quests/ign-link-map.json`](../../../reference/quests/ign-link-map.json).",
             "",
             "Regenerate:",
             "",

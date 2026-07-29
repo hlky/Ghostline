@@ -1,3 +1,4 @@
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -24,10 +25,16 @@ def strings(value):
 class Gq002ContentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.quest = load("source/quests/gq002.quest.json")
-        cls.dialogue = load("source/raw/gq002_01_manifest.json")
-        cls.selection = load("source/raw/gq002_01_voice_selection.json")
-        cls.world = load("tools/gq002_machine_stops.world.json")
+        cls.quest = load("quests/story/ghostline/gq002/implementation/quest.json")
+        cls.dialogue = load(
+            "quests/story/ghostline/gq002/script/gq002_01_manifest.json"
+        )
+        cls.selection = load(
+            "quests/story/ghostline/gq002/script/gq002_01_voice_selection.json"
+        )
+        cls.world = load(
+            "quests/story/ghostline/gq002/implementation/world/machine-stops.world.json"
+        )
 
     def test_typed_stage_sequence_is_shipping_ready(self):
         self.assertEqual("The Machine Stops", self.quest["title"])
@@ -48,16 +55,16 @@ class Gq002ContentTests(unittest.TestCase):
             ],
             [stage["type"] for stage in self.quest["stages"]],
         )
-        self.assertTrue(all(stage["status"] == "ready" for stage in self.quest["stages"]))
+        self.assertTrue(
+            all(stage["status"] == "ready" for stage in self.quest["stages"])
+        )
 
     def test_shard_handoff_routes_back_to_relay_before_combat(self):
         return_stage = next(
-            stage for stage in self.quest["stages"]
-            if stage["id"] == "return_to_relay"
+            stage for stage in self.quest["stages"] if stage["id"] == "return_to_relay"
         )
         combat_stage = next(
-            stage for stage in self.quest["stages"]
-            if stage["id"] == "relay_security"
+            stage for stage in self.quest["stages"] if stage["id"] == "relay_security"
         )
         self.assertEqual("#gq002_05_tr_security", return_stage["trigger"])
         self.assertEqual(
@@ -69,13 +76,10 @@ class Gq002ContentTests(unittest.TestCase):
 
     def test_final_relay_observes_native_hack_without_retriggering_device(self):
         operate = next(
-            stage for stage in self.quest["stages"]
-            if stage["id"] == "operate_relay"
+            stage for stage in self.quest["stages"] if stage["id"] == "operate_relay"
         )
         self.assertFalse(operate["send_action"])
-        phase = load(
-            "source/raw/mod/gq002/phases/gq002_operate_relay.questphase.json"
-        )
+        phase = load("source/raw/mod/gq002/phases/gq002_operate_relay.questphase.json")
         encoded = json.dumps(phase)
         self.assertIn("WasHackingMinigameSucceeded", encoded)
         self.assertNotIn("questDeviceManagerNodeDefinition", encoded)
@@ -83,17 +87,14 @@ class Gq002ContentTests(unittest.TestCase):
 
     def test_debrief_tracks_response_and_grants_completion_reward(self):
         debrief = next(
-            stage for stage in self.quest["stages"]
-            if stage["id"] == "cinder_debrief"
+            stage for stage in self.quest["stages"] if stage["id"] == "cinder_debrief"
         )
         self.assertEqual(
             "quests/minor_quest/gq002/gq002_08/gq002_08_obj_respond_cinder",
             debrief["objective"],
         )
         self.assertEqual("QuestRewards.gq002_completion", debrief["reward"])
-        phase = load(
-            "source/raw/mod/gq002/phases/gq002_cinder_debrief.questphase.json"
-        )
+        phase = load("source/raw/mod/gq002/phases/gq002_cinder_debrief.questphase.json")
         encoded = json.dumps(phase)
         self.assertIn("questRewardManagerNodeDefinition", encoded)
         self.assertIn("QuestRewards.gq002_completion", encoded)
@@ -103,7 +104,11 @@ class Gq002ContentTests(unittest.TestCase):
         self.assertIn("QuestRewards.gq002_completion:", tweaks)
 
     def test_investigation_has_three_distinct_required_clues(self):
-        stage = next(stage for stage in self.quest["stages"] if stage["id"] == "investigate_relay")
+        stage = next(
+            stage
+            for stage in self.quest["stages"]
+            if stage["id"] == "investigate_relay"
+        )
         self.assertEqual(3, stage["required_count"])
         self.assertEqual(3, len(stage["clues"]))
         self.assertEqual(3, len({clue["object_ref"] for clue in stage["clues"]}))
@@ -112,31 +117,35 @@ class Gq002ContentTests(unittest.TestCase):
 
     def test_shard_notification_and_quest_completion_are_explicit(self):
         shard = next(
-            stage for stage in self.quest["stages"]
+            stage
+            for stage in self.quest["stages"]
             if stage["id"] == "read_hostage_circuit"
         )
         debrief = next(
-            stage for stage in self.quest["stages"]
-            if stage["id"] == "cinder_debrief"
+            stage for stage in self.quest["stages"] if stage["id"] == "cinder_debrief"
         )
         self.assertEqual("Items.GhostlineHostageCircuit", shard["item"])
         self.assertEqual(1, shard["file_entry_index"])
-        self.assertTrue(all(clue.get("mappin") for clue in next(
-            stage for stage in self.quest["stages"]
-            if stage["id"] == "investigate_relay"
-        )["clues"]))
+        self.assertTrue(
+            all(
+                clue.get("mappin")
+                for clue in next(
+                    stage
+                    for stage in self.quest["stages"]
+                    if stage["id"] == "investigate_relay"
+                )["clues"]
+            )
+        )
         final_clue = next(
-            stage for stage in self.quest["stages"]
+            stage
+            for stage in self.quest["stages"]
             if stage["id"] == "investigate_relay"
         )["clues"][-1]
-        self.assertEqual(
-            "Items.GhostlineHostageCircuit", final_clue["grant_item"]
-        )
+        self.assertEqual("Items.GhostlineHostageCircuit", final_clue["grant_item"])
         self.assertEqual("quests/minor_quest/gq002", debrief["complete_quest"])
 
         read_phase = load(
-            "source/raw/mod/gq002/phases/"
-            "gq002_read_hostage_circuit.questphase.json"
+            "source/raw/mod/gq002/phases/gq002_read_hostage_circuit.questphase.json"
         )
         encoded = json.dumps(read_phase)
         self.assertIn("questFactsDBCondition", encoded)
@@ -158,23 +167,38 @@ class Gq002ContentTests(unittest.TestCase):
         )
         medical = next(
             entry["Data"]
-            for entry in journal["Data"]["RootChunk"]["entry"]["Data"]["entries"][0]["Data"]["entries"][0]["Data"]["entries"][0]["Data"]["entries"][2]["Data"]["entries"][0]["Data"]["entries"]
+            for entry in journal["Data"]["RootChunk"]["entry"]["Data"]["entries"][0][
+                "Data"
+            ]["entries"][0]["Data"]["entries"][0]["Data"]["entries"][2]["Data"][
+                "entries"
+            ][0]["Data"]["entries"]
             if entry["Data"].get("id") == "gq002_03_qmp_medical"
         )
         self.assertEqual(0, medical["enableGPS"])
 
     def test_destroy_and_spoof_facts_reach_outcome_debrief(self):
-        decision = next(stage for stage in self.quest["stages"] if stage["id"] == "relay_decision")
-        gate = next(stage for stage in self.quest["stages"] if stage["id"] == "relay_choice")
-        debrief = next(stage for stage in self.quest["stages"] if stage["id"] == "cinder_debrief")
+        decision = next(
+            stage for stage in self.quest["stages"] if stage["id"] == "relay_decision"
+        )
+        gate = next(
+            stage for stage in self.quest["stages"] if stage["id"] == "relay_choice"
+        )
+        debrief = next(
+            stage for stage in self.quest["stages"] if stage["id"] == "cinder_debrief"
+        )
         decision_facts = {choice["set_fact"] for choice in decision["choices"]}
         self.assertEqual(
             {"gq002_scene_choice_destroy", "gq002_scene_choice_spoof"},
             decision_facts,
         )
-        self.assertEqual(decision_facts, {branch["condition"] for branch in gate["branches"]})
+        self.assertEqual(
+            decision_facts, {branch["condition"] for branch in gate["branches"]}
+        )
         outcome_facts = {branch["set_fact"] for branch in gate["branches"]}
-        self.assertEqual(outcome_facts, {branch["condition"] for branch in debrief["opening_branches"]})
+        self.assertEqual(
+            outcome_facts,
+            {branch["condition"] for branch in debrief["opening_branches"]},
+        )
         self.assertEqual("gq002_completed", debrief["completion_fact"])
 
     def test_selected_audio_exactly_covers_spoken_manifest(self):
@@ -191,6 +215,13 @@ class Gq002ContentTests(unittest.TestCase):
                 self.assertEqual(self.selection["voice_design"], selected["design"])
             else:
                 self.assertEqual("v-original-embed", selected["design"])
+            source = ROOT / selected["source"]
+            self.assertEqual(selected["source"], selected["output"])
+            self.assertTrue(source.is_file(), source)
+            self.assertEqual(
+                selected["sha256"],
+                hashlib.sha256(source.read_bytes()).hexdigest(),
+            )
 
     def test_every_spoken_line_has_nonempty_wem(self):
         for line in self.dialogue["spoken_lines"]:
@@ -204,7 +235,9 @@ class Gq002ContentTests(unittest.TestCase):
         onscreen = load(
             "source/raw/mod/gq002/localization/en-us/onscreens/gq002.json.json"
         )
-        required = {value for value in strings(journal) if value.startswith("gl_gq002_")}
+        required = {
+            value for value in strings(journal) if value.startswith("gl_gq002_")
+        }
         available = {
             entry["secondaryKey"]
             for entry in onscreen["Data"]["RootChunk"]["root"]["Data"]["entries"]
@@ -229,7 +262,7 @@ class Gq002ContentTests(unittest.TestCase):
 
     def test_cinder_resources_and_trigger_radius_are_authored(self):
         for relative in (
-            "source/characters/cinder.character.json",
+            "characters/cinder.character.json",
             "source/archive/mod/ghostline/characters/cinder/cinder.ent",
             "source/resources/r6/tweaks/ghostline/character_cinder.yaml",
         ):
@@ -256,7 +289,8 @@ class Gq002ContentTests(unittest.TestCase):
     def test_melee_security_spot_is_moved_onto_open_relay_floor(self):
         community = self.world["communities"][0]
         melee = next(
-            entry for entry in community["entries"]
+            entry
+            for entry in community["entries"]
             if entry["entry"] == "security_melee"
         )
         self.assertEqual(

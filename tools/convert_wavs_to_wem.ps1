@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$SourceDir = 'generated',
+    [string]$SourceDir = 'quests\story\ghostline\gq000\voice\source',
     [string]$DestinationDir = 'source\archive\mod\gq000\localization\en-us\vo',
-    [string]$Manifest = 'source\raw\gq000_01_manifest.json',
+    [string]$Manifest = 'quests\story\ghostline\gq000\script\gq000_01_manifest.json',
     [string]$WwiseProject = 'wwise_conversion\wwise_conversion.wproj',
     [string]$WwiseConsole = $(if ($env:WWISE_CONSOLE) { $env:WWISE_CONSOLE } else { 'C:\Audiokinetic\Wwise2025.1.7.9143\Authoring\x64\Release\bin\WwiseConsole.exe' }),
     [string]$OutputDir = 'converted',

@@ -55,6 +55,7 @@ SUPPORTED_STAGE_TYPES = {
     "interact_device",
     "acquire_item",
     "combat_encounter",
+    "cyberpsycho_encounter",
     "leave_area",
     "read_shard",
     "investigate_clues",
@@ -74,6 +75,7 @@ SUPPORTED_STAGE_TYPES = {
     "drive_to",
     "steal_vehicle",
     "vehicle_cleanup",
+    "braindance_analysis",
 }
 DIRECT_STAGE_TYPES = {
     "phone_job_offer",
@@ -85,6 +87,7 @@ DIRECT_STAGE_TYPES = {
     "investigate_clues",
     "interact_device",
     "combat_encounter",
+    "cyberpsycho_encounter",
     "time_gate",
     "read_terminal_document",
 }
@@ -103,6 +106,7 @@ TEMPLATE_REQUIRED_STAGE_TYPES = {
     "drive_to",
     "steal_vehicle",
     "vehicle_cleanup",
+    "braindance_analysis",
 }
 
 BUILTIN_TEMPLATE_RESOURCES = {
@@ -160,6 +164,12 @@ STAGE_REQUIRED_FIELDS = {
     },
     "acquire_item": {"item", "source"},
     "combat_encounter": {"community", "hostility", "completion"},
+    "cyberpsycho_encounter": {
+        "community",
+        "boss_entry",
+        "boss_character",
+        "activation_trigger",
+    },
     "leave_area": {"trigger", "objective", "description_entry"},
     "read_shard": {"item", "journal_entry"},
     "investigate_clues": {"objective", "description_entry"},
@@ -205,6 +215,14 @@ STAGE_REQUIRED_FIELDS = {
         "vehicle_community", "vehicle_entry", "objective", "mappin",
     },
     "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
+    "braindance_analysis": {
+        "scene",
+        "scene_origin",
+        "player_anchor",
+        "player_return",
+        "completion_fact",
+        "objective",
+    },
 }
 TOP_LEVEL_FIELDS = {
     "schema_version",
@@ -261,6 +279,12 @@ STAGE_TYPE_FIELDS = {
         "community", "entries", "activate", "hostility", "completion",
         "nonlethal_allowed", "completion_fact", "cleanup_on_exit",
         "objective", "description_entry", "trigger",
+    },
+    "cyberpsycho_encounter": {
+        "community", "boss_entry", "boss_character", "activation_trigger",
+        "activate", "reveal", "arena_trigger", "resolution", "objective",
+        "description_entry", "mappin", "completion_fact", "cleanup",
+        "authoring", "alerted_path", "alerted_spots",
     },
     "leave_area": {
         "trigger", "objective", "description_entry", "mappin",
@@ -338,6 +362,15 @@ STAGE_TYPE_FIELDS = {
         "description_entry",
     },
     "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
+    "braindance_analysis": {
+        "scene",
+        "scene_origin",
+        "player_anchor",
+        "player_return",
+        "clue_facts",
+        "completion_fact",
+        "objective",
+    },
 }
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 DEPOT_RE = re.compile(r"^(?:base|ep1|mod)\\.+$")
@@ -825,6 +858,330 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                         stage_id or None,
                     )
                 )
+        if stage_type == "cyberpsycho_encounter":
+            for field in (
+                "community",
+                "activation_trigger",
+                "arena_trigger",
+                "alerted_path",
+            ):
+                value = stage.get(field)
+                if value is not None and (
+                    not isinstance(value, str)
+                    or not value.startswith(("#", "$/"))
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_cyberpsycho_node_ref",
+                            f"{context}.{field} must be a NodeRef",
+                            stage_id or None,
+                        )
+                    )
+            alerted_spots = stage.get("alerted_spots", [])
+            if not isinstance(alerted_spots, list) or any(
+                not isinstance(value, str)
+                or not value.startswith(("#", "$/"))
+                for value in alerted_spots
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_cyberpsycho_alerted_spots",
+                        f"{context}.alerted_spots must be a list of NodeRefs",
+                        stage_id or None,
+                    )
+                )
+            boss_character = stage.get("boss_character")
+            if (
+                isinstance(boss_character, str)
+                and re.fullmatch(
+                    r"[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_.]+",
+                    boss_character,
+                )
+                is None
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_cyberpsycho_character",
+                        f"{context}.boss_character must be a TweakDBID",
+                        stage_id or None,
+                    )
+                )
+            for field in ("activate",):
+                if field in stage and not isinstance(stage[field], bool):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_cyberpsycho_boolean",
+                            f"{context}.{field} must be a boolean",
+                            stage_id or None,
+                        )
+                    )
+
+            reveal = stage.get("reveal")
+            reveal_fields = {
+                "trigger",
+                "scan",
+                "attacked_by_boss",
+                "boss_hit_by_player",
+                "boss_sees_player",
+            }
+            if not isinstance(reveal, dict):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_cyberpsycho_reveal",
+                        f"{context}.reveal must be an object",
+                        stage_id or None,
+                    )
+                )
+            else:
+                unknown_reveal = sorted(set(reveal) - reveal_fields)
+                if unknown_reveal:
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "unknown_cyberpsycho_reveal_field",
+                            f"{context}.reveal has unknown fields: "
+                            + ", ".join(unknown_reveal),
+                            stage_id or None,
+                        )
+                    )
+                trigger = reveal.get("trigger")
+                if trigger is not None and (
+                    not isinstance(trigger, str) or not trigger.startswith(("#", "$/"))
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_cyberpsycho_reveal_trigger",
+                            f"{context}.reveal.trigger must be a NodeRef",
+                            stage_id or None,
+                        )
+                    )
+                for field in reveal_fields - {"trigger"}:
+                    if field in reveal and not isinstance(reveal[field], bool):
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "invalid_cyberpsycho_reveal_flag",
+                                f"{context}.reveal.{field} must be a boolean",
+                                stage_id or None,
+                            )
+                        )
+                if not (
+                    isinstance(trigger, str)
+                    or any(reveal.get(field) is True for field in reveal_fields - {"trigger"})
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "empty_cyberpsycho_reveal",
+                            f"{context}.reveal must enable at least one reveal route",
+                            stage_id or None,
+                        )
+                    )
+
+            resolution = stage.get("resolution")
+            resolution_fields = {
+                "allow_nonlethal",
+                "spared_fact",
+                "killed_fact",
+            }
+            if not isinstance(resolution, dict):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_cyberpsycho_resolution",
+                        f"{context}.resolution must be an object",
+                        stage_id or None,
+                    )
+                )
+            else:
+                unknown_resolution = sorted(set(resolution) - resolution_fields)
+                if unknown_resolution:
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "unknown_cyberpsycho_resolution_field",
+                            f"{context}.resolution has unknown fields: "
+                            + ", ".join(unknown_resolution),
+                            stage_id or None,
+                        )
+                    )
+                if resolution.get("allow_nonlethal", True) is not True:
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "cyberpsycho_nonlethal_required",
+                            f"{context}.resolution.allow_nonlethal must be true",
+                            stage_id or None,
+                        )
+                    )
+                for field in ("spared_fact", "killed_fact"):
+                    value = resolution.get(field)
+                    if not isinstance(value, str) or not ID_RE.fullmatch(value):
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "invalid_cyberpsycho_outcome_fact",
+                                f"{context}.resolution.{field} must be a lowercase fact name",
+                                stage_id or None,
+                            )
+                        )
+                if (
+                    isinstance(resolution.get("spared_fact"), str)
+                    and resolution.get("spared_fact") == resolution.get("killed_fact")
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "duplicate_cyberpsycho_outcome_fact",
+                            f"{context}.resolution outcome facts must differ",
+                            stage_id or None,
+                        )
+                    )
+
+            cleanup = stage.get("cleanup")
+            if cleanup is not None:
+                cleanup_fields = {"trigger", "deactivate_community"}
+                if not isinstance(cleanup, dict):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_cyberpsycho_cleanup",
+                            f"{context}.cleanup must be an object",
+                            stage_id or None,
+                        )
+                    )
+                else:
+                    unknown_cleanup = sorted(set(cleanup) - cleanup_fields)
+                    if unknown_cleanup:
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "unknown_cyberpsycho_cleanup_field",
+                                f"{context}.cleanup has unknown fields: "
+                                + ", ".join(unknown_cleanup),
+                                stage_id or None,
+                            )
+                        )
+                    cleanup_trigger = cleanup.get("trigger")
+                    if cleanup_trigger is not None and (
+                        not isinstance(cleanup_trigger, str)
+                        or not cleanup_trigger.startswith(("#", "$/"))
+                    ):
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "invalid_cyberpsycho_cleanup_trigger",
+                                f"{context}.cleanup.trigger must be a NodeRef",
+                                stage_id or None,
+                            )
+                        )
+                    if (
+                        "deactivate_community" in cleanup
+                        and not isinstance(cleanup["deactivate_community"], bool)
+                    ):
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "invalid_cyberpsycho_cleanup_flag",
+                                f"{context}.cleanup.deactivate_community must be a boolean",
+                                stage_id or None,
+                            )
+                        )
+
+            authoring = stage.get("authoring")
+            if authoring is not None:
+                authoring_fields = {"world_spec", "tweak_file"}
+                if not isinstance(authoring, dict):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_cyberpsycho_authoring",
+                            f"{context}.authoring must be an object",
+                            stage_id or None,
+                        )
+                    )
+                else:
+                    unknown_authoring = sorted(set(authoring) - authoring_fields)
+                    if unknown_authoring:
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "unknown_cyberpsycho_authoring_field",
+                                f"{context}.authoring has unknown fields: "
+                                + ", ".join(unknown_authoring),
+                                stage_id or None,
+                            )
+                        )
+                    if not authoring:
+                        diagnostics.append(
+                            Diagnostic(
+                                "error",
+                                "empty_cyberpsycho_authoring",
+                                f"{context}.authoring must name at least one file",
+                                stage_id or None,
+                            )
+                        )
+                    for field in authoring_fields:
+                        value = authoring.get(field)
+                        if value is not None and (
+                            not isinstance(value, str)
+                            or not value.strip()
+                            or Path(value).is_absolute()
+                            or ".." in Path(value).parts
+                        ):
+                            diagnostics.append(
+                                Diagnostic(
+                                    "error",
+                                    "invalid_cyberpsycho_authoring_path",
+                                    f"{context}.authoring.{field} must be a "
+                                    "workspace-relative path",
+                                    stage_id or None,
+                                )
+                            )
+        if stage_type == "braindance_analysis":
+            for field in (
+                "scene_origin",
+                "player_anchor",
+                "player_return",
+            ):
+                value = stage.get(field)
+                if (
+                    not isinstance(value, str)
+                    or not value.startswith(("#", "$/"))
+                ):
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "invalid_braindance_node_ref",
+                            f"{context}.{field} must be a NodeRef",
+                            stage_id or None,
+                        )
+                    )
+            clue_facts = stage.get("clue_facts")
+            if (
+                not isinstance(clue_facts, list)
+                or len(clue_facts) != 3
+                or not all(
+                    isinstance(item, str) and ID_RE.fullmatch(item)
+                    for item in clue_facts
+                )
+                or len(set(clue_facts)) != 3
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_braindance_clue_facts",
+                        f"{context}.clue_facts must contain exactly three "
+                        "unique fact names",
+                        stage_id or None,
+                    )
+                )
         if stage_type == "escort_npc":
             destinations = stage.get("destinations")
             if (
@@ -1064,7 +1421,270 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
     )
 
 
-def audit_resources(spec: QuestSpec) -> list[Diagnostic]:
+def collect_ref_values(value: Any) -> set[str]:
+    refs: set[str] = set()
+    if isinstance(value, dict):
+        for key, child in value.items():
+            if key == "ref" and isinstance(child, str):
+                refs.add(child)
+            refs.update(collect_ref_values(child))
+    elif isinstance(value, list):
+        for child in value:
+            refs.update(collect_ref_values(child))
+    return refs
+
+
+def audit_cyberpsycho_authoring(
+    stage: CompiledStage, *, root: Path
+) -> list[Diagnostic]:
+    authoring = stage.data.get("authoring")
+    if not isinstance(authoring, dict):
+        return []
+    diagnostics: list[Diagnostic] = []
+    level = "warning" if stage.status == "planned" else "error"
+
+    world_relative = authoring.get("world_spec")
+    if isinstance(world_relative, str):
+        world_path = root / Path(world_relative)
+        if not world_path.is_file():
+            diagnostics.append(
+                Diagnostic(
+                    level,
+                    "missing_cyberpsycho_world_spec",
+                    f"No world authoring spec found at {world_relative}",
+                    stage.id,
+                )
+            )
+        else:
+            try:
+                world = read_json(world_path)
+            except QuestSpecError as exc:
+                diagnostics.append(
+                    Diagnostic(
+                        level,
+                        "invalid_cyberpsycho_world_spec",
+                        str(exc),
+                        stage.id,
+                    )
+                )
+            else:
+                communities: list[dict[str, Any]] = []
+                if isinstance(world.get("community"), dict):
+                    communities.append(world["community"])
+                if isinstance(world.get("communities"), list):
+                    communities.extend(
+                        item
+                        for item in world["communities"]
+                        if isinstance(item, dict)
+                    )
+                community = next(
+                    (
+                        item
+                        for item in communities
+                        if item.get("ref") == stage.data["community"]
+                    ),
+                    None,
+                )
+                if community is None:
+                    diagnostics.append(
+                        Diagnostic(
+                            level,
+                            "missing_cyberpsycho_community",
+                            f"{world_relative} does not define community "
+                            f"{stage.data['community']}",
+                            stage.id,
+                        )
+                    )
+                else:
+                    entries = (
+                        community.get("entries")
+                        if isinstance(community.get("entries"), list)
+                        else [community]
+                    )
+                    boss_entry = next(
+                        (
+                            item
+                            for item in entries
+                            if isinstance(item, dict)
+                            and item.get("entry") == stage.data["boss_entry"]
+                        ),
+                        None,
+                    )
+                    if boss_entry is None:
+                        diagnostics.append(
+                            Diagnostic(
+                                level,
+                                "missing_cyberpsycho_entry",
+                                f"{stage.data['community']} does not define entry "
+                                f"{stage.data['boss_entry']}",
+                                stage.id,
+                            )
+                        )
+                    elif boss_entry.get("character") != stage.data["boss_character"]:
+                        diagnostics.append(
+                            Diagnostic(
+                                level,
+                                "cyberpsycho_character_mismatch",
+                                f"{stage.data['boss_entry']} uses "
+                                f"{boss_entry.get('character')!r}; expected "
+                                f"{stage.data['boss_character']}",
+                                stage.id,
+                            )
+                        )
+                    if (
+                        stage.data.get("activate", True)
+                        and community.get("active_on_start", 1) not in (0, False)
+                    ):
+                        diagnostics.append(
+                            Diagnostic(
+                                level,
+                                "cyberpsycho_community_active_on_start",
+                                f"{stage.data['community']} must use active_on_start: 0 "
+                                "when the encounter activates it",
+                                stage.id,
+                            )
+                        )
+
+                required_refs = {
+                    stage.data["activation_trigger"],
+                }
+                if isinstance(stage.data.get("arena_trigger"), str):
+                    required_refs.add(stage.data["arena_trigger"])
+                reveal_trigger = stage.data["reveal"].get("trigger")
+                if isinstance(reveal_trigger, str):
+                    required_refs.add(reveal_trigger)
+                cleanup = stage.data.get("cleanup")
+                if isinstance(cleanup, dict) and isinstance(
+                    cleanup.get("trigger"), str
+                ):
+                    required_refs.add(cleanup["trigger"])
+                alerted_path = stage.data.get("alerted_path")
+                if isinstance(alerted_path, str):
+                    required_refs.add(alerted_path)
+                required_refs.update(
+                    value
+                    for value in stage.data.get("alerted_spots", [])
+                    if isinstance(value, str)
+                )
+                missing_refs = sorted(required_refs - collect_ref_values(world))
+                if missing_refs:
+                    diagnostics.append(
+                        Diagnostic(
+                            level,
+                            "missing_cyberpsycho_world_ref",
+                            f"{world_relative} does not define encounter refs: "
+                            + ", ".join(missing_refs),
+                            stage.id,
+                        )
+                    )
+
+    tweak_relative = authoring.get("tweak_file")
+    if isinstance(tweak_relative, str):
+        tweak_path = root / Path(tweak_relative)
+        if not tweak_path.is_file():
+            diagnostics.append(
+                Diagnostic(
+                    level,
+                    "missing_cyberpsycho_tweak",
+                    f"No TweakXL file found at {tweak_relative}",
+                    stage.id,
+                )
+            )
+        else:
+            try:
+                tweak_text = tweak_path.read_text(encoding="utf-8")
+            except OSError as exc:
+                diagnostics.append(
+                    Diagnostic(
+                        level,
+                        "invalid_cyberpsycho_tweak",
+                        f"Cannot read {tweak_relative}: {exc}",
+                        stage.id,
+                    )
+                )
+            else:
+                header = re.search(
+                    rf"(?m)^{re.escape(stage.data['boss_character'])}:\s*$",
+                    tweak_text,
+                )
+                if header is None:
+                    diagnostics.append(
+                        Diagnostic(
+                            level,
+                            "missing_cyberpsycho_tweak_record",
+                            f"{tweak_relative} does not define "
+                            f"{stage.data['boss_character']}",
+                            stage.id,
+                        )
+                    )
+                else:
+                    next_header = re.search(
+                        r"(?m)^[A-Za-z][A-Za-z0-9_.]*:\s*$",
+                        tweak_text[header.end():],
+                    )
+                    end = (
+                        header.end() + next_header.start()
+                        if next_header is not None
+                        else len(tweak_text)
+                    )
+                    record = tweak_text[header.end():end]
+                    requirements = {
+                        r"(?m)^\s+rarity:\s*NPCRarity\.Boss\s*$": (
+                            "boss HUD rarity"
+                        ),
+                        (
+                            r"(?m:^\s+tags:\s*\[[^\]]*\bCyberpsycho\b[^\]]*\]\s*$)"
+                            r"|(?ms:^\s+tags:\s*$.*?^\s+-\s*Cyberpsycho\s*$)"
+                        ): "Cyberpsycho tag",
+                        r"\bCharacter\.Cyberpsycho_ModGroup\b": (
+                            "cyberpsycho stat group"
+                        ),
+                        r"\bCharacter\.Cyberpsycho_HitReaction_Resistance\b": (
+                            "cyberpsycho hit-reaction resistance"
+                        ),
+                        r"\bTargetTracking\.DefaultPreset\b": (
+                            "target tracking preset"
+                        ),
+                        r"\bUINameplate\.CombatSettings\b": (
+                            "combat UI nameplate"
+                        ),
+                        r"\bScanningNPCPresets\.ScannerPreset_NPCFull\b": (
+                            "full scanner preset"
+                        ),
+                    }
+                    missing = [
+                        label
+                        for pattern, label in requirements.items()
+                        if re.search(pattern, record) is None
+                    ]
+                    for field in (
+                        "entityTemplatePath:",
+                        "displayName:",
+                        "fullDisplayName:",
+                    ):
+                        if field not in record:
+                            missing.append(field.removesuffix(":"))
+                    if re.search(
+                        r"(?m)^\s+disableDefeatedState:\s*true\s*$",
+                        record,
+                        re.IGNORECASE,
+                    ):
+                        missing.append("disableDefeatedState must not be true")
+                    if missing:
+                        diagnostics.append(
+                            Diagnostic(
+                                level,
+                                "incomplete_cyberpsycho_tweak",
+                                f"{stage.data['boss_character']} is missing explicit "
+                                "vanilla cyberpsycho requirements: "
+                                + ", ".join(missing),
+                                stage.id,
+                            )
+                        )
+    return diagnostics
+
+
+def audit_resources(spec: QuestSpec, *, root: Path = ROOT) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = []
     for stage in spec.stages:
         resources = []
@@ -1075,6 +1695,8 @@ def audit_resources(spec: QuestSpec) -> list[Diagnostic]:
             resources.append(stage.phase_resource)
         if isinstance(stage.data.get("scene"), str):
             resources.append(stage.data["scene"])
+        if isinstance(stage.data.get("launch_scene"), str):
+            resources.append(stage.data["launch_scene"])
         resources.extend(
             asset
             for asset in stage.data.get("required_assets", [])
@@ -1091,6 +1713,10 @@ def audit_resources(spec: QuestSpec) -> list[Diagnostic]:
                         stage.id,
                     )
                 )
+        if stage.type == "cyberpsycho_encounter":
+            diagnostics.extend(
+                audit_cyberpsycho_authoring(stage, root=root)
+            )
     return diagnostics
 
 
@@ -1235,6 +1861,36 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         expected.extend(("entries", item) for item in stage.data.get("entries", []))
         if isinstance(stage.data.get("trigger"), str):
             expected.append(("trigger", stage.data["trigger"]))
+    elif stage.type == "cyberpsycho_encounter":
+        expected.extend(
+            (
+                ("community", stage.data["community"]),
+                ("boss_entry", stage.data["boss_entry"]),
+                ("activation_trigger", stage.data["activation_trigger"]),
+                (
+                    "resolution.spared_fact",
+                    stage.data["resolution"]["spared_fact"],
+                ),
+                (
+                    "resolution.killed_fact",
+                    stage.data["resolution"]["killed_fact"],
+                ),
+            )
+        )
+        reveal_trigger = stage.data["reveal"].get("trigger")
+        if isinstance(reveal_trigger, str):
+            expected.append(("reveal.trigger", reveal_trigger))
+        if isinstance(stage.data.get("arena_trigger"), str):
+            expected.append(("arena_trigger", stage.data["arena_trigger"]))
+        if isinstance(stage.data.get("alerted_path"), str):
+            expected.append(("alerted_path", stage.data["alerted_path"]))
+        expected.extend(
+            ("alerted_spots", value)
+            for value in stage.data.get("alerted_spots", [])
+        )
+        cleanup = stage.data.get("cleanup")
+        if isinstance(cleanup, dict) and isinstance(cleanup.get("trigger"), str):
+            expected.append(("cleanup.trigger", cleanup["trigger"]))
     elif stage.type == "leave_area":
         expected.extend(
             (field, stage.data[field]) for field in ("trigger", "objective")
@@ -1358,6 +2014,22 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         )
     elif stage.type == "vehicle_cleanup":
         expected.append(("completion_fact", stage.data["completion_fact"]))
+    elif stage.type == "braindance_analysis":
+        expected.extend(
+            (field, stage.data[field])
+            for field in (
+                "scene",
+                "scene_origin",
+                "player_anchor",
+                "player_return",
+                "completion_fact",
+                "objective",
+            )
+        )
+        expected.extend(
+            ("clue_facts", fact)
+            for fact in stage.data["clue_facts"]
+        )
 
     if stage.type in SUPPORTED_STAGE_TYPES - {
         "phone_job_offer",
@@ -1519,6 +2191,18 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
     if stage.type == "vehicle_cleanup":
         return {
             "{{completion_fact}}": stage.data["completion_fact"],
+        }
+    if stage.type == "braindance_analysis":
+        return {
+            "{{scene}}": stage.data["scene"],
+            "{{scene_origin}}": stage.data["scene_origin"],
+            "{{player_anchor}}": stage.data["player_anchor"],
+            "{{player_return}}": stage.data["player_return"],
+            "{{clue_fact_1}}": stage.data["clue_facts"][0],
+            "{{clue_fact_2}}": stage.data["clue_facts"][1],
+            "{{clue_fact_3}}": stage.data["clue_facts"][2],
+            "{{completion_fact}}": stage.data["completion_fact"],
+            "{{objective}}": stage.data["objective"],
         }
     return {}
 
@@ -2400,7 +3084,7 @@ def combat_threat_node(
         {
             "$type": "AIInjectCombatThreatCommandParams",
             "dontForceHostileAttitude": 0,
-            "duration": 0,
+            "duration": 0.5,
             "isPersistent": 0,
             "targetNodeRef": node_ref("0", storage="uint64"),
             "targetPuppetRef": entity_reference("#player"),
@@ -2415,9 +3099,306 @@ def combat_threat_node(
             "entityReference": entity_reference(
                 community, names=[entry]
             ),
-            "function": cname("questCombatNodeParams_ShootAt"),
             "params": params,
         },
+    )
+
+
+def gameplay_ai_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+) -> GraphNode:
+    """Restore the puppet's default gameplay AI tier."""
+
+    return builder.node(
+        quest_id,
+        "questPuppetAIManagerNodeDefinition",
+        input_names=("In",),
+        output_names=("Out",),
+        properties={
+            "entries": [
+                {
+                    "$type": "questPuppetAIManagerNodeDefinitionEntry",
+                    "entityReference": entity_reference(
+                        community, names=[entry]
+                    ),
+                }
+            ]
+        },
+    )
+
+
+def character_not_in_combat_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+) -> GraphNode:
+    """Match Lt. Mower's pre-role non-combat gate."""
+
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questCharacterCombat_ConditionType",
+            "objectRef": entity_reference(community, names=[entry]),
+            "isPlayer": 0,
+            "inverted": 1,
+        }
+    )
+    condition = builder.handles.wrap(
+        {
+            "$type": "questCharacterCondition",
+            "type": condition_type,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def alerted_patrol_role_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+    alerted_path: str,
+    alerted_spots: list[str],
+) -> GraphNode:
+    """Assign Lt. Mower's forced-alerted patrol role to the named boss."""
+
+    path_params = builder.handles.wrap(
+        {
+            "$type": "AIPatrolPathParameters",
+            "movementType": "Sprint",
+            "patrolWithWeapon": 1,
+        }
+    )
+    alerted_path_params = builder.handles.wrap(
+        {
+            "$type": "AIPatrolPathParameters",
+            "path": node_ref(alerted_path),
+            "movementType": "Sprint",
+            "patrolWithWeapon": 1,
+        }
+    )
+    workspots = builder.handles.wrap(
+        {
+            "$type": "AIbehaviorWorkspotList",
+            "spots": [node_ref(value) for value in alerted_spots],
+        }
+    )
+    role = builder.handles.wrap(
+        {
+            "$type": "AIPatrolRole",
+            "pathParams": path_params,
+            "alertedPathParams": alerted_path_params,
+            "alertedSpots": workspots,
+            "forceAlerted": 1,
+        }
+    )
+    params = builder.handles.wrap(
+        {
+            "$type": "AIAssignRoleCommandParams",
+            "role": role,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questMiscAICommandNode",
+        input_names=("In",),
+        output_names=("Success",),
+        properties={
+            "entityReference": entity_reference(
+                community, names=[entry]
+            ),
+            "params": params,
+        },
+    )
+
+
+def combat_target_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+) -> GraphNode:
+    """Assign V as the named boss's immediate combat target."""
+
+    params = builder.handles.wrap(
+        {
+            "$type": "questCombatNodeParams_CombatTarget",
+            "duration": 0.01,
+            "immediately": 1,
+            "targetNode": node_ref("0", storage="uint64"),
+            "targetPuppet": entity_reference("#player"),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questCombatNodeDefinition",
+        input_names=("In",),
+        output_names=("Success",),
+        properties={
+            "entityReference": entity_reference(
+                community, names=[entry]
+            ),
+            "params": params,
+        },
+    )
+
+
+def named_character_spawned_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+) -> GraphNode:
+    comparison = builder.handles.wrap(
+        {
+            "$type": "questComparisonParam",
+            "comparisonType": "GreaterOrEqual",
+            "count": 1,
+            "entireCommunity": 0,
+        }
+    )
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questCharacterSpawned_ConditionType",
+            "comparisonParams": comparison,
+            "objectRef": entity_reference(community, names=[entry]),
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questCharacterCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def named_character_outcome_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+    *,
+    killed: bool,
+    unconscious: bool,
+    defeated: bool,
+) -> GraphNode:
+    comparison = builder.handles.wrap(
+        {
+            "$type": "questComparisonParam",
+            "comparisonType": "GreaterOrEqual",
+            "count": 1,
+            "entireCommunity": 0,
+        }
+    )
+    condition_type = builder.handles.wrap(
+        {
+            "$type": "questCharacterKilled_ConditionType",
+            "comparisonParams": comparison,
+            "defeated": int(defeated),
+            "killed": int(killed),
+            "objectRef": entity_reference(community, names=[entry]),
+            "source": None,
+            "unconscious": int(unconscious),
+        }
+    )
+    condition = builder.handles.wrap(
+        {"$type": "questCharacterCondition", "type": condition_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def cyberpsycho_reveal_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    kind: str,
+    community: str,
+    entry: str,
+) -> GraphNode:
+    boss = entity_reference(community, names=[entry])
+    if kind == "scan":
+        wrapper_type = "questObjectCondition"
+        condition_type = {
+            "$type": "questScan_ConditionType",
+            "objectRef": boss,
+        }
+    elif kind == "attacked_by_boss":
+        wrapper_type = "questCharacterCondition"
+        condition_type = {
+            "$type": "questCharacterAttack_ConditionType",
+            "attackerRef": boss,
+            "isTargetPlayer": 1,
+        }
+    elif kind == "boss_hit_by_player":
+        wrapper_type = "questCharacterCondition"
+        condition_type = {
+            "$type": "questCharacterHit_ConditionType",
+            "isAttackerPlayer": 1,
+            "targetRef": boss,
+        }
+    elif kind == "boss_sees_player":
+        wrapper_type = "questSensesCondition"
+        condition_type = {
+            "$type": "questVision_ConditionType",
+            "observerPuppetRef": boss,
+        }
+    else:
+        raise QuestSpecError(f"Unsupported cyberpsycho reveal route: {kind}")
+    wrapped_type = builder.handles.wrap(condition_type)
+    condition = builder.handles.wrap(
+        {"$type": wrapper_type, "type": wrapped_type}
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def character_mortality_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    entry: str,
+    *,
+    state: str,
+    source: str,
+) -> GraphNode:
+    subtype = builder.handles.wrap(
+        {
+            "$type": "questCharacterManagerParameters_SetMortality",
+            "puppetRef": entity_reference(community, names=[entry]),
+            "source": cname(source),
+            "state": state,
+        }
+    )
+    node_type = builder.handles.wrap(
+        {
+            "$type": "questCharacterManagerParameters_NodeType",
+            "subtype": subtype,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questCharacterManagerNodeDefinition",
+        input_names=("In",),
+        properties={"type": node_type},
     )
 
 
@@ -2589,6 +3570,319 @@ def build_combat_encounter_phase(
     return phase_document(builder, archive_target)
 
 
+def build_cyberpsycho_encounter_phase(
+    stage: CompiledStage, archive_target: Path
+) -> JsonObject:
+    """Build a vanilla-style single-boss cyberpsycho encounter."""
+
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    previous: GraphNode = start
+    previous_socket = "Out"
+    next_id = 10
+
+    activation = trigger_condition_node(
+        builder, next_id, stage.data["activation_trigger"], "Entered"
+    )
+    next_id += 1
+    builder.connect(previous, activation)
+    previous = activation
+
+    objective: GraphNode | None = None
+    if stage.data.get("objective"):
+        objective = objective_node(builder, next_id, stage.data["objective"])
+        next_id += 1
+        builder.connect(previous, objective, destination_socket="Active")
+        previous = objective
+    if stage.data.get("description_entry"):
+        description = journal_entry_node(
+            builder,
+            next_id,
+            stage.data["description_entry"],
+            "gameJournalQuestDescription",
+            2,
+        )
+        next_id += 1
+        builder.connect(previous, description, destination_socket="Active")
+        previous = description
+    active_mappin: GraphNode | None = None
+    if stage.data.get("mappin"):
+        active_mappin = mappin_node(builder, next_id, stage.data["mappin"])
+        next_id += 1
+        builder.connect(previous, active_mappin, destination_socket="Active")
+        previous = active_mappin
+
+    if stage.data.get("activate", True):
+        activate = community_action_node(
+            builder, next_id, stage.data["community"], "Activate"
+        )
+        next_id += 1
+        builder.connect(previous, activate)
+        previous = activate
+
+    spawned = named_character_spawned_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+    )
+    next_id += 1
+    builder.connect(previous, spawned)
+    previous = spawned
+
+    protected = character_mortality_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+        state="Invulnerable",
+        source=stage.id,
+    )
+    next_id += 1
+    builder.connect(previous, protected)
+    previous = protected
+
+    reveal = stage.data["reveal"]
+    reveal_nodes: list[GraphNode] = []
+    if isinstance(reveal.get("trigger"), str):
+        reveal_nodes.append(
+            trigger_condition_node(
+                builder, next_id, reveal["trigger"], "Entered"
+            )
+        )
+        next_id += 1
+    for kind in (
+        "scan",
+        "attacked_by_boss",
+        "boss_hit_by_player",
+        "boss_sees_player",
+    ):
+        if reveal.get(kind) is True:
+            reveal_nodes.append(
+                cyberpsycho_reveal_node(
+                    builder,
+                    next_id,
+                    kind,
+                    stage.data["community"],
+                    stage.data["boss_entry"],
+                )
+            )
+            next_id += 1
+    for reveal_node in reveal_nodes:
+        builder.connect(previous, reveal_node)
+    if len(reveal_nodes) == 1:
+        previous = reveal_nodes[0]
+        previous_socket = "Out"
+    else:
+        reveal_join = logical_xor_node(builder, next_id, len(reveal_nodes))
+        next_id += 1
+        for index, reveal_node in enumerate(reveal_nodes, start=1):
+            builder.connect(
+                reveal_node,
+                reveal_join,
+                destination_socket=f"In{index}",
+            )
+        previous = reveal_join
+        previous_socket = "Out1"
+
+    if isinstance(stage.data.get("arena_trigger"), str):
+        entered_arena = trigger_condition_node(
+            builder, next_id, stage.data["arena_trigger"], "Entered"
+        )
+        next_id += 1
+        builder.connect(
+            previous,
+            entered_arena,
+            source_socket=previous_socket,
+        )
+        previous = entered_arena
+        previous_socket = "Out"
+
+    gameplay_ai = gameplay_ai_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+    )
+    next_id += 1
+    builder.connect(
+        previous,
+        gameplay_ai,
+        source_socket=previous_socket,
+    )
+
+    mortal = character_mortality_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+        state="Mortal",
+        source=stage.id,
+    )
+    next_id += 1
+    builder.connect(gameplay_ai, mortal)
+
+    alerted_path = stage.data.get("alerted_path")
+    alerted_spots = stage.data.get("alerted_spots", [])
+    if isinstance(alerted_path, str) and alerted_spots:
+        handoff_delay = realtime_delay_node(
+            builder,
+            next_id,
+            seconds=0,
+            milliseconds=200,
+        )
+        next_id += 1
+        builder.connect(gameplay_ai, handoff_delay)
+
+        not_in_combat = character_not_in_combat_node(
+            builder,
+            next_id,
+            stage.data["community"],
+            stage.data["boss_entry"],
+        )
+        next_id += 1
+        builder.connect(handoff_delay, not_in_combat)
+
+        alerted_role = alerted_patrol_role_node(
+            builder,
+            next_id,
+            stage.data["community"],
+            stage.data["boss_entry"],
+            alerted_path,
+            alerted_spots,
+        )
+        next_id += 1
+        builder.connect(not_in_combat, alerted_role)
+        combat_handoff: GraphNode = handoff_delay
+        combat_handoff_socket = "Out"
+    else:
+        combat_handoff = mortal
+        combat_handoff_socket = "Out"
+
+    target_player = combat_target_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+    )
+    next_id += 1
+    builder.connect(
+        combat_handoff,
+        target_player,
+        source_socket=combat_handoff_socket,
+    )
+
+    hostile = combat_threat_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+    )
+    next_id += 1
+    builder.connect(target_player, hostile, source_socket="Success")
+
+    killed = named_character_outcome_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+        killed=True,
+        unconscious=False,
+        defeated=False,
+    )
+    next_id += 1
+    spared = named_character_outcome_node(
+        builder,
+        next_id,
+        stage.data["community"],
+        stage.data["boss_entry"],
+        killed=False,
+        unconscious=True,
+        defeated=True,
+    )
+    next_id += 1
+    builder.connect(hostile, killed, source_socket="Success")
+    builder.connect(hostile, spared, source_socket="Success")
+
+    resolution = stage.data["resolution"]
+    killed_fact = fact_node(
+        builder, next_id, resolution["killed_fact"]
+    )
+    next_id += 1
+    spared_fact = fact_node(
+        builder, next_id, resolution["spared_fact"]
+    )
+    next_id += 1
+    builder.connect(killed, killed_fact)
+    builder.connect(spared, spared_fact)
+
+    outcome_join = logical_xor_node(builder, next_id, 2)
+    next_id += 1
+    builder.connect(killed_fact, outcome_join, destination_socket="In1")
+    builder.connect(spared_fact, outcome_join, destination_socket="In2")
+    previous = outcome_join
+    previous_socket = "Out1"
+
+    if objective is not None:
+        objective_done = objective_node(
+            builder, next_id, stage.data["objective"]
+        )
+        next_id += 1
+        builder.connect(
+            previous,
+            objective_done,
+            source_socket=previous_socket,
+            destination_socket="Succeeded",
+        )
+        previous = objective_done
+        previous_socket = "Out"
+    if active_mappin is not None:
+        mappin_done = mappin_node(
+            builder, next_id, stage.data["mappin"]
+        )
+        next_id += 1
+        builder.connect(
+            previous,
+            mappin_done,
+            source_socket=previous_socket,
+            destination_socket="Inactive",
+        )
+        previous = mappin_done
+        previous_socket = "Out"
+    if stage.data.get("completion_fact"):
+        completed = fact_node(
+            builder, next_id, stage.data["completion_fact"]
+        )
+        next_id += 1
+        builder.connect(previous, completed, source_socket=previous_socket)
+        previous = completed
+        previous_socket = "Out"
+
+    cleanup = stage.data.get("cleanup")
+    if isinstance(cleanup, dict):
+        if isinstance(cleanup.get("trigger"), str):
+            outside = trigger_condition_node(
+                builder, next_id, cleanup["trigger"], "IsOutside"
+            )
+            next_id += 1
+            builder.connect(previous, outside, source_socket=previous_socket)
+            previous = outside
+            previous_socket = "Out"
+        if cleanup.get("deactivate_community", True):
+            deactivate = community_action_node(
+                builder, next_id, stage.data["community"], "Deactivate"
+            )
+            next_id += 1
+            builder.connect(previous, deactivate, source_socket=previous_socket)
+            previous = deactivate
+            previous_socket = "Out"
+
+    builder.connect_to_earlier_output(
+        previous, end, source_socket=previous_socket
+    )
+    return phase_document(builder, archive_target)
+
+
 def build_investigate_clues_phase(
     stage: CompiledStage, archive_target: Path
 ) -> JsonObject:
@@ -2690,6 +3984,11 @@ def build_stage_phase(
         result = build_interact_device_phase(stage, archive_target)
     elif stage.type == "combat_encounter" and not stage.data.get("phase_template"):
         result = build_combat_encounter_phase(stage, archive_target)
+    elif (
+        stage.type == "cyberpsycho_encounter"
+        and not stage.data.get("phase_template")
+    ):
+        result = build_cyberpsycho_encounter_phase(stage, archive_target)
     elif stage.type == "time_gate" and not stage.data.get("phase_template"):
         result = build_time_gate_phase(stage, archive_target)
     elif (

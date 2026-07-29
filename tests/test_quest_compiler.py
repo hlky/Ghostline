@@ -21,7 +21,7 @@ SPEC.loader.exec_module(quest_compiler)
 
 class QuestCompilerTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.path = ROOT / "source/quests/gq001.quest.json"
+        self.path = ROOT / "quests/story/ghostline/gq001/implementation/quest.json"
         self.raw = json.loads(self.path.read_text(encoding="utf-8"))
 
     def write_manifest(self, root: Path, value: dict) -> Path:
@@ -75,10 +75,7 @@ class QuestCompilerTests(unittest.TestCase):
         ]
         self.assertEqual([node["id"] for node in phase_nodes], [10, 11, 12, 13, 14])
         self.assertEqual(
-            [
-                node["phaseResource"]["DepotPath"]["$value"]
-                for node in phase_nodes
-            ],
+            [node["phaseResource"]["DepotPath"]["$value"] for node in phase_nodes],
             [stage.phase_resource for stage in spec.stages],
         )
         self.assertEqual(
@@ -87,14 +84,15 @@ class QuestCompilerTests(unittest.TestCase):
         )
 
     def test_child_phase_can_opt_out_of_manifest_prefabs(self) -> None:
-        path = ROOT / "source/quests/tests/gqt004_vehicle_lab.quest.json"
+        path = ROOT / "quests/tests/gqt004_vehicle_lab.quest.json"
         spec, diagnostics = quest_compiler.load_spec(path)
         self.assertFalse([item for item in diagnostics if item.level == "error"])
         assert spec is not None
         stage = next(item for item in spec.stages if item.id == "steal_test_vehicle")
         phase = quest_compiler.build_stage_phase(
             stage,
-            ROOT / "source/archive/mod/gqt004/phases/gqt004_steal_test_vehicle.questphase",
+            ROOT
+            / "source/archive/mod/gqt004/phases/gqt004_steal_test_vehicle.questphase",
             spec.phase_prefabs,
         )
         self.assertEqual(
@@ -106,7 +104,7 @@ class QuestCompilerTests(unittest.TestCase):
         )
 
     def test_debug_fact_marks_each_stage_entry(self) -> None:
-        path = ROOT / "source/quests/tests/gqt004_vehicle_lab.quest.json"
+        path = ROOT / "quests/tests/gqt004_vehicle_lab.quest.json"
         spec, diagnostics = quest_compiler.load_spec(path)
         self.assertFalse([item for item in diagnostics if item.level == "error"])
         assert spec is not None
@@ -132,20 +130,16 @@ class QuestCompilerTests(unittest.TestCase):
 
     def test_gqt004_theft_vehicle_is_persistent_until_mount(self) -> None:
         world = json.loads(
-            (ROOT / "tools/gqt004_vehicle_lab.world.json").read_text(
-                encoding="utf-8"
-            )
+            (
+                ROOT / "quests/tests/gqt004/implementation/world/vehicle-lab.world.json"
+            ).read_text(encoding="utf-8")
         )
         theft = next(
-            item
-            for item in world["communities"]
-            if item["entry"] == "theft_vehicle_r2"
+            item for item in world["communities"] if item["entry"] == "theft_vehicle_r2"
         )
 
         self.assertEqual(theft["always_spawned"], "true_")
-        self.assertEqual(
-            theft["position"]["from"], "#gqt004_04_mp_theft_vehicle"
-        )
+        self.assertEqual(theft["position"]["from"], "#gqt004_04_mp_theft_vehicle")
         self.assertEqual(theft["spot"]["is_workspot_infinite"], 1)
 
     def test_duplicate_stage_ids_are_rejected(self) -> None:
@@ -248,15 +242,11 @@ class QuestCompilerTests(unittest.TestCase):
                     "opening_branches": [
                         {
                             "condition": "gq_phone_test_outcome_a",
-                            "messages": [
-                                "contacts/morrow/gq_phone_test/02a_outcome"
-                            ],
+                            "messages": ["contacts/morrow/gq_phone_test/02a_outcome"],
                         },
                         {
                             "condition": "gq_phone_test_outcome_b",
-                            "messages": [
-                                "contacts/morrow/gq_phone_test/02b_outcome"
-                            ],
+                            "messages": ["contacts/morrow/gq_phone_test/02b_outcome"],
                         },
                     ],
                     "choice_group": "contacts/morrow/gq_phone_test/03_choices",

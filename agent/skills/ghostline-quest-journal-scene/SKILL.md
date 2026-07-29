@@ -7,13 +7,13 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
 
 ## Before Editing
 
-- Use `docs/tooling.md` explorer commands before loading full CR2W-JSON files into
-  context.
+- Use `docs/reference/tool-catalog.md` explorer commands before loading full
+  CR2W-JSON files into context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal
   behavior.
-- Read `docs/quest-scene-flow.md` before changing the root/child phase handoff,
+- Read `quests/story/ghostline/gq000/implementation/runtime-flow.md` before changing the root/child phase handoff,
   meeting lifecycle, trigger ownership, scene exits, or choice localization.
-- For fresh scene work, use `docs/scene-authoring-rules.md`. Vanilla patterns
+- For fresh scene work, use `docs/authoring/scenes.md`. Vanilla patterns
   override failed Ghostline probe results.
 
 Useful docs:
@@ -32,7 +32,7 @@ Useful docs:
   handlerefs. Use WolvenKit's graph editor for structural inspection.
 - Quest facts are signed integer state values. They default to `0` until set.
   Prefer `gq000_` prefixes for Ghostline quest facts.
-- Fresh `gq000` scene tooling should follow `docs/scene-authoring-rules.md`
+- Fresh `gq000` scene tooling should follow `docs/authoring/scenes.md`
   rather than preserving generated-scene probe workarounds.
 - Emit editable scene resources under `source/raw` and use WolvenKit to produce
   the matching packed `source/archive` resources.
@@ -47,7 +47,7 @@ Useful docs:
   on-screen text and the voiceover resource.
 - Spoken lines and choice labels use different localization paths. Spoken
   lines resolve through subtitle/VO resources; choices resolve through the
-  scene's embedded `locStore`. See `docs/quest-scene-flow.md` for the complete
+  scene's embedded `locStore`. See `quests/story/ghostline/gq000/implementation/runtime-flow.md` for the complete
   lookup chains and ID domains.
 - Keep the mq003-derived lifecycle boundary: the meeting questphase activates
   the community, waits for `CharacterSpawned`, and starts the scene at the

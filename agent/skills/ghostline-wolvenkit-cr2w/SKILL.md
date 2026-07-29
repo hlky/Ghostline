@@ -96,4 +96,5 @@ CR2W serialization, or template-backed deserialization.
 - Compare exact round trips with `Get-FileHash`.
 - Keep `Header.ArchiveFileName` pointed at the intended `source/archive`
   target.
-- Follow `docs/packaging.md` for isolated pack/extract and payload verification.
+- Follow `docs/workflows/build-and-package.md` for isolated pack/extract and
+  payload verification.

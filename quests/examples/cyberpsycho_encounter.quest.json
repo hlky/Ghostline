@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "id": "gq_cyberpsycho_example",
+  "title": "Cyberpsycho encounter example",
+  "description": "Generated vanilla-style named boss lifecycle with distinct lethal and nonlethal outcomes.",
+  "stages": [
+    {
+      "id": "face_cyberpsycho",
+      "type": "cyberpsycho_encounter",
+      "status": "planned",
+      "phase_resource": "mod\\gq_cyberpsycho_example\\phases\\face_cyberpsycho.questphase",
+      "community": "#gq_cyberpsycho_example_com_psycho",
+      "boss_entry": "psycho",
+      "boss_character": "Character.GhostlineGothBaddie",
+      "activation_trigger": "#gq_cyberpsycho_example_tr_outer",
+      "reveal": {
+        "trigger": "#gq_cyberpsycho_example_tr_reveal",
+        "scan": true,
+        "attacked_by_boss": true,
+        "boss_hit_by_player": true,
+        "boss_sees_player": true
+      },
+      "arena_trigger": "#gq_cyberpsycho_example_tr_arena",
+      "resolution": {
+        "allow_nonlethal": true,
+        "spared_fact": "gq_cyberpsycho_example_spared",
+        "killed_fact": "gq_cyberpsycho_example_killed"
+      },
+      "completion_fact": "gq_cyberpsycho_example_resolved",
+      "cleanup": {
+        "trigger": "#gq_cyberpsycho_example_tr_cleanup",
+        "deactivate_community": true
+      },
+      "authoring": {
+        "tweak_file": "converted/characters/goth_baddie/source/resources/r6/tweaks/ghostline/character_goth_baddie.yaml"
+      },
+      "notes": "Goth Baddie is the concrete boss record. Add authoring.world_spec once her encounter placement and triggers are authored."
+    }
+  ]
+}

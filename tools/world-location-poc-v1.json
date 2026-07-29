@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "poc_id": "night-city-six-tile-v1",
+  "description": "Six representative Night City tiles for validating place-level world sampling and rendering.",
+  "defaults": {
+    "tile_size_metres": 192.0,
+    "clip_margin_metres": 32.0,
+    "sector_categories": [
+      "Exterior",
+      "Interior",
+      "Quest"
+    ],
+    "lod_levels": [
+      0,
+      1,
+      2
+    ],
+    "navigation_agent_types": [
+      "Human"
+    ],
+    "sample_spacing_metres": 24.0,
+    "level_separation_metres": 3.0,
+    "max_viewpoints": 4,
+    "eye_height_metres": 1.7,
+    "directions_degrees": [
+      0.0,
+      90.0,
+      180.0,
+      270.0
+    ],
+    "horizontal_fov_degrees": 80.0,
+    "render_resolution": 1024,
+    "render_format": "WEBP",
+    "render_quality": 90,
+    "variant_policy": {
+      "mode": "defaults",
+      "include_default_range": true
+    }
+  },
+  "tiles": [
+    {
+      "id": "kabuki-service-alley",
+      "label": "Kabuki service alley",
+      "archetype": "alley",
+      "district": "Watson",
+      "area": "Kabuki",
+      "anchor": {
+        "x": -1168.66333,
+        "y": 1309.51709,
+        "z_hint": 19.9768238,
+        "provenance": "Runtime-verified Kabuki drop_point_009"
+      },
+      "z_range": [
+        -5.0,
+        55.0
+      ],
+      "expected_signals": [
+        "narrow pedestrian space",
+        "service access",
+        "dense street furniture",
+        "recognizable public kiosk"
+      ],
+      "states": [
+        {
+          "id": "open-world"
+        }
+      ]
+    },
+    {
+      "id": "jig-jig-dense-street",
+      "label": "Jig-Jig Street entrance",
+      "archetype": "dense_street",
+      "district": "Westbrook",
+      "area": "Japantown",
+      "anchor": {
+        "x": -641.42657470703,
+        "y": 886.84326171875,
+        "z_hint": 19.841585159302,
+        "provenance": "q105 Jig-Jig entrance map pin"
+      },
+      "z_range": [
+        -10.0,
+        65.0
+      ],
+      "expected_signals": [
+        "commercial street",
+        "signage",
+        "crowded facade rhythm",
+        "multiple entrances"
+      ],
+      "states": [
+        {
+          "id": "open-world"
+        }
+      ]
+    },
+    {
+      "id": "kabuki-elevated-road",
+      "label": "Kabuki elevated road and lower street",
+      "archetype": "elevated_road",
+      "district": "Watson",
+      "area": "Kabuki",
+      "anchor": {
+        "x": -1052.1395,
+        "y": 1283.3362,
+        "z_hint": 12.46019,
+        "provenance": "GQT002 authored location with validated stacked elevations"
+      },
+      "z_range": [
+        -10.0,
+        55.0
+      ],
+      "max_viewpoints": 6,
+      "expected_signals": [
+        "stacked navigation levels",
+        "road access",
+        "underpass enclosure",
+        "long sight line"
+      ],
+      "states": [
+        {
+          "id": "open-world"
+        }
+      ]
+    },
+    {
+      "id": "megabuilding-h10-exterior",
+      "label": "Megabuilding H10 exterior",
+      "archetype": "building_exterior",
+      "district": "Watson",
+      "area": "Little China",
+      "tile_size_metres": 256.0,
+      "anchor": {
+        "x": -1380.6398925781,
+        "y": 1270.0802001953,
+        "z_hint": 22.0,
+        "provenance": "Megabuilding H10 quest-map X/Y with ground-level Z hint"
+      },
+      "z_range": [
+        -20.0,
+        230.0
+      ],
+      "expected_signals": [
+        "building-scale massing",
+        "public approach",
+        "vertical landmark",
+        "road frontage"
+      ],
+      "states": [
+        {
+          "id": "open-world"
+        }
+      ]
+    },
+    {
+      "id": "afterlife-multilevel-interior",
+      "label": "Afterlife multi-level interior",
+      "archetype": "multilevel_interior",
+      "district": "Watson",
+      "area": "Little China",
+      "tile_size_metres": 128.0,
+      "anchor": {
+        "x": -1457.8620605469,
+        "y": 1020.3382568359,
+        "z_hint": 17.746793746948,
+        "provenance": "Afterlife interior quest map pin"
+      },
+      "z_range": [
+        5.0,
+        45.0
+      ],
+      "sector_categories": [
+        "Exterior",
+        "Interior",
+        "Quest"
+      ],
+      "lod_levels": [
+        0
+      ],
+      "max_viewpoints": 6,
+      "expected_signals": [
+        "interior navigation",
+        "multiple vertical levels",
+        "bar and lounge",
+        "quest-state geometry"
+      ],
+      "states": [
+        {
+          "id": "open-world"
+        },
+        {
+          "id": "q005-heist",
+          "variant_policy": {
+            "mode": "explicit",
+            "include_default_range": true,
+            "names": [
+              "q005_Jackie_Claire",
+              "q005_custom_music",
+              "_default_meshes"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "dakota-badlands-workshop",
+      "label": "Dakota's Badlands workshop",
+      "archetype": "badlands_location",
+      "district": "Badlands",
+      "area": "Inland Avenue",
+      "anchor": {
+        "x": 2452.0,
+        "y": -731.0,
+        "z_hint": 64.0,
+        "provenance": "World-catalog Dakota workshop antenna cluster"
+      },
+      "z_range": [
+        25.0,
+        115.0
+      ],
+      "lod_levels": [
+        0,
+        1,
+        2
+      ],
+      "expected_signals": [
+        "open terrain",
+        "vehicle access",
+        "isolated workshop",
+        "long exterior sight lines"
+      ],
+      "states": [
+        {
+          "id": "open-world"
+        }
+      ]
+    }
+  ]
+}

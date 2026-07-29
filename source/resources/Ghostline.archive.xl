@@ -4,13 +4,16 @@ quest:
     parent: base\quest\cyberpunk2077.quest
   - path: mod\gq002\phases\gq002.questphase
     parent: base\quest\cyberpunk2077.quest
-  - path: mod\gqt002\phases\gqt002_quiet_install.questphase
+  - path: mod\gqt005\phases\gqt005_braindance_analysis.questphase
+    parent: base\quest\cyberpunk2077.quest
+  - path: mod\gqt006\phases\gqt006_goth_baddie_cyberpsycho.questphase
     parent: base\quest\cyberpunk2077.quest
 journal:
 - mod\gq000\journal\gq000.journal
 - mod\gq001\journal\gq001.journal
 - mod\gq002\journal\gq002.journal
-- mod\gqt002\journal\gqt002.journal
+- mod\gqt005\journal\gqt005.journal
+- mod\gqt006\journal\gqt006.journal
 localization:
   onscreens:
     en-us:
@@ -18,7 +21,8 @@ localization:
     - mod\gq000\localization\en-us\onscreens\gq000.json
     - mod\gq001\localization\en-us\onscreens\gq001.json
     - mod\gq002\localization\en-us\onscreens\gq002.json
-    - mod\gqt002\localization\en-us\onscreens\gqt002.json
+    - mod\gqt005\localization\en-us\onscreens\gqt005.json
+    - mod\gqt006\localization\en-us\onscreens\gqt006.json
   subtitles:
     en-us:
     - mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json
@@ -34,10 +38,9 @@ streaming:
   - mod\gq000\world\gq000_patch_meet.streamingblock
   - mod\gq001\world\gq001_iris_meet.streamingblock
   - mod\gq002\world\gq002_machine_stops.streamingblock
-  - mod\gqt002\world\gqt002_quiet_install.streamingblock
+  - mod\gqt005\world\gqt005_braindance_analysis.streamingblock
+  - mod\gqt006\world\gqt006_goth_baddie_cyberpsycho.streamingblock
 resource:
   patch:
     mod\gq000\world\gq000_custom_devices.devices:
-    - base\worlds\03_night_city\_compiled\default\03_night_city.devices
-    mod\gqt002\world\gqt002_custom_devices.devices:
     - base\worlds\03_night_city\_compiled\default\03_night_city.devices

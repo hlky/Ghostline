@@ -33,6 +33,7 @@ an editor or an optional schema library.
 | `deliver_drop_point` | template | `item`, `drop_point`, `deposit_fact` |
 | `interact_device` | generated | `device`, `controller_class`, `action`, `completion_function` |
 | `combat_encounter` | generated | `community`, `entries`, `hostility`, `completion` |
+| `cyberpsycho_encounter` | generated | `community`, `boss_entry`, `boss_character`, `activation_trigger`, `reveal`, `resolution` |
 | `investigate_clues` | generated | `objective`, `description_entry`, `clues` |
 | `optional_condition` | template | `objective`, `condition`, `success_fact`, `failure_fact`, `evaluation` |
 | `choice_gate` | template | `gate_kind`, `branches`, `join` |
@@ -50,11 +51,12 @@ an editor or an optional schema library.
 | `drive_to` | template | `vehicle`, `destination`, `completion_fact`, `objective` |
 | `steal_vehicle` | template | `vehicle`, `objective` |
 | `vehicle_cleanup` | template | `player_vehicle_record`, `completion_fact` |
+| `braindance_analysis` | template | `scene`, `scene_origin`, safe `player_anchor`, `player_replacer`, three `clue_facts`, `objective`, `completion_fact` |
 
 `generated` means the compiler constructs the complete child graph from typed
 fields. `template` means it resolves a reduced raw CR2W-JSON template,
 performs exact scalar replacement, validates the handle graph, and checks the
-typed contract after instantiation. The eleven advanced complex blocks resolve
+typed contract after instantiation. The twelve advanced complex blocks resolve
 Ghostline-owned built-in templates automatically; authors normally provide
 only the typed fields shown above. An explicit `phase_template` plus
 `template_bindings` can override the built-in for an advanced shape.
@@ -103,6 +105,23 @@ driving to a trigger, stealing by mounting, and player-vehicle cleanup.
 `vehicle_cleanup` uses the `sq031_porsche` player-vehicle record shape and is
 not a generic despawner for arbitrary world NodeRefs.
 
+`braindance_analysis` owns the active review objective, rewindable braindance
+playback, and completion. It activates `objective` before entering the
+recording. The three `clue_facts` correspond to the visual, audio, and thermal
+scan branches; all three must be greater than zero before the block succeeds
+the objective and sets `completion_fact`. Scene `complete`, `end`, and
+interruption exits own cleanup only, so Close cannot falsely complete the
+analysis.
+Compose it after `meet_contact` when an NPC should offer the recording; the
+existing contact block owns community activation, spawn readiness, approach
+gating, actor-attached choice presentation, and scene-exit handoff.
+The running scene owns interaction distance and presentation instead of
+depending on a separate quest trigger. Its `play_braindance` exit
+clears the approach map pin and sets the handoff fact without changing the
+review objective, then starts the rewindable `scene` at the same origin. The
+block does not synthesize a braindance: both `.scene` files, the `.scenerid`,
+actor records, and world marker remain explicit stage-owned resources.
+
 `investigate_clues` accepts any positive number of ordered clues. Each clue
 has its own object reference and may set a fact, activate a map pin, or reveal
 a journal entry; the generated phase joins every required scan before
@@ -113,6 +132,35 @@ an explicit custom phase because it changes the graph from an all-of join.
 spawn, injects the player as a combat threat for every named entry, waits until
 all are defeated, and optionally deactivates the community. This is the
 runtime-proven hostility pattern used by Ghostline's Tyger Claw encounter.
+
+`cyberpsycho_encounter` is the named single-boss counterpart. It waits for the
+outer activation trigger, optionally activates the community, waits for the
+declared boss entry, and makes that entry invulnerable while the configured
+reveal routes race. Reveal routes may include a dedicated trigger, scanning the
+boss, the boss attacking the player, the player hitting the boss, and the boss
+seeing the player. After reveal and the optional arena trigger, the phase makes
+the boss mortal and injects the player as a combat threat.
+
+Resolution is deliberately nonlethal-aware. A lethal-only
+`questCharacterKilled_ConditionType` sets `resolution.killed_fact`; a separate
+unconscious-or-defeated condition sets `resolution.spared_fact`. The two routes
+rejoin before the optional objective, mappin, completion fact, and cleanup.
+`allow_nonlethal` must remain `true`, and the two facts must differ.
+
+The large HUD overlay is not a quest node. It is the standard boss health bar
+raised for a hostile tracked NPC whose character record has
+`rarity: NPCRarity.Boss`. The same record should explicitly carry the
+`Cyberpsycho` tag, Cyberpsycho modifier groups, combat nameplate, scanner, and
+target-tracking presets. Add optional `authoring.world_spec` and
+`authoring.tweak_file` workspace-relative paths to make the compiler audit the
+community/entry, inactive-on-start lifecycle, encounter NodeRefs, boss rarity,
+tag, modifier groups, and HUD/scanner presets before a ready build.
+
+The generated block owns only the fight lifecycle. Evidence collection, fixer
+reporting, reward, journal completion, and delayed cleanup remain later
+composable stages. See
+`quests/examples/cyberpsycho_encounter.quest.json` and
+`docs/reference/vanilla-cyberpsycho-encounters.md`.
 
 `read_shard` deliberately completes from ownership of the readable item, not
 from a journal `visited` condition. Vanilla minor activities with objectives
@@ -138,14 +186,16 @@ sequences between the common opening messages and the response group. This is
 the generated pattern for outcome-specific debriefs: each branch contains a
 unique `condition` fact and one or more journal `messages`, and all branches
 reconverge before the shared choices.
-`source/quests/examples/phone_conversation.quest.json` is the standalone
+`quests/examples/phone_conversation.quest.json` is the standalone
 authoring example.
 
-`source/quests/examples/direct_building_blocks.quest.json` compiles all four
-generated blocks. `source/quests/examples/template_building_blocks.quest.json`
+`quests/examples/direct_building_blocks.quest.json` exercises the
+general generated blocks, and
+`quests/examples/cyberpsycho_encounter.quest.json` demonstrates the
+specialized boss lifecycle. `quests/examples/template_building_blocks.quest.json`
 compiles the original eight building-block stages without author-written
 template paths or placeholder maps. The advanced-template regression suite
-instantiates every built-in template, including the eleven advanced blocks.
+instantiates every built-in template, including the twelve advanced blocks.
 
 The orchestration layer remains intentionally linear. `choice_gate` is a
 converging child block: its alternatives must rejoin before `Out1`.
@@ -159,12 +209,11 @@ without changing these linear manifests.
 
 ```powershell
 py -B .\tools\quest_compiler.py validate `
-  .\source\quests\gq001.quest.json
+  .\quests\story\ghostline\gq001\implementation\quest.json
 
 py -B .\tools\quest_compiler.py compile `
-  .\source\quests\gq001.quest.json `
-  --out .\converted\quests\gq001\gq001.questphase.json `
-  --allow-planned
+  .\quests\story\ghostline\gq001\implementation\quest.json `
+  --out .\converted\quests\gq001\gq001.questphase.json
 ```
 
 The compiler writes:
@@ -181,7 +230,7 @@ ArchiveXL is a separate explicit promotion step after every stage is ready.
 
 ## Current Acceptance Manifest
 
-`source/quests/gq001.quest.json` represents:
+`quests/story/ghostline/gq001/implementation/quest.json` represents:
 
 ```text
 meet Patch -> hack relay -> meet Iris -> deliver datacache
@@ -189,7 +238,6 @@ meet Patch -> hack relay -> meet Iris -> deliver datacache
 
 It instantiates the three runtime-proven `gq000` block topologies with
 `gq001`-local facts, journal paths, scene paths, actor identity, and completion
-state. It marks the new Iris meeting as planned because its scene, world
-placement, journal tree, and localization are not authored yet. This remains a
-composition/tooling fixture rather than a playable second quest, but every
-orchestration and child questphase is concrete and WolvenKit-importable.
+state. The Iris scene, world placement, journal tree, and localization are now
+authored. `gq001` extends and replaces the `gq000` prototype as the first
+canonical Ghostline story quest.

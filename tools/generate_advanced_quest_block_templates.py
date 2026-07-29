@@ -20,11 +20,13 @@ from generate_cache_phase import (
     entity_reference,
     fact_node,
     input_node,
+    journal_path,
     local_player_reference,
     mappin_node,
     node_ref,
     objective_node,
     output_node,
+    realtime_delay_node,
     tweakdbid,
 )
 from generate_delivery_phase import fact_condition_node, logical_xor_node
@@ -61,6 +63,14 @@ ESCORT_MAPPIN_3 = "{{route_mappin_3}}"
 CONTACT_COMMUNITY = "{{contact_community}}"
 CONTACT_ENTRY = "{{contact_entry}}"
 PLAYER_VEHICLE_RECORD = "{{player_vehicle_record}}"
+SCENE = "{{scene}}"
+LAUNCH_SCENE = "{{launch_scene}}"
+SCENE_ORIGIN = "{{scene_origin}}"
+PLAYER_ANCHOR = "{{player_anchor}}"
+PLAYER_RETURN = "{{player_return}}"
+CLUE_FACT_1 = "{{clue_fact_1}}"
+CLUE_FACT_2 = "{{clue_fact_2}}"
+CLUE_FACT_3 = "{{clue_fact_3}}"
 
 JsonObject = dict[str, Any]
 
@@ -247,6 +257,32 @@ def character_spawned(
     )
 
 
+def community_spawned(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    community: str,
+    *,
+    entire_community: bool = True,
+) -> GraphNode:
+    comparison = builder.handles.wrap(
+        {
+            "$type": "questComparisonParam",
+            "comparisonType": "Greater",
+            "count": 0,
+            "entireCommunity": int(entire_community),
+        }
+    )
+    return character_condition(
+        builder,
+        quest_id,
+        {
+            "$type": "questCharacterSpawned_ConditionType",
+            "comparisonParams": comparison,
+            "objectRef": entity_reference(community),
+        },
+    )
+
+
 def mount_condition(
     builder: PhaseGraphBuilder,
     quest_id: int,
@@ -301,6 +337,26 @@ def trigger_condition(
             "$type": "questTriggerCondition",
             "activatorRef": activator,
             "isPlayerActivator": 0,
+            "triggerAreaRef": node_ref(trigger),
+            "type": "IsInside",
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questPauseConditionNodeDefinition",
+        input_names=("In",),
+        properties={"condition": condition},
+    )
+
+
+def player_trigger_condition(
+    builder: PhaseGraphBuilder, quest_id: int, trigger: str
+) -> GraphNode:
+    condition = builder.handles.wrap(
+        {
+            "$type": "questTriggerCondition",
+            "activatorRef": entity_reference(),
+            "isPlayerActivator": 1,
             "triggerAreaRef": node_ref(trigger),
             "type": "IsInside",
         }
@@ -382,6 +438,220 @@ def community_action_node(
                 }
             ]
         },
+    )
+
+
+def spawn_set_action_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    spawn_set_ref: str,
+    action: str,
+    *,
+    entry: str = "bd_replacer",
+    phase: str = "braindance",
+) -> GraphNode:
+    action_type = builder.handles.wrap(
+        {
+            "$type": "questSpawnSet_NodeType",
+            "action": action,
+            "entryName": cname(entry),
+            "phaseName": cname(phase),
+            "reference": node_ref(spawn_set_ref),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questSpawnManagerNodeDefinition",
+        input_names=("In",),
+        properties={
+            "actions": [
+                {
+                    "$type": "questSpawnManagerNodeActionEntry",
+                    "type": action_type,
+                }
+            ]
+        },
+    )
+
+
+def scene_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    scene: str,
+    scene_origin: str,
+    *,
+    output_names: tuple[str, ...] = (
+        "end",
+        "complete",
+        "Default INT",
+        "Default RET",
+    ),
+) -> GraphNode:
+    return builder.node(
+        quest_id,
+        "questSceneNodeDefinition",
+        input_names=("start",),
+        output_names=output_names,
+        properties={
+            "interruptionOperations": [],
+            "notAllowedToBeFrozen": 0,
+            "reapplyInterruptionOperationsAfterGameLoad": 0,
+            "sceneFile": {
+                "DepotPath": {
+                    "$type": "ResourcePath",
+                    "$storage": "string",
+                    "$value": scene,
+                },
+                "Flags": "Soft",
+            },
+            "sceneLocation": {
+                "$type": "scnWorldMarker",
+                "nodeRef": node_ref(scene_origin),
+                "tag": cname("None"),
+                "type": "NodeRef",
+            },
+            "syncToMusic": 0,
+        },
+    )
+
+
+def objective_counter_node(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    objective: str,
+) -> GraphNode:
+    node_type = builder.handles.wrap(
+        {
+            "$type": "questJournalQuestObjectiveCounter_NodeType",
+            "path": journal_path(
+                builder,
+                objective,
+                "gameJournalQuestObjective",
+                2,
+            ),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questJournalNodeDefinition",
+        input_names=("Increment", "Decrement"),
+        properties={"type": node_type},
+    )
+
+
+def teleport_player(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    destination: str,
+    *,
+    heal: bool,
+) -> GraphNode:
+    destination_ref = builder.handles.wrap(
+        {
+            "$type": "questUniversalRef",
+            "entityReference": entity_reference(destination),
+            "mainPlayerObject": 0,
+            "refLocalPlayer": 0,
+        }
+    )
+    params = builder.handles.wrap(
+        {
+            "$type": "questTeleportPuppetParamsV1",
+            "destinationOffset": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": 0,
+            },
+            "destinationRef": destination_ref,
+            "doNavTest": 0,
+            "healAtTeleport": int(heal),
+            "useFastTravelMechanism": 0,
+        }
+    )
+    player_look_at = builder.handles.wrap(
+        {
+            "$type": "questPlayerLookAtParams",
+            "adjustPitch": 1,
+            "adjustYaw": 1,
+            "cameraInputMagToBreak": 0.200000003,
+            "duration": 0.25,
+            "easeIn": 1,
+            "easeOut": 1,
+            "endOnCameraInputApplied": 1,
+            "endOnTargetReached": 1,
+            "endOnTimeExceeded": 1,
+            "lookAtTarget": entity_reference(),
+            "maxDuration": 2,
+            "offset": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": 0,
+            },
+            "precision": 0.100000001,
+            "slotName": cname("None"),
+            "useOffsetToPlayer": 1,
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questTeleportPuppetNodeDefinition",
+        input_names=("In",),
+        properties={
+            "entityReference": local_player_reference(builder),
+            "lookAtAction": "Reset",
+            "params": params,
+            "playerLookAt": player_look_at,
+        },
+    )
+
+
+def set_player_world_visibility(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    *,
+    show: bool,
+) -> GraphNode:
+    operation = builder.handles.wrap(
+        {
+            "$type": "questShowWorldNode_NodeType",
+            "componentName": cname("None"),
+            "isPlayer": 1,
+            "objectRef": node_ref("#player"),
+            "show": int(show),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questWorldDataManagerNodeDefinition",
+        input_names=("In",),
+        properties={"type": operation},
+    )
+
+
+def set_player_replacer(
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    replacer: str,
+    *,
+    enable: bool,
+) -> GraphNode:
+    """Enable or disable the workspot-bound surrogate used by vanilla BDs."""
+
+    operation = builder.handles.wrap(
+        {
+            "$type": "questReplacer_NodeType",
+            "audioOverrideAppearanceName": cname("None"),
+            "enable": int(enable),
+            "objectRef": entity_reference(replacer),
+        }
+    )
+    return builder.node(
+        quest_id,
+        "questGameManagerNodeDefinition",
+        input_names=("In",),
+        properties={"type": operation},
     )
 
 
@@ -756,6 +1026,151 @@ def build_vehicle_cleanup() -> JsonObject:
     return phase_document(builder, "vehicle_cleanup")
 
 
+def build_braindance_analysis() -> JsonObject:
+    builder = PhaseGraphBuilder()
+    start, end = input_node(builder), output_node(builder)
+    active_objective = objective_node(builder, 20, OBJECTIVE)
+    park_player = teleport_player(
+        builder,
+        9,
+        PLAYER_ANCHOR,
+        heal=True,
+    )
+    hide_player = set_player_world_visibility(builder, 11, show=False)
+    teardown = realtime_delay_node(
+        builder,
+        19,
+        seconds=1,
+        milliseconds=500,
+    )
+    restore_player = teleport_player(
+        builder,
+        14,
+        PLAYER_RETURN,
+        heal=False,
+    )
+    show_player = set_player_world_visibility(builder, 15, show=True)
+    settle = realtime_delay_node(
+        builder,
+        16,
+        seconds=0,
+        milliseconds=50,
+    )
+    enable_exit_delay = realtime_delay_node(
+        builder,
+        17,
+        seconds=0,
+        milliseconds=500,
+    )
+    enable_exit = builder.node(
+        18,
+        "questUIManagerNodeDefinition",
+        input_names=("In",),
+        properties={
+            "type": builder.handles.wrap(
+                {"$type": "questEnableBraindanceFinish_NodeType"}
+            )
+        },
+    )
+    scene = scene_node(builder, 12, SCENE, SCENE_ORIGIN)
+    clue_1 = fact_condition_node(
+        builder,
+        21,
+        CLUE_FACT_1,
+        comparison="Greater",
+        value=0,
+    )
+    clue_2 = fact_condition_node(
+        builder,
+        22,
+        CLUE_FACT_2,
+        comparison="Greater",
+        value=0,
+    )
+    clue_3 = fact_condition_node(
+        builder,
+        23,
+        CLUE_FACT_3,
+        comparison="Greater",
+        value=0,
+    )
+    clue_1_counter = objective_counter_node(builder, 26, OBJECTIVE)
+    clue_2_counter = objective_counter_node(builder, 27, OBJECTIVE)
+    clue_3_counter = objective_counter_node(builder, 28, OBJECTIVE)
+    clues_complete = builder.node(
+        24,
+        "questLogicalAndNodeDefinition",
+        input_names=("In1", "In2", "In3"),
+        output_names=("Out1",),
+        properties={"inputSocketCount": 3, "outputSocketCount": 1},
+    )
+    succeeded_objective = objective_node(builder, 25, OBJECTIVE)
+    completed = fact_node(builder, 13, COMPLETION_FACT)
+
+    builder.connect(
+        start,
+        active_objective,
+        destination_socket="Active",
+    )
+    builder.connect(active_objective, park_player)
+    builder.connect(park_player, hide_player)
+    builder.connect(hide_player, scene, destination_socket="start")
+    builder.connect(hide_player, enable_exit_delay)
+    builder.connect(hide_player, clue_1)
+    builder.connect(hide_player, clue_2)
+    builder.connect(hide_player, clue_3)
+    builder.connect(enable_exit_delay, enable_exit)
+    builder.connect(
+        clue_1,
+        clue_1_counter,
+        destination_socket="Increment",
+    )
+    builder.connect(
+        clue_2,
+        clue_2_counter,
+        destination_socket="Increment",
+    )
+    builder.connect(
+        clue_3,
+        clue_3_counter,
+        destination_socket="Increment",
+    )
+    builder.connect(
+        clue_1_counter,
+        clues_complete,
+        destination_socket="In1",
+    )
+    builder.connect(
+        clue_2_counter,
+        clues_complete,
+        destination_socket="In2",
+    )
+    builder.connect(
+        clue_3_counter,
+        clues_complete,
+        destination_socket="In3",
+    )
+    builder.connect(
+        clues_complete,
+        succeeded_objective,
+        source_socket="Out1",
+        destination_socket="Succeeded",
+    )
+    builder.connect(succeeded_objective, completed)
+
+    for source_socket in ("complete", "end", "Default INT", "Default RET"):
+        builder.connect_to_earlier_input(
+            scene,
+            teardown,
+            source_socket=source_socket,
+        )
+    builder.connect(teardown, restore_player)
+    builder.connect(restore_player, show_player)
+    builder.connect(show_player, settle)
+    finish(builder, settle, end)
+    return phase_document(builder, "braindance_analysis")
+
+
 BUILDERS = {
     "read_terminal_document": lambda: simple_fact_gate("read_terminal_document"),
     "stealth_monitor": build_stealth_monitor,
@@ -768,6 +1183,7 @@ BUILDERS = {
     "drive_to": build_drive_to,
     "steal_vehicle": build_steal_vehicle,
     "vehicle_cleanup": build_vehicle_cleanup,
+    "braindance_analysis": build_braindance_analysis,
 }
 
 

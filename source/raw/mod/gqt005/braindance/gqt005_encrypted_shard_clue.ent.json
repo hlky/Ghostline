@@ -1,0 +1,305 @@
+{
+  "Header": {
+    "WolvenKitVersion": "0.1.0",
+    "WKitJsonVersion": "0.0.9",
+    "GameVersion": 2310,
+    "ExportedDateTime": "1970-01-01T00:00:00Z",
+    "DataType": "CR2W",
+    "ArchiveFileName": "H:\\projects\\Ghostline\\source\\archive\\mod\\gqt005\\braindance\\gqt005_encrypted_shard_clue.ent"
+  },
+  "Data": {
+    "Version": 195,
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "entEntityTemplate",
+      "cookingPlatform": "PLATFORM_PC",
+      "compiledData": {
+        "BufferId": "0",
+        "Flags": 4063232,
+        "Type": "WolvenKit.RED4.Archive.Buffer.RedPackage, WolvenKit.RED4, Version=8.17.4.0, Culture=neutral, PublicKeyToken=null",
+        "Data": {
+          "Version": 4,
+          "Sections": 10,
+          "CruidIndex": 0,
+          "CruidDict": {
+            "0": "0",
+            "1": "1440691499342295040",
+            "2": "1480509075993501696",
+            "3": "1440692798418907136",
+            "4": "1979398478135619584",
+            "5": "1480509085187416064",
+            "6": "1979406087492268032",
+            "7": "2331553047805329408",
+            "8": "1979408160451522560",
+            "9": "2262093951089364992"
+          },
+          "Chunks": [
+            {
+              "$type": "gameObject"
+            },
+            {
+              "$type": "gameScanningComponent",
+              "id": "1440691499342295040",
+              "persistentState": {
+                "HandleId": "1",
+                "Data": {
+                  "$type": "gameScanningComponentPS"
+                }
+              },
+              "timeNeeded": 1.5,
+              "autoGenerateBoundingSphere": 0,
+              "boundingSphere": {
+                "$type": "Sphere",
+                "CenterRadius2": {
+                  "$type": "Vector4",
+                  "X": 0.0,
+                  "Y": 0.0,
+                  "Z": 0.0,
+                  "W": 1.0
+                }
+              },
+              "isBraindanceClue": 1,
+              "BraindanceLayer": "Default",
+              "clues": [
+                {
+                  "$type": "FocusClueDefinition",
+                  "extendedClueRecords": [
+                    {
+                      "$type": "ClueRecordData",
+                      "clueRecord": {
+                        "$type": "TweakDBID",
+                        "$storage": "uint64",
+                        "$value": "149778957720"
+                      },
+                      "percentage": 0.30000001192092896
+                    },
+                    {
+                      "$type": "ClueRecordData",
+                      "clueRecord": {
+                        "$type": "TweakDBID",
+                        "$storage": "uint64",
+                        "$value": "147212522530"
+                      },
+                      "percentage": 0.699999988079071
+                    }
+                  ],
+                  "isEnabled": 1
+                }
+              ]
+            },
+            {
+              "$type": "gameinteractionsComponent",
+              "id": "1480509075993501696"
+            },
+            {
+              "$type": "gameVisionModeComponent",
+              "id": "1440692798418907136",
+              "persistentState": {
+                "HandleId": "2",
+                "Data": {
+                  "$type": "gameVisionModeComponentPS"
+                }
+              }
+            },
+            {
+              "$type": "entSlotComponent",
+              "name": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "UI_Slots"
+              },
+              "id": "1979398478135619584",
+              "parentTransform": {
+                "HandleId": "3",
+                "Data": {
+                  "$type": "entHardTransformBinding",
+                  "bindName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "ClueCollider"
+                  }
+                }
+              },
+              "slots": [
+                {
+                  "$type": "entSlot",
+                  "slotName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "UI_Interaction"
+                  }
+                },
+                {
+                  "$type": "entSlot",
+                  "slotName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "Nameplate"
+                  }
+                },
+                {
+                  "$type": "entSlot",
+                  "slotName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "roleMappin"
+                  }
+                }
+              ]
+            },
+            {
+              "$type": "gameStatsComponent",
+              "id": "1480509085187416064",
+              "persistentState": {
+                "HandleId": "4",
+                "Data": {
+                  "$type": "gameStatsComponentPS"
+                }
+              }
+            },
+            {
+              "$type": "gameTargetingComponent",
+              "name": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "targeting"
+              },
+              "id": "1979406087492268032",
+              "parentTransform": {
+                "HandleId": "5",
+                "Data": {
+                  "$type": "entHardTransformBinding",
+                  "bindName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "ClueCollider"
+                  }
+                }
+              }
+            },
+            {
+              "$type": "entColliderComponent",
+              "name": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "ClueCollider"
+              },
+              "id": "2331553047805329408",
+              "colliders": [
+                {
+                  "HandleId": "6",
+                  "Data": {
+                    "$type": "physicsColliderSphere",
+                    "radius": 0.25
+                  }
+                }
+              ],
+              "mass": 1.0,
+              "filterData": {
+                "HandleId": "7",
+                "Data": {
+                  "$type": "physicsFilterData",
+                  "queryFilter": {
+                    "$type": "physicsQueryFilter",
+                    "mask2": "70107400"
+                  },
+                  "preset": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "Device solid visible"
+                  }
+                }
+              }
+            },
+            {
+              "$type": "GameplayRoleComponent",
+              "name": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "GameplayRole"
+              },
+              "id": "1979408160451522560"
+            },
+            {
+              "$type": "entMeshComponent",
+              "autoHideDistance": 0,
+              "castLocalShadows": "Always",
+              "castRayTracedGlobalShadows": "Always",
+              "castRayTracedLocalShadows": "Default",
+              "castShadows": "Always",
+              "chunkMask": "9223372036854775807",
+              "forcedLodDistance": "Default",
+              "forceLODLevel": -1,
+              "id": "2262093951089364992",
+              "isEnabled": 1,
+              "isReplicable": 0,
+              "localTransform": {
+                "$type": "WorldTransform",
+                "Orientation": {
+                  "$type": "Quaternion",
+                  "i": 0,
+                  "j": 0,
+                  "k": 0,
+                  "r": 1
+                },
+                "Position": {
+                  "$type": "WorldPosition",
+                  "x": {
+                    "$type": "FixedPoint",
+                    "Bits": 0
+                  },
+                  "y": {
+                    "$type": "FixedPoint",
+                    "Bits": 0
+                  },
+                  "z": {
+                    "$type": "FixedPoint",
+                    "Bits": 0
+                  }
+                }
+              },
+              "LODMode": "AlwaysVisible",
+              "mesh": {
+                "DepotPath": {
+                  "$type": "ResourcePath",
+                  "$storage": "string",
+                  "$value": "base\\environment\\decoration\\electronics\\devices\\tablet\\tablet_b_kitsch.mesh"
+                },
+                "Flags": "Default"
+              },
+              "meshAppearance": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "screen_fluff_horizontal"
+              },
+              "motionBlurScale": 1,
+              "name": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "gqt005_encrypted_shard_tablet"
+              },
+              "navigationImpact": {
+                "$type": "NavGenNavigationSetting",
+                "navmeshImpact": "Ignored"
+              },
+              "numInstances": 0,
+              "objectTypeID": "ROT_Static",
+              "order": 0,
+              "overrideMeshNavigationImpact": 1,
+              "parentTransform": null,
+              "renderingPlane": "RPl_Scene",
+              "renderSceneLayerMask": "Default",
+              "version": 0,
+              "visualScale": {
+                "$type": "Vector3",
+                "X": 1,
+                "Y": 1,
+                "Z": 1
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

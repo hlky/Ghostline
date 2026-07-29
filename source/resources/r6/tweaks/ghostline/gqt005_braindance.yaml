@@ -1,0 +1,65 @@
+Props.GhostlineGQT005BDView:
+  $type: gamedataProp_Record
+  friendlyName: GQT005 braindance view
+  entityTemplatePath: mod\gqt005\braindance\gqt005_bdview.ent
+
+Props.GhostlineGQT005BDFog:
+  $type: gamedataProp_Record
+  friendlyName: GQT005 braindance fog
+  entityTemplatePath: mod\gqt005\braindance\gqt005_bdfog.ent
+
+Props.GhostlineGQT005BDSetup:
+  $type: gamedataProp_Record
+  friendlyName: GQT005 braindance setup
+  entityTemplatePath: mod\gqt005\braindance\gqt005_bdsetup.ent
+
+Props.GhostlineGQT005BDEncryptedShardClue:
+  $type: gamedataProp_Record
+  friendlyName: GQT005 braindance encrypted shard clue
+  entityTemplatePath: mod\gqt005\braindance\gqt005_encrypted_shard_clue.ent
+
+Props.GhostlineGQT005BDGuardWarningClue:
+  $type: gamedataProp_Record
+  friendlyName: GQT005 braindance guard warning clue
+  entityTemplatePath: mod\gqt005\braindance\gqt005_guard_warning_clue.ent
+
+Props.GhostlineGQT005BDGuardImplantHeatClue:
+  $type: gamedataProp_Record
+  friendlyName: GQT005 braindance guard implant heat clue
+  entityTemplatePath: mod\gqt005\braindance\gqt005_guard_implant_heat_clue.ent
+
+# Each focus-clue entity advances through two scanner cards, matching the
+# vanilla Q004 30/70-percent extended-clue contract without retaining any
+# Q004 gun metadata.
+scanning.gqt005_encrypted_shard_01:
+  $type: gamedataFocusClue_Record
+  friendlyName: gqt005_encrypted_shard_01
+  localizedName: gl_gqt005_bd_clue_encrypted_shard_name
+  localizedDescription: gl_gqt005_bd_clue_encrypted_shard_description_01
+
+scanning.gqt005_encrypted_shard_02:
+  $type: gamedataFocusClue_Record
+  friendlyName: gqt005_encrypted_shard_02
+  localizedDescription: gl_gqt005_bd_clue_encrypted_shard_description_02
+
+scanning.gqt005_guard_warning_01:
+  $type: gamedataFocusClue_Record
+  friendlyName: gqt005_guard_warning_01
+  localizedName: gl_gqt005_bd_clue_guard_warning_name
+  localizedDescription: gl_gqt005_bd_clue_guard_warning_description_01
+
+scanning.gqt005_guard_warning_02:
+  $type: gamedataFocusClue_Record
+  friendlyName: gqt005_guard_warning_02
+  localizedDescription: gl_gqt005_bd_clue_guard_warning_description_02
+
+scanning.gqt005_guard_implant_heat_01:
+  $type: gamedataFocusClue_Record
+  friendlyName: gqt005_guard_implant_heat_01
+  localizedName: gl_gqt005_bd_clue_guard_implant_heat_name
+  localizedDescription: gl_gqt005_bd_clue_guard_implant_heat_description_01
+
+scanning.gqt005_guard_implant_heat_02:
+  $type: gamedataFocusClue_Record
+  friendlyName: gqt005_guard_implant_heat_02
+  localizedDescription: gl_gqt005_bd_clue_guard_implant_heat_description_02

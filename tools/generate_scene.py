@@ -20,7 +20,10 @@ from cr2w_helpers import load_json, print_json
 from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, deserialize as deserialize_cr2w
 
 
-DEFAULT_SPEC = Path("tools/gq000_patch_meet.scene-spec.json")
+DEFAULT_SPEC = Path(
+    "quests/story/ghostline/gq000/implementation/scenes/"
+    "patch-meet.scene-spec.json"
+)
 DEFAULT_EXPORTED_DATETIME = "1970-01-01T00:00:00Z"
 UINT32_NONE = 4294967295
 PERFORMER_NONE = 4294967040
@@ -538,6 +541,11 @@ def build_section_node(
 
 
 def build_choice_option(option_spec: dict[str, Any], option_id: int) -> dict[str, Any]:
+    icon_tags = option_spec.get("icon_tags", [])
+    if not isinstance(icon_tags, list) or not all(
+        isinstance(tag, str) and tag for tag in icon_tags
+    ):
+        raise SceneBuildError("choice option icon_tags must be a list of non-empty strings")
     return {
         "$type": "scnChoiceNodeOption",
         "blueline": 0,
@@ -547,7 +555,7 @@ def build_choice_option(option_spec: dict[str, Any], option_id: int) -> dict[str
         "exDataFlags": 0,
         "gameplayAction": tweakdbid(0, storage="uint64"),
         "iconCondition": None,
-        "iconTagIds": [],
+        "iconTagIds": [tweakdbid(tag, storage="string") for tag in icon_tags],
         "isFixedAsRead": 0,
         "isSingleChoice": 1 if option_spec.get("single_choice", False) else 0,
         "mappinReferencePointId": {"$type": "scnReferencePointId", "id": UINT32_NONE},
@@ -1130,7 +1138,7 @@ def command_example(_: argparse.Namespace) -> None:
     example = {
         "name": "gq000_patch_meet",
         "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
-        "manifest": "source/raw/gq000_01_manifest.json",
+        "manifest": "quests/story/ghostline/gq000/script/gq000_01_manifest.json",
         "raw_path": "source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json",
         "archive_path": "source/archive/mod/gq000/scenes/gq000_patch_meet.scene",
         "actors": [

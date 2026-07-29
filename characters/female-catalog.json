@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "id": "ghostline-female-average-v1",
+  "frames": [
+    "female_average"
+  ],
+  "categories": {
+    "hair": {
+      "label": "Hair",
+      "options": {
+        "tutorial_judy_variant": {
+          "label": "Judy variation 02 — merlot",
+          "description": "The female NPV tutorial's complete hair, animation graph, dangle rig, and NPC shadow bundle.",
+          "component_names": [
+            "hh_hair",
+            "hh_hair_shadow",
+            "Animated1507"
+          ],
+          "changes": []
+        },
+        "goth_baddie_long_bangs_black": {
+          "label": "Goth Baddie long bangs — black carbon",
+          "description": "Goth Baddie's EP1 long layered hair with blunt bangs, black-carbon materials, and its native dangle graph and rig. The source bundle has no separate NPC shadow mesh.",
+          "component_names": [
+            "hh_hair",
+            "Animated1507"
+          ],
+          "disable_components": [
+            "hh_hair_shadow"
+          ],
+          "changes": [
+            {
+              "component": "hh_hair",
+              "path": "mesh.DepotPath.$value",
+              "value": "ep1\\characters\\common\\hair\\hh_225_wa__long_bangs\\hh_225_wa__long_bangs.mesh"
+            },
+            {
+              "component": "hh_hair",
+              "path": "meshAppearance.$value",
+              "value": "black_carbon"
+            },
+            {
+              "component": "Animated1507",
+              "path": "graph.DepotPath.$value",
+              "value": "ep1\\characters\\common\\hair\\hh_225_wa__long_bangs\\hh_225_wa_long_bangs_dangle_animgraph.animgraph"
+            },
+            {
+              "component": "Animated1507",
+              "path": "rig.DepotPath.$value",
+              "value": "ep1\\characters\\common\\hair\\hh_225_wa__long_bangs\\hh_225_wa__long_bangs_dangle_skeleton.rig"
+            }
+          ]
+        },
+        "none": {
+          "label": "No hair",
+          "description": "Disables the complete tutorial hair bundle.",
+          "disable_components": [
+            "hh_hair",
+            "hh_hair_shadow",
+            "Animated1507"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "inner_torso": {
+      "label": "Inner torso",
+      "indexed_override": {
+        "asset_slot": "torso",
+        "frame_token": "pwa",
+        "component": "t1_shirt",
+        "anchor_option": "tutorial_casual_tank"
+      },
+      "options": {
+        "tutorial_casual_tank": {
+          "label": "Rogue long tank",
+          "description": "The female tutorial casual appearance's reviewed torso anchor.",
+          "component_names": [
+            "t1_shirt"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No inner torso",
+          "disable_components": [
+            "t1_shirt"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "outer_torso": {
+      "label": "Outer torso",
+      "indexed_override": {
+        "asset_slot": "torso",
+        "frame_token": "pwa",
+        "component": "t2_117_wa_vest__ninja_harness",
+        "anchor_option": "tutorial_business_outer"
+      },
+      "options": {
+        "tutorial_business_outer": {
+          "label": "Arasaka ninja harness",
+          "description": "The female tutorial business appearance's reviewed outer-torso anchor.",
+          "component_names": [
+            "t2_117_wa_vest__ninja_harness"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No outer torso",
+          "disable_components": [
+            "t2_117_wa_vest__ninja_harness"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "business_extras": {
+      "label": "Business accessories",
+      "options": {
+        "none": {
+          "label": "No business accessories",
+          "disable_components": [
+            "g1_014_wa_gloves__ninja_gloves6458",
+            "i1_088_wa_full__gun_harness0222",
+            "i1_088_wa_full__gun_harness_pistol"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "legs": {
+      "label": "Legs",
+      "indexed_override": {
+        "asset_slot": "legs",
+        "frame_token": "pwa",
+        "component": "l1_pants",
+        "anchor_option": "tutorial_casual_pants"
+      },
+      "options": {
+        "tutorial_casual_pants": {
+          "label": "Rogue casual pants",
+          "description": "The female tutorial casual appearance's reviewed leg anchor.",
+          "component_names": [
+            "l1_pants"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No leg garment",
+          "disable_components": [
+            "l1_pants"
+          ],
+          "changes": []
+        }
+      }
+    },
+    "feet": {
+      "label": "Feet",
+      "indexed_override": {
+        "asset_slot": "feet",
+        "frame_token": "pwa",
+        "component": "s1_boot",
+        "component_types": [
+          "entSkinnedMeshComponent"
+        ],
+        "anchor_option": "tutorial_casual_boots"
+      },
+      "options": {
+        "tutorial_casual_boots": {
+          "label": "Rogue casual boots",
+          "description": "The tutorial's NPC-skinned boot component and provisional female indexed-footwear anchor.",
+          "component_names": [
+            "s1_boot"
+          ],
+          "changes": []
+        },
+        "none": {
+          "label": "No shoes",
+          "disable_components": [
+            "s1_boot"
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+}

@@ -31,11 +31,9 @@ def graph_nodes(document: dict[str, Any]) -> list[dict[str, Any]]:
 
 class QuietInstallTests(unittest.TestCase):
     def test_manifest_exercises_both_remaining_quiet_install_blocks(self) -> None:
-        manifest = ROOT / "source/quests/tests/gqt002_quiet_install.quest.json"
+        manifest = ROOT / "quests/tests/gqt002_quiet_install.quest.json"
         spec, diagnostics = quest_compiler.load_spec(manifest)
-        self.assertFalse(
-            [item for item in diagnostics if item.level == "error"]
-        )
+        self.assertFalse([item for item in diagnostics if item.level == "error"])
         assert spec is not None
         self.assertEqual(
             [stage.type for stage in spec.stages],
@@ -78,9 +76,7 @@ class QuietInstallTests(unittest.TestCase):
             },
         )
         joins = [
-            node
-            for node in nodes
-            if node["$type"] == "questLogicalAndNodeDefinition"
+            node for node in nodes if node["$type"] == "questLogicalAndNodeDefinition"
         ]
         self.assertEqual(len(joins), 1)
         self.assertEqual(joins[0]["inputSocketCount"], 3)
@@ -98,10 +94,7 @@ class QuietInstallTests(unittest.TestCase):
             ["neutral", "hostile"] * 3,
         )
         self.assertEqual(
-            [
-                attitude["puppetRef"]["names"][0]["$value"]
-                for attitude in attitudes
-            ],
+            [attitude["puppetRef"]["names"][0]["$value"] for attitude in attitudes],
             [
                 "guard_ranged_m",
                 "guard_ranged_m",
@@ -113,8 +106,7 @@ class QuietInstallTests(unittest.TestCase):
         )
         self.assertTrue(
             all(
-                attitude["puppetRef"]["reference"]["$value"]
-                == "#gqt002_01_com_guards"
+                attitude["puppetRef"]["reference"]["$value"] == "#gqt002_01_com_guards"
                 for attitude in attitudes
             )
         )
@@ -186,12 +178,8 @@ class QuietInstallTests(unittest.TestCase):
         )
         self.assertEqual(progress["$type"], "questProgressBar_NodeType")
         self.assertEqual(progress["duration"], 5.0)
-        self.assertEqual(
-            progress["text"]["value"], "gl_gqt002_installing_keylogger"
-        )
-        self.assertEqual(
-            progress["bottomText"]["value"], "gl_gqt002_do_not_disconnect"
-        )
+        self.assertEqual(progress["text"]["value"], "gl_gqt002_installing_keylogger")
+        self.assertEqual(progress["bottomText"]["value"], "gl_gqt002_do_not_disconnect")
         disconnect = next(
             node["type"]["Data"]["params"][0]["Data"]
             for node in nodes
@@ -210,7 +198,9 @@ class QuietInstallTests(unittest.TestCase):
         self.assertNotIn("IsKeyloggerInstalled", serialized)
 
     def test_world_uses_user_selected_vertical_layout(self) -> None:
-        world = load(ROOT / "tools/gqt002_quiet_install.world.json")
+        world = load(
+            ROOT / "quests/tests/gqt002/implementation/world/quiet-install.world.json"
+        )
         self.assertEqual(
             world["origin"],
             {
@@ -231,14 +221,14 @@ class QuietInstallTests(unittest.TestCase):
             ["guard_ranged_m", "guard_ranged_f", "guard_melee"],
         )
         self.assertTrue(
-            all(entry["spots"][0]["position"]["z"] < 5.15 for entry in guards["entries"])
+            all(
+                entry["spots"][0]["position"]["z"] < 5.15 for entry in guards["entries"]
+            )
         )
         self.assertEqual(world["triggers"][0]["outline"]["radius"], 2.25)
         security = world["security"]
         self.assertEqual(security["type"], "DANGEROUS")
-        self.assertEqual(
-            security["position"], {"x": -1060.0, "y": 1287.0, "z": 5.5}
-        )
+        self.assertEqual(security["position"], {"x": -1060.0, "y": 1287.0, "z": 5.5})
         self.assertEqual(security["outline"]["height"], 12.0)
 
     def test_generated_target_resources_share_barrel_placement(self) -> None:
@@ -271,9 +261,7 @@ class QuietInstallTests(unittest.TestCase):
             ROOT
             / "source/raw/mod/gqt002/world/gqt002_always_loaded.streamingsector.json"
         )
-        marker_position = marker["Data"]["RootChunk"]["nodeData"]["Data"][0][
-            "Position"
-        ]
+        marker_position = marker["Data"]["RootChunk"]["nodeData"]["Data"][0]["Position"]
         self.assertEqual(
             {axis: marker_position[axis] for axis in ("X", "Y", "Z")},
             expected_position,
@@ -307,9 +295,9 @@ class QuietInstallTests(unittest.TestCase):
         )
 
         controller_states = []
-        for chunk in laptop["Data"]["RootChunk"]["nodes"][0]["Data"][
-            "instanceData"
-        ]["Data"]["buffer"]["Data"]["Chunks"]:
+        for chunk in laptop["Data"]["RootChunk"]["nodes"][0]["Data"]["instanceData"][
+            "Data"
+        ]["buffer"]["Data"]["Chunks"]:
             persistent = chunk.get("persistentState", {}).get("Data", {})
             if persistent.get("$type") == "ComputerControllerPS":
                 controller_states.append(persistent)
@@ -381,7 +369,8 @@ class QuietInstallTests(unittest.TestCase):
         self.assertEqual(persistent["securityAreaType"], "DANGEROUS")
 
         block = load(
-            ROOT / "source/raw/mod/gqt002/world/gqt002_quiet_install.streamingblock.json"
+            ROOT
+            / "source/raw/mod/gqt002/world/gqt002_quiet_install.streamingblock.json"
         )
         descriptors = block["Data"]["RootChunk"]["descriptors"]
         security_descriptor = next(
@@ -410,14 +399,31 @@ class QuietInstallTests(unittest.TestCase):
             },
         )
 
-    def test_archive_xl_activates_only_gqt002_test_resources(self) -> None:
+    def test_archive_xl_keeps_gqt002_inactive_while_gqt005_is_active(self) -> None:
         config = (ROOT / "source/resources/Ghostline.archive.xl").read_text(
             encoding="utf-8"
         )
-        self.assertIn(r"mod\gqt002\phases\gqt002_quiet_install.questphase", config)
-        self.assertIn(r"mod\gqt002\journal\gqt002.journal", config)
-        self.assertIn(r"mod\gqt002\world\gqt002_quiet_install.streamingblock", config)
-        self.assertIn(r"mod\gqt002\world\gqt002_custom_devices.devices:", config)
+        self.assertNotIn(
+            r"mod\gqt002\phases\gqt002_quiet_install.questphase",
+            config,
+        )
+        self.assertNotIn(r"mod\gqt002\journal\gqt002.journal", config)
+        self.assertNotIn(
+            r"mod\gqt002\world\gqt002_quiet_install.streamingblock",
+            config,
+        )
+        self.assertNotIn(
+            r"mod\gqt002\world\gqt002_custom_devices.devices:",
+            config,
+        )
+        self.assertIn(
+            r"mod\gqt005\phases\gqt005_braindance_analysis.questphase",
+            config,
+        )
+        self.assertIn(
+            r"mod\gqt005\world\gqt005_braindance_analysis.streamingblock",
+            config,
+        )
         self.assertNotIn("gqt003_extract_and_hold", config)
 
 

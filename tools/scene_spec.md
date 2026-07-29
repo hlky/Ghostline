@@ -4,16 +4,17 @@
 CR2W-JSON for `.scene` resources. The checked-in production fixture is:
 
 ```powershell
-py .\tools\generate_scene.py audit --spec .\tools\gq000_patch_meet.scene-spec.json
-py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --dry-run
-py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json
-py .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\tools\gq000_patch_meet.scene-spec.json
+py .\tools\generate_scene.py audit --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
+py .\tools\generate_scene.py generate --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json --dry-run
+py .\tools\generate_scene.py generate --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
+py .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
 py -B -m unittest discover -s tests -v
-py .\tools\generate_scene.py generate --spec .\tools\gq000_patch_meet.scene-spec.json --deserialize
+py .\tools\generate_scene.py generate --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json --deserialize
 ```
 
 The generator uses vanilla scene shells from `reference/vanilla_extract_json`
-and local WolvenKit source assumptions. It does not use `template.scene.json`,
+and local WolvenKit source assumptions. It does not use the removed root-level
+legacy scene template,
 `generated`, or `GraphEditorStates` as authoring inputs.
 
 ## Top-Level Fields
@@ -141,6 +142,9 @@ option plus six dummy sockets named `1` through `6`:
       "caption": "I'm in.",
       "single_choice": false,
       "choice_type": 1,
+      "icon_tags": [
+        "ChoiceCaptionParts.BraindanceIcon"
+      ],
       "target_node_id": 7
     }
   ]
@@ -156,13 +160,14 @@ string order. Duplicate `db_db` descriptors stay adjacent.
 
 The option `caption` is an authoring/debug label. Player-visible text resolves
 from `screenplayStore.options[].locstringId` through the embedded `locStore`.
-See `docs/quest-scene-flow.md` for the complete lookup chain and the separate
+See `quests/story/ghostline/gq000/implementation/runtime-flow.md` for the complete lookup chain and the separate
 scene ID domains.
 
 `single_choice` is written directly to `isSingleChoice`; do not use it to infer
 whether an option is optional or progression-critical. Use `choice_type` for the
 raw `gameinteractionsChoiceTypeWrapper.properties` value copied from the chosen
-vanilla pattern.
+vanilla pattern. Optional `icon_tags` are emitted as string-backed TweakDBIDs;
+copy their exact case-sensitive values from a validated vanilla interaction.
 
 ## Supported Quest Nodes
 

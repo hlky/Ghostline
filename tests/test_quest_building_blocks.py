@@ -61,6 +61,33 @@ def stage(stage_type: str) -> dict:
             "hostility": "already_hostile",
             "completion": "all_defeated",
         },
+        "cyberpsycho_encounter": {
+            "community": "#test_psycho_community",
+            "boss_entry": "psycho",
+            "boss_character": "Character.test_cyberpsycho",
+            "activation_trigger": "#test_psycho_outer",
+            "reveal": {
+                "trigger": "#test_psycho_reveal",
+                "scan": True,
+                "attacked_by_boss": True,
+                "boss_hit_by_player": True,
+                "boss_sees_player": True,
+            },
+            "arena_trigger": "#test_psycho_arena",
+            "resolution": {
+                "allow_nonlethal": True,
+                "spared_fact": "test_psycho_spared",
+                "killed_fact": "test_psycho_killed",
+            },
+            "objective": OBJECTIVE,
+            "description_entry": DESCRIPTION,
+            "mappin": MAPPIN,
+            "completion_fact": "test_psycho_resolved",
+            "cleanup": {
+                "trigger": "#test_psycho_cleanup",
+                "deactivate_community": True,
+            },
+        },
         "leave_area": {
             "trigger": "#test_leave",
             "objective": OBJECTIVE,
@@ -200,6 +227,19 @@ def stage(stage_type: str) -> dict:
             "player_vehicle_record": "Vehicle.test_vehicle",
             "completion_fact": "test_vehicle_cleanup",
         },
+        "braindance_analysis": {
+            "scene": r"mod\test\braindance.scene",
+            "scene_origin": "#test_braindance_origin",
+            "player_anchor": "#test_braindance_player_hold",
+            "player_return": "#test_braindance_player_return",
+            "objective": OBJECTIVE,
+            "clue_facts": [
+                "test_braindance_visual_clue",
+                "test_braindance_audio_clue",
+                "test_braindance_thermal_clue",
+            ],
+            "completion_fact": "test_braindance_complete",
+        },
     }
     common.update(values[stage_type])
     return common
@@ -212,6 +252,7 @@ BUILDING_BLOCK_TYPES = tuple(
         "interact_device",
         "acquire_item",
         "combat_encounter",
+        "cyberpsycho_encounter",
         "leave_area",
         "read_shard",
         "investigate_clues",
@@ -231,6 +272,7 @@ BUILDING_BLOCK_TYPES = tuple(
         "drive_to",
         "steal_vehicle",
         "vehicle_cleanup",
+        "braindance_analysis",
     )
 )
 
@@ -269,6 +311,19 @@ class QuestBuildingBlockTests(unittest.TestCase):
                 self.assertFalse(
                     [item for item in diagnostics if item.level == "error"]
                 )
+
+    def test_braindance_requires_three_unique_clue_facts(self) -> None:
+        value = stage("braindance_analysis")
+        value["clue_facts"] = [
+            "test_braindance_visual_clue",
+            "test_braindance_visual_clue",
+        ]
+        spec, diagnostics = self.load([value])
+        self.assertIsNone(spec)
+        self.assertIn(
+            "invalid_braindance_clue_facts",
+            {item.code for item in diagnostics},
+        )
 
     def test_stage_fields_are_strictly_type_specific(self) -> None:
         for stage_type in BUILDING_BLOCK_TYPES:
@@ -367,7 +422,7 @@ class QuestBuildingBlockTests(unittest.TestCase):
     ) -> None:
         manifest = (
             ROOT
-            / "source/quests/examples/template_building_blocks.quest.json"
+            / "quests/examples/template_building_blocks.quest.json"
         )
         spec, diagnostics = quest_compiler.load_spec(manifest)
         self.assertIsNotNone(
@@ -530,6 +585,7 @@ class QuestBuildingBlockTests(unittest.TestCase):
             "acquire_item",
             "read_shard",
             "investigate_clues",
+            "cyberpsycho_encounter",
             "time_gate",
         ):
             with self.subTest(stage_type=stage_type):
@@ -539,6 +595,176 @@ class QuestBuildingBlockTests(unittest.TestCase):
                 quest_compiler.validate_handle_graph(
                     phase, context=f"{stage_type} acceptance"
                 )
+
+    def test_cyberpsycho_encounter_generates_vanilla_boss_lifecycle(self) -> None:
+        value = stage("cyberpsycho_encounter")
+        phase = self.build_direct(copy.deepcopy(value))
+        self.assertEqual(
+            json.dumps(phase, sort_keys=True),
+            json.dumps(self.build_direct(copy.deepcopy(value)), sort_keys=True),
+        )
+        encoded = json.dumps(phase, sort_keys=True)
+        for expected in (
+            "questScan_ConditionType",
+            "questCharacterAttack_ConditionType",
+            "questCharacterHit_ConditionType",
+            "questVision_ConditionType",
+            "questCharacterManagerParameters_SetMortality",
+            '"state": "Invulnerable"',
+            '"state": "Mortal"',
+            "questCombatNodeParams_CombatTarget",
+            "AIInjectCombatThreatCommandParams",
+            "test_psycho_spared",
+            "test_psycho_killed",
+            "#test_psycho_cleanup",
+            '"action": "Deactivate"',
+        ):
+            self.assertIn(expected, encoded)
+
+        typed: list[dict] = []
+
+        def walk(child):
+            if isinstance(child, dict):
+                if isinstance(child.get("$type"), str):
+                    typed.append(child)
+                for nested in child.values():
+                    walk(nested)
+            elif isinstance(child, list):
+                for nested in child:
+                    walk(nested)
+
+        walk(phase)
+        combat_nodes = [
+            item["Data"]
+            for item in phase["Data"]["RootChunk"]["graph"]["Data"]["nodes"]
+            if item["Data"]["$type"] == "questCombatNodeDefinition"
+        ]
+        self.assertEqual(
+            [
+                item["params"]["Data"]["$type"]
+                for item in sorted(combat_nodes, key=lambda item: item["id"])
+            ],
+            [
+                "questCombatNodeParams_CombatTarget",
+                "AIInjectCombatThreatCommandParams",
+            ],
+        )
+        outcomes = [
+            item
+            for item in typed
+            if item["$type"] == "questCharacterKilled_ConditionType"
+        ]
+        self.assertEqual(len(outcomes), 2)
+        flags = {
+            (
+                item["killed"],
+                item["unconscious"],
+                item["defeated"],
+            )
+            for item in outcomes
+        }
+        self.assertEqual(flags, {(1, 0, 0), (0, 1, 1)})
+        for outcome in outcomes:
+            reference = outcome["objectRef"]
+            self.assertEqual(
+                reference["reference"]["$value"],
+                "#test_psycho_community",
+            )
+            self.assertEqual(
+                [name["$value"] for name in reference["names"]],
+                ["psycho"],
+            )
+
+    def test_cyberpsycho_encounter_rejects_ambiguous_resolution(self) -> None:
+        value = stage("cyberpsycho_encounter")
+        value["reveal"] = {}
+        value["resolution"]["allow_nonlethal"] = False
+        value["resolution"]["killed_fact"] = value["resolution"]["spared_fact"]
+        spec, diagnostics = self.load([value])
+        self.assertIsNone(spec)
+        self.assertTrue(
+            {
+                "empty_cyberpsycho_reveal",
+                "cyberpsycho_nonlethal_required",
+                "duplicate_cyberpsycho_outcome_fact",
+            }.issubset({item.code for item in diagnostics})
+        )
+
+    def test_cyberpsycho_authoring_audit_checks_world_and_hud_record(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        world = {
+            "nodes": [
+                {"ref": "#test_psycho_outer"},
+                {"ref": "#test_psycho_reveal"},
+                {"ref": "#test_psycho_arena"},
+                {"ref": "#test_psycho_cleanup"},
+            ],
+            "community": {
+                "ref": "#test_psycho_community",
+                "entry": "psycho",
+                "character": "Character.test_cyberpsycho",
+                "active_on_start": 0,
+            },
+        }
+        world_path = root / "psycho.world.json"
+        world_path.write_text(json.dumps(world), encoding="utf-8")
+        tweak_path = root / "psycho.yaml"
+        tweak_path.write_text(
+            "\n".join(
+                (
+                    "Character.test_cyberpsycho:",
+                    r"  entityTemplatePath: mod\test\psycho.ent",
+                    "  displayName: test_psycho_name",
+                    "  fullDisplayName: test_psycho_name",
+                    "  rarity: NPCRarity.Boss",
+                    "  tags: [Cyberpsycho]",
+                    "  statModifierGroups: [Character.NPC_Base_Primary_Stat_ModGroup, "
+                    "Character.Cyberpsycho_ModGroup, "
+                    "Character.Cyberpsycho_HitReaction_Resistance]",
+                    "  threatTrackingPreset: TargetTracking.DefaultPreset",
+                    "  uiNameplate: UINameplate.CombatSettings",
+                    "  scannerModulePreset: "
+                    "ScanningNPCPresets.ScannerPreset_NPCFull",
+                    "  disableDefeatedState: false",
+                    "",
+                )
+            ),
+            encoding="utf-8",
+        )
+        value = stage("cyberpsycho_encounter")
+        value["status"] = "ready"
+        value["authoring"] = {
+            "world_spec": world_path.name,
+            "tweak_file": tweak_path.name,
+        }
+        spec, diagnostics = quest_compiler.load_spec(
+            self.write_manifest(root, [value])
+        )
+        self.assertIsNotNone(
+            spec, [diagnostic.as_dict() for diagnostic in diagnostics]
+        )
+        assert spec is not None
+        self.assertEqual(
+            quest_compiler.audit_cyberpsycho_authoring(
+                spec.stages[0], root=root
+            ),
+            [],
+        )
+
+        world["community"]["active_on_start"] = 1
+        world["community"]["character"] = "Character.wrong"
+        world_path.write_text(json.dumps(world), encoding="utf-8")
+        audit = quest_compiler.audit_cyberpsycho_authoring(
+            spec.stages[0], root=root
+        )
+        self.assertTrue(
+            {
+                "cyberpsycho_character_mismatch",
+                "cyberpsycho_community_active_on_start",
+            }.issubset({item.code for item in audit})
+        )
 
     def test_handle_validation_rejects_duplicate_and_dangling_handles(self) -> None:
         with self.assertRaisesRegex(quest_compiler.QuestSpecError, "duplicate HandleId"):

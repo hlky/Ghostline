@@ -14,7 +14,9 @@ TOOLS = ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-SPEC = importlib.util.spec_from_file_location("generate_scene", TOOLS / "generate_scene.py")
+SPEC = importlib.util.spec_from_file_location(
+    "generate_scene", TOOLS / "generate_scene.py"
+)
 assert SPEC is not None
 generate_scene = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -25,7 +27,10 @@ SPEC.loader.exec_module(generate_scene)
 class GenerateSceneTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.spec = generate_scene.load_json(TOOLS / "gq000_patch_meet.scene-spec.json")
+        cls.spec = generate_scene.load_json(
+            ROOT / "quests/story/ghostline/gq000/implementation/scenes/"
+            "patch-meet.scene-spec.json"
+        )
         cls.scene = generate_scene.build_scene(cls.spec)
         cls.raw_scene = generate_scene.load_json(ROOT / cls.spec["raw_path"])
         cls.root = cls.scene["Data"]["RootChunk"]
@@ -35,16 +40,31 @@ class GenerateSceneTests(unittest.TestCase):
         self.assertEqual(generate_scene.validate_scene(self.raw_scene, self.spec), [])
 
     def test_fixture_shape(self) -> None:
-        self.assertEqual(self.scene["Header"]["ExportedDateTime"], self.spec["exported_datetime"])
+        self.assertEqual(
+            self.scene["Header"]["ExportedDateTime"], self.spec["exported_datetime"]
+        )
         self.assertEqual(len(self.root["actors"]), 1)
         self.assertEqual(len(self.root["playerActors"]), 1)
         self.assertEqual(len(self.root["sceneGraph"]["Data"]["graph"]), 15)
-        edge_count = sum(len(socket.get("destinations", [])) for node in self.root["sceneGraph"]["Data"]["graph"] for socket in node["Data"].get("outputSockets", []))
+        edge_count = sum(
+            len(socket.get("destinations", []))
+            for node in self.root["sceneGraph"]["Data"]["graph"]
+            for socket in node["Data"].get("outputSockets", [])
+        )
         self.assertEqual(edge_count, 16)
         self.assertEqual(len(self.root["screenplayStore"]["lines"]), 13)
         self.assertEqual(len(self.root["screenplayStore"]["options"]), 5)
-        self.assertTrue(any(point["name"]["$value"] == "start" for point in self.root["entryPoints"]))
-        self.assertTrue(any(point["name"]["$value"] == "job_accept" for point in self.root["exitPoints"]))
+        self.assertTrue(
+            any(
+                point["name"]["$value"] == "start" for point in self.root["entryPoints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                point["name"]["$value"] == "job_accept"
+                for point in self.root["exitPoints"]
+            )
+        )
 
     def test_fixture_uses_one_shared_lipsync_slot_for_crash_isolation(self) -> None:
         patch_lipsync = self.root["actors"][0]["lipsyncAnimSet"]["id"]
@@ -55,7 +75,10 @@ class GenerateSceneTests(unittest.TestCase):
         self.assertEqual(len(lipsync_refs), 1)
 
     def test_fixture_graph_matches_mq003_shaped_scene_order(self) -> None:
-        node_ids = [node["Data"]["nodeId"]["id"] for node in self.root["sceneGraph"]["Data"]["graph"]]
+        node_ids = [
+            node["Data"]["nodeId"]["id"]
+            for node in self.root["sceneGraph"]["Data"]["graph"]
+        ]
         self.assertEqual(node_ids, [1, 10, 11, 13, 2, 22, 8, 3, 4, 5, 9, 6, 7, 18, 19])
 
     def test_fixture_dialogue_flow_edges(self) -> None:
@@ -107,9 +130,16 @@ class GenerateSceneTests(unittest.TestCase):
         self.assertEqual(condition["triggerAreaRef"]["$value"], "#gq000_01_tr_engage")
 
     def test_screenplay_ids_use_vanilla_pattern(self) -> None:
-        line_ids = [line["itemId"]["id"] for line in self.root["screenplayStore"]["lines"]]
-        option_ids = [option["itemId"]["id"] for option in self.root["screenplayStore"]["options"]]
-        self.assertEqual(line_ids, [1, 257, 513, 769, 1025, 1281, 1537, 1793, 2049, 2305, 2561, 2817, 3073])
+        line_ids = [
+            line["itemId"]["id"] for line in self.root["screenplayStore"]["lines"]
+        ]
+        option_ids = [
+            option["itemId"]["id"] for option in self.root["screenplayStore"]["options"]
+        ]
+        self.assertEqual(
+            line_ids,
+            [1, 257, 513, 769, 1025, 1281, 1537, 1793, 2049, 2305, 2561, 2817, 3073],
+        )
         self.assertEqual(option_ids, [2, 258, 514, 770, 1026])
 
     def test_fixture_choice_node_has_padded_sockets_and_locstore_entries(self) -> None:
@@ -119,22 +149,66 @@ class GenerateSceneTests(unittest.TestCase):
             if node["Data"]["$type"] == "scnChoiceNode"
         ]
         self.assertEqual(len(choices), 2)
-        self.assertEqual([socket["stamp"]["name"] for socket in choices[0]["outputSockets"]], [0, 0, 0, 1, 2, 3, 4, 5, 6])
-        self.assertEqual([socket["stamp"]["name"] for socket in choices[1]["outputSockets"]], [0, 0, 1, 2, 3, 4, 5, 6])
-        self.assertEqual([option["isSingleChoice"] for option in choices[0]["options"]], [0, 0, 0])
-        self.assertEqual([option["isSingleChoice"] for option in choices[1]["options"]], [0, 0])
-        self.assertEqual([option["type"]["properties"] for option in choices[0]["options"]], [0, 0, 1])
-        self.assertEqual([option["type"]["properties"] for option in choices[1]["options"]], [0, 1])
+        self.assertEqual(
+            [socket["stamp"]["name"] for socket in choices[0]["outputSockets"]],
+            [0, 0, 0, 1, 2, 3, 4, 5, 6],
+        )
+        self.assertEqual(
+            [socket["stamp"]["name"] for socket in choices[1]["outputSockets"]],
+            [0, 0, 1, 2, 3, 4, 5, 6],
+        )
+        self.assertEqual(
+            [option["isSingleChoice"] for option in choices[0]["options"]], [0, 0, 0]
+        )
+        self.assertEqual(
+            [option["isSingleChoice"] for option in choices[1]["options"]], [0, 0]
+        )
+        self.assertEqual(
+            [option["type"]["properties"] for option in choices[0]["options"]],
+            [0, 0, 1],
+        )
+        self.assertEqual(
+            [option["type"]["properties"] for option in choices[1]["options"]], [0, 1]
+        )
         self.assertEqual(len(self.root["locStore"]["vdEntries"]), 20)
         self.assertEqual(len(self.root["locStore"]["vpEntries"]), 20)
-        first_choice_locstring = self.root["screenplayStore"]["options"][0]["locstringId"]["ruid"]
+        first_choice_locstring = self.root["screenplayStore"]["options"][0][
+            "locstringId"
+        ]["ruid"]
         first_choice_rows = [
             entry
             for entry in self.root["locStore"]["vdEntries"]
             if entry["locstringId"]["ruid"] == first_choice_locstring
         ]
-        self.assertEqual([entry["localeId"] for entry in first_choice_rows], ["db_db", "db_db", "pl_pl", "en_us"])
-        self.assertEqual(self.root["locStore"]["vpEntries"][first_choice_rows[0]["vpeIndex"]]["content"], "")
+        self.assertEqual(
+            [entry["localeId"] for entry in first_choice_rows],
+            ["db_db", "db_db", "pl_pl", "en_us"],
+        )
+        self.assertEqual(
+            self.root["locStore"]["vpEntries"][first_choice_rows[0]["vpeIndex"]][
+                "content"
+            ],
+            "",
+        )
+
+    def test_choice_option_supports_vanilla_icon_tags(self) -> None:
+        option = generate_scene.build_choice_option(
+            {
+                "caption": "Play braindance",
+                "icon_tags": ["ChoiceCaptionParts.BraindanceIcon"],
+            },
+            2,
+        )
+        self.assertEqual(
+            option["iconTagIds"],
+            [
+                {
+                    "$type": "TweakDBID",
+                    "$storage": "string",
+                    "$value": "ChoiceCaptionParts.BraindanceIcon",
+                }
+            ],
+        )
 
     def test_fixture_choice_locstore_ids_are_sorted_within_locale_blocks(self) -> None:
         descriptors = self.root["locStore"]["vdEntries"]
@@ -161,7 +235,14 @@ class GenerateSceneTests(unittest.TestCase):
         spec["name"] = "test_spoken_only"
         spec["spoken_line_order"] = ["line_a"]
         spec["choice_line_order"] = []
-        spec["sections"] = [{"key": "opening_line", "node_id": 2, "lines": ["line_a"], "on_end": [{"node_id": 18}]}]
+        spec["sections"] = [
+            {
+                "key": "opening_line",
+                "node_id": 2,
+                "lines": ["line_a"],
+                "on_end": [{"node_id": 18}],
+            }
+        ]
         spec["choices"] = []
         spec["quest_nodes"] = []
         spec["xor_nodes"] = []
@@ -218,7 +299,9 @@ class GenerateSceneTests(unittest.TestCase):
             "line_a": {"key": "line_a", "string_id": "1008", "text": "Line"},
         }
 
-        loc_store = generate_scene.build_loc_store(spec, choice_manifest, spoken_manifest)
+        loc_store = generate_scene.build_loc_store(
+            spec, choice_manifest, spoken_manifest
+        )
         variant_ids = [entry["variantId"]["ruid"] for entry in loc_store["vpEntries"]]
 
         self.assertEqual(len(variant_ids), len(set(variant_ids)))
@@ -232,12 +315,21 @@ class GenerateSceneTests(unittest.TestCase):
 
         errors = generate_scene.validate_scene(scene, self.spec)
 
-        self.assertTrue(any("locStore variant ids collide with screenplay locstrings" in error for error in errors))
+        self.assertTrue(
+            any(
+                "locStore variant ids collide with screenplay locstrings" in error
+                for error in errors
+            )
+        )
 
     def test_validation_rejects_unsorted_choice_locstore_descriptors(self) -> None:
         scene = copy.deepcopy(self.scene)
         descriptors = scene["Data"]["RootChunk"]["locStore"]["vdEntries"]
-        en_us_indexes = [index for index, entry in enumerate(descriptors) if entry["localeId"] == "en_us"]
+        en_us_indexes = [
+            index
+            for index, entry in enumerate(descriptors)
+            if entry["localeId"] == "en_us"
+        ]
         descriptors[en_us_indexes[0]], descriptors[en_us_indexes[-1]] = (
             descriptors[en_us_indexes[-1]],
             descriptors[en_us_indexes[0]],
@@ -245,7 +337,12 @@ class GenerateSceneTests(unittest.TestCase):
 
         errors = generate_scene.validate_scene(scene, self.spec)
 
-        self.assertTrue(any("en_us choice locStore descriptors must be sorted" in error for error in errors))
+        self.assertTrue(
+            any(
+                "en_us choice locStore descriptors must be sorted" in error
+                for error in errors
+            )
+        )
 
     def test_fixture_keeps_spawn_and_journal_flow_in_questphase(self) -> None:
         serialized = json.dumps(self.root)

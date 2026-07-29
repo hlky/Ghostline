@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "name": "gqt005_braindance_analysis",
+  "fps": 30,
+  "frames": {
+    "start": 0,
+    "end": 360
+  },
+  "outputs": {
+    "blend": ".tmp/braindance/gqt005/gqt005_braindance_analysis.blend",
+    "glb": ".tmp/braindance/gqt005/gqt005_braindance_analysis.glb",
+    "manifest": ".tmp/braindance/gqt005/gqt005_braindance_analysis.handoff.json"
+  },
+  "origin": {
+    "name": "gqt005_bd_origin",
+    "location": [0.0, 0.0, 0.0],
+    "rotation_degrees": [0.0, 0.0, 0.0]
+  },
+  "environment": {
+    "boxes": [
+      {
+        "id": "floor",
+        "location": [0.0, 0.0, -0.1],
+        "size": [6.0, 4.0, 0.1],
+        "color": [0.08, 0.09, 0.12, 1.0]
+      },
+      {
+        "id": "back_wall",
+        "location": [0.0, 4.0, 1.5],
+        "size": [6.0, 0.1, 1.5],
+        "color": [0.12, 0.14, 0.18, 1.0]
+      },
+      {
+        "id": "table",
+        "location": [0.0, 0.0, 0.75],
+        "size": [1.0, 0.55, 0.05],
+        "color": [0.18, 0.2, 0.24, 1.0]
+      }
+    ],
+    "imports": []
+  },
+  "actors": [
+    {
+      "id": "patch",
+      "actor_id": 0,
+      "display_name": "Patch",
+      "asset": {
+        "path": "braindance/rigs/man_base.glb"
+      },
+      "rig": {
+        "contract": "braindance/rigs/man_base.skeleton.json"
+      },
+      "body_animation": {
+        "type": "walk_from_root_motion",
+        "stride_length": 0.85,
+      "leg_swing_degrees": 32.0,
+      "knee_bend_degrees": 58.0,
+      "arm_swing_degrees": 18.0,
+        "phase_degrees": 0.0,
+        "speed_threshold": 0.02
+      },
+      "proxy": {
+        "height": 1.76,
+        "color": [0.72, 0.08, 0.18, 1.0]
+      },
+      "interpolation": "LINEAR",
+      "start": {
+        "location": [2.6, 0.45, 0.0],
+        "rotation_degrees": [0.0, 0.0, 90.0]
+      },
+      "keys": [
+        {
+          "frame": 0,
+          "location": [2.6, 0.45, 0.0],
+          "rotation_degrees": [0.0, 0.0, 90.0]
+        },
+        {
+          "frame": 120,
+          "location": [1.25, 0.25, 0.0],
+          "rotation_degrees": [0.0, 0.0, 90.0]
+        },
+        {
+          "frame": 240,
+          "location": [1.25, 0.25, 0.0],
+          "rotation_degrees": [0.0, 0.0, 270.0]
+        },
+        {
+          "frame": 360,
+          "location": [2.6, 0.45, 0.0],
+          "rotation_degrees": [0.0, 0.0, 270.0]
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "actor_id": 1,
+      "display_name": "Guard",
+      "asset": {
+        "path": "braindance/rigs/man_base.glb"
+      },
+      "rig": {
+        "contract": "braindance/rigs/man_base.skeleton.json"
+      },
+      "body_animation": {
+        "type": "walk_from_root_motion",
+        "stride_length": 0.95,
+      "leg_swing_degrees": 34.0,
+      "knee_bend_degrees": 62.0,
+      "arm_swing_degrees": 20.0,
+        "phase_degrees": 180.0,
+        "speed_threshold": 0.02
+      },
+      "proxy": {
+        "height": 1.82,
+        "color": [0.16, 0.28, 0.62, 1.0]
+      },
+      "interpolation": "LINEAR",
+      "start": {
+        "location": [-3.2, -0.4, 0.0],
+        "rotation_degrees": [0.0, 0.0, -90.0]
+      },
+      "keys": [
+        {
+          "frame": 0,
+          "location": [-3.2, -0.4, 0.0],
+          "rotation_degrees": [0.0, 0.0, -90.0]
+        },
+        {
+          "frame": 90,
+          "location": [-1.25, -0.25, 0.0],
+          "rotation_degrees": [0.0, 0.0, -90.0]
+        },
+        {
+          "frame": 220,
+          "location": [-1.25, -0.25, 0.0],
+          "rotation_degrees": [0.0, 0.0, -90.0]
+        },
+        {
+          "frame": 360,
+          "location": [-3.2, -0.4, 0.0],
+          "rotation_degrees": [0.0, 0.0, 90.0]
+        }
+      ]
+    }
+  ],
+  "recording_camera": {
+    "id": "recording_camera",
+    "recorded_actor": "guard",
+    "interpolation": "BEZIER",
+    "keys": [
+      {
+        "frame": 0,
+        "location": [-3.0, -2.2, 1.65],
+        "look_at": [0.0, 0.0, 1.1],
+        "focal_length": 35.0
+      },
+      {
+        "frame": 180,
+        "location": [-1.8, -2.0, 1.65],
+        "look_at": [0.2, 0.0, 1.05],
+        "focal_length": 42.0
+      },
+      {
+        "frame": 360,
+        "location": [-2.8, -2.3, 1.7],
+        "look_at": [0.0, 0.0, 1.1],
+        "focal_length": 35.0
+      }
+    ]
+  },
+  "clues": [
+    {
+      "id": "encrypted_shard",
+      "layer": "Visual",
+      "position": [0.0, 0.0, 0.92],
+      "frames": [150, 260],
+      "fact": "gqt005_bd_encrypted_shard_found"
+    },
+    {
+      "id": "guard_warning",
+      "layer": "Audio",
+      "position": [-1.64, -0.28, 1.55],
+      "frames": [72, 166],
+      "fact": "gqt005_bd_guard_warning_found"
+    },
+    {
+      "id": "guard_implant_heat",
+      "layer": "Thermal",
+      "position": [-1.25, -0.25, 1.2],
+      "frames": [210, 330],
+      "fact": "gqt005_bd_guard_implant_heat_found"
+    }
+  ],
+  "markers": [
+    {
+      "name": "guard_enters",
+      "frame": 0
+    },
+    {
+      "name": "exchange",
+      "frame": 150
+    },
+    {
+      "name": "guard_leaves",
+      "frame": 280
+    }
+  ]
+}

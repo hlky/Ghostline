@@ -414,18 +414,70 @@ def notifier(spec: Any, handles: HandleAllocator) -> dict[str, Any]:
 
 
 def marker_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dict[str, Any]:
+    scene_marker = spec.get("scene_marker", False)
+    if not isinstance(scene_marker, bool):
+        raise SystemExit(f"Marker {ref} scene_marker must be a boolean")
+    marker_type = spec.get("marker_type")
+    if marker_type not in {None, "null", "spawn_point"}:
+        raise SystemExit(
+            f"Marker {ref} marker_type must be null or spawn_point"
+        )
+    if scene_marker and marker_type is not None:
+        raise SystemExit(
+            f"Marker {ref} cannot combine scene_marker and marker_type"
+        )
+    scene_marker_entries = spec.get("scene_marker_entries", [])
+    if not isinstance(scene_marker_entries, list):
+        raise SystemExit(
+            f"Marker {ref} scene_marker_entries must be an array"
+        )
+    if scene_marker_entries and not scene_marker:
+        raise SystemExit(
+            f"Marker {ref} has scene_marker_entries but scene_marker is false"
+        )
+
+    handle_id = handles.take()
+    data: dict[str, Any] = {
+        "$type": "worldStaticMarkerNode",
+        "debugName": cname(debug_name(ref, spec.get("debug_name"))),
+        "isHostOnly": 0,
+        "isVisibleInGame": 1,
+        "proxyScale": None,
+        "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
+        "tag": spec.get("tag", "None"),
+        "tagExt": spec.get("tag_ext", "None"),
+    }
+    if scene_marker or marker_type is not None:
+        marker_data: dict[str, Any]
+        if scene_marker:
+            marker_data = {
+                "$type": "scnSceneMarker",
+                "markers": scene_marker_entries,
+                "workspotMarkers": [],
+            }
+        elif marker_type == "spawn_point":
+            marker_data = {
+                "$type": "worldSpawnPointMarker",
+                "type": 0,
+            }
+        else:
+            marker_data = {"$type": "worldNullMarker"}
+        data.update(
+            {
+                "data": {
+                    "HandleId": handles.take(),
+                    "Data": marker_data,
+                },
+                "isEnabled": 1,
+                "tags": {
+                    "$type": "redTagList",
+                    "tags": [],
+                },
+            }
+        )
     return {
-        "HandleId": handles.take(),
-        "Data": {
-            "$type": "worldStaticMarkerNode",
-            "debugName": cname(debug_name(ref, spec.get("debug_name"))),
-            "isHostOnly": 0,
-            "isVisibleInGame": 1,
-            "proxyScale": None,
-            "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
-            "tag": spec.get("tag", "None"),
-            "tagExt": spec.get("tag_ext", "None"),
-        },
+        "HandleId": handle_id,
+        "Data": data,
     }
 
 
@@ -507,6 +559,34 @@ def device_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dic
                 )
             ),
             "instanceData": access_point_instance_data(spec, handles),
+            "ioPriority": spec.get("io_priority", "Immediate"),
+            "isHostOnly": 0,
+            "isVisibleInGame": 1,
+            "proxyScale": None,
+            "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
+            "tag": spec.get("tag", "None"),
+            "tagExt": spec.get("tag_ext", "None"),
+        },
+    }
+
+
+def entity_node(
+    spec: dict[str, Any],
+    ref: str,
+    handles: HandleAllocator,
+) -> dict[str, Any]:
+    entity_template = spec.get("entity_template")
+    if not entity_template:
+        raise SystemExit(f"Entity {ref} requires entity_template")
+    return {
+        "HandleId": handles.take(),
+        "Data": {
+            "$type": "worldEntityNode",
+            "appearanceName": cname(spec.get("appearance", "default")),
+            "debugName": cname(debug_name(ref, spec.get("debug_name"))),
+            "entityLod": int(spec.get("entity_lod", 0)),
+            "entityTemplate": resource_path(normalize_depot_path(entity_template)),
+            "instanceData": None,
             "ioPriority": spec.get("io_priority", "Immediate"),
             "isHostOnly": 0,
             "isVisibleInGame": 1,
@@ -606,6 +686,148 @@ def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> di
             "useCrowdBlacklist": int(spec.get("use_crowd_blacklist", not vehicle_spawn)),
             "useCrowdWhitelist": int(spec.get("use_crowd_whitelist", not vehicle_spawn)),
         },
+    }
+
+
+def spline_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dict[str, Any]:
+    raw_points = spec.get("points", [])
+    if not isinstance(raw_points, list) or len(raw_points) < 2:
+        raise SystemExit(f"spline {ref}.points must contain at least two points")
+    node_handle = handles.take()
+    points = [
+        as_vec3(
+            value.get("position")
+            if isinstance(value, dict) and "position" in value
+            else value,
+            f"spline {ref}.points[{index}]",
+        )
+        for index, value in enumerate(raw_points)
+    ]
+    looped = bool(spec.get("looped", False))
+    spline_points: list[dict[str, Any]] = []
+    for index, (point, raw_point) in enumerate(zip(points, raw_points)):
+        previous = (
+            points[index - 1]
+            if index > 0
+            else (points[-1] if looped else None)
+        )
+        following = (
+            points[index + 1]
+            if index + 1 < len(points)
+            else (points[0] if looped else None)
+        )
+        incoming = (
+            Vec3(
+                (previous.x - point.x) / 3,
+                (previous.y - point.y) / 3,
+                (previous.z - point.z) / 3,
+            )
+            if previous is not None
+            else Vec3(0, 0, 0)
+        )
+        outgoing = (
+            Vec3(
+                (following.x - point.x) / 3,
+                (following.y - point.y) / 3,
+                (following.z - point.z) / 3,
+            )
+            if following is not None
+            else Vec3(0, 0, 0)
+        )
+        automatic_tangents = int(
+            raw_point.get("automatic_tangents", 0)
+            if isinstance(raw_point, dict)
+            else 0
+        )
+        if isinstance(raw_point, dict) and "tangents" in raw_point:
+            raw_tangents = raw_point["tangents"]
+            if not isinstance(raw_tangents, list) or len(raw_tangents) != 2:
+                raise SystemExit(
+                    f"spline {ref}.points[{index}].tangents must contain two vectors"
+                )
+            incoming = as_vec3(
+                raw_tangents[0],
+                f"spline {ref}.points[{index}].tangents[0]",
+            )
+            outgoing = as_vec3(
+                raw_tangents[1],
+                f"spline {ref}.points[{index}].tangents[1]",
+            )
+        spline_points.append(
+            {
+                "$type": "SplinePoint",
+                "automaticTangents": automatic_tangents,
+                "continuousTangents": 1,
+                "id": 0,
+                "position": vector3(point),
+                "rotation": quaternion_from_yaw(0),
+                "tangents": {
+                    "Elements": [
+                        vector3(incoming),
+                        vector3(outgoing),
+                    ]
+                },
+            }
+        )
+    patrol_spots = spec.get("patrol_spots", [])
+    if not isinstance(patrol_spots, list):
+        raise SystemExit(f"spline {ref}.patrol_spots must be a list")
+    patrol_point_defs = [
+        {
+            "HandleId": handles.take(),
+            "Data": {
+                "$type": "worldPatrolSplinePointDefinition",
+                "node": node_ref(value),
+                "pointType": "Workspot",
+                "target": {
+                    "$type": "gameEntityReference",
+                    "dynamicEntityUniqueName": cname("None"),
+                    "names": [],
+                    "reference": node_ref_u64(0),
+                    "sceneActorContextName": cname("None"),
+                    "slotName": cname("None"),
+                    "type": "EntityRef",
+                },
+            },
+        }
+        for value in patrol_spots
+    ]
+    spline_data_handle = handles.take()
+    data: dict[str, Any] = {
+        "$type": (
+            "worldPatrolSplineNode"
+            if patrol_spots
+            else "worldSplineNode"
+        ),
+        "debugName": cname(debug_name(ref, spec.get("debug_name"))),
+        "destSnapedNode": node_ref_u64(0),
+        "destSnapedSocketName": cname("None"),
+        "entrySnapedNode": node_ref_u64(0),
+        "entrySnapedSocketName": cname("None"),
+        "isHostOnly": 0,
+        "isVisibleInGame": 1,
+        "proxyScale": None,
+        "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
+        "splineData": {
+            "HandleId": spline_data_handle,
+            "Data": {
+                "$type": "Spline",
+                "hasDirection": int(spec.get("has_direction", 1)),
+                "looped": int(looped),
+                "points": spline_points,
+                "reversed": int(spec.get("reversed", 0)),
+            },
+        },
+        "tag": spec.get("tag", "None"),
+        "tagExt": spec.get("tag_ext", "None"),
+    }
+    if patrol_spots:
+        data["patrolPointDefs"] = patrol_point_defs
+        data["patrolPoints"] = []
+        data["spots"] = []
+    return {
+        "HandleId": node_handle,
+        "Data": data,
     }
 
 
@@ -936,6 +1158,19 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         raise SystemExit("communities must be a list")
     community_specs.extend(extra_communities)
     marker_specs = spec.get("markers", [])
+    spline_specs = spec.get("splines", [])
+    if not isinstance(spline_specs, list):
+        raise SystemExit("splines must be a list")
+    patrol_spline_specs = spec.get("patrol_splines", [])
+    if not isinstance(patrol_spline_specs, list):
+        raise SystemExit("patrol_splines must be a list")
+    spline_specs = [*spline_specs, *patrol_spline_specs]
+    ai_spot_specs = spec.get("ai_spots", [])
+    if not isinstance(ai_spot_specs, list):
+        raise SystemExit("ai_spots must be a list")
+    entity_specs = spec.get("entities", [])
+    if not isinstance(entity_specs, list):
+        raise SystemExit("entities must be a list")
     device_specs = spec.get("devices", [])
     if not isinstance(device_specs, list):
         raise SystemExit("devices must be a list")
@@ -1032,6 +1267,24 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         pos, anchor_yaw = resolve_position(item.get("position"), anchors, f"trigger {ref_value}")
         yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
         add_node(ref_value, trigger_node(item, ref_value, handles), pos, yaw, item.get("node_data"))
+
+    for item in entity_specs:
+        if not isinstance(item, dict):
+            raise SystemExit("entities entries must be objects")
+        ref_value = item["ref"]
+        pos, anchor_yaw = resolve_position(
+            item.get("position"),
+            anchors,
+            f"entity {ref_value}",
+        )
+        yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
+        add_node(
+            ref_value,
+            entity_node(item, ref_value, handles),
+            pos,
+            yaw,
+            item.get("node_data"),
+        )
 
     for item in device_specs:
         ref_value = item["ref"]
@@ -1151,6 +1404,42 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         always_loaded_nodes.append(registry_node)
         always_loaded_node_datas.append(
             node_data(registry_index, registry_node_id, Vec3(0, 0, 0), 0, {"max_streaming_distance": 17.320507, "streaming_distance": 100000000, "uk10": 32})
+        )
+
+    for item in ai_spot_specs:
+        if not isinstance(item, dict):
+            raise SystemExit("ai_spots entries must be objects")
+        ref_value = item["ref"]
+        pos, anchor_yaw = resolve_position(
+            item.get("position"),
+            anchors,
+            f"AI spot {ref_value}",
+        )
+        yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
+        add_node(
+            ref_value,
+            ai_spot_node(item, ref_value, handles),
+            pos,
+            yaw,
+            item.get("node_data"),
+        )
+
+    for item in spline_specs:
+        if not isinstance(item, dict):
+            raise SystemExit("splines entries must be objects")
+        ref_value = item["ref"]
+        pos, anchor_yaw = resolve_position(
+            item.get("position"),
+            anchors,
+            f"spline {ref_value}",
+        )
+        yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
+        add_node(
+            ref_value,
+            spline_node(item, ref_value, handles),
+            pos,
+            yaw,
+            item.get("node_data"),
         )
 
     for ref_spec in always_loaded_ref_specs:
@@ -1401,7 +1690,10 @@ def command_measure(args: argparse.Namespace) -> None:
 
 
 def command_example(args: argparse.Namespace) -> None:
-    path = Path("tools/gq000_world_spec.example.json")
+    path = Path(
+        "quests/story/ghostline/_quest-template/implementation/world/"
+        "example.world.json"
+    )
     print(path.read_text(encoding="utf-8"))
 
 

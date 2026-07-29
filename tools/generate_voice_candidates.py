@@ -14,6 +14,7 @@ from pathlib import Path
 import soundfile
 import torch
 from faster_qwen3_tts import FasterQwen3TTS
+from safetensors.torch import load_file, save_file
 
 
 V_REFERENCE_TEXT = (
@@ -53,10 +54,11 @@ def speaker_embedding(
             x_vector_only_mode=True,
         )
         embedding = prompt_items[0].ref_spk_embedding
-        torch.save(embedding.detach().cpu(), cache_path)
-    embedding = torch.load(
-        cache_path, map_location=model.device, weights_only=True
-    ).to(model.device)
+        save_file(
+            {"embedding": embedding.detach().cpu().contiguous()},
+            str(cache_path),
+        )
+    embedding = load_file(str(cache_path))["embedding"].to(model.device)
     return {"ref_spk_embedding": [embedding]}
 
 
@@ -121,13 +123,13 @@ def main() -> int:
             model,
             args.v_reference,
             V_REFERENCE_TEXT,
-            embedding_dir / "v.pt",
+            embedding_dir / "v.safetensors",
         ),
         "iris": speaker_embedding(
             model,
             iris_reference,
             IRIS_REFERENCE_TEXT,
-            embedding_dir / "iris.pt",
+            embedding_dir / "iris.safetensors",
         ),
     }
 

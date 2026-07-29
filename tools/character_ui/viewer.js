@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const SHAPE_NAMES = ["eyes", "nose", "mouth", "jaw", "ears"];
-const MAX_PREVIEW_MODELS = 16;
+const MAX_PREVIEW_MODELS = 24;
 
 export class CharacterViewer {
   constructor(container, statusElement) {

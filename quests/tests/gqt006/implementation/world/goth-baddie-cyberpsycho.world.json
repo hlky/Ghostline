@@ -1,0 +1,215 @@
+{
+  "_note": "Goth Baddie encounter origin selected from the supplied world transform. Every marker, trigger, and spawn remains relative to this origin.",
+  "name": "gqt006",
+  "prefab_root": "$/mod/gqt006/#gqt006_pr_goth_baddie_cyberpsycho",
+  "block_path": "mod\\gqt006\\world\\gqt006_goth_baddie_cyberpsycho.streamingblock",
+  "quest_sector_path": "mod\\gqt006\\world\\gqt006_goth_baddie_cyberpsycho.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt006\\world\\gqt006_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1026.8678,
+    "y": 1279.5898,
+    "z": 5.1301804,
+    "yaw": 2.931411456
+  },
+  "markers": [
+    {
+      "ref": "#gqt006_mp_goth_baddie",
+      "sector": "always_loaded",
+      "position": {"from": "origin"},
+      "yaw": "origin",
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt006_tr_outer",
+      "position": {"from": "origin", "up": -6},
+      "outline": {
+        "type": "circle",
+        "radius": 45,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 480,
+        "streaming_distance": 420
+      }
+    },
+    {
+      "ref": "#gqt006_tr_reveal",
+      "position": {"from": "origin", "up": -6},
+      "outline": {
+        "type": "circle",
+        "radius": 25,
+        "segments": 16,
+        "height": 12
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360
+      }
+    },
+    {
+      "ref": "#gqt006_tr_arena",
+      "position": {"from": "origin", "up": -6},
+      "outline": {
+        "type": "circle",
+        "radius": 15,
+        "segments": 16,
+        "height": 12
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360
+      }
+    },
+    {
+      "ref": "#gqt006_tr_cleanup",
+      "position": {"from": "origin", "up": -8},
+      "outline": {
+        "type": "circle",
+        "radius": 70,
+        "segments": 24,
+        "height": 16
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 520,
+        "streaming_distance": 460
+      }
+    }
+  ],
+  "ai_spots": [
+    {
+      "ref": "#gqt006_ws_goth_baddie_alerted_001",
+      "position": {
+        "x": -1022.421,
+        "y": 1273.564,
+        "z": 5.136345
+      },
+      "yaw": 19.947432588,
+      "workspot": "base\\workspots\\patrolling\\cyberpsycho\\wa_unarmed_agitated_shuffle.workspot",
+      "is_workspot_infinite": 0,
+      "is_workspot_static": 0,
+      "use_crowd_blacklist": 0,
+      "use_crowd_whitelist": 0,
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360,
+        "uk10": 288,
+        "uk11": 586
+      }
+    },
+    {
+      "ref": "#gqt006_ws_goth_baddie_alerted_002",
+      "position": {
+        "x": -1032.0282,
+        "y": 1270.3829,
+        "z": 5.14135
+      },
+      "yaw": -67.609966591,
+      "workspot": "base\\workspots\\patrolling\\cyberpsycho\\wa_unarmed_agitated_shuffle.workspot",
+      "is_workspot_infinite": 0,
+      "is_workspot_static": 0,
+      "use_crowd_blacklist": 0,
+      "use_crowd_whitelist": 0,
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360,
+        "uk10": 288,
+        "uk11": 586
+      }
+    }
+  ],
+  "patrol_splines": [
+    {
+      "ref": "#gqt006_spl_goth_baddie_alerted",
+      "position": {
+        "x": -1026.8678,
+        "y": 1279.5898,
+        "z": 5.1301804
+      },
+      "yaw": 0,
+      "looped": true,
+      "patrol_spots": [
+        "#gqt006_ws_goth_baddie_alerted_001",
+        "#gqt006_ws_goth_baddie_alerted_002"
+      ],
+      "points": [
+        {
+          "position": [0, 0, 0],
+          "automatic_tangents": 1,
+          "tangents": [
+            [2.4018, 0.795275, -0.00125125],
+            [-2.4018, -0.795275, 0.00125125]
+          ]
+        },
+        {
+          "position": [4.4468, -6.0258, 0.0061646],
+          "automatic_tangents": 1,
+          "tangents": [
+            [0.243175, -3.6609, 0.00066565],
+            [-0.243175, 3.6609, -0.00066565]
+          ]
+        },
+        {
+          "position": [0.9727, -14.6436, 0.0026626],
+          "automatic_tangents": 1,
+          "tangents": [
+            [-2.4018, -0.795275, 0.00125125],
+            [2.4018, 0.795275, -0.00125125]
+          ]
+        },
+        {
+          "position": [-5.1604, -9.2069, 0.0111696],
+          "automatic_tangents": 1,
+          "tangents": [
+            [-0.243175, 3.6609, -0.00066565],
+            [0.243175, -3.6609, 0.00066565]
+          ]
+        }
+      ],
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360,
+        "uk10": 288,
+        "uk11": 512
+      }
+    }
+  ],
+  "community": {
+    "ref": "#gqt006_com_goth_baddie",
+    "entry": "goth_baddie",
+    "phase": "default",
+    "period": "Day",
+    "character": "Character.GhostlineGothBaddie",
+    "appearance": "ghostline_goth_baddie_default",
+    "source_object_id": "auto",
+    "registry_node_id": "auto",
+    "registry_debug_name": "gqt006_goth_baddie_registry",
+    "active_on_start": 0,
+    "streaming_distance": 300,
+    "node_data": {
+      "max_streaming_distance": 420,
+      "streaming_distance": 360
+    },
+    "spot": {
+      "ref": "#gqt006_spot_goth_baddie",
+      "position": {"from": "origin"},
+      "yaw": "origin",
+      "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__01.workspot",
+      "is_workspot_infinite": 0,
+      "node_data": {
+        "max_streaming_distance": 420,
+        "streaming_distance": 360
+      }
+    }
+  }
+}

@@ -14,7 +14,9 @@ TOOLS = ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-SPEC = importlib.util.spec_from_file_location("generate_world", TOOLS / "generate_world.py")
+SPEC = importlib.util.spec_from_file_location(
+    "generate_world", TOOLS / "generate_world.py"
+)
 assert SPEC is not None
 generate_world = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -25,7 +27,10 @@ SPEC.loader.exec_module(generate_world)
 class GenerateWorldTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.spec = generate_world.load_json(TOOLS / "gq000_patch_meet.world.json")
+        cls.spec = generate_world.load_json(
+            ROOT / "quests/story/ghostline/gq000/implementation/world/"
+            "patch-meet.world.json"
+        )
 
     def build_production_world(self, spec: dict | None = None) -> tuple[dict, dict]:
         with tempfile.TemporaryDirectory() as tmp:
@@ -37,7 +42,9 @@ class GenerateWorldTests(unittest.TestCase):
             )
             paths = {item.kind: item.raw_path for item in generated}
             quest_sector = generate_world.load_json(paths["quest_sector"])
-            always_loaded_sector = generate_world.load_json(paths["always_loaded_sector"])
+            always_loaded_sector = generate_world.load_json(
+                paths["always_loaded_sector"]
+            )
         return quest_sector, always_loaded_sector
 
     def test_production_trigger_radii_keep_stable_bridge_baseline(self) -> None:
@@ -48,7 +55,9 @@ class GenerateWorldTests(unittest.TestCase):
         self.assertEqual(outlines["#gq000_01_tr_bridge_case_mood"]["radius"], 60)
         self.assertEqual(outlines["#gq000_01_tr_someone_coming"]["radius"], 6)
         meeting_heights = {
-            outline["height"] for ref, outline in outlines.items() if ref.startswith("#gq000_01_")
+            outline["height"]
+            for ref, outline in outlines.items()
+            if ref.startswith("#gq000_01_")
         }
         self.assertEqual(meeting_heights, {12})
 
@@ -69,14 +78,24 @@ class GenerateWorldTests(unittest.TestCase):
         )
         area = quest_root["nodes"][area_index]["Data"]
         registry = always_root["nodes"][registry_index]["Data"]
-        area_node_id = quest_root["nodeData"]["Data"][area_index]["QuestPrefabRefHash"]["$value"]
-        registry_node_ref = always_root["nodeData"]["Data"][registry_index]["QuestPrefabRefHash"]
+        area_node_id = quest_root["nodeData"]["Data"][area_index]["QuestPrefabRefHash"][
+            "$value"
+        ]
+        registry_node_ref = always_root["nodeData"]["Data"][registry_index][
+            "QuestPrefabRefHash"
+        ]
         source_object_id = area["sourceObjectId"]["hash"]
         community_id = registry["communitiesData"][0]["communityId"]["entityId"]["hash"]
-        area_spot_id = area["area"]["Data"]["entriesData"][0]["phasesData"][0]["timePeriodsData"][0]["spotNodeIds"][0]["hash"]
-        registry_spot_id = registry["workspotsPersistentData"][0]["globalNodeId"]["hash"]
+        area_spot_id = area["area"]["Data"]["entriesData"][0]["phasesData"][0][
+            "timePeriodsData"
+        ][0]["spotNodeIds"][0]["hash"]
+        registry_spot_id = registry["workspotsPersistentData"][0]["globalNodeId"][
+            "hash"
+        ]
 
-        self.assertEqual(area_node_id, "$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_com_patch_bridge")
+        self.assertEqual(
+            area_node_id, "$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_com_patch_bridge"
+        )
         self.assertEqual(source_object_id, "7897875840529598144")
         self.assertEqual(community_id, source_object_id)
         self.assertEqual(area_spot_id, "3986972213571675071")
@@ -92,11 +111,13 @@ class GenerateWorldTests(unittest.TestCase):
             for node in always_loaded_sector["Data"]["RootChunk"]["nodes"]
             if node["Data"]["$type"] == "worldCommunityRegistryNode"
         )
-        character_record = registry["communitiesData"][0]["template"]["Data"]["entries"][0][
-            "Data"
-        ]["characterRecordId"]
+        character_record = registry["communitiesData"][0]["template"]["Data"][
+            "entries"
+        ][0]["Data"]["characterRecordId"]
 
-        self.assertEqual(self.spec["community"]["character"], "Character.GhostlinePatch")
+        self.assertEqual(
+            self.spec["community"]["character"], "Character.GhostlinePatch"
+        )
         self.assertEqual(character_record["$type"], "TweakDBID")
         self.assertEqual(character_record["$storage"], "string")
         self.assertEqual(character_record["$value"], "Character.GhostlinePatch")
@@ -105,15 +126,21 @@ class GenerateWorldTests(unittest.TestCase):
             "Data"
         ]["phases"][0]["Data"]
         appearances = [item["$value"] for item in phase["appearances"]]
-        self.assertEqual(self.spec["community"]["appearance"], "ghostline_patch_default")
+        self.assertEqual(
+            self.spec["community"]["appearance"], "ghostline_patch_default"
+        )
         self.assertEqual(appearances, ["ghostline_patch_default"])
 
     def test_registry_node_rejects_community_source_id_collision(self) -> None:
         spec = copy.deepcopy(self.spec)
         spec["community"]["registry_node_id"] = "7897875840529598144"
 
-        with self.assertRaisesRegex(SystemExit, "must differ from community.source_object_id"):
-            generate_world.build_world(spec, Path("unused-raw"), Path("unused-archive"), dry_run=True)
+        with self.assertRaisesRegex(
+            SystemExit, "must differ from community.source_object_id"
+        ):
+            generate_world.build_world(
+                spec, Path("unused-raw"), Path("unused-archive"), dry_run=True
+            )
 
     def test_cache_access_point_is_a_unique_disabled_native_device(self) -> None:
         quest_sector, _ = self.build_production_world()
@@ -126,17 +153,25 @@ class GenerateWorldTests(unittest.TestCase):
 
         self.assertEqual(len(devices), 1)
         node_index, device = devices[0]
-        self.assertEqual(device["appearanceName"]["$value"], "access_point_access_point_socket_f_neomil")
+        self.assertEqual(
+            device["appearanceName"]["$value"],
+            "access_point_access_point_socket_f_neomil",
+        )
         self.assertEqual(
             device["entityTemplate"]["DepotPath"]["$value"],
             r"base\gameplay\devices\masters\access_points\accesspoint.ent",
         )
         access_point = device["instanceData"]["Data"]["buffer"]["Data"]["Chunks"][0]
         self.assertEqual(access_point["$type"], "AccessPoint")
-        self.assertEqual(access_point["contentScale"]["$value"], "DeviceContentAssignment.Autoscaling")
+        self.assertEqual(
+            access_point["contentScale"]["$value"],
+            "DeviceContentAssignment.Autoscaling",
+        )
         self.assertEqual(access_point["deviceState"], "OFF")
 
-        placement = next(item for item in root["nodeData"]["Data"] if item["NodeIndex"] == node_index)
+        placement = next(
+            item for item in root["nodeData"]["Data"] if item["NodeIndex"] == node_index
+        )
         full_ref = "$/mod/gq000/#gq000_pr_patch_meet/#gq000_02_ap_cache"
         self.assertEqual(placement["QuestPrefabRefHash"]["$value"], full_ref)
         self.assertIn(full_ref, [item["$value"] for item in root["nodeRefs"]])
@@ -155,7 +190,9 @@ class GenerateWorldTests(unittest.TestCase):
                 root / "raw",
                 root / "archive",
             )
-            registry_file = next(item for item in generated if item.kind == "device_registry")
+            registry_file = next(
+                item for item in generated if item.kind == "device_registry"
+            )
             registry = generate_world.load_json(registry_file.raw_path)
 
         self.assertEqual(
@@ -206,14 +243,18 @@ class GenerateWorldTests(unittest.TestCase):
         zero = copy.deepcopy(self.spec)
         zero["devices"][0]["buffer_id"] = 0
         with self.assertRaisesRegex(SystemExit, "must not reuse sector buffer 0"):
-            generate_world.build_world(zero, Path("unused-raw"), Path("unused-archive"), dry_run=True)
+            generate_world.build_world(
+                zero, Path("unused-raw"), Path("unused-archive"), dry_run=True
+            )
 
         duplicate = copy.deepcopy(self.spec)
         second = copy.deepcopy(duplicate["devices"][0])
         second["ref"] = "#gq000_02_ap_cache_probe"
         duplicate["devices"].append(second)
         with self.assertRaisesRegex(SystemExit, "must be unique within the sector"):
-            generate_world.build_world(duplicate, Path("unused-raw"), Path("unused-archive"), dry_run=True)
+            generate_world.build_world(
+                duplicate, Path("unused-raw"), Path("unused-archive"), dry_run=True
+            )
 
     def test_cache_guard_registry_contains_three_varied_tyger_claws(self) -> None:
         quest_sector, always_loaded_sector = self.build_production_world()
@@ -251,14 +292,15 @@ class GenerateWorldTests(unittest.TestCase):
         self.assertEqual(len(area["area"]["Data"]["entriesData"]), 3)
 
         registry_periods = [
-            entry["Data"]["phases"][0]["Data"]["timePeriods"][0]
-            for entry in entries
+            entry["Data"]["phases"][0]["Data"]["timePeriods"][0] for entry in entries
         ]
         area_periods = [
             entry["phasesData"][0]["timePeriodsData"][0]
             for entry in area["area"]["Data"]["entriesData"]
         ]
-        self.assertEqual([period["isSequence"] for period in registry_periods], [1, 0, 0])
+        self.assertEqual(
+            [period["isSequence"] for period in registry_periods], [1, 0, 0]
+        )
         self.assertEqual([period["isSequence"] for period in area_periods], [1, 0, 0])
         self.assertEqual(
             [len(period["spotNodeRefs"]) for period in registry_periods],
@@ -277,7 +319,9 @@ class GenerateWorldTests(unittest.TestCase):
         ]
         self.assertEqual(len(cache_spots), 4)
         patrol_spots = [
-            spot for spot in cache_spots if spot["spot"]["Data"]["resource"]["DepotPath"]["$value"]
+            spot
+            for spot in cache_spots
+            if spot["spot"]["Data"]["resource"]["DepotPath"]["$value"]
             == r"base\workspots\patrolling\guard_stand.workspot"
         ]
         self.assertEqual(len(patrol_spots), 2)
@@ -306,9 +350,19 @@ class GenerateWorldTests(unittest.TestCase):
                 self.assertLess(position["x"], marker_x - 1.5)
 
     def test_cache_arrival_trigger_and_marker_use_cabinet_site(self) -> None:
-        marker = next(item for item in self.spec["markers"] if item["ref"] == "#gq000_02_mp_cache")
-        trigger = next(item for item in self.spec["triggers"] if item["ref"] == "#gq000_02_tr_cache_arrive")
-        cleanup = next(item for item in self.spec["triggers"] if item["ref"] == "#gq000_02_tr_cache_cleanup")
+        marker = next(
+            item for item in self.spec["markers"] if item["ref"] == "#gq000_02_mp_cache"
+        )
+        trigger = next(
+            item
+            for item in self.spec["triggers"]
+            if item["ref"] == "#gq000_02_tr_cache_arrive"
+        )
+        cleanup = next(
+            item
+            for item in self.spec["triggers"]
+            if item["ref"] == "#gq000_02_tr_cache_cleanup"
+        )
 
         self.assertEqual(marker["position"], {"x": -1000.02, "y": 1497.2208, "z": 8.3})
         self.assertEqual(trigger["outline"]["radius"], 25)
@@ -343,6 +397,89 @@ class GenerateWorldTests(unittest.TestCase):
         self.assertEqual(placement["Position"]["X"], -1168.77763)
         self.assertEqual(placement["Position"]["Y"], 1308.22212)
         self.assertEqual(placement["Position"]["Z"], 20.9768238)
+
+    def test_scene_marker_option_emits_nested_scene_marker_payload(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["markers"].append(
+            {
+                "ref": "#gq000_test_scene_prop_spawner",
+                "sector": "always_loaded",
+                "position": {
+                    "from": "origin",
+                    "forward": -9.85009765625,
+                    "up": -0.40000152587890625,
+                },
+                "yaw": "origin",
+                "scene_marker": True,
+                "scene_marker_entries": [
+                    {
+                        "$type": "scnSceneMarkerInternalsAnimEventEntry",
+                        "flags": 0,
+                    }
+                ],
+            }
+        )
+
+        _, always_loaded_sector = self.build_production_world(spec)
+        marker = next(
+            node["Data"]
+            for node in always_loaded_sector["Data"]["RootChunk"]["nodes"]
+            if node["Data"].get("debugName", {}).get("$value")
+            == "{gq000_test_scene_prop_spawner}"
+        )
+
+        self.assertEqual(marker["$type"], "worldStaticMarkerNode")
+        self.assertEqual(marker["isEnabled"], 1)
+        self.assertEqual(marker["tags"], {"$type": "redTagList", "tags": []})
+        self.assertEqual(
+            marker["data"]["Data"],
+            {
+                "$type": "scnSceneMarker",
+                "markers": [
+                    {
+                        "$type": "scnSceneMarkerInternalsAnimEventEntry",
+                        "flags": 0,
+                    }
+                ],
+                "workspotMarkers": [],
+            },
+        )
+
+    def test_teleport_marker_types_emit_vanilla_payloads(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["markers"].extend(
+            [
+                {
+                    "ref": "#gq000_test_player_hold",
+                    "sector": "always_loaded",
+                    "marker_type": "spawn_point",
+                },
+                {
+                    "ref": "#gq000_test_player_return",
+                    "sector": "always_loaded",
+                    "marker_type": "null",
+                },
+            ]
+        )
+
+        _, always_loaded_sector = self.build_production_world(spec)
+        markers = {
+            node["Data"]["debugName"]["$value"]: node["Data"]["data"]["Data"]
+            for node in always_loaded_sector["Data"]["RootChunk"]["nodes"]
+            if node["Data"].get("debugName", {}).get("$value")
+            in {
+                "{gq000_test_player_hold}",
+                "{gq000_test_player_return}",
+            }
+        }
+        self.assertEqual(
+            markers["{gq000_test_player_hold}"],
+            {"$type": "worldSpawnPointMarker", "type": 0},
+        )
+        self.assertEqual(
+            markers["{gq000_test_player_return}"],
+            {"$type": "worldNullMarker"},
+        )
 
 
 if __name__ == "__main__":

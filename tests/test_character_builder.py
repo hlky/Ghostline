@@ -36,20 +36,24 @@ UI_SPEC.loader.exec_module(character_ui)
 
 
 class CharacterBuilderTests(unittest.TestCase):
-    manifest_path = ROOT / "source/characters/patch.character.json"
-    female_manifest_path = ROOT / "source/characters/female-example.character.json"
+    manifest_path = ROOT / "characters/patch.character.json"
+    female_manifest_path = ROOT / "characters/female-example.character.json"
+    goth_baddie_manifest_path = ROOT / "characters/goth_baddie.character.json"
 
     def setUp(self) -> None:
         self.manifest = character_builder.load_manifest(self.manifest_path)
         self.catalog = character_builder.load_catalog(self.manifest)
         self.female_manifest = character_builder.load_manifest(self.female_manifest_path)
         self.female_catalog = character_builder.load_catalog(self.female_manifest)
+        self.goth_baddie_manifest = character_builder.load_manifest(self.goth_baddie_manifest_path)
+        self.goth_baddie_catalog = character_builder.load_catalog(self.goth_baddie_manifest)
 
     def test_patch_manifest_and_catalog_validate(self) -> None:
         report = character_builder.validate_manifest(self.manifest, self.catalog)
         self.assertTrue(report.ok, report.errors)
         self.assertEqual(report.details["selections"], 6)
         self.assertEqual(report.details["indexed_overrides"], 2)
+        self.assertEqual(report.details["component_prototype"], "base")
         self.assertEqual(len(report.warnings), 7)
 
     def test_female_manifest_catalog_and_template_validate(self) -> None:
@@ -60,7 +64,115 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertTrue(report.ok, report.errors)
         self.assertEqual(report.details["frame"], "female_average")
         self.assertEqual(report.details["player_frame_token"], "pwa")
+        self.assertEqual(report.details["component_prototype"], "base")
         self.assertEqual(report.details["template_assets"], 44)
+
+    def test_external_npv_paths_are_machine_local_aliases(self) -> None:
+        for manifest_path in ROOT.glob("characters/*.character.json"):
+            encoded = manifest_path.read_text(encoding="utf-8")
+            self.assertNotIn("H:/projects/", encoded, manifest_path)
+            manifest = character_builder.load_manifest(manifest_path)
+            for section in ("template_assets", "head"):
+                for key, value in manifest.get(section, {}).items():
+                    if (
+                        key in {
+                            "source_root",
+                            "blend_template",
+                            "morphtarget_source",
+                            "mesh_source",
+                        }
+                        and isinstance(value, str)
+                        and value.startswith("@npv/")
+                    ):
+                        self.assertTrue(
+                            character_builder.repo_path(value).is_absolute()
+                        )
+
+    def test_female_donor_keeps_only_prototypes_and_archives_naked_only_parts(
+        self,
+    ) -> None:
+        donor = character_builder.read_json(
+            ROOT / "characters/components/donors/npv-female.app.json"
+        )
+        appearances = character_builder.appearance_data(donor)
+        self.assertEqual(
+            ["casual", "business"],
+            [
+                character_builder.typed_value(appearance["name"])
+                for appearance in appearances
+            ],
+        )
+
+        fragment = character_builder.read_json(
+            ROOT
+            / "characters/components/npv-female-naked-only.components.json"
+        )
+        self.assertEqual(
+            ["t0_pubic_hair"],
+            [component["name"] for component in fragment["components"]],
+        )
+        preserved = fragment["components"][0]
+        self.assertEqual(
+            "t0_pubic_hair",
+            character_builder.component_name(preserved["normal"]),
+        )
+        self.assertEqual(
+            "t0_pubic_hair",
+            character_builder.component_name(preserved["compiled"]),
+        )
+
+    def test_appearance_shells_are_empty_and_library_selection_is_automatic(self) -> None:
+        for manifest, catalog, expected in (
+            (self.manifest, self.catalog, "base"),
+            (self.female_manifest, self.female_catalog, "base"),
+            (
+                self.goth_baddie_manifest,
+                self.goth_baddie_catalog,
+                "extended_garments",
+            ),
+        ):
+            shell = character_builder.read_json(
+                character_builder.repo_path(
+                    manifest["templates"]["appearance_shell"]
+                )
+            )
+            self.assertEqual(character_builder.appearance_data(shell), [])
+            _, prototype, _ = character_builder.assemble_appearance_document(
+                manifest, catalog
+            )
+            self.assertEqual(prototype, expected)
+
+    def test_goth_baddie_combat_profile_renders_named_tweak_records(self) -> None:
+        report = character_builder.validate_manifest(
+            self.goth_baddie_manifest, self.goth_baddie_catalog
+        )
+        self.assertTrue(report.ok, report.errors)
+
+        tweak = character_builder.render_tweak(self.goth_baddie_manifest)
+        self.assertIn("archetypeData: ArchetypeData.NetrunnerT3", tweak)
+        self.assertIn("rarity: NPCRarity.Boss", tweak)
+        self.assertIn(
+            "threatTrackingPreset: TargetTracking.DefaultPreset", tweak
+        )
+        self.assertIn("    - Cyberpsycho", tweak)
+        self.assertIn("value: 60", tweak)
+        self.assertIn("value: 10.0", tweak)
+        self.assertIn("item: Items.Preset_Katana_E3", tweak)
+        self.assertIn(
+            "equipCondition:\n"
+            "    - WeaponConditions.BaseMeleePrimaryWeaponEquipCondition",
+            tweak,
+        )
+        self.assertNotIn("inline", tweak)
+
+    def test_combat_profile_rejects_level_above_declared_game_cap(self) -> None:
+        manifest = copy.deepcopy(self.goth_baddie_manifest)
+        manifest["requirements"]["phantom_liberty"] = False
+        report = character_builder.validate_manifest(manifest, self.goth_baddie_catalog)
+        self.assertTrue(
+            any("integer from 1 through 50" in error for error in report.errors),
+            report.errors,
+        )
 
     def test_female_template_asset_rebasing_fails_closed(self) -> None:
         mismatched = copy.deepcopy(self.female_manifest)
@@ -101,7 +213,7 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertTrue(any("Unsupported character frame" in error for error in report.errors))
 
         mismatched = copy.deepcopy(self.female_manifest)
-        mismatched["catalog"] = "source/characters/catalog.json"
+        mismatched["catalog"] = "characters/catalog.json"
         report = character_builder.validate_manifest(mismatched, self.catalog)
         self.assertTrue(any("does not support character frame" in error for error in report.errors))
 
@@ -133,6 +245,146 @@ class CharacterBuilderTests(unittest.TestCase):
                     for path in report["staged_template_assets"]
                 )
             )
+
+    def test_goth_baddie_long_bangs_apply_the_native_ep1_hair_bundle(self) -> None:
+        manifest_path = ROOT / "characters/goth_baddie.character.json"
+        manifest = character_builder.load_manifest(manifest_path)
+        catalog = character_builder.load_catalog(manifest)
+        _, app, _, _, warnings = character_builder.generate_documents(manifest, catalog)
+        appearance = character_builder.appearance_data(app)[0]
+        mappings = character_builder.components_by_name(appearance)
+
+        mesh_path = (
+            r"ep1\characters\common\hair\hh_225_wa__long_bangs"
+            r"\hh_225_wa__long_bangs.mesh"
+        )
+        graph_path = (
+            r"ep1\characters\common\hair\hh_225_wa__long_bangs"
+            r"\hh_225_wa_long_bangs_dangle_animgraph.animgraph"
+        )
+        rig_path = (
+            r"ep1\characters\common\hair\hh_225_wa__long_bangs"
+            r"\hh_225_wa__long_bangs_dangle_skeleton.rig"
+        )
+        self.assertEqual(len(mappings), 2)
+        for mapping in mappings:
+            hair = mapping["hh_hair"]
+            dangle = mapping["Animated1507"]
+            self.assertEqual(hair["mesh"]["DepotPath"]["$value"], mesh_path)
+            self.assertEqual(hair["meshAppearance"]["$value"], "black_carbon")
+            self.assertEqual(dangle["graph"]["DepotPath"]["$value"], graph_path)
+            self.assertEqual(dangle["rig"]["DepotPath"]["$value"], rig_path)
+            self.assertEqual(mapping["hh_hair_shadow"]["isEnabled"], 0)
+
+        self.assertTrue(manifest["requirements"]["phantom_liberty"])
+        self.assertTrue(any("changes resources" in item for item in warnings))
+
+    def test_goth_baddie_gothic_outfit_updates_both_component_copies(self) -> None:
+        manifest_path = ROOT / "characters/goth_baddie.character.json"
+        manifest = character_builder.load_manifest(manifest_path)
+        catalog = character_builder.load_catalog(manifest)
+        _, app, _, _, _ = character_builder.generate_documents(manifest, catalog)
+        mappings = character_builder.components_by_name(
+            character_builder.appearance_data(app)[0]
+        )
+
+        corset = (
+            r"base\characters\garment\player_equipment\torso"
+            r"\t1_097_tank__corset_doll_prostitute"
+            r"\t1_097_pwa_tank__corset_doll_prostitute.mesh"
+        )
+        jacket = (
+            r"base\characters\garment\player_equipment\torso"
+            r"\t2_127_jacket__evelyn\t2_127_pwa_jacket__evelyn.mesh"
+        )
+        pants = (
+            r"base\characters\garment\player_equipment\legs"
+            r"\l1_078_pants__militech_small_caps"
+            r"\l1_078_pwa_pants__militech.mesh"
+        )
+        heels = (
+            r"base\characters\garment\player_equipment\feet"
+            r"\s1_073_shoe__high_heels\s1_073_pwa_shoe__high_heels.mesh"
+        )
+        for mapping in mappings:
+            self.assertEqual(mapping["t1_shirt"]["mesh"]["DepotPath"]["$value"], corset)
+            self.assertEqual(
+                mapping["t1_shirt"]["meshAppearance"]["$value"], "black_gold"
+            )
+            self.assertEqual(
+                mapping["t2_117_wa_vest__ninja_harness"]["mesh"]["DepotPath"]["$value"],
+                jacket,
+            )
+            self.assertEqual(
+                mapping["t2_117_wa_vest__ninja_harness"]["meshAppearance"]["$value"],
+                "black_croc",
+            )
+            self.assertEqual(mapping["l1_pants"]["mesh"]["DepotPath"]["$value"], pants)
+            self.assertEqual(
+                mapping["l1_pants"]["meshAppearance"]["$value"], "maelstrom_leather"
+            )
+            self.assertEqual(mapping["s1_boot"]["mesh"]["DepotPath"]["$value"], heels)
+            self.assertEqual(
+                mapping["s1_boot"]["meshAppearance"]["$value"], "silver_purple"
+            )
+
+    def test_full_character_preview_selects_silhouette_layers(self) -> None:
+        manifest_path = ROOT / "characters/goth_baddie.character.json"
+        manifest = character_builder.load_manifest(manifest_path)
+        catalog = character_builder.load_catalog(manifest)
+        _, app, _, _, _ = character_builder.generate_documents(manifest, catalog)
+
+        layers, warnings = character_ui.character_full_preview.visible_mesh_layers(
+            app, manifest["namespace"]
+        )
+        components = {layer["component"] for layer in layers}
+
+        self.assertEqual(
+            components,
+            {
+                "t0_body",
+                "an0__arm_right",
+                "an0__arm_left",
+                "s0_flat_feet",
+                "hh_hair",
+                "l1_pants",
+                "s1_boot",
+                "t1_shirt",
+                "t2_117_wa_vest__ninja_harness",
+            },
+        )
+        self.assertNotIn("hh_hair_shadow", components)
+        self.assertNotIn("hx_makeup_eyes", components)
+        self.assertTrue(any("head layer" in warning for warning in warnings))
+
+    def test_full_character_manifest_rebases_head_models(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            head_manifest_path = root / "preview" / "preview-manifest.json"
+            output = root / "full-preview"
+            preview = character_ui.character_full_preview.assemble_preview_manifest(
+                {
+                    "models": [{"id": "head", "file": "models/head.glb"}],
+                    "morph_mapping": {"eyes": {"creator_value": 8}},
+                },
+                head_manifest_path,
+                {
+                    "models": [
+                        {
+                            "id": "body",
+                            "file": "raw/mod/example/body.mesh.glb",
+                            "role": "body",
+                        }
+                    ]
+                },
+                output,
+                ["neutral materials"],
+            )
+
+        self.assertEqual(preview["preview_kind"], "character")
+        self.assertEqual(preview["models"][0]["file"], "../preview/models/head.glb")
+        self.assertEqual(preview["models"][1]["role"], "body")
+        self.assertEqual(preview["morph_mapping"]["eyes"]["creator_value"], 8)
 
     def test_entity_default_uses_the_exposed_root_appearance_name(self) -> None:
         entity, _, _, _, _ = character_builder.generate_documents(
@@ -179,14 +431,34 @@ class CharacterBuilderTests(unittest.TestCase):
             generated_app = character_builder.output_path(
                 output, baseline["outputs"]["appearance_raw"]
             )
-            original_template = character_builder.repo_path(
-                baseline["templates"]["appearance"]
-            )
             generated_semantic = character_builder.semantic_value(generated_app)
-            template_semantic = character_builder.semantic_value(original_template)
+            expected_app, _, _ = character_builder.assemble_appearance_document(
+                baseline, self.catalog
+            )
+            identity = baseline.get("template_identity", {})
+            expected_app = character_builder.replace_strings(
+                expected_app,
+                [
+                    (
+                        str(identity.get("namespace", baseline["namespace"])),
+                        baseline["namespace"],
+                    ),
+                    (str(identity.get("id", baseline["id"])), baseline["id"]),
+                ],
+            )
+            character_builder.set_typed_value(
+                character_builder.appearance_data(expected_app)[0],
+                "name",
+                baseline["appearance"]["name"],
+            )
+            character_builder.renumber_handles(expected_app)
+            character_builder.set_archive_header(
+                expected_app, baseline["outputs"]["appearance_raw"]
+            )
+            expected_app.get("Header", {}).pop("ExportedDateTime", None)
 
         self.assertTrue(report["validation"]["ok"])
-        self.assertEqual(generated_semantic, template_semantic)
+        self.assertEqual(generated_semantic, expected_app)
 
     def test_catalog_none_disables_both_component_copies(self) -> None:
         manifest = copy.deepcopy(self.manifest)
@@ -266,8 +538,8 @@ class CharacterBuilderTests(unittest.TestCase):
         )
         self.assertEqual(compiled_primary["skinning"]["Data"]["bindName"]["$value"], "Component")
 
-        source_app = character_builder.read_json(
-            character_builder.repo_path(manifest["templates"]["appearance"])
+        source_app, _, _ = character_builder.assemble_appearance_document(
+            manifest, self.catalog
         )
         source_ids = character_builder.handle_ids(source_app)
         generated_ids = character_builder.handle_ids(app)
@@ -328,7 +600,7 @@ class CharacterBuilderTests(unittest.TestCase):
                 self.assertTrue(report.ok, report.errors)
                 self.assertTrue(any("companion remains provisional" in item for item in warnings))
 
-    def test_female_indexed_torso_and_legs_require_pwa_and_update_both_copies(self) -> None:
+    def test_female_indexed_clothing_requires_pwa_and_updates_both_copies(self) -> None:
         cases = (
             (
                 "inner_torso",
@@ -339,6 +611,11 @@ class CharacterBuilderTests(unittest.TestCase):
                 "legs",
                 r"base\characters\garment\player_equipment\legs\test\l1_test_pwa.mesh",
                 "l1_pants",
+            ),
+            (
+                "feet",
+                r"base\characters\garment\player_equipment\feet\test\s1_test_pwa.mesh",
+                "s1_boot",
             ),
         )
         for category, depot_path, component_name in cases:
@@ -361,6 +638,11 @@ class CharacterBuilderTests(unittest.TestCase):
                     {mapping[component_name]["mesh"]["DepotPath"]["$value"] for mapping in mappings},
                     {depot_path},
                 )
+                if category == "feet":
+                    self.assertEqual(
+                        {mapping[component_name]["$type"] for mapping in mappings},
+                        {"entSkinnedMeshComponent"},
+                    )
                 self.assertTrue(character_builder.validate_generated(manifest, entity, app).ok)
 
         wrong_frame = copy.deepcopy(self.female_manifest)
@@ -408,8 +690,8 @@ class CharacterBuilderTests(unittest.TestCase):
                 "mesh_appearance": "black_red",
             }
         }
-        app = character_builder.read_json(
-            character_builder.repo_path(manifest["templates"]["appearance"])
+        app, _, _ = character_builder.assemble_appearance_document(
+            manifest, self.catalog
         )
         appearance = character_builder.appearance_data(app)[0]
         appearance.pop("compiledData")
@@ -437,8 +719,8 @@ class CharacterBuilderTests(unittest.TestCase):
                 "mesh_appearance": "black_red",
             }
         }
-        app = character_builder.read_json(
-            character_builder.repo_path(manifest["templates"]["appearance"])
+        app, _, _ = character_builder.assemble_appearance_document(
+            manifest, self.catalog
         )
         appearance = character_builder.appearance_data(app)[0]
         first_copy = character_builder.components_by_name(appearance)[0]
@@ -714,7 +996,7 @@ class CharacterBuilderTests(unittest.TestCase):
     def test_ui_female_profile_keeps_server_owned_frame_and_templates(self) -> None:
         posted = copy.deepcopy(self.female_manifest)
         posted["frame"] = "male_average"
-        posted["catalog"] = "source/characters/catalog.json"
+        posted["catalog"] = "characters/catalog.json"
         posted["templates"] = self.manifest["templates"]
         with mock.patch.object(
             character_ui, "DEFAULT_MANIFEST", self.female_manifest_path
@@ -825,7 +1107,17 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertEqual(bootstrap["manifest"]["frame"], "female_average")
         self.assertEqual(bootstrap["frame_profile"]["player_token"], "pwa")
         self.assertEqual(bootstrap["frame_profile"]["head_shape_max"], 22)
-        self.assertEqual(len(bootstrap["catalog"]["categories"]), 4)
+        self.assertEqual(
+            set(bootstrap["catalog"]["categories"]),
+            {
+                "hair",
+                "inner_torso",
+                "outer_torso",
+                "business_extras",
+                "legs",
+                "feet",
+            },
+        )
         self.assertTrue(validation["ok"])
         self.assertEqual(validation["details"]["frame"], "female_average")
 

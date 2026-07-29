@@ -1,0 +1,82 @@
+Character.GhostlineGothBaddie:
+  $base: Character.Quest_Combat_NPC_Base
+  entityTemplatePath: mod\ghostline\characters\goth_baddie\goth_baddie.ent
+  displayName: gq_npc_goth_baddie
+  fullDisplayName: gq_npc_goth_baddie
+  affiliation: Factions.Ghostline
+  voiceTag: gq_goth_baddie
+  actionMap: GangNetrunner.Map
+  archetypeData: ArchetypeData.NetrunnerT3
+  baseAttitudeGroup: hostile
+  rarity: NPCRarity.Boss
+  reactionPreset: ReactionPresets.Ganger_Aggressive
+  scannerModulePreset: ScanningNPCPresets.ScannerPreset_NPCFull
+  threatTrackingPreset: TargetTracking.DefaultPreset
+  uiNameplate: UINameplate.CombatSettings
+  disableDefeatedState: false
+  dropsWeaponOnDeath: false
+  skipDisplayArchetype: true
+  abilities:
+    - Ability.CanCrouch
+    - Ability.CanSprint
+    - Ability.CanSwitchWeapon
+    - Ability.CanShootWhileMoving
+    - Ability.CanPreciseShoot
+    - Ability.CanChargedShoot
+    - Ability.CanSmartShoot
+    - Ability.CanUseLeftHand
+    - Ability.CanUseRightHand
+    - Ability.CanUseLegs
+    - Ability.CanTaunt
+    - Ability.CanCloseCombat
+    - Ability.IsReckless
+  effectors:
+    - Effectors.HitReactionTBHIncrease
+  tags:
+    - Cyberpsycho
+  visualTags:
+    - Netrunner
+    - Lvl3
+  statModifierGroups:
+    - Character.NPC_Base_Primary_Stat_ModGroup
+    - Character.Cyberpsycho_ModGroup
+    - Character.Cyberpsycho_HitReaction_Resistance
+    - Character.GhostlineGothBaddie_BossStatModifiers
+  contentAssignment: Character.GhostlineGothBaddie_FixedLevelContent
+  primaryEquipment: Character.GhostlineGothBaddie_PrimaryEquipment
+
+Character.GhostlineGothBaddie_FixedLevel:
+  $type: gamedataConstantStatModifier_Record
+  statType: BaseStats.PowerLevel
+  modifierType: Additive
+  value: 60
+
+Character.GhostlineGothBaddie_FixedLevelContent:
+  $type: gamedataDeviceContentAssignment_Record
+  powerLevelMod: Character.GhostlineGothBaddie_FixedLevel
+
+Character.GhostlineGothBaddie_HealthMultiplier:
+  $type: gamedataConstantStatModifier_Record
+  statType: BaseStats.Health
+  modifierType: Multiplier
+  value: 10.0
+
+Character.GhostlineGothBaddie_BossStatModifiers:
+  $type: gamedataStatModifierGroup_Record
+  statModifiers:
+    - Character.GhostlineGothBaddie_HealthMultiplier
+
+Character.GhostlineGothBaddie_PrimaryEquipment:
+  $type: gamedataNPCEquipmentGroup_Record
+  equipmentItems:
+    - Character.GhostlineGothBaddie_PrimaryWeapon
+
+Character.GhostlineGothBaddie_PrimaryWeapon:
+  $type: gamedataNPCEquipmentItem_Record
+  item: Items.Preset_Katana_E3
+  equipSlot: AttachmentSlots.WeaponRight
+  onBodySlot: AttachmentSlots.ItemSlotKatana
+  equipCondition:
+    - WeaponConditions.BaseMeleePrimaryWeaponEquipCondition
+  unequipCondition:
+    - WeaponConditions.BaseMeleePrimaryWeaponUnequipCondition

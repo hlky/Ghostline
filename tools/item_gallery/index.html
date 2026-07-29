@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ghostline Equipment Index</title>
+    <link rel="stylesheet" href="/style.css?v=3">
+  </head>
+  <body>
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Ghostline / Character Intelligence</p>
+        <h1>Equipment Index</h1>
+        <p class="lede">Material-aware wardrobe references extracted and rendered without launching Cyberpunk.</p>
+      </div>
+      <dl class="stats" id="stats">
+        <div><dt>Items</dt><dd>—</dd></div>
+        <div><dt>Variants</dt><dd>—</dd></div>
+        <div><dt>Rendered</dt><dd>—</dd></div>
+      </dl>
+    </header>
+
+    <main>
+      <form class="filters" id="filters">
+        <label class="search">
+          <span>Search</span>
+          <input id="query" name="q" type="search" placeholder="military boots, corpo, Tyger Claws…" autocomplete="off">
+        </label>
+        <label>
+          <span>Slot</span>
+          <select id="slot" name="slot"><option value="">All slots</option></select>
+        </label>
+        <label>
+          <span>Body type</span>
+          <select id="frame" name="frame"><option value="">All body types</option></select>
+        </label>
+        <label>
+          <span>Game tag</span>
+          <select id="tag" name="tag"><option value="">All tags</option></select>
+        </label>
+        <label>
+          <span>Render state</span>
+          <select id="rendered" name="rendered">
+            <option value="">All variants</option>
+            <option value="complete">Rendered</option>
+            <option value="pending">Pending</option>
+          </select>
+        </label>
+      </form>
+
+      <div class="result-bar">
+        <p id="status">Loading database…</p>
+        <button id="clear" type="button">Clear filters</button>
+      </div>
+      <section class="grid" id="items" aria-live="polite"></section>
+      <nav class="pagination" aria-label="Equipment pages">
+        <button id="previous" type="button">Previous</button>
+        <p id="page-status">Page 1</p>
+        <button id="next" type="button">Next</button>
+      </nav>
+    </main>
+
+    <template id="item-template">
+      <article class="card">
+        <div class="visual">
+          <div class="view">
+            <img class="hero-view" alt="" loading="lazy">
+            <div class="placeholder hero-placeholder"><span>Front render pending</span></div>
+            <span class="view-label">Front</span>
+          </div>
+          <div class="view">
+            <img class="back-view" alt="" loading="lazy">
+            <div class="placeholder back-placeholder"><span>Back render pending</span></div>
+            <span class="view-label">Back</span>
+          </div>
+          <span class="frame"></span>
+        </div>
+        <div class="copy">
+          <p class="slot"></p>
+          <h2></h2>
+          <p class="description"></p>
+          <div class="tags"></div>
+          <details>
+            <summary>Source data</summary>
+            <dl class="source"></dl>
+          </details>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="/app.js?v=2"></script>
+  </body>
+</html>

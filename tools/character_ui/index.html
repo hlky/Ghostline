@@ -52,6 +52,7 @@
             <p id="shape-range-hint" class="hint">Shape ranges are loaded from the trusted body-frame profile. Empty values preserve the current head and block regeneration.</p>
             <div class="preview-actions">
               <button data-action="preview-prepare" class="primary">Prepare live preview</button>
+              <button data-action="preview-full" class="primary">Prepare full character</button>
               <label class="check-field"><input id="preview-all-parts" type="checkbox"> Load all head layers</label>
             </div>
           </div>
@@ -60,6 +61,7 @@
             <div class="viewport-toolbar">
               <span id="viewport-status">Preview not prepared</span>
               <button id="viewport-head" type="button">Head</button>
+              <button id="viewport-full" type="button">Full character</button>
               <button id="viewport-reset" type="button">Reset view</button>
               <button id="viewport-wireframe" type="button" aria-pressed="false">Wireframe</button>
             </div>
@@ -137,6 +139,6 @@
       </section>
     </main>
 
-    <script type="module" src="/app.js?v=frame-profiles-1"></script>
+    <script type="module" src="/app.js?v=full-character-preview-1"></script>
   </body>
 </html>

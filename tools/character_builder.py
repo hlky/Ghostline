@@ -19,7 +19,8 @@ from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "source/characters/patch.character.json"
+DEFAULT_MANIFEST = ROOT / "characters/patch.character.json"
+LOCAL_PATHS = ROOT / "characters/local-paths.json"
 DEFAULT_WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
 DEFAULT_BLENDER = Path(r"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe")
 DEFAULT_GAME = Path(r"H:\Cyberpunk 2077")
@@ -114,7 +115,32 @@ def write_json(path: Path, value: Any) -> None:
 
 
 def repo_path(value: str | Path) -> Path:
-    path = Path(value)
+    raw = str(value)
+    if raw.startswith("@"):
+        alias, separator, relative = raw[1:].partition("/")
+        if (
+            not separator
+            or not CNAME_PATTERN.fullmatch(alias)
+            or not relative
+            or Path(relative).is_absolute()
+            or ".." in Path(relative).parts
+        ):
+            raise CharacterBuildError(f"Invalid local path alias: {raw}")
+        if not LOCAL_PATHS.is_file():
+            raise CharacterBuildError(
+                f"{raw} requires {LOCAL_PATHS}; copy local-paths.example.json "
+                "and configure this machine"
+            )
+        configured = read_json(LOCAL_PATHS).get(alias)
+        if not isinstance(configured, str) or not configured.strip():
+            raise CharacterBuildError(
+                f"Local path alias @{alias} is not configured in {LOCAL_PATHS}"
+            )
+        base = Path(configured)
+        if not base.is_absolute():
+            base = ROOT / base
+        return base / Path(relative)
+    path = Path(raw)
     return path if path.is_absolute() else ROOT / path
 
 
@@ -307,6 +333,199 @@ def find_appearance(document: dict[str, Any], name: str) -> dict[str, Any]:
         if str(typed_value(appearance.get("name")) or "") == name:
             return appearance
     raise CharacterBuildError(f"Appearance template {name!r} was not found")
+
+
+def required_component_names(manifest: dict[str, Any], catalog: dict[str, Any]) -> set[str]:
+    """Return every named component required by the selected catalog operations."""
+    required: set[str] = set()
+    categories = catalog.get("categories", {})
+    selections = manifest.get("appearance", {}).get("selections", {})
+    if not isinstance(selections, dict):
+        raise CharacterBuildError("appearance.selections must be an object")
+
+    for category_id, option_id in selections.items():
+        category = categories.get(category_id)
+        option = category.get("options", {}).get(option_id) if isinstance(category, dict) else None
+        if not isinstance(option, dict):
+            raise CharacterBuildError(f"Unknown catalog selection {category_id}={option_id}")
+        for key in ("component_names", "disable_components"):
+            values = option.get(key, [])
+            if not isinstance(values, list) or any(
+                not isinstance(value, str) or not value for value in values
+            ):
+                raise CharacterBuildError(
+                    f"Catalog {category_id}={option_id} has invalid {key}"
+                )
+            required.update(values)
+        for change in option.get("changes", []):
+            if not isinstance(change, dict) or not isinstance(change.get("component"), str):
+                raise CharacterBuildError(f"Invalid change in {category_id}={option_id}")
+            required.add(change["component"])
+        for binding in option.get("bindings", []):
+            if not isinstance(binding, dict) or not isinstance(binding.get("component"), str):
+                raise CharacterBuildError(f"Invalid binding in {category_id}={option_id}")
+            required.add(binding["component"])
+
+    overrides = manifest.get("appearance", {}).get("indexed_overrides", {})
+    if not isinstance(overrides, dict):
+        raise CharacterBuildError("appearance.indexed_overrides must be an object")
+    for category_id, override in overrides.items():
+        config, _, _ = normalized_indexed_override(
+            manifest, catalog, str(category_id), override
+        )
+        required.add(str(config["component"]))
+    return required
+
+
+def load_component_library(manifest: dict[str, Any]) -> tuple[dict[str, Any], Path]:
+    templates = manifest.get("templates", {})
+    library_value = templates.get("component_library") if isinstance(templates, dict) else None
+    if not isinstance(library_value, str):
+        raise CharacterBuildError("templates.component_library must be a repository path")
+    library = read_json(repo_path(library_value))
+    if library.get("schema_version") != 1:
+        raise CharacterBuildError("Only component-library schema_version 1 is supported")
+    if library.get("frame") != manifest.get("frame"):
+        raise CharacterBuildError(
+            "Component library frame must match the character manifest frame"
+        )
+    donor_value = library.get("donor")
+    if not isinstance(donor_value, str) or not repo_path(donor_value).is_file():
+        raise CharacterBuildError(f"Component library donor does not exist: {donor_value}")
+    return library, repo_path(donor_value)
+
+
+def select_component_prototype(
+    manifest: dict[str, Any],
+    catalog: dict[str, Any],
+    library: dict[str, Any],
+    donor: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    required = required_component_names(manifest, catalog)
+    candidates: list[tuple[int, str, dict[str, Any]]] = []
+    prototypes = library.get("prototypes")
+    if not isinstance(prototypes, list) or not prototypes:
+        raise CharacterBuildError("Component library must define at least one prototype")
+
+    seen_ids: set[str] = set()
+    seen_appearances: set[str] = set()
+    for row in prototypes:
+        if not isinstance(row, dict):
+            raise CharacterBuildError("Component library prototypes must be objects")
+        prototype_id = row.get("id")
+        appearance_name = row.get("appearance")
+        if (
+            not isinstance(prototype_id, str)
+            or not prototype_id
+            or prototype_id in seen_ids
+            or not isinstance(appearance_name, str)
+            or not appearance_name
+            or appearance_name in seen_appearances
+        ):
+            raise CharacterBuildError(
+                "Component library prototype ids and appearances must be unique"
+            )
+        seen_ids.add(prototype_id)
+        seen_appearances.add(appearance_name)
+        appearance = find_appearance(donor, appearance_name)
+        mappings = components_by_name(appearance)
+        if len(mappings) != 2:
+            raise CharacterBuildError(
+                f"Component prototype {prototype_id!r} must contain normal and compiled copies"
+            )
+        available = set(mappings[0]) & set(mappings[1])
+        if required <= available:
+            candidates.append((len(component_sets(appearance)[0]), prototype_id, appearance))
+
+    if not candidates:
+        missing = ", ".join(sorted(required)) or "<no named requirements>"
+        raise CharacterBuildError(
+            f"No component prototype covers the selected character components: {missing}"
+        )
+    _, prototype_id, appearance = min(candidates, key=lambda item: (item[0], item[1]))
+    return prototype_id, appearance
+
+
+def assemble_appearance_document(
+    manifest: dict[str, Any],
+    catalog: dict[str, Any],
+) -> tuple[dict[str, Any], str, Path]:
+    templates = manifest["templates"]
+    shell_value = templates.get("appearance_shell")
+    if not isinstance(shell_value, str):
+        raise CharacterBuildError("templates.appearance_shell must be a repository path")
+    shell = read_json(repo_path(shell_value))
+    if appearance_data(shell):
+        raise CharacterBuildError("Appearance shell must not contain authored appearances")
+    root = shell.get("Data", {}).get("RootChunk")
+    if not isinstance(root, dict) or root.get("$type") != "appearanceAppearanceResource":
+        raise CharacterBuildError("Appearance shell has an invalid RootChunk")
+
+    library, donor_path = load_component_library(manifest)
+    donor = read_json(donor_path)
+    shell_entity_type = typed_value(root.get("baseEntityType"))
+    donor_root = donor.get("Data", {}).get("RootChunk")
+    donor_entity_type = (
+        typed_value(donor_root.get("baseEntityType"))
+        if isinstance(donor_root, dict)
+        else None
+    )
+    if donor_entity_type != shell_entity_type:
+        raise CharacterBuildError(
+            "Appearance shell and component donor baseEntityType values must match"
+        )
+    prototype_id, prototype = select_component_prototype(
+        manifest, catalog, library, donor
+    )
+    root["appearances"] = [{"HandleId": "0", "Data": copy.deepcopy(prototype)}]
+    return shell, prototype_id, donor_path
+
+
+def appearance_shell_document(donor: dict[str, Any]) -> dict[str, Any]:
+    shell = copy.deepcopy(donor)
+    root = shell.get("Data", {}).get("RootChunk")
+    if not isinstance(root, dict) or root.get("$type") != "appearanceAppearanceResource":
+        raise CharacterBuildError("Appearance donor has an invalid RootChunk")
+    root["appearances"] = []
+    header = shell.get("Header")
+    if isinstance(header, dict):
+        header["ArchiveFileName"] = ""
+    return shell
+
+
+def entity_shell_document(donor: dict[str, Any], frame: str) -> dict[str, Any]:
+    profile = FRAME_PROFILES.get(frame)
+    if profile is None:
+        raise CharacterBuildError(f"Unsupported entity-shell frame: {frame}")
+    shell = copy.deepcopy(donor)
+    root = shell.get("Data", {}).get("RootChunk")
+    if not isinstance(root, dict) or root.get("$type") != "entEntityTemplate":
+        raise CharacterBuildError("Entity donor has an invalid RootChunk")
+    components = root.get("components")
+    expected_count = int(profile["root_component_count"])
+    if not isinstance(components, list) or len(components) != expected_count:
+        actual = len(components) if isinstance(components, list) else "malformed"
+        raise CharacterBuildError(
+            f"Entity donor has {actual} root components; {frame} requires {expected_count}"
+        )
+    mappings = root.get("appearances")
+    if not isinstance(mappings, list) or not mappings or not isinstance(mappings[0], dict):
+        raise CharacterBuildError("Entity donor has no appearance mapping")
+    root["appearances"] = [copy.deepcopy(mappings[0])]
+    mapping = root["appearances"][0].get("Data", root["appearances"][0])
+    if not isinstance(mapping, dict):
+        raise CharacterBuildError("Entity donor appearance mapping is malformed")
+    set_typed_value(mapping, "name", "template_default")
+    set_typed_value(mapping, "appearanceName", "default")
+    resource = mapping.get("appearanceResource", {}).get("DepotPath")
+    if not isinstance(resource, dict) or "$value" not in resource:
+        raise CharacterBuildError("Entity donor appearanceResource is malformed")
+    resource["$value"] = r"mod\ghostline\characters\template\template.app"
+    set_typed_value(root, "defaultAppearance", "template_default")
+    header = shell.get("Header")
+    if isinstance(header, dict):
+        header["ArchiveFileName"] = ""
+    return shell
 
 
 def set_nested(target: dict[str, Any], dotted_path: str, value: Any) -> None:
@@ -622,7 +841,12 @@ def apply_catalog_selections(
     app_document: dict[str, Any], manifest: dict[str, Any], catalog: dict[str, Any]
 ) -> list[str]:
     app_spec = manifest["appearance"]
-    appearance = find_appearance(app_document, str(app_spec["template_name"]))
+    appearances = appearance_data(app_document)
+    if len(appearances) != 1:
+        raise CharacterBuildError(
+            "Generated appearance document must contain exactly one assembled appearance"
+        )
+    appearance = appearances[0]
     sets = components_by_name(appearance)
     warnings: list[str] = []
     categories = catalog.get("categories", {})
@@ -821,15 +1045,133 @@ def render_tweak(manifest: dict[str, Any]) -> str:
     tweak = manifest["tweak"]
     namespace = manifest["namespace"]
     entity_file = manifest["entity"]["file_name"]
-    return (
-        f"{tweak['record']}:\n"
-        f"  $base: {tweak['base']}\n"
-        f"  entityTemplatePath: {namespace}\\{entity_file}\n"
-        f"  displayName: {tweak['display_name']}\n"
-        f"  fullDisplayName: {tweak['display_name']}\n"
-        f"  affiliation: {tweak['affiliation']}\n"
-        f"  voiceTag: {tweak['voice_tag']}\n"
+    combat = tweak.get("combat")
+    lines = [
+        f"{tweak['record']}:",
+        f"  $base: {tweak['base']}",
+        f"  entityTemplatePath: {namespace}\\{entity_file}",
+        f"  displayName: {tweak['display_name']}",
+        f"  fullDisplayName: {tweak['display_name']}",
+        f"  affiliation: {tweak['affiliation']}",
+        f"  voiceTag: {tweak['voice_tag']}",
+    ]
+    if not isinstance(combat, dict):
+        return "\n".join(lines) + "\n"
+
+    record = tweak["record"]
+    level_modifier = f"{record}_FixedLevel"
+    content_assignment = f"{record}_FixedLevelContent"
+    health_modifier = f"{record}_HealthMultiplier"
+    boss_stat_group = f"{record}_BossStatModifiers"
+    equipment_group = f"{record}_PrimaryEquipment"
+    weapon_record = f"{record}_PrimaryWeapon"
+
+    scalar_fields = (
+        ("action_map", "actionMap"),
+        ("archetype_data", "archetypeData"),
+        ("base_attitude_group", "baseAttitudeGroup"),
+        ("rarity", "rarity"),
+        ("reaction_preset", "reactionPreset"),
+        ("scanner_module_preset", "scannerModulePreset"),
+        ("threat_tracking_preset", "threatTrackingPreset"),
+        ("ui_nameplate", "uiNameplate"),
     )
+    for source_name, output_name in scalar_fields:
+        value = combat.get(source_name)
+        if value is not None:
+            lines.append(f"  {output_name}: {value}")
+
+    bool_fields = (
+        ("disable_defeated_state", "disableDefeatedState"),
+        ("drops_weapon_on_death", "dropsWeaponOnDeath"),
+        ("skip_display_archetype", "skipDisplayArchetype"),
+    )
+    for source_name, output_name in bool_fields:
+        value = combat.get(source_name)
+        if value is not None:
+            lines.append(f"  {output_name}: {str(value).lower()}")
+
+    for source_name, output_name in (
+        ("abilities", "abilities"),
+        ("effectors", "effectors"),
+        ("tags", "tags"),
+        ("visual_tags", "visualTags"),
+    ):
+        values = combat.get(source_name)
+        if values:
+            lines.append(f"  {output_name}:")
+            lines.extend(f"    - {value}" for value in values)
+
+    stat_modifier_groups = list(combat.get("stat_modifier_groups", []))
+    if "health_multiplier" in combat:
+        stat_modifier_groups.append(boss_stat_group)
+    if stat_modifier_groups:
+        lines.append("  statModifierGroups:")
+        lines.extend(f"    - {value}" for value in stat_modifier_groups)
+
+    if "level" in combat:
+        lines.append(f"  contentAssignment: {content_assignment}")
+    weapon = combat.get("primary_weapon")
+    if isinstance(weapon, dict):
+        lines.append(f"  primaryEquipment: {equipment_group}")
+
+    records: list[str] = []
+    if "level" in combat:
+        records.extend(
+            [
+                f"{level_modifier}:",
+                "  $type: gamedataConstantStatModifier_Record",
+                "  statType: BaseStats.PowerLevel",
+                "  modifierType: Additive",
+                f"  value: {combat['level']}",
+                "",
+                f"{content_assignment}:",
+                "  $type: gamedataDeviceContentAssignment_Record",
+                f"  powerLevelMod: {level_modifier}",
+            ]
+        )
+    if "health_multiplier" in combat:
+        if records:
+            records.append("")
+        records.extend(
+            [
+                f"{health_modifier}:",
+                "  $type: gamedataConstantStatModifier_Record",
+                "  statType: BaseStats.Health",
+                "  modifierType: Multiplier",
+                f"  value: {combat['health_multiplier']}",
+                "",
+                f"{boss_stat_group}:",
+                "  $type: gamedataStatModifierGroup_Record",
+                "  statModifiers:",
+                f"    - {health_modifier}",
+            ]
+        )
+    if isinstance(weapon, dict):
+        if records:
+            records.append("")
+        records.extend(
+            [
+                f"{equipment_group}:",
+                "  $type: gamedataNPCEquipmentGroup_Record",
+                "  equipmentItems:",
+                f"    - {weapon_record}",
+                "",
+                f"{weapon_record}:",
+                "  $type: gamedataNPCEquipmentItem_Record",
+                f"  item: {weapon['item']}",
+                f"  equipSlot: {weapon['equip_slot']}",
+                f"  onBodySlot: {weapon['on_body_slot']}",
+                "  equipCondition:",
+                f"    - {weapon['equip_condition']}",
+                "  unequipCondition:",
+                f"    - {weapon['unequip_condition']}",
+            ]
+        )
+
+    if records:
+        lines.extend(["", *records])
+    return "\n".join(lines) + "\n"
 
 
 def update_localization(document: dict[str, Any], manifest: dict[str, Any]) -> None:
@@ -881,10 +1223,83 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
     if not isinstance(phantom_liberty, bool):
         report.errors.append("requirements.phantom_liberty must be a JSON boolean")
 
+    tweak = manifest.get("tweak")
+    if not isinstance(tweak, dict):
+        report.errors.append("tweak must be an object")
+        tweak = {}
+    combat = tweak.get("combat")
+    if combat is not None and not isinstance(combat, dict):
+        report.errors.append("tweak.combat must be an object")
+        combat = {}
+    if isinstance(combat, dict) and combat:
+        level = combat.get("level")
+        max_level = 60 if phantom_liberty is True else 50
+        if not isinstance(level, int) or isinstance(level, bool) or not 1 <= level <= max_level:
+            report.errors.append(
+                f"tweak.combat.level must be an integer from 1 through {max_level}"
+            )
+        health_multiplier = combat.get("health_multiplier")
+        if (
+            not isinstance(health_multiplier, (int, float))
+            or isinstance(health_multiplier, bool)
+            or not 1.0 <= float(health_multiplier) <= 100.0
+        ):
+            report.errors.append(
+                "tweak.combat.health_multiplier must be a number from 1 through 100"
+            )
+        for key in (
+            "action_map",
+            "archetype_data",
+            "base_attitude_group",
+            "rarity",
+            "reaction_preset",
+            "scanner_module_preset",
+            "threat_tracking_preset",
+            "ui_nameplate",
+        ):
+            if not isinstance(combat.get(key), str) or not combat[key]:
+                report.errors.append(f"tweak.combat.{key} must be a non-empty string")
+        for key in ("disable_defeated_state", "drops_weapon_on_death", "skip_display_archetype"):
+            if not isinstance(combat.get(key), bool):
+                report.errors.append(f"tweak.combat.{key} must be a JSON boolean")
+        for key in ("abilities", "effectors", "stat_modifier_groups", "tags", "visual_tags"):
+            values = combat.get(key)
+            if (
+                not isinstance(values, list)
+                or not values
+                or any(not isinstance(value, str) or not value for value in values)
+            ):
+                report.errors.append(
+                    f"tweak.combat.{key} must be a non-empty list of record names"
+                )
+        weapon = combat.get("primary_weapon")
+        if not isinstance(weapon, dict):
+            report.errors.append("tweak.combat.primary_weapon must be an object")
+        else:
+            for key in (
+                "item",
+                "equip_slot",
+                "on_body_slot",
+                "equip_condition",
+                "unequip_condition",
+            ):
+                if not isinstance(weapon.get(key), str) or not weapon[key]:
+                    report.errors.append(
+                        f"tweak.combat.primary_weapon.{key} must be a non-empty string"
+                    )
+
     templates = manifest.get("templates")
     if not isinstance(templates, dict):
         report.errors.append("templates must be an object")
         templates = {}
+    for required_template in (
+        "entity",
+        "appearance_shell",
+        "component_library",
+        "localization",
+    ):
+        if required_template not in templates:
+            report.errors.append(f"templates is missing {required_template}")
     for kind, value in templates.items():
         if not isinstance(value, str) or not repo_path(value).is_file():
             report.errors.append(f"Template {kind} does not exist: {value}")
@@ -905,17 +1320,21 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
                     )
             except CharacterBuildError as exc:
                 report.errors.append(str(exc))
-        appearance_template = templates.get("appearance")
-        if isinstance(appearance_template, str) and repo_path(appearance_template).is_file():
+        appearance_shell = templates.get("appearance_shell")
+        if isinstance(appearance_shell, str) and repo_path(appearance_shell).is_file():
             try:
-                appearance_document = read_json(repo_path(appearance_template))
+                appearance_document = read_json(repo_path(appearance_shell))
                 actual_type = typed_value(
                     appearance_document.get("Data", {}).get("RootChunk", {}).get("baseEntityType")
                 )
                 if actual_type != profile["base_entity_type"]:
                     report.errors.append(
-                        f"Appearance template baseEntityType is {actual_type!r}; {frame} requires "
+                        f"Appearance shell baseEntityType is {actual_type!r}; {frame} requires "
                         f"{profile['base_entity_type']!r}"
+                    )
+                if appearance_data(appearance_document):
+                    report.errors.append(
+                        "Appearance shell must not contain authored appearances"
                     )
             except CharacterBuildError as exc:
                 report.errors.append(str(exc))
@@ -965,6 +1384,12 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
             report.warnings.append(
                 f"Indexed {category_id} mesh exists in the installed-game catalog only after UI/index validation"
             )
+
+    try:
+        _, component_prototype, _ = assemble_appearance_document(manifest, catalog)
+    except CharacterBuildError as exc:
+        report.errors.append(str(exc))
+        component_prototype = ""
 
     try:
         template_assets = template_asset_records(manifest)
@@ -1031,6 +1456,7 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
     report.details["template_assets"] = len(template_assets)
     report.details["selections"] = len(manifest.get("appearance", {}).get("selections", {}))
     report.details["indexed_overrides"] = len(overrides)
+    report.details["component_prototype"] = component_prototype
     return report
 
 
@@ -1134,10 +1560,15 @@ def validate_generated(
     all_resources = resource_paths(entity) + resource_paths(appearance)
     numeric = sorted({path for path in all_resources if path.isdigit()})
     template_resources: list[str] = []
-    for template_name in ("entity", "appearance"):
-        template_path = manifest.get("templates", {}).get(template_name)
-        if isinstance(template_path, str) and repo_path(template_path).is_file():
-            template_resources.extend(resource_paths(read_json(repo_path(template_path))))
+    entity_template = manifest.get("templates", {}).get("entity")
+    if isinstance(entity_template, str) and repo_path(entity_template).is_file():
+        template_resources.extend(resource_paths(read_json(repo_path(entity_template))))
+    try:
+        _, donor_path = load_component_library(manifest)
+    except CharacterBuildError as exc:
+        report.errors.append(str(exc))
+    else:
+        template_resources.extend(resource_paths(read_json(donor_path)))
     template_numeric = {path for path in template_resources if path.isdigit()}
     template_asset_map = template_asset_records(manifest)
     mapped_target_numeric = {
@@ -1185,7 +1616,7 @@ def validate_generated(
 def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], str, list[str]]:
     templates = manifest["templates"]
     entity = read_json(repo_path(templates["entity"]))
-    app = read_json(repo_path(templates["appearance"]))
+    app, prototype_id, _ = assemble_appearance_document(manifest, catalog)
     localization = read_json(repo_path(templates["localization"]))
 
     identity = manifest.get("template_identity", {})
@@ -1226,14 +1657,11 @@ def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tup
     resource["$value"] = f"{manifest['namespace']}\\{spec['appearance_file']}"
     set_typed_value(entity["Data"]["RootChunk"], "defaultAppearance", spec["root_appearance"])
 
-    selected_app = find_appearance(app, manifest["appearance"]["template_name"])
-    app["Data"]["RootChunk"]["appearances"] = [
-        wrapper
-        for wrapper in app["Data"]["RootChunk"]["appearances"]
-        if isinstance(wrapper, dict) and wrapper.get("Data") is selected_app
-    ]
+    selected_app = appearance_data(app)[0]
+    set_typed_value(selected_app, "name", manifest["appearance"]["name"])
     warnings = apply_catalog_selections(app, manifest, catalog)
     warnings.extend(apply_indexed_overrides(app, manifest, catalog))
+    warnings.append(f"Assembled appearance from component prototype {prototype_id}")
     if resolved_template_resources:
         warnings.append(
             f"Resolved {resolved_template_resources} template mesh ResourcePaths into {manifest['namespace']}"
@@ -1445,7 +1873,7 @@ def prepare_head_preview(
         raise CharacterBuildError(f"Cyberpunk game directory was not found: {game_path}")
 
     head = manifest.get("head", {})
-    source_root = Path(str(head.get("morphtarget_source", "")))
+    source_root = repo_path(str(head.get("morphtarget_source", "")))
     if not source_root.is_dir():
         raise CharacterBuildError(f"Morphtarget source was not found: {source_root}")
     configured = [str(value) for value in head.get("morphtargets", [])]
@@ -1565,8 +1993,8 @@ def head_build(
             errors.append(f"{label} was not found: {path}")
     if not game_path.is_dir():
         errors.append(f"Cyberpunk game directory was not found: {game_path}")
-    blend_template = Path(manifest.get("head", {}).get("blend_template", ""))
-    morph_source = Path(manifest.get("head", {}).get("morphtarget_source", ""))
+    blend_template = repo_path(manifest.get("head", {}).get("blend_template", ""))
+    morph_source = repo_path(manifest.get("head", {}).get("morphtarget_source", ""))
     mesh_source = repo_path(manifest.get("head", {}).get("mesh_source", ""))
     if not blend_template.is_file():
         errors.append(f"Head blend template was not found: {blend_template}")
@@ -1734,6 +2162,19 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("validate", help="Validate the manifest and catalog")
     generate_parser = subparsers.add_parser("generate", help="Generate isolated character source files")
     generate_parser.add_argument("--out", type=Path, required=True)
+    shell_parser = subparsers.add_parser(
+        "make-shell",
+        help="Create a neutral appearance shell from a CR2W-JSON donor",
+    )
+    shell_parser.add_argument("--donor", type=Path, required=True)
+    shell_parser.add_argument("--out", type=Path, required=True)
+    entity_shell_parser = subparsers.add_parser(
+        "make-entity-shell",
+        help="Create a neutral frame-specific entity shell from CR2W-JSON",
+    )
+    entity_shell_parser.add_argument("--donor", type=Path, required=True)
+    entity_shell_parser.add_argument("--frame", choices=tuple(FRAME_PROFILES), required=True)
+    entity_shell_parser.add_argument("--out", type=Path, required=True)
     compare_parser = subparsers.add_parser("compare", help="Compare generated output with the handwritten baseline")
     compare_parser.add_argument("--generated", type=Path, required=True)
     head_parser = subparsers.add_parser("head", help="Run or inspect the headless head build")
@@ -1761,6 +2202,24 @@ def main(argv: list[str] | None = None) -> int:
             return 0 if report.ok else 1
         if args.command == "generate":
             print_report(generate(args.manifest, args.out))
+            return 0
+        if args.command == "make-shell":
+            write_json(args.out, appearance_shell_document(read_json(args.donor)))
+            print_report({"ok": True, "donor": str(args.donor), "output": str(args.out)})
+            return 0
+        if args.command == "make-entity-shell":
+            write_json(
+                args.out,
+                entity_shell_document(read_json(args.donor), args.frame),
+            )
+            print_report(
+                {
+                    "ok": True,
+                    "donor": str(args.donor),
+                    "frame": args.frame,
+                    "output": str(args.out),
+                }
+            )
             return 0
         if args.command == "compare":
             report = compare_generated(args.manifest, args.generated)

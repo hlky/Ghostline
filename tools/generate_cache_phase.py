@@ -196,22 +196,31 @@ class PhaseGraphBuilder:
 
         source_handle = source.outputs[source_socket]
         destination_handle = destination.inputs[destination_socket]
+        destination_is_inline = any(
+            candidate is destination_handle
+            for candidate in destination.data["sockets"]
+        )
         connection_id = self.handles.reserve()
         destination_handle["Data"]["connections"].append(self.handles.ref(connection_id))
         connection = self.handles.define(
             connection_id,
             {
                 "$type": "graphGraphConnectionDefinition",
-                "destination": destination_handle,
+                "destination": (
+                    destination_handle
+                    if destination_is_inline
+                    else self.handles.ref(destination_handle)
+                ),
                 "source": self.handles.ref(source_handle),
             },
         )
         source_handle["Data"]["connections"].append(connection)
-        self._replace_socket(
-            destination,
-            destination_handle,
-            self.handles.ref(destination_handle),
-        )
+        if destination_is_inline:
+            self._replace_socket(
+                destination,
+                destination_handle,
+                self.handles.ref(destination_handle),
+            )
 
     def connect_to_earlier_output(
         self,
@@ -607,13 +616,17 @@ def hacking_succeeded_node(builder: PhaseGraphBuilder, quest_id: int) -> GraphNo
 
 
 def realtime_delay_node(
-    builder: PhaseGraphBuilder, quest_id: int, *, seconds: int = 1
+    builder: PhaseGraphBuilder,
+    quest_id: int,
+    *,
+    seconds: int = 1,
+    milliseconds: int = 0,
 ) -> GraphNode:
     condition_type = builder.handles.wrap(
         {
             "$type": "questRealtimeDelay_ConditionType",
             "hours": 0,
-            "miliseconds": 0,
+            "miliseconds": milliseconds,
             "minutes": 0,
             "seconds": seconds,
         }

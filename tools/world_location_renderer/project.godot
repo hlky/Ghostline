@@ -1,0 +1,20 @@
+; Headless renderer for materialized world-location tile manifests.
+config_version=5
+
+[application]
+
+config/name="Ghostline World Location Renderer"
+run/main_scene="res://render.tscn"
+
+[display]
+
+window/size/viewport_width=768
+window/size/viewport_height=768
+window/size/window_width_override=768
+window/size/window_height_override=768
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+textures/default_filters/use_nearest_mipmap_filter=false

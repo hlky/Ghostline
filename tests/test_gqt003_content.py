@@ -48,7 +48,7 @@ def handle_definitions(value: Any) -> dict[str, dict[str, Any]]:
 
 class ExtractAndHoldTests(unittest.TestCase):
     def test_manifest_has_the_expected_runtime_ready_flow(self) -> None:
-        path = ROOT / "source/quests/tests/gqt003_extract_and_hold.quest.json"
+        path = ROOT / "quests/tests/gqt003_extract_and_hold.quest.json"
         spec, diagnostics = quest_compiler.load_spec(path)
 
         self.assertFalse(
@@ -86,8 +86,7 @@ class ExtractAndHoldTests(unittest.TestCase):
         self,
     ) -> None:
         phase = load(
-            ROOT
-            / "source/raw/mod/gqt003/phases/gqt003_escort_patch.questphase.json"
+            ROOT / "source/raw/mod/gqt003/phases/gqt003_escort_patch.questphase.json"
         )
         nodes = graph_nodes(phase)
         commands = [
@@ -142,8 +141,7 @@ class ExtractAndHoldTests(unittest.TestCase):
 
     def test_timed_defend_has_success_failure_and_twenty_second_race(self) -> None:
         phase = load(
-            ROOT
-            / "source/raw/mod/gqt003/phases/gqt003_defend_patch.questphase.json"
+            ROOT / "source/raw/mod/gqt003/phases/gqt003_defend_patch.questphase.json"
         )
         nodes = graph_nodes(phase)
         delays = [
@@ -194,8 +192,7 @@ class ExtractAndHoldTests(unittest.TestCase):
             == "quests/minor_quest/gqt003"
             for socket in node["sockets"]
             for socket_data in [
-                socket.get("Data")
-                or handles.get(socket.get("HandleRefId", ""))
+                socket.get("Data") or handles.get(socket.get("HandleRefId", ""))
             ]
             if socket_data is not None
             and socket_data["name"]["$value"] in {"Succeeded", "Failed"}
@@ -207,7 +204,10 @@ class ExtractAndHoldTests(unittest.TestCase):
     def test_world_keeps_patch_persistent_and_defines_four_authored_triggers(
         self,
     ) -> None:
-        world = load(ROOT / "tools/gqt003_extract_and_hold.world.json")
+        world = load(
+            ROOT / "quests/tests/gqt003/implementation/world/"
+            "extract-and-hold.world.json"
+        )
         patch = world["communities"][0]
         self.assertEqual(patch["character"], "Character.GhostlinePatch")
         self.assertEqual(patch["always_spawned"], "true_")
@@ -237,9 +237,7 @@ class ExtractAndHoldTests(unittest.TestCase):
             [gate["position"]["z"] for gate in escort_gates],
             [1.24, 1.3, 1.433075],
         )
-        self.assertTrue(
-            all(gate["outline"]["height"] == 8 for gate in escort_gates)
-        )
+        self.assertTrue(all(gate["outline"]["height"] == 8 for gate in escort_gates))
         self.assertEqual(
             world["devices"][0]["controller_class"], "AccessPointControllerPS"
         )
@@ -254,7 +252,10 @@ class ExtractAndHoldTests(unittest.TestCase):
         )
         self.assertNotIn(r"mod\gqt003_extract_and_hold\phases", config)
         self.assertNotIn(r"mod\gqt003\world\gqt003_custom_devices.devices:", config)
-        self.assertIn(r"mod\gqt002\phases\gqt002_quiet_install.questphase", config)
+        self.assertIn(
+            r"mod\gqt005\phases\gqt005_braindance_analysis.questphase",
+            config,
+        )
         self.assertNotIn("gqt004", config)
 
 

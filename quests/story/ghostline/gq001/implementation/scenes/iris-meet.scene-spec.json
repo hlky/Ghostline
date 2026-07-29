@@ -1,0 +1,288 @@
+{
+  "name": "gq001_iris_meet",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "quests/story/ghostline/gq001/script/gq001_03_manifest.json",
+  "raw_path": "source/raw/mod/gq001/scenes/gq001_iris_meet.scene.json",
+  "archive_path": "source/archive/mod/gq001/scenes/gq001_iris_meet.scene",
+  "exported_datetime": "2026-07-23T00:00:00Z",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "actors": [
+    {
+      "key": "iris",
+      "name": "iris",
+      "kind": "community",
+      "id": 0,
+      "entry": "iris",
+      "community_ref": "#gq001_03_com_iris",
+      "appearance": "default",
+      "lipsync": 0
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 0
+    }
+  ],
+  "spoken_line_order": [
+    "gq001_03_iris_intro_01",
+    "gq001_03_v_choice_iris_line",
+    "gq001_03_iris_rsp_iris_01",
+    "gq001_03_v_choice_cache_line",
+    "gq001_03_iris_rsp_cache_01",
+    "gq001_03_v_choice_next_line",
+    "gq001_03_iris_rsp_next_01",
+    "gq001_03_iris_rsp_next_02",
+    "gq001_03_v_choice_keep_line",
+    "gq001_03_iris_rsp_keep_01",
+    "gq001_03_v_choice_leave_line",
+    "gq001_03_iris_rsp_leave_01"
+  ],
+  "choice_line_order": [
+    "gq001_03_v_choice_iris_short",
+    "gq001_03_v_choice_cache_short",
+    "gq001_03_v_choice_next_short",
+    "gq001_03_v_choice_keep_short",
+    "gq001_03_v_choice_leave_short"
+  ],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "end",
+      "node_id": 18
+    },
+    {
+      "name": "continue_delivery",
+      "node_id": 19
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 10,
+        "input_name": 0,
+        "input_ordinal": 1
+      },
+      {
+        "node_id": 11,
+        "input_name": 0,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "graph_order": [
+    1,
+    10,
+    11,
+    13,
+    2,
+    22,
+    8,
+    3,
+    4,
+    5,
+    9,
+    6,
+    7,
+    18,
+    19
+  ],
+  "sections": [
+    {
+      "key": "opening_line",
+      "node_id": 2,
+      "lines": [
+        "gq001_03_iris_intro_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 22,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "key": "optional_branch_identity",
+      "node_id": 3,
+      "lines": [
+        "gq001_03_v_choice_iris_line",
+        "gq001_03_iris_rsp_iris_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "optional_branch_cache",
+      "node_id": 4,
+      "lines": [
+        "gq001_03_v_choice_cache_line",
+        "gq001_03_iris_rsp_cache_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "main_progression_next",
+      "node_id": 5,
+      "lines": [
+        "gq001_03_v_choice_next_line",
+        "gq001_03_iris_rsp_next_01",
+        "gq001_03_iris_rsp_next_02"
+      ],
+      "on_end": [
+        {
+          "node_id": 9
+        }
+      ]
+    },
+    {
+      "key": "optional_followup_keep",
+      "node_id": 6,
+      "lines": [
+        "gq001_03_v_choice_keep_line",
+        "gq001_03_iris_rsp_keep_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 9
+        }
+      ]
+    },
+    {
+      "key": "main_close_delivery",
+      "node_id": 7,
+      "lines": [
+        "gq001_03_v_choice_leave_line",
+        "gq001_03_iris_rsp_leave_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 19
+        }
+      ]
+    }
+  ],
+  "choices": [
+    {
+      "key": "choice_group_intro",
+      "node_id": 8,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "gq001_03_v_choice_iris_short",
+          "caption": "You're Iris?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 3
+        },
+        {
+          "choice_key": "gq001_03_v_choice_cache_short",
+          "caption": "What's in the cache?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 4
+        },
+        {
+          "choice_key": "gq001_03_v_choice_next_short",
+          "caption": "What happens next?",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 5
+        }
+      ]
+    },
+    {
+      "key": "choice_group_after_details",
+      "node_id": 9,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "gq001_03_v_choice_keep_short",
+          "caption": "Why not keep it?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 6
+        },
+        {
+          "choice_key": "gq001_03_v_choice_leave_short",
+          "caption": "Send the drop point.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 7
+        }
+      ]
+    }
+  ],
+  "quest_nodes": [
+    {
+      "kind": "puppet_ai",
+      "node_id": 10,
+      "entity_ref": "#gq001_03_com_iris",
+      "entry": "iris",
+      "ai_tier": "Cinematic"
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 11,
+      "trigger_ref": "#gq001_03_tr_mood",
+      "require_player_not_in_combat": true,
+      "on_out": [
+        {
+          "node_id": 13,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 13,
+      "trigger_ref": "#gq001_03_tr_awareness",
+      "on_out": [
+        {
+          "node_id": 2
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 22,
+      "trigger_ref": "#gq001_03_tr_engage",
+      "on_out": [
+        {
+          "node_id": 8
+        }
+      ]
+    }
+  ],
+  "xor_nodes": [],
+  "end_nodes": [
+    {
+      "node_id": 18
+    },
+    {
+      "node_id": 19
+    }
+  ]
+}

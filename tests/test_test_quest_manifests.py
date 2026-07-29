@@ -21,7 +21,7 @@ class TestQuestManifestTests(unittest.TestCase):
     def test_signal_delay_has_the_expected_linear_contract(self) -> None:
         path = (
             ROOT
-            / "source/quests/tests/gqt001_signal_delay.quest.json"
+            / "quests/tests/gqt001_signal_delay.quest.json"
         )
         spec, diagnostics = quest_compiler.load_spec(path)
         self.assertIsNotNone(spec)
@@ -51,7 +51,7 @@ class TestQuestManifestTests(unittest.TestCase):
     def test_signal_delay_is_ready_for_runtime_validation(self) -> None:
         path = (
             ROOT
-            / "source/quests/tests/gqt001_signal_delay.quest.json"
+            / "quests/tests/gqt001_signal_delay.quest.json"
         )
         spec, _ = quest_compiler.load_spec(path)
         assert spec is not None

@@ -228,12 +228,22 @@ __marimo__/
 packed/
 *.zip
 
+# Reproducible build, audition, and preview output
+/generated/
+
+# Character builder reports belong inside ignored build output directories
+/character-build-report.json
+
 # Local scratch workspace
 .tmp/
+*.tmp
 /red-schema.json
 
 # Local character creator web dependencies
 tools/character_ui/node_modules/
+
+# Machine-local roots for external character authoring kits
+/characters/local-paths.json
 
 # WolvenKit project state
 .projectFiles/

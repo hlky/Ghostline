@@ -21,7 +21,7 @@ missing or failed Patch spawn as a character-resource defect.
 
 ## Character Resources
 
-Read `docs/character-creation-pipeline.md` before building or restructuring a
+Read `docs/authoring/characters.md` before building or restructuring a
 player-derived NPC. It records the audited NPV template relationship, proposed
 character manifest/catalog boundary, headless Blender path, validation contract,
 and Patch migration order.
@@ -63,8 +63,8 @@ Generic Ghostline onscreen localization:
 - raw: `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
 - includes Patch's display name and the Ghostline faction name.
 
-Use `tools/explore_ent_app.py` as documented in `docs/tooling.md` to inspect entity and
-appearance resources.
+Use `tools/explore_ent_app.py` as documented in
+`docs/reference/tool-catalog.md` to inspect entity and appearance resources.
 
 Patch's root entity was compared with the downloaded NPV male template on
 2026-07-22. Both contain 110 root components. After excluding appearance
@@ -72,14 +72,14 @@ mappings, export timestamp, and the intentional `defaultAppearance` value, the
 serialized documents are identical. Clone a pinned and validated root template;
 do not reconstruct that component graph per character.
 
-The downloaded female NPV root is independently pinned at
-`source/characters/templates/npv-female.ent.json`; its paired appearance is
-`npv-female.app.json`. The female root has 116 components and the appearance
-declares `WomanAverage`, so never derive a female character by relabeling the
-male root. `tools/character_builder.py` owns the `male_average`/`female_average`
-profiles that bind entity type, PMA/PWA filename token, preview source, and head
-range. Manifests, template identities, catalogs, and indexed assignments must
-all agree with that profile.
+The downloaded female NPV root is independently pinned as the neutral
+`characters/templates/npv-female.ent-shell.json`; its empty appearance shell is
+`npv-female.app-shell.json`. The female root has 116 components and its
+component donor declares `WomanAverage`, so never derive a female character by
+relabeling the male root. `tools/character_builder.py` owns the
+`male_average`/`female_average` profiles that bind entity type, PMA/PWA filename
+token, preview source, and head range. Manifests, shell identities, component
+libraries, catalogs, and indexed assignments must all agree with that profile.
 
 The local NPV `head_import.blend` embeds import, shape-key application, and
 export scripts. Blender 5.1 has Cyberpunk IO Suite 1.8.0 installed, while the
@@ -96,23 +96,47 @@ characters or treat the warning as resolved without runtime validation.
 
 Character authoring inputs:
 
-- `source/characters/patch.character.json`
-- `source/characters/catalog.json`
-- `source/characters/female-example.character.json`
-- `source/characters/female-catalog.json`
-- `source/characters/templates/npv-female.ent.json`
-- `source/characters/templates/npv-female.app.json`
+- `characters/patch.character.json`
+- `characters/catalog.json`
+- `characters/female-example.character.json`
+- `characters/female-catalog.json`
+- `characters/templates/npv-male.ent-shell.json`
+- `characters/templates/npv-female.ent-shell.json`
+- `characters/templates/npv-male.app-shell.json`
+- `characters/templates/npv-female.app-shell.json`
+- `characters/components/*.components.json`
+- `characters/components/donors/*.app.json`
+- `characters/local-paths.example.json`
 - `tools/character_builder.py`
 - `tools/character_asset_index.py`
 - `tools/character_ui.py` and `tools/character_ui/*`
 
 The current generator produces `.ent`, `.app`, TweakXL, and localization in an
-isolated output tree. Patch's immutable original appearance template lives at
-`source/characters/templates/patch-original.app.json`. The reviewed design
-manifest has been applied to the shipping raw/packed `.app`; `compare` now
-checks generated output against the applied source paths and reports all four
-documents equivalent. Keep new UI generation isolated under
-`converted/characters` until it is explicitly reviewed and applied.
+isolated output tree. Appearance shells contain no authored appearances.
+External authoring-kit paths use aliases such as `@npv/...`; resolve them
+through the ignored `characters/local-paths.json`, copied from the checked
+example, rather than putting workstation paths in manifests.
+Frame-specific component-library descriptors point to private donor documents,
+and the builder automatically chooses the smallest donor prototype that covers
+the manifest's required catalog components. Donor appearance names are tooling
+details and must not appear in character manifests. The reviewed Patch design
+manifest has been applied to the shipping raw/packed `.app`; `compare` checks
+generated output against the applied source paths. Keep new UI generation
+isolated under `converted/characters` until it is explicitly reviewed and
+applied.
+
+The female donor contains only its selectable `casual` and `business`
+prototypes. The former `naked` appearance was redundant except for
+`t0_pubic_hair`; both copies of that component are preserved separately in
+`characters/components/npv-female-naked-only.components.json`.
+
+The empty `.app` shell is a CR2W-JSON authoring boundary, not a usable binary
+layout donor for a non-empty array. A packed character `.app` is a valid native
+deserialization template only if it already contains every class/layout
+instance required by the generated JSON. Patch's current packed `.app` fails
+that check because it lacks an `NPCPuppet` export instance. Use WolvenKit when
+native template-backed writing reports a missing class or array layout, then
+verify the resulting binary and serialized structure before applying it.
 
 The female example additionally stages only tutorial meshes referenced by its
 selected appearance. The template stores those paths as numeric ResourcePath
@@ -157,7 +181,7 @@ Run the female UI by passing the reviewed manifest on the server command line:
 
 ```powershell
 py -B .\tools\character_ui.py `
-  --manifest .\source\characters\female-example.character.json --open
+  --manifest .\characters\female-example.character.json --open
 ```
 
 The HTTP client may change selections and shape values, but it must never be
@@ -202,7 +226,7 @@ Important NPC fields include:
 
 Useful docs:
 
-- `docs/packaging.md`
+- `docs/workflows/build-and-package.md`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/entity-.ent-files`
 - `modding_docs/for-mod-creators-theory/files-and-what-they-do/file-formats/appearance-.app-files`
 - `modding_docs/for-mod-creators-theory/core-mods-explained/tweakxl`
