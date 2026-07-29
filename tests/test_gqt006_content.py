@@ -300,15 +300,24 @@ class GothBaddieCyberpsychoContentTests(unittest.TestCase):
         for expected in (
             "Character.GhostlineGothBaddie:",
             "$base: Character.Quest_Combat_NPC_Base",
-            "actionMap: GangNetrunner.Map",
+            "actionMap: MaxTacNetrunner.Map",
             "archetypeData: ArchetypeData.NetrunnerT3",
             "rarity: NPCRarity.Boss",
             "threatTrackingPreset: TargetTracking.DefaultPreset",
             "tags:",
             "- Cyberpsycho",
             "Character.Cyberpsycho",
+            "Ability.HasDodge",
+            "Ability.CanParry",
+            "Ability.HasKerenzikov",
+            "Ability.IsTier3Archetype",
+            "Ability.HasMemoryWipeImmunity",
+            "Character.AllowTechWeaponDodgeEffector",
+            "Character.MaxTac_Mantis_ModGroup",
+            "Character.Maxtac_miniboss_ModGroup",
         ):
             self.assertIn(expected, tweak)
+        self.assertNotIn("Character.AllowAnyDirectionDodgeEffector", tweak)
         self.assertIn("Items.Preset_Katana_E3", tweak)
         self.assertIn("statModifiers:", tweak)
 

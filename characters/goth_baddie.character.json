@@ -94,7 +94,7 @@
     "combat": {
       "level": 60,
       "health_multiplier": 10.0,
-      "action_map": "GangNetrunner.Map",
+      "action_map": "MaxTacNetrunner.Map",
       "archetype_data": "ArchetypeData.NetrunnerT3",
       "base_attitude_group": "hostile",
       "rarity": "NPCRarity.Boss",
@@ -118,15 +118,23 @@
         "Ability.CanUseLegs",
         "Ability.CanTaunt",
         "Ability.CanCloseCombat",
-        "Ability.IsReckless"
+        "Ability.IsReckless",
+        "Ability.HasDodge",
+        "Ability.CanParry",
+        "Ability.HasKerenzikov",
+        "Ability.IsTier3Archetype",
+        "Ability.HasMemoryWipeImmunity"
       ],
       "effectors": [
-        "Effectors.HitReactionTBHIncrease"
+        "Effectors.HitReactionTBHIncrease",
+        "Character.AllowTechWeaponDodgeEffector"
       ],
       "stat_modifier_groups": [
         "Character.NPC_Base_Primary_Stat_ModGroup",
         "Character.Cyberpsycho_ModGroup",
-        "Character.Cyberpsycho_HitReaction_Resistance"
+        "Character.Cyberpsycho_HitReaction_Resistance",
+        "Character.MaxTac_Mantis_ModGroup",
+        "Character.Maxtac_miniboss_ModGroup"
       ],
       "tags": [
         "Cyberpsycho"

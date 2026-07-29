@@ -5,7 +5,7 @@ Character.GhostlineGothBaddie:
   fullDisplayName: gq_npc_goth_baddie
   affiliation: Factions.Ghostline
   voiceTag: gq_goth_baddie
-  actionMap: GangNetrunner.Map
+  actionMap: MaxTacNetrunner.Map
   archetypeData: ArchetypeData.NetrunnerT3
   baseAttitudeGroup: hostile
   rarity: NPCRarity.Boss
@@ -30,8 +30,14 @@ Character.GhostlineGothBaddie:
     - Ability.CanTaunt
     - Ability.CanCloseCombat
     - Ability.IsReckless
+    - Ability.HasDodge
+    - Ability.CanParry
+    - Ability.HasKerenzikov
+    - Ability.IsTier3Archetype
+    - Ability.HasMemoryWipeImmunity
   effectors:
     - Effectors.HitReactionTBHIncrease
+    - Character.AllowTechWeaponDodgeEffector
   tags:
     - Cyberpsycho
   visualTags:
@@ -41,6 +47,8 @@ Character.GhostlineGothBaddie:
     - Character.NPC_Base_Primary_Stat_ModGroup
     - Character.Cyberpsycho_ModGroup
     - Character.Cyberpsycho_HitReaction_Resistance
+    - Character.MaxTac_Mantis_ModGroup
+    - Character.Maxtac_miniboss_ModGroup
     - Character.GhostlineGothBaddie_BossStatModifiers
   contentAssignment: Character.GhostlineGothBaddie_FixedLevelContent
   primaryEquipment: Character.GhostlineGothBaddie_PrimaryEquipment

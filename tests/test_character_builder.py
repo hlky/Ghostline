@@ -149,12 +149,25 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertTrue(report.ok, report.errors)
 
         tweak = character_builder.render_tweak(self.goth_baddie_manifest)
+        self.assertIn("actionMap: MaxTacNetrunner.Map", tweak)
         self.assertIn("archetypeData: ArchetypeData.NetrunnerT3", tweak)
         self.assertIn("rarity: NPCRarity.Boss", tweak)
         self.assertIn(
             "threatTrackingPreset: TargetTracking.DefaultPreset", tweak
         )
         self.assertIn("    - Cyberpsycho", tweak)
+        for expected in (
+            "Ability.HasDodge",
+            "Ability.CanParry",
+            "Ability.HasKerenzikov",
+            "Ability.IsTier3Archetype",
+            "Ability.HasMemoryWipeImmunity",
+            "Character.AllowTechWeaponDodgeEffector",
+            "Character.MaxTac_Mantis_ModGroup",
+            "Character.Maxtac_miniboss_ModGroup",
+        ):
+            self.assertIn(expected, tweak)
+        self.assertNotIn("Character.AllowAnyDirectionDodgeEffector", tweak)
         self.assertIn("value: 60", tweak)
         self.assertIn("value: 10.0", tweak)
         self.assertIn("item: Items.Preset_Katana_E3", tweak)
