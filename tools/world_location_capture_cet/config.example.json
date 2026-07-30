@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "runtime_directory": "runtime",
+  "controller_heartbeat_timeout_seconds": 5,
+  "loading_timeout_seconds": 45,
+  "expected_width": 1920,
+  "expected_height": 1080,
+  "ground_probe_staging_height_m": 3.0,
+  "ground_probe_up_m": 1.5,
+  "ground_probe_down_m": 8.0,
+  "ground_offset_m": 0.1,
+  "obstruction_detection_max_m": 2.0,
+  "velocity_tolerance_mps": 0.02,
+  "weather_names": {
+    "clear": "24h_weather_sunny"
+  },
+  "settings_vars": [
+    {"path": "/interface/hud", "name": "minimap"},
+    {"path": "/interface/hud", "name": "healthbar"},
+    {"path": "/interface/hud", "name": "stamina_oxygen"},
+    {"path": "/interface/hud", "name": "npc_healthbar"},
+    {"path": "/interface/hud", "name": "ammo_counter"},
+    {"path": "/interface/hud", "name": "input_hints"},
+    {"path": "/interface/hud", "name": "action_buttons"},
+    {"path": "/interface/hud", "name": "activity_log"},
+    {"path": "/interface/hud", "name": "crosshairs"},
+    {"path": "/interface/hud", "name": "quest_tracker"},
+    {"path": "/interface/hud", "name": "johnny_hud"},
+    {"path": "/interface/hud", "name": "object_markers"},
+    {"path": "/interface/hud", "name": "npc_names"},
+    {"path": "/interface/hud", "name": "wanted_level"},
+    {"path": "/interface/hud", "name": "npc_nameplates"},
+    {"path": "/interface/hud", "name": "crouch_indicator"},
+    {"path": "/interface/hud", "name": "vehicle_hud"},
+    {"path": "/interface/hud", "name": "hud_markers"},
+    {"path": "/accessibility/subtitles", "name": "Cinematic"},
+    {"path": "/accessibility/subtitles", "name": "Radio"},
+    {"path": "/accessibility/subtitles", "name": "CinematicForceKiroshiTexts"},
+    {"path": "/accessibility/subtitles", "name": "Overheads"},
+    {"path": "/accessibility/subtitles", "name": "OverheadsForceKiroshiTexts"},
+    {"path": "/gameplay/muteholocalls", "name": "ncpd_dispatcher", "capture_value": true},
+    {"path": "/gameplay/muteholocalls", "name": "fixer_briefs_and_debriefs", "capture_value": true}
+  ],
+  "restrictions": [
+    "GameplayRestriction.NoCombat",
+    "GameplayRestriction.NoMovement",
+    "GameplayRestriction.NoPhone",
+    "GameplayRestriction.NoScanning",
+    "GameplayRestriction.NoWeaponWheel"
+  ]
+}

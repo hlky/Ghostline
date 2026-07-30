@@ -880,9 +880,10 @@ commands, rendering limitations, and validation workflow.
 
 ## World-location Database
 
-`tools/world_location_database.py` assembles overlapping streaming sectors into
-six representative spatial tiles, samples Human navigation surfaces, resolves
-archive-backed entity/appearance dependencies, stages a shared mesh/material
-cache, renders deterministic multi-view place records in Blender, and stores
-the results in SQLite. The proof-of-concept contract, commands, output layout,
-and acceptance gates are documented in `docs/authoring/world-locations.md`.
+`tools/world_location_capture.py` incrementally streams the serialized Night
+City sectors into an R-tree/FTS5 SQLite index, derives calibrated object and
+100 m road poses, and drives an event-gated CET/Python capture queue at exactly
+1920×1080. It supports `index`, `plan`, `capture`, `status`, `retry`, `export`,
+and CET installation. The state-restoration contract, metadata review,
+commands, output layout, and acceptance gates are documented in
+`docs/authoring/world-locations.md`.

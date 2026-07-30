@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "extraction_rule_version": "1.0.0",
+  "placement_rule_version": "1.0.0",
+  "scope_rule_version": "1.0.0",
+  "source_root": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default",
+  "output_root": "converted/world-location-database/full-world",
+  "database": "locations.sqlite3",
+  "runtime": "runtime",
+  "captures": "captures",
+  "reports": "reports",
+  "exports": "exports",
+  "capture": {
+    "window_title_contains": "Cyberpunk 2077",
+    "width": 1920,
+    "height": 1080,
+    "thumbnail_width": 480,
+    "visual_settle_seconds": 2.0,
+    "loading_timeout_seconds": 45.0,
+    "heartbeat_timeout_seconds": 5.0,
+    "protocol_poll_seconds": 0.01,
+    "maximum_attempts": 1,
+    "position_tolerance_m": 0.35,
+    "fov_tolerance_degrees": 0.25,
+    "profile": {
+      "time": "10:00",
+      "weather": "clear",
+      "fov": 80.0,
+      "perspective": "first_person",
+      "window_mode": "borderless_windowed"
+    },
+    "validation": {
+      "black_mean_threshold": 4.0,
+      "black_stddev_threshold": 3.0,
+      "black_pixel_threshold": 8,
+      "black_fraction_threshold": 0.98,
+      "duplicate_hamming_threshold": 2,
+      "template_threshold": 0.9,
+      "hud_templates": []
+    }
+  },
+  "road_rules": {
+    "short_road_threshold_m": 100.0,
+    "endpoint_inset_m": 50.0,
+    "interval_m": 100.0,
+    "minimum_arc_separation_m": 100.0,
+    "minimum_straight_separation_m": 100.0
+  },
+  "scope_rules": [
+    {
+      "id": "q000_nomad_southern_border_wall_v1",
+      "type": "exclude_negative_half_plane",
+      "enabled": true,
+      "boundary_name": "Night City southern border wall",
+      "exclusion_reason": "south of the Night City border wall is outside capture scope",
+      "boundary_origin": {
+        "x": -2818.559814453125,
+        "y": -5650.1533203125,
+        "source_node": "#q000_nomad_mp_border_crossing_fance_gate"
+      },
+      "boundary_tangent": {
+        "x": 0.8030484120198842,
+        "y": -0.5959137923830445,
+        "source_node": "#q000_nomad_tr_illegal_crossing_warning",
+        "source_rotation_k": -0.3138085603713989,
+        "source_rotation_r": 0.9494863748550415
+      },
+      "in_scope_reference": {
+        "x": -2799.475830078125,
+        "y": -5589.72705078125,
+        "source_node": "#q000_nomad_tr_border_crossed"
+      },
+      "out_of_scope_reference": {
+        "x": -2845.607666015625,
+        "y": -5675.216796875,
+        "source_node": "#q000_nomad_checkpoint_entrance"
+      },
+      "margin_m": 0.0,
+      "provenance": {
+        "questphase": "base\\quest\\main_quests\\prologue\\q000\\phases\\q000_nomad_05_border_crossing.questphase",
+        "streaming_sector": "base\\worlds\\03_night_city\\_compiled\\default\\quest_091e144d47c02bc2.streamingsector"
+      }
+    }
+  ],
+  "classification_rules": [
+    {
+      "id": "fast_travel_v1",
+      "category": "fast_travel",
+      "patterns": ["fast_travel", "gameFastTravelPointData"],
+      "node_types": ["worldEntityNode", "worldDeviceNode"],
+      "calibrated": true,
+      "capture_enabled": false,
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "clearance_m": 0.0,
+      "tags": ["navigation", "fast-travel"]
+    },
+    {
+      "id": "vending_machine_v1",
+      "category": "vending_machine",
+      "patterns": ["gameplay/devices/vending_machines", "gameplay\\devices\\vending_machines"],
+      "exclude_patterns": ["signage", "advertising"],
+      "node_types": ["worldEntityNode", "worldDeviceNode"],
+      "calibrated": true,
+      "capture_enabled": true,
+      "forward_axis": "+y",
+      "front_extent_m": 0.45,
+      "clearance_m": 0.5,
+      "lateral_search_m": 1.5,
+      "tags": ["object", "vending"]
+    },
+    {
+      "id": "loot_container_v1",
+      "category": "loot_container",
+      "patterns": ["loot_container", "lootcontainer", "gameplay/containers", "gameplay\\containers"],
+      "exclude_patterns": ["decoration", "decorative", "garbage", "trashbag"],
+      "node_types": ["worldEntityNode", "worldDeviceNode"],
+      "calibrated": true,
+      "capture_enabled": true,
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "clearance_m": 0.5,
+      "lateral_search_m": 1.5,
+      "tags": ["object", "loot"]
+    },
+    {
+      "id": "shop_storefront_v1",
+      "category": "shop",
+      "patterns": ["storefront", "shop_entrance", "vendor", "gameplay/vendors", "gameplay\\vendors"],
+      "exclude_patterns": ["sticker", "poster", "billboard", "signage"],
+      "node_types": ["worldEntityNode", "worldDeviceNode"],
+      "calibrated": true,
+      "capture_enabled": true,
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "clearance_m": 2.0,
+      "lateral_search_m": 1.5,
+      "tags": ["shop", "storefront"]
+    },
+    {
+      "id": "road_proxy_v1",
+      "category": "road",
+      "patterns": ["road_meshes", "roadsplinenode"],
+      "node_types": ["worldRoadProxyMeshNode"],
+      "calibrated": true,
+      "capture_enabled": true,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "clearance_m": 0.0,
+      "tags": ["road", "centerline"]
+    },
+    {
+      "id": "named_area_v1",
+      "category": "area",
+      "patterns": ["district", "subdistrict", "named_area", "location"],
+      "node_types": ["worldAreaShapeNode", "worldGenericAreaShapeNode", "worldQuestAreaNode"],
+      "calibrated": false,
+      "capture_enabled": false,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "clearance_m": 0.0,
+      "tags": ["area", "metadata"]
+    }
+  ],
+  "orientation_corrections": []
+}
