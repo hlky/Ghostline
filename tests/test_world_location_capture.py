@@ -20,7 +20,6 @@ if str(TOOLS) not in sys.path:
 
 from world_locations.capture import (  # noqa: E402
     CaptureController,
-    difference_hash,
     recover_interrupted_queue,
     validate_image,
     validate_ready_event,
@@ -40,6 +39,7 @@ from world_locations.protocol import (  # noqa: E402
     ProtocolError,
     RuntimeProtocol,
     RuntimeTimeout,
+    _unlink_protocol_file,
     atomic_write_json,
 )
 
@@ -293,9 +293,9 @@ class IndexAndPlanTests(unittest.TestCase):
         vending = self.connection.execute(
             "SELECT * FROM places WHERE category='vending_machine'"
         ).fetchone()
-        # 0.5 m oriented half-bound plus 0.5 m clearance, facing outward.
+        # 0.5 m oriented half-bound plus 1.0 m clearance, facing outward.
         self.assertAlmostEqual(0.0, vending["requested_x"], delta=0.1)
-        self.assertAlmostEqual(1.0, vending["requested_y"], delta=0.1)
+        self.assertAlmostEqual(1.5, vending["requested_y"], delta=0.1)
         self.assertAlmostEqual(0.0, vending["requested_yaw"], delta=2.0)
         road_rows = self.connection.execute(
             "SELECT * FROM places WHERE category='road' ORDER BY requested_x,direction"
@@ -369,6 +369,35 @@ class IndexAndPlanTests(unittest.TestCase):
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_protocol_unlink_retries_windows_sharing_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary) / "ack.json"
+            destination.write_text("{}", encoding="utf-8")
+            real_unlink = Path.unlink
+            attempts = 0
+
+            def unlink_after_two_failures(path: Path, *args: object, **kwargs: object) -> None:
+                nonlocal attempts
+                attempts += 1
+                if attempts < 3:
+                    raise PermissionError(32, "file is open by CET")
+                real_unlink(path, *args, **kwargs)
+
+            with (
+                mock.patch.object(
+                    Path,
+                    "unlink",
+                    autospec=True,
+                    side_effect=unlink_after_two_failures,
+                ),
+                mock.patch("world_locations.protocol.time.sleep") as retry_yield,
+            ):
+                _unlink_protocol_file(destination)
+
+            self.assertFalse(destination.exists())
+            self.assertEqual(3, attempts)
+            self.assertEqual(2, retry_yield.call_count)
+
     def test_atomic_writer_retries_windows_sharing_violation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             destination = Path(temporary) / "heartbeat.json"
@@ -398,14 +427,9 @@ class ProtocolTests(unittest.TestCase):
     def test_black_and_duplicate_frames_are_rejected(self) -> None:
         from PIL import Image
 
-        class EmptyConnection:
-            def execute(self, _query: str) -> list[dict]:
-                return []
-
         black = validate_image(
             Image.new("RGB", (64, 64), (0, 0, 0)),
             ready_report={"errors": []},
-            connection=EmptyConnection(),
             validation_config={"hud_templates": []},
             config_root=ROOT,
         )
@@ -418,33 +442,11 @@ class ProtocolTests(unittest.TestCase):
         loading = validate_image(
             loading_image,
             ready_report={"errors": []},
-            connection=EmptyConnection(),
             validation_config={"hud_templates": []},
             config_root=ROOT,
         )
         self.assertFalse(loading["valid"])
         self.assertGreater(loading["black_fraction"], 0.98)
-
-        bright_image = Image.new("RGB", (64, 64), (100, 100, 100))
-
-        class DuplicateConnection:
-            def execute(self, _query: str) -> list[dict]:
-                return [
-                    {
-                        "location_id": "place-existing",
-                        "perceptual_hash": difference_hash(bright_image),
-                    }
-                ]
-
-        duplicate = validate_image(
-            bright_image,
-            ready_report={"errors": []},
-            connection=DuplicateConnection(),
-            validation_config={"hud_templates": []},
-            config_root=ROOT,
-        )
-        self.assertFalse(duplicate["valid"])
-        self.assertEqual("place-existing", duplicate["duplicate_location_id"])
 
     def test_ready_event_records_wrong_fov_without_rejecting_frame(self) -> None:
         place = {
@@ -463,9 +465,8 @@ class ProtocolTests(unittest.TestCase):
             "menu_open": False,
             "paused": False,
             "position_valid": True,
-            "velocity_zero": True,
+            "position_stable": True,
             "ground_probe": True,
-            "anchor_probe": True,
             "ui_suppressed": True,
             "weapon_suppressed": True,
             "presented_frame": 1,
@@ -501,9 +502,8 @@ class ProtocolTests(unittest.TestCase):
                     "menu_open": False,
                     "paused": False,
                     "position_valid": True,
-                    "velocity_zero": True,
+                    "position_stable": True,
                     "ground_probe": True,
-                    "anchor_probe": True,
                     "ui_suppressed": True,
                     "weapon_suppressed": True,
                     "presented_frame": 1,
@@ -624,6 +624,25 @@ class ProtocolTests(unittest.TestCase):
         self.assertIn("preflight = state.preflightEvidence", lua)
         self.assertIn("readiness = state.lastReadiness", lua)
         self.assertNotIn("failCommand('obstructed'", lua)
+        self.assertIn("streamingIsComplete(groundReady, groundGroup)", lua)
+        self.assertIn("cameraAttached and positionValid and stable", lua)
+        self.assertIn("playerPositionIsStable(actual, delta)", lua)
+        self.assertIn("positionStableSeconds + frameDeltaSeconds", lua)
+        self.assertNotIn("GetVelocity()", lua)
+        self.assertIn("'Static', 'Terrain'", lua)
+        self.assertIn("prepareGroundPose", lua)
+        self.assertIn("ground_probe_staging_height_m", lua)
+        self.assertIn("ground_probe_sample_radius_m", lua)
+        self.assertIn("ground_offset_m", lua)
+        self.assertIn("ground_snap_timeout", lua)
+        self.assertIn("table.sort(hits", lua)
+        self.assertNotIn("tryNextLateralPose", lua)
+        self.assertNotIn("anchorProbe", lua)
+        self.assertIn("state.lastControllerHeartbeatUnix = heartbeat.unix_seconds", lua)
+        self.assertNotIn("SetZoom(", lua)
+        self.assertNotIn("SetFOV(", lua)
+        self.assertNotIn("GetZoom(", lua)
+        self.assertIn("actualFov = camera:GetFOV()", lua)
         self.assertIn("ack.success ~= false", lua)
         self.assertIn("writeEvent('ready'", lua[draw:])
         self.assertNotIn("sleep(", lua.lower())
@@ -694,6 +713,17 @@ class ResumeAndRetryTests(unittest.TestCase):
         place = self.connection.execute(
             "SELECT * FROM places WHERE category='vending_machine'"
         ).fetchone()
+        planned_pose = tuple(
+            place[column]
+            for column in (
+                "requested_x",
+                "requested_y",
+                "requested_z",
+                "requested_yaw",
+                "requested_pitch",
+                "requested_roll",
+            )
+        )
         session_id = "session-files"
         attempt_id = "attempt-files"
         with transaction(self.connection):
@@ -726,12 +756,23 @@ class ResumeAndRetryTests(unittest.TestCase):
             image=Image.new("RGB", (64, 36), (40, 80, 120)),
             event={
                 "actual_pose": {"x": 1, "y": 2, "z": 3, "yaw": 0},
+                "effective_pose": {
+                    "x": 101,
+                    "y": 102,
+                    "z": 103,
+                    "yaw": 104,
+                    "pitch": 105,
+                    "roll": 106,
+                },
                 "actual_fov": 80,
-                "runtime_location": {"district": "Watson"},
+                "runtime_location": {
+                    "district": "Watson",
+                    "named_area": "Watson",
+                },
                 "readiness": {"presented_frame": 4},
                 "teleport_to_ready_ms": 5.0,
             },
-            validation={"publication_ready": True, "perceptual_hash": "0" * 16},
+            validation={"publication_ready": True},
             sent_monotonic=1.0,
             ready_monotonic=1.005,
             captured_monotonic=1.006,
@@ -739,6 +780,8 @@ class ResumeAndRetryTests(unittest.TestCase):
         row = self.connection.execute(
             "SELECT * FROM captures WHERE capture_id=?", (capture_id,)
         ).fetchone()
+        self.assertIsNone(row["perceptual_hash"])
+        self.assertIn(f"{os.sep}Watson{os.sep}", row["png_path"])
         for path_column, hash_column in (
             ("png_path", "image_sha256"),
             ("sidecar_path", "metadata_sha256"),
@@ -750,6 +793,35 @@ class ResumeAndRetryTests(unittest.TestCase):
         self.assertEqual("vending_machine", sidecar["anchor"]["category"])
         self.assertEqual(row["image_sha256"], sidecar["files"]["png_sha256"])
         self.assertIn("location_metadata", sidecar)
+        self.assertEqual(
+            planned_pose,
+            tuple(
+                sidecar["requested_pose"][column]
+                for column in ("x", "y", "z", "yaw", "pitch", "roll")
+            ),
+        )
+        self.assertEqual(101, sidecar["effective_pose"]["x"])
+        saved_place = self.connection.execute(
+            "SELECT * FROM places WHERE location_id=?", (place["location_id"],)
+        ).fetchone()
+        self.assertEqual(
+            planned_pose,
+            tuple(
+                saved_place[column]
+                for column in (
+                    "requested_x",
+                    "requested_y",
+                    "requested_z",
+                    "requested_yaw",
+                    "requested_pitch",
+                    "requested_roll",
+                )
+            ),
+        )
+        self.assertEqual(
+            (1, 2, 3),
+            tuple(saved_place[c] for c in ("actual_x", "actual_y", "actual_z")),
+        )
 
     def test_controller_exhausts_exactly_three_attempts_without_retry_sleep(
         self,
@@ -768,6 +840,10 @@ class ResumeAndRetryTests(unittest.TestCase):
 
         class FailingRuntime:
             sends = 0
+            heartbeats = 0
+
+            def heartbeat(self, _session_id: str) -> None:
+                self.heartbeats += 1
 
             def send(self, _command: dict) -> None:
                 self.sends += 1
@@ -790,6 +866,7 @@ class ResumeAndRetryTests(unittest.TestCase):
         success, _error = controller._capture_place("session-test", place)
         self.assertFalse(success)
         self.assertEqual(3, controller.runtime.sends)
+        self.assertEqual(3, controller.runtime.heartbeats)
         self.assertLess(time.monotonic() - started, 0.5)
         attempts = self.connection.execute(
             "SELECT COUNT(*) FROM capture_attempts WHERE location_id=?",

@@ -521,7 +521,7 @@ def _object_places(
                 "anchor": f"feature:{row['feature_id']}",
                 "pose": f"placement_rule:{version}",
                 "front_extent": extent_source,
-                "ground_z": "requested anchor height; CET collision snap required",
+                "ground_z": "serialized anchor height; CET resolves ground surface at runtime",
             }
         )
         records.append(
@@ -622,7 +622,7 @@ def _road_places(
                         "road_geometry": f"road:{road['road_id']}",
                         "arc_distance_m": arc_distance,
                         "sample_index": sample_index,
-                        "ground_z": "proxy-center height; CET collision snap required",
+                        "ground_z": "proxy-center height; CET resolves road surface at runtime",
                     }
                 )
                 records.append(

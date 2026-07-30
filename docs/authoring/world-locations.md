@@ -118,10 +118,10 @@ example:
 
 Object placement projects oriented instance bounds onto the configured local
 forward axis. Degenerate sector bounds use the reviewed rule's
-`front_extent_m`. Vending machines and loot containers add 0.5 m clearance;
-shops add 2 m. The heading remains the object's outward heading. CET may
-ground-snap within the configured tolerance and search left/right up to the
-rule's `lateral_search_m`, without changing the anchor side or heading.
+`front_extent_m`. Vending machines add 1 m clearance, loot containers add
+0.5 m, and shops add 2 m. The heading remains the object's outward heading.
+CET resolves the final ground height at runtime from the median of five nearby
+downward collision probes; it does not search laterally.
 
 Road proxy nodes are grouped by their road-spline resource folder. That folder
 is treated as an independent branch; discontinuities become explicit branch
@@ -214,20 +214,21 @@ changes. Capture mode remains active across the batch. It:
   no-scanning, and no-weapon-wheel restrictions;
 - hides the currently drawn weapon entity and blocks combat-driven drawing;
 - snapshots and suppresses prevention-system heat/escalation;
-- applies time, weather, and FOV;
-- teleports, ground-snaps, and performs bounded lateral obstruction recovery.
+- applies time and weather without writing live camera zoom or FOV state;
+- stages above the immutable world-derived pose, resolves the local ground
+  surface, and teleports to that effective height.
 
 For every destination, `ready` requires all of the following in the same game
 update:
 
-- the engine's `Streaming/IsTeleporting` state is false when exposed; otherwise
-  destination ground and anchor collision probes form the streaming fence;
+- the downward destination ground probe forms the streaming fence;
 - there is no loading screen, menu, pause, or CET overlay;
 - the player and first-person camera are attached in the destination world;
 - actual position meets the configured tolerance; heading drift is recorded as
   capture metadata but does not block the frame;
-- player velocity is at or below the configured zero threshold;
-- ground and expected-anchor/road probes succeed;
+- player position remains within the configured stability tolerance for the
+  configured duration;
+- a downward static-or-terrain ground probe succeeds at the destination;
 - HUD, subtitle, notification, phone, weapon, and input restrictions are active;
 - `GetDisplayResolution()` reports exactly 1920×1080.
 
@@ -242,6 +243,11 @@ Commands, events, acknowledgements, and heartbeats carry schema, session, and
 command IDs. A destination can emit `accepted`, `teleported`, `ready`,
 `completed`, or `error`. Event types use separate atomic files, so a fast
 transition cannot overwrite an earlier event required for auditing.
+
+The database's `requested_*` columns remain the immutable planner output. The
+sidecar separately records the runtime-resolved `effective_pose`, while capture
+stores the observed player transform in `actual_*`; runtime evidence must never
+feed back into the next requested pose.
 
 ## Image Validation and Publication
 

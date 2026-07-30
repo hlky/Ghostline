@@ -52,9 +52,9 @@ def validate_ready_event(
         "streaming_complete",
         "player_attached",
         "camera_attached",
-        "velocity_zero",
+        "position_valid",
+        "position_stable",
         "ground_probe",
-        "anchor_probe",
     )
     errors = [
         f"readiness predicate is false: {name}"
@@ -243,22 +243,6 @@ class GameWindow:
         return image
 
 
-def difference_hash(image: Any) -> str:
-    from PIL import Image  # type: ignore[import-not-found]
-
-    grayscale = image.convert("L").resize((9, 8), Image.Resampling.LANCZOS)
-    pixels = list(grayscale.getdata())
-    bits = 0
-    for y in range(8):
-        for x in range(8):
-            bits = (bits << 1) | int(pixels[y * 9 + x] > pixels[y * 9 + x + 1])
-    return f"{bits:016x}"
-
-
-def hash_hamming(left: str, right: str) -> int:
-    return (int(left, 16) ^ int(right, 16)).bit_count()
-
-
 def _template_matches(
     image: Any, validation: Mapping[str, Any], config_root: Path
 ) -> tuple[list[str], list[str]]:
@@ -309,7 +293,6 @@ def validate_image(
     image: Any,
     *,
     ready_report: Mapping[str, Any],
-    connection: sqlite3.Connection,
     validation_config: Mapping[str, Any],
     config_root: Path,
 ) -> dict[str, Any]:
@@ -342,18 +325,6 @@ def validate_image(
             f"(black_fraction={black_fraction:.4f}, mean={mean:.2f}, "
             f"stddev={stddev:.2f})"
         )
-    perceptual_hash = difference_hash(image)
-    threshold = int(validation_config.get("duplicate_hamming_threshold", 2))
-    duplicate: str | None = None
-    for row in connection.execute(
-        "SELECT location_id,perceptual_hash FROM captures WHERE perceptual_hash IS NOT NULL"
-    ):
-        if hash_hamming(perceptual_hash, row["perceptual_hash"]) <= threshold:
-            duplicate = row["location_id"]
-            errors.append(
-                f"frame duplicates or nearly duplicates capture for {duplicate}"
-            )
-            break
     hud_matches, hud_warnings = _template_matches(image, validation_config, config_root)
     if hud_matches:
         errors.append(f"HUD template visible: {', '.join(hud_matches)}")
@@ -365,8 +336,6 @@ def validate_image(
         "luminance_mean": mean,
         "luminance_stddev": stddev,
         "black_fraction": black_fraction,
-        "perceptual_hash": perceptual_hash,
-        "duplicate_location_id": duplicate,
         "hud_matches": hud_matches,
         "readiness": dict(ready_report),
     }
@@ -441,18 +410,6 @@ class CaptureController:
     def _command(
         self, session_id: str, command_id: str, place: Mapping[str, Any]
     ) -> dict[str, Any]:
-        anchor_position = None
-        lateral_search_m = 0.0
-        if place["anchor_feature_id"]:
-            anchor = self.connection.execute(
-                "SELECT x,y,z,metadata_json FROM features WHERE feature_id=?",
-                (place["anchor_feature_id"],),
-            ).fetchone()
-            if anchor:
-                anchor_position = {"x": anchor["x"], "y": anchor["y"], "z": anchor["z"]}
-                lateral_search_m = float(
-                    json.loads(anchor["metadata_json"]).get("lateral_search_m", 0.0)
-                )
         return {
             "schema_version": PROTOCOL_SCHEMA_VERSION,
             "kind": "capture",
@@ -471,8 +428,6 @@ class CaptureController:
             "expected": {
                 "category": place["category"],
                 "anchor_feature_id": place["anchor_feature_id"],
-                "anchor_position": anchor_position,
-                "lateral_search_m": lateral_search_m,
                 "road_id": place["road_id"],
                 "forward": {
                     "x": place["forward_x"],
@@ -529,22 +484,6 @@ class CaptureController:
         captured_monotonic: float,
     ) -> str:
         capture_id = stable_id("capture", session_id, command_id)
-        directory = (
-            self.captures_root
-            / _safe_area_name(place["named_area"])
-            / place["location_id"]
-        )
-        png_path = directory / f"{capture_id}.png"
-        sidecar_path = directory / f"{capture_id}.json"
-        thumbnail_path = directory / f"{capture_id}.webp"
-        _atomic_save_image(image, png_path, "PNG", optimize=False)
-        thumbnail = image.copy()
-        thumbnail.thumbnail(
-            (int(self.capture_config.get("thumbnail_width", 480)), 10000)
-        )
-        _atomic_save_image(thumbnail, thumbnail_path, "WEBP", lossless=True, method=6)
-        image_hash = _sha256(png_path)
-        thumbnail_hash = _sha256(thumbnail_path)
         runtime_location = event.get("runtime_location")
         runtime_location = (
             runtime_location if isinstance(runtime_location, Mapping) else {}
@@ -570,6 +509,22 @@ class CaptureController:
         resolved, runtime_provenance = resolve_metadata(
             runtime_location, spatial, overrides
         )
+        directory = (
+            self.captures_root
+            / _safe_area_name(resolved.get("named_area"))
+            / place["location_id"]
+        )
+        png_path = directory / f"{capture_id}.png"
+        sidecar_path = directory / f"{capture_id}.json"
+        thumbnail_path = directory / f"{capture_id}.webp"
+        _atomic_save_image(image, png_path, "PNG", optimize=False)
+        thumbnail = image.copy()
+        thumbnail.thumbnail(
+            (int(self.capture_config.get("thumbnail_width", 480)), 10000)
+        )
+        _atomic_save_image(thumbnail, thumbnail_path, "WEBP", lossless=True, method=6)
+        image_hash = _sha256(png_path)
+        thumbnail_hash = _sha256(thumbnail_path)
         review_status = (
             "resolved"
             if all(resolved.get(field) for field in REQUIRED_NAME_FIELDS)
@@ -606,7 +561,15 @@ class CaptureController:
                     "z": place["forward_z"],
                 },
             },
-            "requested_pose": dict(effective_pose),
+            "requested_pose": {
+                "x": place["requested_x"],
+                "y": place["requested_y"],
+                "z": place["requested_z"],
+                "yaw": place["requested_yaw"],
+                "pitch": place["requested_pitch"],
+                "roll": place["requested_roll"],
+            },
+            "effective_pose": dict(effective_pose),
             "actual_pose": actual_pose,
             "actual_fov": event.get("actual_fov"),
             "runtime_location": event.get("runtime_location", {}),
@@ -692,8 +655,8 @@ class CaptureController:
             self.connection.execute(
                 """INSERT INTO captures(capture_id,attempt_id,location_id,png_path,sidecar_path,
                        thumbnail_path,width,height,image_sha256,metadata_sha256,thumbnail_sha256,
-                       perceptual_hash,captured_at,validation_status,validation_json)
-                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       captured_at,validation_status,validation_json)
+                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     capture_id,
                     attempt_id,
@@ -706,27 +669,19 @@ class CaptureController:
                     image_hash,
                     metadata_hash,
                     thumbnail_hash,
-                    validation.get("perceptual_hash"),
                     sidecar["captured_at"],
                     validation_status,
                     json_text(validation),
                 ),
             )
             self.connection.execute(
-                """UPDATE places SET requested_x=?,requested_y=?,requested_z=?,requested_yaw=?,
-                       requested_pitch=?,requested_roll=?,actual_x=?,actual_y=?,actual_z=?,actual_yaw=?,actual_pitch=?,
+                """UPDATE places SET actual_x=?,actual_y=?,actual_z=?,actual_yaw=?,actual_pitch=?,
                        actual_roll=?,actual_fov=?,district=coalesce(?,district),
                        subdistrict=coalesce(?,subdistrict),named_area=coalesce(?,named_area),
                        interior_state=coalesce(?,interior_state),review_status=?,queue_status='captured',
                        provenance_json=?,publishable=0,failure_code=NULL,failure_detail=NULL,updated_at=?
                    WHERE location_id=?""",
                 (
-                    effective_pose.get("x"),
-                    effective_pose.get("y"),
-                    effective_pose.get("z"),
-                    effective_pose.get("yaw"),
-                    effective_pose.get("pitch", 0.0),
-                    effective_pose.get("roll", 0.0),
                     actual_pose.get("x"),
                     actual_pose.get("y"),
                     actual_pose.get("z"),
@@ -765,6 +720,7 @@ class CaptureController:
             )
             sent = time.monotonic()
             try:
+                self.runtime.heartbeat(session_id)
                 self.runtime.send(self._command(session_id, command_id, place))
                 event = self.runtime.wait_for_event(
                     command_id=command_id,
@@ -826,7 +782,6 @@ class CaptureController:
                 validation = validate_image(
                     image,
                     ready_report=ready_report,
-                    connection=self.connection,
                     validation_config=validation_config,
                     config_root=self.config_root,
                 )

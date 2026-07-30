@@ -19,6 +19,10 @@ local state = {
     readyEvidence = nil,
     preflightEvidence = nil,
     lastReadiness = nil,
+    lastControllerHeartbeatUnix = nil,
+    lastStabilityPosition = nil,
+    positionStableFrames = 0,
+    positionStableSeconds = 0.0,
     hiddenControllers = {},
     popupControllers = {},
     hiddenWeapon = nil,
@@ -347,20 +351,11 @@ local function setProfile(profile)
         if not hours then return false, 'profile time must be HH:MM' end
         Game.GetTimeSystem():SetGameTimeByHMS(tonumber(hours), tonumber(minutes), 0)
     end
-    local camera = player:GetFPPCameraComponent()
-    if not camera then return false, 'first-person camera unavailable' end
-    if state.snapshot.fov == nil then
-        local ok, fov = pcall(function() return camera:GetFOV() end)
-        if ok then state.snapshot.fov = fov end
-    end
-    if state.snapshot.zoom == nil then
-        local ok, zoom = pcall(function() return camera:GetZoom() end)
-        if ok then state.snapshot.zoom = zoom end
-    end
-    if profile.fov then
-        if state.snapshot.zoom ~= nil then camera:SetZoom(0.0) end
-        camera:SetFOV(tonumber(profile.fov))
-    end
+    -- Do not write FPPCameraComponent zoom or FOV here. GetZoom is a live
+    -- camera-state value rather than a stable user preference; restoring it
+    -- can leave gameplay zoomed and forcing either value can activate the
+    -- camera's persistent focal blur. The controller still records GetFOV in
+    -- each ready event so unexpected camera state remains observable.
     if profile.weather then
         local weatherName = (config.weather_names or {})[profile.weather]
         if not weatherName then return false, 'unknown weather profile: ' .. tostring(profile.weather) end
@@ -493,18 +488,6 @@ local function restoreCaptureMode(reason)
         weather = true,
     }
     if state.snapshot then
-        if state.snapshot.fov and player then
-            local ok, matches = pcall(function()
-                local camera = player:GetFPPCameraComponent()
-                if state.snapshot.zoom ~= nil then camera:SetZoom(state.snapshot.zoom) end
-                camera:SetFOV(state.snapshot.fov)
-                local fovMatches = math.abs(camera:GetFOV() - state.snapshot.fov) <= 0.05
-                local zoomMatches = state.snapshot.zoom == nil
-                    or math.abs(camera:GetZoom() - state.snapshot.zoom) <= 0.001
-                return fovMatches and zoomMatches
-            end)
-            verification.camera = ok and matches == true
-        end
         if state.snapshot.time then
             local ok, matches = pcall(function()
                 Game.GetTimeSystem():SetGameTimeByHMS(
@@ -596,36 +579,47 @@ local function positionIsValid(actual, expected, tolerances)
     return distance <= tonumber(tolerances.position_tolerance_m or 0.35), distance, heading
 end
 
-local function playerIsStill(player)
-    local ok, velocity = pcall(function() return player:GetVelocity() end)
-    if not ok or not velocity then return false, nil end
-    local speed = math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z)
-    return speed <= tonumber(config.velocity_tolerance_mps or 0.02), speed
+local function playerPositionIsStable(position, frameDeltaSeconds)
+    local previous = state.lastStabilityPosition
+    state.lastStabilityPosition = { x = position.x, y = position.y, z = position.z }
+    if not previous then
+        state.positionStableFrames = 0
+        state.positionStableSeconds = 0.0
+        return false, nil, 0, 0.0
+    end
+    local dx, dy, dz = position.x - previous.x, position.y - previous.y, position.z - previous.z
+    local movementDelta = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if movementDelta <= tonumber(config.position_stability_tolerance_m or 0.02) then
+        state.positionStableFrames = state.positionStableFrames + 1
+        state.positionStableSeconds = state.positionStableSeconds + frameDeltaSeconds
+    else
+        state.positionStableFrames = 0
+        state.positionStableSeconds = 0.0
+    end
+    local required = tonumber(config.position_stability_seconds or 0.75)
+    return state.positionStableSeconds >= required, movementDelta, state.positionStableFrames,
+        state.positionStableSeconds
 end
 
-local function raycast(from, to)
+local function raycast(from, to, collisionGroup)
     local ok, success, result = pcall(function()
         return Game.GetSpatialQueriesSystem():SyncRaycastByCollisionGroup(
-            from, to, 'Static', false, false
+            from, to, collisionGroup, false, false
         )
     end)
     if not ok or not success then return false, nil end
     return true, result
 end
 
-local teleport
-
-local function stageGroundProbe(command)
-    local pose = command.effective_pose or command.pose
-    pose.z = pose.z + tonumber(config.ground_probe_staging_height_m or 3.0)
-    command.ground_snap_complete = false
-    return teleport(command)
-end
-
 local function groundProbe(position)
     local from = Vector4.new(position.x, position.y, position.z + config.ground_probe_up_m, 1.0)
     local to = Vector4.new(position.x, position.y, position.z - config.ground_probe_down_m, 1.0)
-    return raycast(from, to)
+    local groups = config.ground_probe_collision_groups or { 'Static', 'Terrain' }
+    for _, group in ipairs(groups) do
+        local success, result = raycast(from, to, group)
+        if success then return true, result, group end
+    end
+    return false, nil, nil
 end
 
 local function hitPosition(result)
@@ -636,64 +630,38 @@ local function hitPosition(result)
     return nil
 end
 
-local function applyGroundSnap()
-    if state.command.ground_snap_complete then return true end
-    local pose = state.command.effective_pose
-    local success, result = groundProbe(pose)
-    if not success then return false end
-    local hit = hitPosition(result)
-    if not hit then
-        -- The collision result is still a valid streaming/ground fence even
-        -- on game builds that do not expose its hit position to CET.
-        state.command.ground_snap_complete = true
-        return true
+local function resolvedGroundSurface(position)
+    local radius = tonumber(config.ground_probe_sample_radius_m or 0.35)
+    local offsets = {
+        { x = 0.0, y = 0.0 },
+        { x = radius, y = 0.0 },
+        { x = -radius, y = 0.0 },
+        { x = 0.0, y = radius },
+        { x = 0.0, y = -radius },
+    }
+    local hits = {}
+    for _, offset in ipairs(offsets) do
+        local sample = {
+            x = position.x + offset.x,
+            y = position.y + offset.y,
+            z = position.z,
+        }
+        local success, result, group = groundProbe(sample)
+        local hit = success and hitPosition(result) or nil
+        if hit then table.insert(hits, { z = hit.z, group = group }) end
     end
-    local targetZ = hit.z + tonumber(config.ground_offset_m or 0.1)
-    local adjustment = targetZ - pose.z
-    state.command.ground_snap_complete = true
-    if math.abs(adjustment) > 0.01 then
-        pose.z = targetZ
-        local teleported, teleportError = teleport(state.command)
-        if not teleported then failCommand('ground_snap_teleport_failed', teleportError) end
-    end
-    return true
+    if #hits == 0 then return false, nil, nil, 0 end
+    table.sort(hits, function(left, right) return left.z < right.z end)
+    local median = hits[math.floor((#hits + 1) / 2)]
+    return true, median.z, median.group, #hits
 end
 
-local function tryNextLateralPose()
-    local expected = state.command.expected or {}
-    local maximum = tonumber(expected.lateral_search_m or 0.0)
-    if maximum <= 0.0 then return false end
-    state.command.lateral_index = (state.command.lateral_index or 0) + 1
-    local index = state.command.lateral_index
-    local stepNumber = math.floor((index + 1) / 2)
-    local distance = stepNumber * 0.25
-    if distance > maximum + 0.001 then return false end
-    if index % 2 == 1 then distance = -distance end
-    local original = state.command.pose
-    local forward = expected.forward or { x = 0.0, y = 1.0 }
-    local lateralX, lateralY = -forward.y, forward.x
-    state.command.effective_pose = copyTable(original)
-    state.command.effective_pose.x = original.x + lateralX * distance
-    state.command.effective_pose.y = original.y + lateralY * distance
-    local teleported, teleportError = stageGroundProbe(state.command)
-    if not teleported then failCommand('lateral_teleport_failed', teleportError) end
-    return teleported
-end
-
-local function anchorProbe(position, expected)
-    if expected.category == 'road' then return groundProbe(position) end
-    local anchor = expected.anchor_position
-    if type(anchor) ~= 'table' then return false, nil end
-    local from = Vector4.new(position.x, position.y, position.z + 0.8, 1.0)
-    local to = Vector4.new(anchor.x, anchor.y, anchor.z + 0.8, 1.0)
-    return raycast(from, to)
-end
-
-local function streamingIsComplete(groundReady, anchorReady)
+local function streamingIsComplete(groundReady, groundGroup)
     -- Destination collision is the streaming fence.  Do not query an
     -- undocumented GameOptions path here: missing options log an error on
     -- every update even when the Lua call is protected with pcall.
-    return groundReady and anchorReady, 'destination collision probes'
+    return groundReady, groundGroup and ('downward ground probe: ' .. groundGroup)
+        or 'downward ground probe'
 end
 
 local function runtimeLocation()
@@ -733,7 +701,7 @@ local function uiIsSuppressed(player)
         width, height, weaponHidden
 end
 
-local function buildReadiness()
+local function buildReadiness(delta)
     local player = Game.GetPlayer()
     if not player then return { streaming_complete = false, reason = 'player unavailable' } end
     local requests = Game.GetSystemRequestsHandler()
@@ -742,10 +710,9 @@ local function buildReadiness()
     local positionValid, positionDelta, headingDelta = positionIsValid(
         actual, state.command.effective_pose or state.command.pose, state.command.expected or {}
     )
-    local still, speed = playerIsStill(player)
-    local groundReady = groundProbe(actual)
-    local anchorReady = anchorProbe(actual, state.command.expected or {})
-    local streamingComplete, streamingSource = streamingIsComplete(groundReady, anchorReady)
+    local stable, frameDelta, stableFrames, stableSeconds = playerPositionIsStable(actual, delta)
+    local groundReady, _, groundGroup = groundProbe(actual)
+    local streamingComplete, streamingSource = streamingIsComplete(groundReady, groundGroup)
     state.menuOpen = getMenuOpen()
     local paused = getPaused()
     local uiSuppressed, width, height, weaponHidden = uiIsSuppressed(player)
@@ -761,10 +728,12 @@ local function buildReadiness()
         position_valid = positionValid,
         position_delta_m = positionDelta,
         heading_delta_degrees = headingDelta,
-        velocity_zero = still,
-        velocity_mps = speed,
+        position_stable = stable,
+        position_frame_delta_m = frameDelta,
+        position_stable_frames = stableFrames,
+        position_stable_seconds = stableSeconds,
         ground_probe = groundReady,
-        anchor_probe = anchorReady,
+        ground_probe_group = groundGroup,
         ui_suppressed = uiSuppressed,
         weapon_suppressed = weaponHidden,
         display_width = width,
@@ -772,11 +741,11 @@ local function buildReadiness()
     }
     state.lastReadiness = evidence
     local ready = streamingComplete and not state.loadingScreen and not state.menuOpen and not paused
-        and attached and cameraAttached and still and groundReady and anchorReady and weaponHidden
+        and attached and cameraAttached and positionValid and stable and groundReady and weaponHidden
     return evidence, ready, actual
 end
 
-teleport = function(command)
+local function teleport(command)
     local pose = command.effective_pose or command.pose
     local player = Game.GetPlayer()
     local ok, errorValue = pcall(function()
@@ -792,6 +761,31 @@ teleport = function(command)
         writeEvent('teleported', { effective_pose = pose })
     end
     return true, nil
+end
+
+local function prepareGroundPose()
+    local command = state.command
+    if not command or command.ground_snap_complete then return true end
+    local success, groundZ, group, sampleCount = resolvedGroundSurface(command.effective_pose)
+    if not success then return false end
+
+    command.effective_pose = copyTable(command.pose)
+    command.effective_pose.z = groundZ + tonumber(config.ground_offset_m or 0.0)
+    command.ground_snap_complete = true
+    command.ground_snap_group = group
+    command.ground_snap_z = groundZ
+    command.ground_snap_sample_count = sampleCount
+    state.lastStabilityPosition = nil
+    state.positionStableFrames = 0
+    state.positionStableSeconds = 0.0
+
+    local teleported, teleportError = teleport(command)
+    if not teleported then
+        failCommand('ground_snap_teleport_failed', teleportError)
+    end
+    -- Readiness starts on the next update, after the corrected teleport has
+    -- actually been applied to the player.
+    return false
 end
 
 local function acceptCommand(command)
@@ -821,7 +815,11 @@ local function acceptCommand(command)
     end
     command.effective_pose = copyTable(command.pose)
     command.ground_snap_complete = false
-    command.lateral_index = 0
+    command.effective_pose.z = command.pose.z
+        + tonumber(config.ground_probe_staging_height_m or 3.0)
+    state.lastStabilityPosition = nil
+    state.positionStableFrames = 0
+    state.positionStableSeconds = 0.0
     state.elapsed = 0.0
     state.preflightEvidence = nil
     state.lastReadiness = nil
@@ -864,7 +862,7 @@ local function beginCaptureWhenGameplayIsReady()
         failCommand('capture_mode_failed', enterError)
         return
     end
-    local teleported, teleportError = stageGroundProbe(state.command)
+    local teleported, teleportError = teleport(state.command)
     if not teleported then
         failCommand('teleport_failed', teleportError)
         return
@@ -897,8 +895,11 @@ end
 
 local function controllerHeartbeatIsAlive()
     local heartbeat = readJson(runtimePath('controller-heartbeat.json'))
-    if not heartbeat or type(heartbeat.unix_seconds) ~= 'number' then return false end
-    return math.abs(os.time() - heartbeat.unix_seconds)
+    if heartbeat and type(heartbeat.unix_seconds) == 'number' then
+        state.lastControllerHeartbeatUnix = heartbeat.unix_seconds
+    end
+    if type(state.lastControllerHeartbeatUnix) ~= 'number' then return false end
+    return math.abs(os.time() - state.lastControllerHeartbeatUnix)
         <= tonumber(config.controller_heartbeat_timeout_seconds or 5) + 1
 end
 
@@ -1052,14 +1053,19 @@ registerForEvent('onUpdate', function(delta)
     beginCaptureWhenGameplayIsReady()
     if state.stage == 'waiting' and state.command then
         state.elapsed = state.elapsed + delta
-        if applyGroundSnap() and state.stage == 'waiting' then
-            local evidence, ready, actual = buildReadiness()
+        if prepareGroundPose() then
+            local evidence, ready, actual = buildReadiness(delta)
             if ready then
                 state.readyEvidence = { evidence = evidence, actual = actual }
                 state.stage = 'armed'
             elseif state.elapsed >= tonumber(config.loading_timeout_seconds or 45) then
                 failCommand('streaming_timeout', json.encode(evidence))
             end
+        elseif state.elapsed >= tonumber(config.loading_timeout_seconds or 45) then
+            failCommand('ground_snap_timeout', json.encode({
+                effective_pose = state.command.effective_pose,
+                ground_probe_groups = config.ground_probe_collision_groups,
+            }))
         end
     end
 end)

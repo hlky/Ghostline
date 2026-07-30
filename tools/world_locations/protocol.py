@@ -26,6 +26,21 @@ def timestamp() -> str:
     return datetime.now(UTC).isoformat(timespec="milliseconds")
 
 
+def _unlink_protocol_file(path: Path) -> None:
+    """Remove a protocol file, tolerating CET's short-lived Windows read lock."""
+    deadline = time.monotonic() + 0.25
+    while True:
+        try:
+            path.unlink()
+            return
+        except FileNotFoundError:
+            return
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.001)
+
+
 def atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
@@ -111,10 +126,7 @@ class RuntimeProtocol:
     def prepare(self) -> None:
         self.root.mkdir(parents=True, exist_ok=True)
         for path in (self.command_path, self.ack_path, *self.event_paths.values()):
-            try:
-                path.unlink()
-            except FileNotFoundError:
-                pass
+            _unlink_protocol_file(path)
 
     def heartbeat(self, session_id: str) -> None:
         atomic_write_json(
@@ -135,10 +147,7 @@ class RuntimeProtocol:
             if not command.get(required):
                 raise ProtocolError(f"command is missing {required}")
         for path in (self.ack_path, *self.event_paths.values()):
-            try:
-                path.unlink()
-            except FileNotFoundError:
-                pass
+            _unlink_protocol_file(path)
         atomic_write_json(self.command_path, command)
 
     def acknowledge(

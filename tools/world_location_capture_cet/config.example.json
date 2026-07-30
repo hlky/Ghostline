@@ -2,15 +2,17 @@
   "schema_version": 1,
   "runtime_directory": "runtime",
   "controller_heartbeat_timeout_seconds": 5,
-  "loading_timeout_seconds": 45,
+  "loading_timeout_seconds": 15,
   "expected_width": 1920,
   "expected_height": 1080,
   "ground_probe_staging_height_m": 3.0,
+  "ground_probe_sample_radius_m": 0.35,
+  "ground_offset_m": 0.0,
   "ground_probe_up_m": 1.5,
   "ground_probe_down_m": 8.0,
-  "ground_offset_m": 0.1,
-  "obstruction_detection_max_m": 2.0,
-  "velocity_tolerance_mps": 0.02,
+  "ground_probe_collision_groups": ["Static", "Terrain"],
+  "position_stability_tolerance_m": 0.02,
+  "position_stability_seconds": 0.75,
   "weather_names": {
     "clear": "24h_weather_sunny"
   },
@@ -43,7 +45,7 @@
   ],
   "restrictions": [
     "GameplayRestriction.NoCombat",
-    "GameplayRestriction.NoMovement",
+    "GameplayRestriction.NoZooming",
     "GameplayRestriction.NoPhone",
     "GameplayRestriction.NoScanning",
     "GameplayRestriction.NoWeaponWheel"
