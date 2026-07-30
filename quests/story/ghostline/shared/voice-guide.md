@@ -14,8 +14,10 @@ Reusable Qwen3-TTS speaker embeddings are stored in
 These SafeTensors files are the canonical copies. Do not reintroduce
 pickle-backed `.pt` embeddings.
 
-Iris does not yet have a persisted embedding. Do not substitute one of her
-finished quest WAVs without recording that a new embedding was derived.
+Iris's reusable designed-voice embedding is stored at
+`voice/embeddings/iris.safetensors`. It was derived from the recorded designed
+reference identified in the quest voice-production indexes; do not replace it
+from a finished quest WAV.
 
 ## Iris
 

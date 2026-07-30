@@ -23,6 +23,8 @@ pub struct RenderOptions {
     pub output_root: PathBuf,
     /// Optional dialogue IDs to render; empty selects all dialogues.
     pub dialogues: BTreeSet<String>,
+    /// Optional speaker names to render; empty selects every speaker.
+    pub speakers: BTreeSet<String>,
     /// Explicit speaker-to-embedding overrides.
     pub speaker_embeddings: BTreeMap<String, PathBuf>,
     /// Candidates generated per line.
@@ -91,7 +93,13 @@ pub fn render_plan(
         return Err(Error::manifest("maximum frame count must be positive"));
     }
     let selected = selected_dialogues(plan, &options.dialogues)?;
-    let embeddings = resolve_embeddings(plan, &selected, &options.speaker_embeddings)?;
+    validate_speakers(&selected, &options.speakers)?;
+    let embeddings = resolve_embeddings(
+        plan,
+        &selected,
+        &options.speaker_embeddings,
+        &options.speakers,
+    )?;
     fs::create_dir_all(&options.output_root)
         .map_err(|source| Error::io(&options.output_root, source))?;
     let mut candidates = Vec::new();
@@ -100,6 +108,9 @@ pub fn render_plan(
         let dialogue_root = options.output_root.join(&dialogue.index.id);
         fs::create_dir_all(&dialogue_root).map_err(|source| Error::io(&dialogue_root, source))?;
         for line in &dialogue.manifest.spoken_lines {
+            if !options.speakers.is_empty() && !options.speakers.contains(&line.speaker) {
+                continue;
+            }
             let embedding = embeddings.get(&line.speaker).ok_or_else(|| {
                 Error::manifest(format!(
                     "speaker {:?} has no loaded embedding",
@@ -265,11 +276,13 @@ fn resolve_embeddings(
     plan: &VoicePlan,
     dialogues: &[&crate::manifest::PlannedDialogue],
     overrides: &BTreeMap<String, PathBuf>,
+    requested_speakers: &BTreeSet<String>,
 ) -> Result<BTreeMap<String, SpeakerEmbedding>> {
     let speakers = dialogues
         .iter()
         .flat_map(|dialogue| &dialogue.manifest.spoken_lines)
         .map(|line| line.speaker.as_str())
+        .filter(|speaker| requested_speakers.is_empty() || requested_speakers.contains(*speaker))
         .collect::<BTreeSet<_>>();
     let mut result = BTreeMap::new();
     for speaker in speakers {
@@ -296,6 +309,28 @@ fn resolve_embeddings(
         result.insert(speaker.to_owned(), load_embedding(path)?);
     }
     Ok(result)
+}
+
+fn validate_speakers(
+    dialogues: &[&crate::manifest::PlannedDialogue],
+    requested: &BTreeSet<String>,
+) -> Result<()> {
+    if requested.is_empty() {
+        return Ok(());
+    }
+    let available = dialogues
+        .iter()
+        .flat_map(|dialogue| &dialogue.manifest.spoken_lines)
+        .map(|line| line.speaker.as_str())
+        .collect::<BTreeSet<_>>();
+    for speaker in requested {
+        if !available.contains(speaker.as_str()) {
+            return Err(Error::manifest(format!(
+                "speaker {speaker:?} has no lines in the selected dialogues"
+            )));
+        }
+    }
+    Ok(())
 }
 
 fn write_json(path: &Path, value: &impl Serialize) -> Result<()> {

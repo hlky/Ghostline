@@ -57,6 +57,8 @@ pub struct VoiceSource {
     pub mode: String,
     /// Optional repository-relative source asset.
     pub source: Option<String>,
+    /// Optional designed reference from which the source embedding was derived.
+    pub reference: Option<String>,
     /// Optional unresolved production status.
     pub status: Option<String>,
 }

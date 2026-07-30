@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "quest": "gq001",
+  "spoken_line_count": 12,
+  "manifests": [
+    {
+      "id": "gq001_03",
+      "file": "gq001_03_manifest.json",
+      "delivery": "formal_scene",
+      "runtime_status": "implemented",
+      "line_count": 12,
+      "speakers": ["Iris", "V"]
+    }
+  ],
+  "voice_sources": {
+    "Iris": {
+      "mode": "designed_reference",
+      "source": "quests/story/ghostline/shared/voice/embeddings/iris.safetensors",
+      "reference": "generated-voices/iris_reference.wav",
+      "status": "generated_unreviewed"
+    },
+    "V": {
+      "mode": "speaker_embedding",
+      "source": "quests/story/ghostline/shared/voice/embeddings/v.safetensors"
+    }
+  },
+  "notes": [
+    "The Iris source is shared with gq003 so her recurring voice remains consistent.",
+    "Generated candidates remain auditions until reviewed and promoted into gq001/voice/source."
+  ]
+}

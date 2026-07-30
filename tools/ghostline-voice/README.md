@@ -38,6 +38,9 @@ cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- `
   --embedding V=.\generated-voices\embeddings\v.json
 ```
 
+Use repeated `--speaker NAME` arguments to render only selected performers
+from the chosen dialogue manifests.
+
 The checkpoint and artifact libraries are trusted native inputs. `render-local`
 loads them in-process once, then serially renders every selected line and
 candidate version. Each WAV receives DinoML's versioned reproducibility

@@ -99,6 +99,9 @@ struct RenderLocalArgs {
     /// Limit rendering to one or more dialogue IDs.
     #[arg(long)]
     dialogue: Vec<String>,
+    /// Limit rendering to one or more speaker names.
+    #[arg(long)]
+    speaker: Vec<String>,
     /// Speaker embedding override formatted as `NAME=PATH`.
     #[arg(long = "embedding", value_parser = parse_embedding_override)]
     embeddings: Vec<(String, PathBuf)>,
@@ -246,6 +249,7 @@ fn render_local(args: &RenderLocalArgs) -> Result<()> {
     let options = RenderOptions {
         output_root: resolve(&plan.repo_root, &args.output),
         dialogues: args.dialogue.iter().cloned().collect::<BTreeSet<_>>(),
+        speakers: args.speaker.iter().cloned().collect::<BTreeSet<_>>(),
         speaker_embeddings: args.embeddings.iter().cloned().collect::<BTreeMap<_, _>>(),
         versions: args.versions,
         seed_base: args.seed_base,

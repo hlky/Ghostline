@@ -15,10 +15,10 @@
   "voice_sources": {
     "V": {"mode": "speaker_embedding", "source": "quests/story/ghostline/shared/voice/embeddings/v.safetensors"},
     "Patch": {"mode": "speaker_embedding", "source": "quests/story/ghostline/shared/voice/embeddings/patch.safetensors"},
-    "Iris": {"mode": "designed_reference", "source": "generated-voices/iris_reference.wav", "status": "generate_and_review"},
-    "Mara": {"mode": "designed_reference", "status": "design_and_review"},
-    "Morrow": {"mode": "designed_reference", "status": "design_and_review"},
-    "System": {"mode": "designed_reference", "status": "design_and_review"}
+    "Iris": {"mode": "designed_reference", "source": "quests/story/ghostline/shared/voice/embeddings/iris.safetensors", "reference": "generated-voices/iris_reference.wav", "status": "generated_unreviewed"},
+    "Mara": {"mode": "designed_reference", "source": "generated-voices/embeddings/mara.json", "reference": "generated-voices/mara_reference.wav", "status": "generated_unreviewed"},
+    "Morrow": {"mode": "designed_reference", "source": "generated-voices/embeddings/morrow.json", "reference": "generated-voices/morrow_reference.wav", "status": "generated_unreviewed"},
+    "System": {"mode": "designed_reference", "source": "generated-voices/embeddings/system.json", "reference": "generated-voices/system_reference.wav", "status": "generated_unreviewed"}
   },
   "notes": [
     "Authored subtitle and VO-map resources exist for every listed line.",
