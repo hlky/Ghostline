@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
+import base64
 import hashlib
 import json
 from pathlib import Path
 import re
 import sqlite3
+import struct
 from typing import Any, Callable
 
 from .database import (
@@ -164,6 +166,47 @@ def _find_fast_travel_data(value: Any) -> dict[str, Any] | None:
     return None
 
 
+def _area_outline(data: Mapping[str, Any]) -> list[dict[str, float]]:
+    outline = data.get("outline")
+    if not isinstance(outline, Mapping):
+        return []
+    outline_data = outline.get("Data")
+    if not isinstance(outline_data, Mapping):
+        return []
+    encoded = unwrap(outline_data.get("buffer"))
+    if not isinstance(encoded, str) or not encoded:
+        return []
+    try:
+        buffer = base64.b64decode(encoded, validate=True)
+    except ValueError:
+        return []
+    if len(buffer) < 4:
+        return []
+    count = struct.unpack_from("<I", buffer)[0]
+    if count < 3 or len(buffer) < 4 + count * 16:
+        return []
+    return [
+        {"x": float(x), "y": float(y), "z": float(z)}
+        for x, y, z, _ in (
+            struct.unpack_from("<ffff", buffer, 4 + index * 16)
+            for index in range(count)
+        )
+    ]
+
+
+def _location_district_id(data: Mapping[str, Any]) -> str | None:
+    for notifier in data.get("notifiers", []):
+        if not isinstance(notifier, Mapping):
+            continue
+        notifier_data = notifier.get("Data")
+        if not isinstance(notifier_data, Mapping):
+            continue
+        district_id = unwrap(notifier_data.get("districtID"))
+        if district_id not in (None, ""):
+            return str(district_id)
+    return None
+
+
 def _descriptor(
     index: int, node: Mapping[str, Any], rules: list[Mapping[str, Any]]
 ) -> dict[str, Any] | None:
@@ -201,6 +244,10 @@ def _descriptor(
     fast_travel = _find_fast_travel_data(data)
     if fast_travel:
         metadata["fast_travel"] = fast_travel
+    area_outline = _area_outline(data)
+    if area_outline:
+        metadata["area_outline"] = area_outline
+        metadata["district_id"] = _location_district_id(data)
     road_id: str | None = None
     road_order: int | None = None
     if resource:
@@ -306,10 +353,44 @@ def extract_sector(
             version,
         )
         metadata = dict(descriptor["metadata"])
+        area_outline = metadata.get("area_outline", [])
+        if area_outline:
+            scale_value = instance.get("Scale")
+            scale = scale_value if isinstance(scale_value, Mapping) else {}
+            scale_x = float(unwrap(scale.get("X", scale.get("x", 1.0))) or 1.0)
+            scale_y = float(unwrap(scale.get("Y", scale.get("y", 1.0))) or 1.0)
+            scale_z = float(unwrap(scale.get("Z", scale.get("z", 1.0))) or 1.0)
+            metadata["area_outline"] = [
+                {
+                    "x": float(point["x"]) * scale_x,
+                    "y": float(point["y"]) * scale_y,
+                    "z": float(point["z"]) * scale_z,
+                }
+                for point in area_outline
+            ]
+            metadata["area_scale"] = {
+                "x": scale_x,
+                "y": scale_y,
+                "z": scale_z,
+            }
         if correction_id:
             metadata["orientation_correction_id"] = correction_id
         metadata["identity_transform"] = identity_transform
         minimum, maximum = (bounds.minimum, bounds.maximum) if bounds else (None, None)
+        area_outline = metadata.get("area_outline", [])
+        if area_outline:
+            min_x = min(float(point["x"]) for point in area_outline)
+            min_y = min(float(point["y"]) for point in area_outline)
+            max_x = max(float(point["x"]) for point in area_outline)
+            max_y = max(float(point["y"]) for point in area_outline)
+            min_z = max_z = None
+        else:
+            min_x = minimum.x if minimum else None
+            min_y = minimum.y if minimum else None
+            min_z = minimum.z if minimum else None
+            max_x = maximum.x if maximum else None
+            max_y = maximum.y if maximum else None
+            max_z = maximum.z if maximum else None
         features.append(
             {
                 "feature_id": feature_id,
@@ -329,12 +410,12 @@ def extract_sector(
                 "q_j": rotation.j,
                 "q_k": rotation.k,
                 "q_r": rotation.r,
-                "min_x": minimum.x if minimum else None,
-                "min_y": minimum.y if minimum else None,
-                "min_z": minimum.z if minimum else None,
-                "max_x": maximum.x if maximum else None,
-                "max_y": maximum.y if maximum else None,
-                "max_z": maximum.z if maximum else None,
+                "min_x": min_x,
+                "min_y": min_y,
+                "min_z": min_z,
+                "max_x": max_x,
+                "max_y": max_y,
+                "max_z": max_z,
                 "forward_x": forward.x,
                 "forward_y": forward.y,
                 "forward_z": forward.z,

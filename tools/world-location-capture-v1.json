@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "extraction_rule_version": "1.0.0",
+  "extraction_rule_version": "1.0.1",
   "placement_rule_version": "1.0.0",
   "scope_rule_version": "1.0.0",
   "source_root": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default",
@@ -12,14 +12,17 @@
   "exports": "exports",
   "capture": {
     "window_title_contains": "Cyberpunk 2077",
+    "window_process_name": "Cyberpunk2077.exe",
     "width": 1920,
     "height": 1080,
     "thumbnail_width": 480,
     "visual_settle_seconds": 2.0,
-    "loading_timeout_seconds": 15.0,
+    "loading_timeout_seconds": 5.0,
     "heartbeat_timeout_seconds": 5.0,
     "protocol_poll_seconds": 0.01,
-    "maximum_attempts": 1,
+    "command_accept_timeout_seconds": 5.0,
+    "command_completion_timeout_seconds": 5.0,
+    "maximum_attempts": 3,
     "position_tolerance_m": 0.35,
     "fov_tolerance_degrees": 0.25,
     "profile": {
@@ -34,16 +37,24 @@
       "black_stddev_threshold": 3.0,
       "black_pixel_threshold": 8,
       "black_fraction_threshold": 0.98,
+      "sharpness_laplacian_threshold": 30.0,
       "template_threshold": 0.9,
       "hud_templates": []
     }
   },
   "road_rules": {
-    "short_road_threshold_m": 100.0,
+    "short_road_threshold_m": 250.0,
     "endpoint_inset_m": 50.0,
-    "interval_m": 100.0,
-    "minimum_arc_separation_m": 100.0,
-    "minimum_straight_separation_m": 100.0
+    "interval_m": 250.0,
+    "minimum_arc_separation_m": 250.0,
+    "minimum_straight_separation_m": 250.0
+  },
+  "sparse_road_rules": {
+    "object_proximity_m": 250.0,
+    "minimum_separation_m": 500.0
+  },
+  "metadata_rules": {
+    "runtime_area_fallback_m": 500.0
   },
   "scope_rules": [
     {
@@ -105,6 +116,7 @@
       "forward_axis": "+y",
       "front_extent_m": 0.45,
       "clearance_m": 1.0,
+      "minimum_candidate_separation_m": 3.0,
       "tags": ["object", "vending"]
     },
     {
@@ -149,7 +161,7 @@
       "id": "named_area_v1",
       "category": "area",
       "patterns": ["district", "subdistrict", "named_area", "location"],
-      "node_types": ["worldAreaShapeNode", "worldGenericAreaShapeNode", "worldQuestAreaNode"],
+      "node_types": ["worldLocationAreaNode", "worldAreaShapeNode", "worldGenericAreaShapeNode", "worldQuestAreaNode"],
       "calibrated": false,
       "capture_enabled": false,
       "forward_axis": "+y",

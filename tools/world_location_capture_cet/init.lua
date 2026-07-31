@@ -23,6 +23,7 @@ local state = {
     lastStabilityPosition = nil,
     positionStableFrames = 0,
     positionStableSeconds = 0.0,
+    runtimeLocation = {},
     hiddenControllers = {},
     popupControllers = {},
     hiddenWeapon = nil,
@@ -711,6 +712,10 @@ local function buildReadiness(delta)
         actual, state.command.effective_pose or state.command.pose, state.command.expected or {}
     )
     local stable, frameDelta, stableFrames, stableSeconds = playerPositionIsStable(actual, delta)
+    local observedLocation = runtimeLocation()
+    for key, value in pairs(observedLocation) do
+        if value ~= nil and value ~= '' then state.runtimeLocation[key] = value end
+    end
     local groundReady, _, groundGroup = groundProbe(actual)
     local streamingComplete, streamingSource = streamingIsComplete(groundReady, groundGroup)
     state.menuOpen = getMenuOpen()
@@ -820,6 +825,7 @@ local function acceptCommand(command)
     state.lastStabilityPosition = nil
     state.positionStableFrames = 0
     state.positionStableSeconds = 0.0
+    state.runtimeLocation = {}
     state.elapsed = 0.0
     state.preflightEvidence = nil
     state.lastReadiness = nil
@@ -887,6 +893,9 @@ local function pollAck()
     local ack = readJson(runtimePath('ack.json'))
     if not ack or ack.command_id ~= state.command.command_id then return end
     if ack.success ~= false and state.stage ~= 'ready' and state.stage ~= 'error' then return end
+    if ack.success == false and state.active then
+        restoreCaptureMode('controller rejected capture')
+    end
     writeEvent('completed', { success = ack.success == true, detail = ack.detail or {} })
     state.stage = 'idle'
     state.command = nil
@@ -1084,7 +1093,7 @@ registerForEvent('onDraw', function()
             actual_pose = state.readyEvidence.actual,
             effective_pose = state.command.effective_pose,
             actual_fov = actualFov,
-            runtime_location = runtimeLocation(),
+            runtime_location = state.runtimeLocation,
             teleport_to_ready_ms = state.elapsed * 1000.0,
         })
         state.stage = 'ready'

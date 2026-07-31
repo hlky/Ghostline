@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import hashlib
 import os
@@ -9,6 +10,7 @@ import sys
 import tempfile
 import threading
 import time
+import struct
 import unittest
 from unittest import mock
 
@@ -20,6 +22,8 @@ if str(TOOLS) not in sys.path:
 
 from world_locations.capture import (  # noqa: E402
     CaptureController,
+    SessionProtocolError,
+    _nearest_runtime_area,
     recover_interrupted_queue,
     validate_image,
     validate_ready_event,
@@ -30,6 +34,8 @@ from world_locations.database import connect, transaction  # noqa: E402
 from world_locations.extract import extract_sector, index_sectors  # noqa: E402
 from world_locations.model import Quaternion, Vec3, game_yaw_degrees, outward_vector  # noqa: E402
 from world_locations.planning import (  # noqa: E402
+    _deduplicate_candidate_coordinates,
+    _deduplicate_sparse_road_places,
     evaluate_scope,
     plan_locations,
     resolve_metadata,
@@ -232,6 +238,96 @@ class IndexAndPlanTests(unittest.TestCase):
         self.connection.close()
         self.temporary.cleanup()
 
+    def test_candidate_deduplication_uses_configured_3d_spacing(self) -> None:
+        def candidate(
+            location_id: str, category: str, x: float, y: float, z: float
+        ) -> dict[str, object]:
+            return {
+                "location_id": location_id,
+                "category": category,
+                "requested_x": x,
+                "requested_y": y,
+                "requested_z": z,
+            }
+
+        retained, removed = _deduplicate_candidate_coordinates(
+            [
+                candidate("a", "vending_machine", 0.0, 0.0, 0.0),
+                candidate("b", "vending_machine", 2.9, 0.0, 0.0),
+                candidate("c", "vending_machine", 3.1, 0.0, 0.0),
+                candidate("d", "vending_machine", 0.0, 0.0, 4.0),
+                candidate("e", "shop", 0.0, 0.0, 0.0),
+            ],
+            {"vending_machine": 3.0},
+        )
+
+        self.assertEqual(1, removed)
+        self.assertEqual(["a", "c", "d", "e"], [row["location_id"] for row in retained])
+
+    def test_nearest_runtime_area_is_bounded_and_requires_runtime_provenance(self) -> None:
+        index_sectors(self.connection, self.source, self.config)
+        plan_locations(self.connection, self.config)
+        place = self.connection.execute(
+            "SELECT * FROM places WHERE category='vending_machine'"
+        ).fetchone()
+        provenance = json.loads(place["provenance_json"])
+        provenance["named_area"] = "runtime"
+        with transaction(self.connection):
+            self.connection.execute(
+                "UPDATE places SET named_area='Test Area',provenance_json=? WHERE location_id=?",
+                (json.dumps(provenance), place["location_id"]),
+            )
+
+        nearby = _nearest_runtime_area(
+            self.connection, place["requested_x"] + 10.0, place["requested_y"], 50.0
+        )
+        distant = _nearest_runtime_area(
+            self.connection, place["requested_x"] + 100.0, place["requested_y"], 50.0
+        )
+
+        self.assertEqual("Test Area", nearby["named_area"])
+        self.assertEqual({}, distant)
+
+    def test_sparse_roads_are_globally_spaced_away_from_objects(self) -> None:
+        def road(location_id: str, x: float, direction: str) -> dict[str, object]:
+            return {
+                "location_id": location_id,
+                "requested_x": x,
+                "requested_y": 0.0,
+                "requested_z": 0.0,
+                "direction": direction,
+            }
+
+        roads = [
+            road("a1", 0.0, "along"),
+            road("a2", 0.0, "against"),
+            road("b1", 300.0, "along"),
+            road("b2", 300.0, "against"),
+            road("c1", 400.0, "along"),
+            road("c2", 400.0, "against"),
+            road("d1", 600.0, "along"),
+            road("d2", 600.0, "against"),
+        ]
+        objects = [
+            {
+                "requested_x": 300.0,
+                "requested_y": 0.0,
+                "requested_z": 0.0,
+            }
+        ]
+
+        retained, removed = _deduplicate_sparse_road_places(
+            roads,
+            objects,
+            {"object_proximity_m": 50.0, "minimum_separation_m": 500.0},
+        )
+
+        self.assertEqual(2, removed)
+        self.assertEqual(
+            ["a1", "a2", "b1", "b2", "d1", "d2"],
+            [row["location_id"] for row in retained],
+        )
+
     def test_streamed_extraction_is_stable_and_classifies_known_features(self) -> None:
         first = extract_sector(self.sector, self.sector.name, self.config)
         second = extract_sector(self.sector, self.sector.name, self.config)
@@ -247,6 +343,40 @@ class IndexAndPlanTests(unittest.TestCase):
             r"base\gameplay\devices\vending_machines\vending_machine_1.ent",
             vending["resource_path"],
         )
+
+    def test_location_area_outline_supplies_named_polygon(self) -> None:
+        document = sector_document()
+        area = document["Data"]["RootChunk"]["nodes"][-1]["Data"]
+        area["$type"] = "worldLocationAreaNode"
+        area["debugName"] = {"$value": "{biotechnica_flats}"}
+        vertices = [(-10.0, -10.0), (10.0, -10.0), (10.0, 10.0), (-10.0, 10.0)]
+        buffer = struct.pack("<I", len(vertices)) + b"".join(
+            struct.pack("<ffff", x, y, 0.0, 1.0) for x, y in vertices
+        )
+        area["outline"] = {
+            "Data": {
+                "$type": "AreaShapeOutline",
+                "buffer": base64.b64encode(buffer).decode("ascii"),
+            }
+        }
+        area["notifiers"] = [
+            {"Data": {"districtID": {"$value": "114669226962"}}}
+        ]
+        self.sector.write_text(json.dumps(document), encoding="utf-8")
+
+        index_sectors(self.connection, self.source, self.config)
+        result = plan_locations(self.connection, self.config)
+        area_row = self.connection.execute("SELECT * FROM areas").fetchone()
+        place = self.connection.execute(
+            "SELECT * FROM places WHERE category='vending_machine'"
+        ).fetchone()
+
+        self.assertEqual(1, result["areas"])
+        self.assertEqual("Biotechnica Flats", area_row["name"])
+        self.assertEqual("Biotechnica Flats", place["named_area"])
+        provenance = json.loads(area_row["provenance_json"])
+        self.assertEqual("114669226962", provenance["district_id"])
+        self.assertEqual(4, len(provenance["polygon_xy"]))
 
     def test_resource_orientation_correction_is_applied(self) -> None:
         corrected = json.loads(json.dumps(self.config))
@@ -289,7 +419,7 @@ class IndexAndPlanTests(unittest.TestCase):
             )
         result = plan_locations(self.connection, self.config)
         self.assertEqual(1, result["object_places"])
-        self.assertEqual(4, result["road_places"])
+        self.assertEqual(2, result["road_places"])
         vending = self.connection.execute(
             "SELECT * FROM places WHERE category='vending_machine'"
         ).fetchone()
@@ -300,9 +430,9 @@ class IndexAndPlanTests(unittest.TestCase):
         road_rows = self.connection.execute(
             "SELECT * FROM places WHERE category='road' ORDER BY requested_x,direction"
         ).fetchall()
-        self.assertEqual(4, len(road_rows))
+        self.assertEqual(2, len(road_rows))
         unique_points = sorted({round(row["requested_x"], 3) for row in road_rows})
-        self.assertEqual([50.0, 150.0], unique_points)
+        self.assertEqual([100.0], unique_points)
         self.assertEqual("Kabuki Road", road_rows[0]["nearest_street_name"])
         self.assertEqual(
             3, self.connection.execute("PRAGMA user_version").fetchone()[0]
@@ -424,7 +554,7 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(3, attempts)
             self.assertEqual(2, retry_yield.call_count)
 
-    def test_black_and_duplicate_frames_are_rejected(self) -> None:
+    def test_black_loading_and_blurred_frames_are_rejected(self) -> None:
         from PIL import Image
 
         black = validate_image(
@@ -447,6 +577,18 @@ class ProtocolTests(unittest.TestCase):
         )
         self.assertFalse(loading["valid"])
         self.assertGreater(loading["black_fraction"], 0.98)
+
+        blurred = validate_image(
+            Image.new("RGB", (64, 64), (100, 100, 100)),
+            ready_report={"errors": []},
+            validation_config={
+                "hud_templates": [],
+                "sharpness_laplacian_threshold": 30.0,
+            },
+            config_root=ROOT,
+        )
+        self.assertFalse(blurred["valid"])
+        self.assertEqual(0.0, blurred["sharpness_laplacian_variance"])
 
     def test_ready_event_records_wrong_fov_without_rejecting_frame(self) -> None:
         place = {
@@ -581,6 +723,43 @@ class ProtocolTests(unittest.TestCase):
                     session_id="session-test",
                 )
 
+    def test_completion_barrier_ignores_the_acknowledged_error_event(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            protocol = RuntimeProtocol(Path(temporary), poll_seconds=0.001)
+            protocol.prepare()
+            command_id = "command-failed"
+            atomic_write_json(
+                protocol.event_paths["error"],
+                {
+                    "schema_version": 1,
+                    "command_id": command_id,
+                    "event": "error",
+                    "error_code": "streaming_timeout",
+                },
+            )
+
+            def runtime() -> None:
+                time.sleep(0.02)
+                atomic_write_json(
+                    protocol.event_paths["completed"],
+                    {
+                        "schema_version": 1,
+                        "command_id": command_id,
+                        "event": "completed",
+                        "success": False,
+                    },
+                )
+
+            worker = threading.Thread(target=runtime)
+            worker.start()
+            event = protocol.wait_for_completion(
+                command_id=command_id,
+                timeout_seconds=1,
+                session_id="session-test",
+            )
+            worker.join()
+            self.assertIs(event["success"], False)
+
     def test_stale_heartbeat_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             protocol = RuntimeProtocol(Path(temporary))
@@ -634,6 +813,10 @@ class ProtocolTests(unittest.TestCase):
         self.assertIn("ground_probe_staging_height_m", lua)
         self.assertIn("ground_probe_sample_radius_m", lua)
         self.assertIn("ground_offset_m", lua)
+        self.assertIn(
+            '"ground_offset_m": 0.3',
+            (ROOT / "tools" / "world_location_capture_cet" / "config.example.json").read_text(),
+        )
         self.assertIn("ground_snap_timeout", lua)
         self.assertIn("table.sort(hits", lua)
         self.assertNotIn("tryNextLateralPose", lua)
@@ -643,6 +826,7 @@ class ProtocolTests(unittest.TestCase):
         self.assertNotIn("SetFOV(", lua)
         self.assertNotIn("GetZoom(", lua)
         self.assertIn("actualFov = camera:GetFOV()", lua)
+        self.assertIn("restoreCaptureMode('controller rejected capture')", lua)
         self.assertIn("ack.success ~= false", lua)
         self.assertIn("writeEvent('ready'", lua[draw:])
         self.assertNotIn("sleep(", lua.lower())
@@ -848,11 +1032,16 @@ class ResumeAndRetryTests(unittest.TestCase):
             def send(self, _command: dict) -> None:
                 self.sends += 1
 
-            def wait_for_event(self, **_kwargs: object) -> dict:
+            def wait_for_event(self, **kwargs: object) -> dict:
+                if kwargs["accepted_types"] == {"accepted"}:
+                    return {"event": "accepted", "timestamp": "2026-01-01"}
                 raise ProtocolError("fixture failure")
 
             def acknowledge(self, *_args: object, **_kwargs: object) -> None:
                 return None
+
+            def wait_for_completion(self, **_kwargs: object) -> dict:
+                return {"event": "completed", "success": False}
 
         controller = object.__new__(CaptureController)
         controller.connection = self.connection
@@ -873,6 +1062,58 @@ class ResumeAndRetryTests(unittest.TestCase):
             (place["location_id"],),
         ).fetchone()[0]
         self.assertEqual(3, attempts)
+
+    def test_missing_completion_aborts_before_sending_a_retry(self) -> None:
+        index_sectors(self.connection, self.source, self.config)
+        plan_locations(self.connection, self.config)
+        place = self.connection.execute(
+            "SELECT * FROM places WHERE category='vending_machine'"
+        ).fetchone()
+        with transaction(self.connection):
+            self.connection.execute(
+                """INSERT INTO capture_sessions(session_id,game_profile,capture_profile_json,
+                       runtime_path,started_at,status) VALUES('session-wedge','test','{}','test',?,'running')""",
+                ("2026-01-01",),
+            )
+
+        class WedgedRuntime:
+            sends = 0
+
+            def heartbeat(self, _session_id: str) -> None:
+                return None
+
+            def send(self, _command: dict) -> None:
+                self.sends += 1
+
+            def wait_for_event(self, **kwargs: object) -> dict:
+                if kwargs["accepted_types"] == {"accepted"}:
+                    return {"event": "accepted", "timestamp": "2026-01-01"}
+                raise ProtocolError("streaming timeout")
+
+            def acknowledge(self, *_args: object, **_kwargs: object) -> None:
+                return None
+
+            def wait_for_completion(self, **_kwargs: object) -> dict:
+                raise RuntimeTimeout("CET remained busy")
+
+        controller = object.__new__(CaptureController)
+        controller.connection = self.connection
+        controller.capture_config = {
+            "maximum_attempts": 3,
+            "loading_timeout_seconds": 1,
+            "command_completion_timeout_seconds": 1,
+            "profile": {"time": "10:00", "weather": "clear", "fov": 80},
+        }
+        controller.runtime = WedgedRuntime()
+
+        with self.assertRaisesRegex(SessionProtocolError, "aborting session"):
+            controller._capture_place("session-wedge", place)
+        self.assertEqual(1, controller.runtime.sends)
+        saved = self.connection.execute(
+            "SELECT queue_status FROM places WHERE location_id=?",
+            (place["location_id"],),
+        ).fetchone()
+        self.assertEqual("in_progress", saved["queue_status"])
 
 
 if __name__ == "__main__":

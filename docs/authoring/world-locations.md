@@ -120,15 +120,33 @@ Object placement projects oriented instance bounds onto the configured local
 forward axis. Degenerate sector bounds use the reviewed rule's
 `front_extent_m`. Vending machines add 1 m clearance, loot containers add
 0.5 m, and shops add 2 m. The heading remains the object's outward heading.
+Candidates can define a category-specific 3D minimum separation; vending
+machine poses currently use 3 m so adjacent machines do not produce redundant
+captures while machines on different floors remain distinct.
 CET resolves the final ground height at runtime from the median of five nearby
-downward collision probes; it does not search laterally.
+downward collision probes, starts the player 0.3 m above that result, and lets
+normal physics settle onto the surface; it does not search laterally. Starting
+above the surface avoids the persistent camera blur triggered when an
+inconsistent collision probe places the player slightly below the true standing
+height.
 
 Road proxy nodes are grouped by their road-spline resource folder. That folder
 is treated as an independent branch; discontinuities become explicit branch
-records. The proxy centers form the initial centerline approximation. Roads
-under 100 m get one midpoint. Longer roads start 50 m from an endpoint and are
-sampled every 100 m, with both arc-length and horizontal straight-line
-separation enforced. Every accepted point creates `along` and `against` poses.
+records. The proxy centers form the initial centerline approximation. Capture
+points are spaced by at least 250 m both along the branch and in straight-line
+distance. Branches shorter than 250 m receive one midpoint with opposing views,
+while longer branches retain a 50 m endpoint inset. Every accepted point
+creates `along` and `against` poses.
+
+Road points within 250 m of an object candidate retain that coverage. Away
+from objects, points from all road branches are deduplicated globally to 500 m
+3D spacing, reducing repetitive captures across parallel roads in sparse areas.
+
+Named areas primarily come from the runtime district manager because the
+serialized sectors do not contain usable Night City district polygons. CET
+caches every valid area observation while a destination settles. If an
+observation is transiently absent, planning may reuse a previously observed
+runtime area within 500 m; inferred labels never become new propagation seeds.
 
 Because proxy centers and asset axes are extracted evidence rather than manual
 ground truth, calibrate representative assets and review road geometry during
@@ -250,6 +268,10 @@ stores the observed player transform in `actual_*`; runtime evidence must never
 feed back into the next requested pose.
 
 ## Image Validation and Publication
+
+Capture rejects globally blurred frames using Laplacian variance. A rejection
+causes CET to restore capture mode completely before retrying the same location,
+so persistent camera focus/blur state cannot leak into later captures.
 
 Run the queue or a smoke subset:
 

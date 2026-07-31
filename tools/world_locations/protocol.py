@@ -216,6 +216,55 @@ class RuntimeProtocol:
             # readiness delay: a ready event is consumed on the next poll.
             time.sleep(self.poll_seconds)
 
+    def wait_for_completion(
+        self,
+        *,
+        command_id: str,
+        timeout_seconds: float,
+        session_id: str,
+    ) -> dict[str, Any]:
+        """Wait for CET to consume an acknowledgement and become idle.
+
+        An error event for this command is expected to remain present while
+        the controller acknowledges a failed attempt.  Reusing
+        ``wait_for_event`` would reread that stale error before CET has a
+        chance to emit ``completed`` and would let the next command overwrite
+        the acknowledgement.  Completion is therefore a separate barrier
+        that observes only the matching terminal event.
+        """
+        deadline = time.monotonic() + timeout_seconds
+        next_heartbeat = 0.0
+        last_malformed: str | None = None
+        path = self.event_paths["completed"]
+        while True:
+            now = time.monotonic()
+            if now >= next_heartbeat:
+                self.heartbeat(session_id)
+                next_heartbeat = now + 0.5
+            try:
+                event = read_json(path)
+            except ProtocolError as error:
+                last_malformed = str(error)
+                event = None
+            if event and event.get("command_id") == command_id:
+                if int(event.get("schema_version", -1)) != PROTOCOL_SCHEMA_VERSION:
+                    raise ProtocolError(
+                        "runtime completion has an unsupported schema_version"
+                    )
+                if event.get("event") != "completed":
+                    raise ProtocolError("event filename/type mismatch for completed")
+                return event
+            if now >= deadline:
+                suffix = (
+                    f"; last malformed event: {last_malformed}"
+                    if last_malformed
+                    else ""
+                )
+                raise RuntimeTimeout(
+                    f"timed out waiting for completion of command {command_id}{suffix}"
+                )
+            time.sleep(self.poll_seconds)
+
     def assert_runtime_alive(self, *, maximum_age_seconds: float) -> dict[str, Any]:
         heartbeat = read_json(self.cet_heartbeat_path)
         if not heartbeat:

@@ -28,6 +28,10 @@ class CaptureError(RuntimeError):
     pass
 
 
+class SessionProtocolError(RuntimeError):
+    """A command lifecycle did not terminate; later work must not be sent."""
+
+
 class ValidationError(CaptureError):
     def __init__(self, report: Mapping[str, Any]):
         self.report = dict(report)
@@ -117,11 +121,32 @@ def validate_ready_event(
 class GameWindow:
     """Locate and capture the exact Win32 client rectangle."""
 
-    def __init__(self, title_contains: str):
+    def __init__(self, title_contains: str, process_name: str):
         if sys.platform != "win32":
             raise CaptureError("the in-game capture controller requires Windows")
         self.title_contains = title_contains.lower()
+        self.process_name = process_name.lower()
         self.user32 = ctypes.windll.user32
+        self.kernel32 = ctypes.windll.kernel32
+
+    def _process_matches(self, hwnd: int) -> bool:
+        process_id = wintypes.DWORD()
+        self.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(process_id))
+        if not process_id.value:
+            return False
+        handle = self.kernel32.OpenProcess(0x1000, False, process_id.value)
+        if not handle:
+            return False
+        try:
+            size = wintypes.DWORD(32768)
+            buffer = ctypes.create_unicode_buffer(size.value)
+            if not self.kernel32.QueryFullProcessImageNameW(
+                handle, 0, buffer, ctypes.byref(size)
+            ):
+                return False
+            return Path(buffer.value).name.lower() == self.process_name
+        finally:
+            self.kernel32.CloseHandle(handle)
 
     def find(self) -> int:
         matches: list[int] = []
@@ -138,16 +163,23 @@ class GameWindow:
                 return True
             buffer = ctypes.create_unicode_buffer(length + 1)
             self.user32.GetWindowTextW(hwnd, buffer, len(buffer))
-            if self.title_contains in buffer.value.lower():
+            if (
+                self.title_contains in buffer.value.lower()
+                and self._process_matches(hwnd)
+            ):
                 matches.append(int(hwnd))
             return True
 
         self.user32.EnumWindows(callback, 0)
         if not matches:
-            raise CaptureError(f"no visible window contains {self.title_contains!r}")
+            raise CaptureError(
+                f"no visible {self.process_name!r} window contains "
+                f"{self.title_contains!r}"
+            )
         if len(matches) > 1:
             raise CaptureError(
-                f"multiple visible windows contain {self.title_contains!r}"
+                f"multiple visible {self.process_name!r} windows contain "
+                f"{self.title_contains!r}"
             )
         return matches[0]
 
@@ -325,7 +357,28 @@ def validate_image(
             f"(black_fraction={black_fraction:.4f}, mean={mean:.2f}, "
             f"stddev={stddev:.2f})"
         )
+    sharpness: float | None = None
+    sharpness_warning: str | None = None
+    try:
+        import cv2  # type: ignore[import-not-found]
+        import numpy  # type: ignore[import-not-found]
+
+        sharpness = float(
+            cv2.Laplacian(numpy.asarray(grayscale), cv2.CV_64F).var()
+        )
+        minimum_sharpness = float(
+            validation_config.get("sharpness_laplacian_threshold", 30.0)
+        )
+        if sharpness < minimum_sharpness:
+            errors.append(
+                f"frame is globally blurred (sharpness={sharpness:.2f}, "
+                f"minimum={minimum_sharpness:.2f})"
+            )
+    except ImportError as error:
+        sharpness_warning = f"sharpness validation unavailable: {error}"
     hud_matches, hud_warnings = _template_matches(image, validation_config, config_root)
+    if sharpness_warning:
+        hud_warnings.append(sharpness_warning)
     if hud_matches:
         errors.append(f"HUD template visible: {', '.join(hud_matches)}")
     return {
@@ -336,6 +389,7 @@ def validate_image(
         "luminance_mean": mean,
         "luminance_stddev": stddev,
         "black_fraction": black_fraction,
+        "sharpness_laplacian_variance": sharpness,
         "hud_matches": hud_matches,
         "readiness": dict(ready_report),
     }
@@ -345,6 +399,37 @@ def _safe_area_name(value: str | None) -> str:
     text = (value or "_review").strip()
     text = re.sub(r"[^A-Za-z0-9._-]+", "-", text).strip(".-")
     return text[:100] or "_review"
+
+
+def _nearest_runtime_area(
+    connection: sqlite3.Connection, x: float, y: float, maximum_distance_m: float
+) -> dict[str, Any]:
+    row = connection.execute(
+        """SELECT district,subdistrict,named_area,
+                  ((requested_x-?)*(requested_x-?)+(requested_y-?)*(requested_y-?)) AS distance_sq
+           FROM places
+           WHERE named_area IS NOT NULL AND trim(named_area)!=''
+             AND json_extract(provenance_json,'$.named_area')='runtime'
+             AND requested_x BETWEEN ? AND ? AND requested_y BETWEEN ? AND ?
+           ORDER BY distance_sq LIMIT 1""",
+        (
+            x,
+            x,
+            y,
+            y,
+            x - maximum_distance_m,
+            x + maximum_distance_m,
+            y - maximum_distance_m,
+            y + maximum_distance_m,
+        ),
+    ).fetchone()
+    if not row or float(row["distance_sq"]) > maximum_distance_m**2:
+        return {}
+    return {
+        "district": row["district"],
+        "subdistrict": row["subdistrict"],
+        "named_area": row["named_area"],
+    }
 
 
 def _atomic_save_image(
@@ -405,7 +490,10 @@ class CaptureController:
         self.captures_root = captures_root
         self.config_root = config_root
         self.game_profile = game_profile
-        self.window = GameWindow(str(self.capture_config["window_title_contains"]))
+        self.window = GameWindow(
+            str(self.capture_config["window_title_contains"]),
+            str(self.capture_config.get("window_process_name", "Cyberpunk2077.exe")),
+        )
 
     def _command(
         self, session_id: str, command_id: str, place: Mapping[str, Any]
@@ -469,6 +557,37 @@ class CaptureController:
                 (utc_now(), code, detail, attempt_id),
             )
 
+    def _accepted_attempt(self, attempt_id: str, event: Mapping[str, Any]) -> None:
+        with transaction(self.connection):
+            self.connection.execute(
+                "UPDATE capture_attempts SET status='accepted',accepted_at=? WHERE attempt_id=?",
+                (event.get("timestamp") or utc_now(), attempt_id),
+            )
+
+    def _require_completion(
+        self,
+        *,
+        session_id: str,
+        command_id: str,
+        expected_success: bool,
+    ) -> None:
+        timeout = float(self.capture_config.get("command_completion_timeout_seconds", 5.0))
+        try:
+            event = self.runtime.wait_for_completion(
+                command_id=command_id,
+                timeout_seconds=timeout,
+                session_id=session_id,
+            )
+        except (OSError, ProtocolError, RuntimeTimeout) as error:
+            raise SessionProtocolError(
+                f"CET did not complete command {command_id}; aborting session: {error}"
+            ) from error
+        if event.get("success") is not expected_success:
+            raise SessionProtocolError(
+                f"CET completed command {command_id} with success={event.get('success')!r}; "
+                f"expected {expected_success!r}"
+            )
+
     def _save_capture(
         self,
         *,
@@ -499,6 +618,19 @@ class CaptureController:
                 "interior_state",
             )
         }
+        if not runtime_location.get("named_area") and not spatial.get("named_area"):
+            spatial.update(
+                _nearest_runtime_area(
+                    self.connection,
+                    float(place["requested_x"]),
+                    float(place["requested_y"]),
+                    float(
+                        self.config.get("metadata_rules", {}).get(
+                            "runtime_area_fallback_m", 500.0
+                        )
+                    ),
+                )
+            )
         overrides = {
             row["field_name"]: json.loads(row["value_json"])
             for row in self.connection.execute(
@@ -722,6 +854,15 @@ class CaptureController:
             try:
                 self.runtime.heartbeat(session_id)
                 self.runtime.send(self._command(session_id, command_id, place))
+                accepted = self.runtime.wait_for_event(
+                    command_id=command_id,
+                    accepted_types={"accepted"},
+                    timeout_seconds=float(
+                        self.capture_config.get("command_accept_timeout_seconds", 5.0)
+                    ),
+                    session_id=session_id,
+                )
+                self._accepted_attempt(attempt_id, accepted)
                 event = self.runtime.wait_for_event(
                     command_id=command_id,
                     accepted_types={"ready"},
@@ -799,21 +940,22 @@ class CaptureController:
                     ready_monotonic=ready,
                     captured_monotonic=captured,
                 )
-                # The image and database rows are committed at this point. A stale
-                # runtime completion/error must never turn that committed capture
-                # into a failed attempt and teleport to the same place again.
                 try:
                     self.runtime.acknowledge(
                         command_id, True, {"capture_id": capture_id}
                     )
-                    self.runtime.wait_for_event(
-                        command_id=command_id,
-                        accepted_types={"completed"},
-                        timeout_seconds=5.0,
-                        session_id=session_id,
-                    )
-                except (OSError, ProtocolError, RuntimeTimeout):
-                    pass
+                except OSError as error:
+                    raise SessionProtocolError(
+                        f"could not acknowledge completed capture {command_id}: {error}"
+                    ) from error
+                # The image and database rows are already committed.  A missing
+                # CET completion is fatal to the session, but never converts the
+                # committed capture into another location attempt.
+                self._require_completion(
+                    session_id=session_id,
+                    command_id=command_id,
+                    expected_success=True,
+                )
                 return True, None
             except (
                 CaptureError,
@@ -826,19 +968,17 @@ class CaptureController:
                 self._failed_attempt(attempt_id, code, last_error)
                 try:
                     self.runtime.acknowledge(command_id, False, {"error": last_error})
-                except OSError:
-                    pass
-                # No fixed retry delay: the next command is issued as soon as
-                # this attempt has been rejected and CET processes the ack.
-                try:
-                    self.runtime.wait_for_event(
-                        command_id=command_id,
-                        accepted_types={"completed"},
-                        timeout_seconds=2.0,
-                        session_id=session_id,
-                    )
-                except ProtocolError:
-                    pass
+                except OSError as ack_error:
+                    raise SessionProtocolError(
+                        f"could not reject command {command_id}: {ack_error}"
+                    ) from ack_error
+                # Do not issue a retry until CET has consumed the negative ack,
+                # restored capture mode, and explicitly returned to idle.
+                self._require_completion(
+                    session_id=session_id,
+                    command_id=command_id,
+                    expected_success=False,
+                )
         with transaction(self.connection):
             self.connection.execute(
                 """UPDATE places SET queue_status='failed',failure_code='attempts_exhausted',
