@@ -53,6 +53,23 @@
     "object_proximity_m": 250.0,
     "minimum_separation_m": 500.0
   },
+  "location_spacing_rules": {
+    "minimum_separation_m": 10.0,
+    "category_priority": [
+      "drop_point",
+      "terminal",
+      "access_point",
+      "utility_device",
+      "door_gate",
+      "parking_space",
+      "ai_workspot",
+      "loot_container",
+      "shop",
+      "fast_travel",
+      "vending_machine",
+      "road"
+    ]
+  },
   "metadata_rules": {
     "runtime_area_fallback_m": 500.0
   },
@@ -285,7 +302,7 @@
       "forward_axis": "+y",
       "front_extent_m": 0.45,
       "clearance_m": 1.0,
-      "minimum_candidate_separation_m": 3.0,
+      "minimum_candidate_separation_m": 10.0,
       "anchor_roles": ["capture_origin", "semantic_evidence"],
       "tags": ["object", "vending"]
     },

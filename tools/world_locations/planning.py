@@ -782,6 +782,106 @@ def _deduplicate_sparse_road_places(
     return retained, removed
 
 
+def _deduplicate_physical_locations(
+    records: Iterable[Mapping[str, Any]],
+    minimum_separation_m: float,
+    category_priority: Sequence[str] = (),
+) -> tuple[list[Mapping[str, Any]], int]:
+    """Space physical coordinates globally while retaining views of one winner.
+
+    Exact-coordinate records are treated as alternative anchors for one physical
+    location. The highest-priority in-scope anchor wins; multiple directions for
+    that same anchor (notably paired road views) remain attached to the retained
+    location.
+    """
+    values = list(records)
+    separation = float(minimum_separation_m)
+    if separation <= 0.0:
+        return values, 0
+
+    priority = {category: index for index, category in enumerate(category_priority)}
+    fallback_priority = len(priority)
+
+    def record_priority(record: Mapping[str, Any]) -> tuple[int, int, str, str]:
+        category = str(record["category"])
+        return (
+            0 if record.get("scope_status") == "in_scope" else 1,
+            priority.get(category, fallback_priority),
+            category,
+            str(record["location_id"]),
+        )
+
+    def anchor_identity(record: Mapping[str, Any]) -> tuple[str, str]:
+        if record.get("anchor_feature_id"):
+            return ("feature", str(record["anchor_feature_id"]))
+        if record.get("road_id"):
+            return ("road", str(record["road_id"]))
+        return ("place", str(record["location_id"]))
+
+    coordinate_groups: dict[
+        tuple[float, float, float], list[Mapping[str, Any]]
+    ] = defaultdict(list)
+    for record in values:
+        coordinate_groups[
+            (
+                round(float(record["requested_x"]), 6),
+                round(float(record["requested_y"]), 6),
+                round(float(record["requested_z"]), 6),
+            )
+        ].append(record)
+
+    candidates: list[
+        tuple[
+            tuple[int, int, str, str],
+            tuple[float, float, float],
+            list[Mapping[str, Any]],
+        ]
+    ] = []
+    removed = 0
+    for coordinate, group in coordinate_groups.items():
+        winner = min(group, key=record_priority)
+        winner_anchor = anchor_identity(winner)
+        views = [
+            record
+            for record in group
+            if record["category"] == winner["category"]
+            and anchor_identity(record) == winner_anchor
+            and record.get("scope_status") == winner.get("scope_status")
+        ]
+        removed += len(group) - len(views)
+        candidates.append((record_priority(winner), coordinate, views))
+
+    grid: dict[
+        tuple[int, int, int], list[tuple[float, float, float]]
+    ] = defaultdict(list)
+    retained: list[Mapping[str, Any]] = []
+    for _, coordinate, views in sorted(candidates, key=lambda value: value[0]):
+        x, y, z = coordinate
+        cell = (
+            math.floor(x / separation),
+            math.floor(y / separation),
+            math.floor(z / separation),
+        )
+        nearby: list[tuple[float, float, float]] = []
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    nearby.extend(
+                        grid.get((cell[0] + dx, cell[1] + dy, cell[2] + dz), ())
+                    )
+        if any(
+            (x - other_x) ** 2 + (y - other_y) ** 2 + (z - other_z) ** 2
+            < separation**2
+            for other_x, other_y, other_z in nearby
+        ):
+            removed += len(views)
+            continue
+        grid[cell].append(coordinate)
+        retained.extend(sorted(views, key=lambda record: str(record["location_id"])))
+    retained.sort(key=lambda record: str(record["location_id"]))
+    return retained, removed
+
+
 def _road_sample_distances(length: float, rules: Mapping[str, Any]) -> list[float]:
     short = float(rules.get("short_road_threshold_m", 100.0))
     if length < short:
@@ -1060,20 +1160,30 @@ def plan_locations(
     roads, deduplicated_roads = _deduplicate_sparse_road_places(
         road_candidates, objects, config.get("sparse_road_rules", {})
     )
-    places = _apply_scope([*objects, *roads], config)
+    scoped_candidates = _apply_scope([*objects, *roads], config)
+    spacing_rules = config.get("location_spacing_rules", {})
+    places, deduplicated_physical_places = _deduplicate_physical_locations(
+        scoped_candidates,
+        float(spacing_rules.get("minimum_separation_m", 0.0)),
+        [str(category) for category in spacing_rules.get("category_priority", ())],
+    )
     place_count = _upsert_places(connection, places)
     in_scope = sum(record["scope_status"] == "in_scope" for record in places)
-    out_of_scope = place_count - in_scope
+    out_of_scope = sum(record["scope_status"] == "out_of_scope" for record in places)
+    object_places = sum(record["category"] != "road" for record in places)
+    road_places = sum(record["category"] == "road" for record in places)
     return {
         "fast_travel_points": fast_travel_count,
         "roads": road_count,
         "areas": area_count,
-        "object_places": len(objects),
+        "object_places": object_places,
         "object_candidates": len(object_candidates),
         "deduplicated_object_places": deduplicated_objects,
-        "road_places": len(roads),
+        "road_places": road_places,
         "road_candidates": len(road_candidates),
         "deduplicated_road_places": deduplicated_roads,
+        "physical_place_candidates": len(scoped_candidates),
+        "deduplicated_physical_places": deduplicated_physical_places,
         "places": place_count,
         "in_scope": in_scope,
         "out_of_scope": out_of_scope,

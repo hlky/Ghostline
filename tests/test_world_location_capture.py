@@ -35,6 +35,7 @@ from world_locations.extract import extract_sector, index_sectors  # noqa: E402
 from world_locations.model import Quaternion, Vec3, game_yaw_degrees, outward_vector  # noqa: E402
 from world_locations.planning import (  # noqa: E402
     _deduplicate_candidate_coordinates,
+    _deduplicate_physical_locations,
     _deduplicate_sparse_road_places,
     evaluate_scope,
     plan_locations,
@@ -115,7 +116,7 @@ def sector_document() -> dict:
         },
         {
             "NodeIndex": 1,
-            "Position": {"X": 0, "Y": 0, "Z": 0},
+            "Position": {"X": 50, "Y": 0, "Z": 0},
             "Orientation": {"i": 0, "j": 0, "k": 0, "r": 1},
         },
     ]
@@ -263,6 +264,59 @@ class IndexAndPlanTests(unittest.TestCase):
 
         self.assertEqual(1, removed)
         self.assertEqual(["a", "c", "d", "e"], [row["location_id"] for row in retained])
+
+    def test_global_spacing_prefers_useful_anchors_and_preserves_road_views(self) -> None:
+        def candidate(
+            location_id: str,
+            category: str,
+            x: float,
+            y: float,
+            z: float,
+            *,
+            direction: str = "outward",
+            anchor: str | None = None,
+            road_id: str | None = None,
+        ) -> dict[str, object]:
+            return {
+                "location_id": location_id,
+                "category": category,
+                "requested_x": x,
+                "requested_y": y,
+                "requested_z": z,
+                "direction": direction,
+                "anchor_feature_id": anchor,
+                "road_id": road_id,
+                "scope_status": "in_scope",
+            }
+
+        retained, removed = _deduplicate_physical_locations(
+            [
+                candidate("vending", "vending_machine", 0.0, 0.0, 0.0, anchor="v"),
+                candidate("terminal", "terminal", 5.0, 0.0, 0.0, anchor="t"),
+                candidate(
+                    "road-along", "road", 20.0, 0.0, 0.0,
+                    direction="along", road_id="road-a"
+                ),
+                candidate(
+                    "road-against", "road", 20.0, 0.0, 0.0,
+                    direction="against", road_id="road-a"
+                ),
+                candidate(
+                    "road-other", "road", 20.0, 0.0, 0.0,
+                    direction="along", road_id="road-b"
+                ),
+                candidate("parking", "parking_space", 30.0, 0.0, 0.0, anchor="p"),
+                candidate("upper-floor", "loot_container", 30.0, 0.0, 10.0, anchor="l"),
+            ],
+            10.0,
+            ["terminal", "parking_space", "loot_container", "vending_machine", "road"],
+        )
+
+        self.assertEqual(2, removed)
+        self.assertEqual(
+            ["parking", "road-against", "road-along", "terminal", "upper-floor"],
+            [row["location_id"] for row in retained],
+        )
 
     def test_nearest_runtime_area_is_bounded_and_requires_runtime_provenance(self) -> None:
         index_sectors(self.connection, self.source, self.config)

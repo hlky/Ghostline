@@ -122,14 +122,21 @@ metadata and tags and included in new capture sidecars and exports:
 - `ownership_risk` identifies vanilla quest, community, population, or
   security evidence that requires rejection or explicit runtime review.
 
-The configured capture origins use category-specific 3D spacing. AI workspots
-and parking nodes are aggressively deduplicated because the serialized world
-contains tens of thousands of workspots and both raw and compiled parking
-representations. Workspot resource paths retain useful staging vocabulary such
-as chair, bar, stairs, lean, stand, or synced interaction. They remain vanilla
-activity evidence: do not reuse an existing workspot or community solely
-because its coordinate was capturable. Drone and vehicle workspots are excluded
-from ground-level capture planning.
+The configured capture origins use category-specific 3D spacing followed by a
+global 10 m physical-location spacing pass. AI workspots and parking nodes are
+more aggressively deduplicated because the serialized world contains tens of
+thousands of workspots and both raw and compiled parking representations. When
+different categories compete inside 10 m, the configured category priority
+keeps the more quest-useful anchor while every source feature remains available
+as nearby semantic evidence. Exact-coordinate views belonging to the winning
+anchor remain together, so a road's `along` and `against` captures are retained
+as two views of one physical location.
+
+Workspot resource paths retain useful staging vocabulary such as chair, bar,
+stairs, lean, stand, or synced interaction. They remain vanilla activity
+evidence: do not reuse an existing workspot or community solely because its
+coordinate was capturable. Drone and vehicle workspots are excluded from
+ground-level capture planning.
 
 Fast-travel points now provide sparse capture origins in addition to nearest
 fast-travel metadata. Virtual access points, gameplay antennas, security
@@ -160,9 +167,9 @@ Object placement projects oriented instance bounds onto the configured local
 forward axis. Degenerate sector bounds use the reviewed rule's
 `front_extent_m`. Vending machines add 1 m clearance, loot containers add
 0.5 m, and shops add 2 m. The heading remains the object's outward heading.
-Candidates can define a category-specific 3D minimum separation; vending
-machine poses currently use 3 m so adjacent machines do not produce redundant
-captures while machines on different floors remain distinct.
+Candidates can define a category-specific 3D minimum separation. Vending
+machines use 10 m, while dense workspot, parking, shop, fast-travel, and road
+families use larger category-specific spacing before the global 10 m pass.
 CET resolves the final ground height at runtime from the median of five nearby
 downward collision probes, starts the player 0.3 m above that result, and lets
 normal physics settle onto the surface; it does not search laterally. Starting
