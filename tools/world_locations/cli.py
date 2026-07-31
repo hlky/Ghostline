@@ -241,8 +241,10 @@ def command_export(
         rows = connection.execute(
             f"""SELECT p.*,c.capture_id,c.png_path,c.sidecar_path,c.thumbnail_path,c.width,c.height,
                        c.image_sha256,c.metadata_sha256,c.thumbnail_sha256,c.perceptual_hash,
-                       c.captured_at,c.validation_status
+                       c.captured_at,c.validation_status,f.tags AS anchor_tags,
+                       f.metadata_json AS anchor_metadata_json
                 FROM places p JOIN captures c ON c.location_id=p.location_id
+                LEFT JOIN features f ON f.feature_id=p.anchor_feature_id
                 WHERE {where} ORDER BY p.queue_order,p.location_id,c.captured_at"""
         ).fetchall()
         exported: list[dict[str, Any]] = []
@@ -260,6 +262,11 @@ def command_export(
                 continue
             value = dict(row)
             value["provenance"] = json.loads(value.pop("provenance_json"))
+            anchor_metadata = json.loads(value.pop("anchor_metadata_json") or "{}")
+            value["anchor_tags"] = str(value.get("anchor_tags") or "").split()
+            value["anchor_roles"] = [
+                str(role) for role in anchor_metadata.get("anchor_roles", [])
+            ]
             exported.append(value)
         json_path = paths["exports"] / (args.name + ".json")
         jsonl_path = paths["exports"] / (args.name + ".jsonl")

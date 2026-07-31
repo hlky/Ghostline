@@ -135,15 +135,47 @@ def _text(value: Any) -> str | None:
     return None
 
 
-def _matches_rule(rule: Mapping[str, Any], node_type: str, haystack: str) -> bool:
+def _matches_rule(
+    rule: Mapping[str, Any],
+    node_type: str,
+    haystack: str,
+    resource: str | None,
+    debug_name: str | None,
+) -> bool:
     node_types = {str(item).lower() for item in rule.get("node_types", [])}
     if node_types and node_type.lower() not in node_types:
         return False
     lowered = haystack.lower()
+    resource_lowered = (resource or "").lower()
+    debug_lowered = (debug_name or "").lower()
     patterns = [str(item).lower() for item in rule.get("patterns", [])]
+    resource_patterns = [
+        str(item).lower() for item in rule.get("resource_patterns", [])
+    ]
+    debug_patterns = [str(item).lower() for item in rule.get("debug_patterns", [])]
     excluded = [str(item).lower() for item in rule.get("exclude_patterns", [])]
-    return bool(patterns and any(item in lowered for item in patterns)) and not any(
-        item in lowered for item in excluded
+    resource_excluded = [
+        str(item).lower() for item in rule.get("exclude_resource_patterns", [])
+    ]
+    debug_excluded = [
+        str(item).lower() for item in rule.get("exclude_debug_patterns", [])
+    ]
+    positive_checks = [
+        any(item in lowered for item in patterns) if patterns else None,
+        any(item in resource_lowered for item in resource_patterns)
+        if resource_patterns
+        else None,
+        any(item in debug_lowered for item in debug_patterns)
+        if debug_patterns
+        else None,
+    ]
+    required_checks = [check for check in positive_checks if check is not None]
+    return (
+        bool(required_checks)
+        and all(required_checks)
+        and not any(item in lowered for item in excluded)
+        and not any(item in resource_lowered for item in resource_excluded)
+        and not any(item in debug_lowered for item in debug_excluded)
     )
 
 
@@ -226,7 +258,7 @@ def _descriptor(
         (
             candidate
             for candidate in rules
-            if _matches_rule(candidate, node_type, haystack)
+            if _matches_rule(candidate, node_type, haystack, resource, debug_name)
         ),
         None,
     )
@@ -240,6 +272,7 @@ def _descriptor(
         "front_extent_m": float(rule.get("front_extent_m", 0.0)),
         "clearance_m": float(rule.get("clearance_m", 0.0)),
         "lateral_search_m": float(rule.get("lateral_search_m", 0.0)),
+        "anchor_roles": [str(role) for role in rule.get("anchor_roles", [])],
     }
     fast_travel = _find_fast_travel_data(data)
     if fast_travel:
@@ -265,7 +298,14 @@ def _descriptor(
         "calibrated": bool(rule.get("calibrated", False)),
         "capture_enabled": bool(rule.get("capture_enabled", False)),
         "rule_id": str(rule["id"]),
-        "tags": " ".join(str(tag) for tag in rule.get("tags", [])),
+        "tags": " ".join(
+            dict.fromkeys(
+                [
+                    *(str(tag) for tag in rule.get("tags", [])),
+                    *(str(role) for role in rule.get("anchor_roles", [])),
+                ]
+            )
+        ),
         "road_id": road_id,
         "road_order": road_order,
         "metadata": metadata,

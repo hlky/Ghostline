@@ -673,6 +673,19 @@ class CaptureController:
                 "pitch": place["requested_pitch"],
                 "roll": place["requested_roll"],
             }
+        anchor_tags: list[str] = []
+        anchor_roles: list[str] = []
+        if place["anchor_feature_id"]:
+            anchor_feature = self.connection.execute(
+                "SELECT tags,metadata_json FROM features WHERE feature_id=?",
+                (place["anchor_feature_id"],),
+            ).fetchone()
+            if anchor_feature:
+                anchor_tags = str(anchor_feature["tags"] or "").split()
+                anchor_metadata = json.loads(anchor_feature["metadata_json"] or "{}")
+                anchor_roles = [
+                    str(role) for role in anchor_metadata.get("anchor_roles", [])
+                ]
         sidecar = {
             "schema_version": 1,
             "capture_id": capture_id,
@@ -717,6 +730,8 @@ class CaptureController:
                 "resource": place["resource_path"],
                 "source_sector": place["source_sector"],
                 "road_id": place["road_id"],
+                "tags": anchor_tags,
+                "roles": anchor_roles,
             },
             "location_metadata": {
                 "nearest_fast_travel": {

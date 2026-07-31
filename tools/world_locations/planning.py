@@ -593,7 +593,7 @@ def _object_places(
     records: list[dict[str, Any]] = []
     rows = connection.execute(
         """SELECT * FROM features
-           WHERE capture_enabled=1 AND calibrated=1 AND category NOT IN ('road','area','fast_travel')"""
+           WHERE capture_enabled=1 AND calibrated=1 AND category NOT IN ('road','area')"""
     )
     for row in rows:
         anchor = _row_vec(row)

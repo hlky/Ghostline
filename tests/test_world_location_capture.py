@@ -344,6 +344,112 @@ class IndexAndPlanTests(unittest.TestCase):
             vending["resource_path"],
         )
 
+    def test_extended_anchor_rules_use_precise_resources_and_node_types(self) -> None:
+        document = {"Data": {"RootChunk": {"nodes": [], "nodeData": {"Data": []}}}}
+        root = document["Data"]["RootChunk"]
+
+        def add_node(
+            node_type: str,
+            *,
+            resource: str | None = None,
+            debug_name: str | None = None,
+        ) -> None:
+            index = len(root["nodes"])
+            data: dict[str, object] = {"$type": node_type}
+            if resource:
+                data["entityTemplate"] = {"DepotPath": {"$value": resource}}
+            if debug_name:
+                data["debugName"] = {"$value": debug_name}
+            root["nodes"].append({"Data": data})
+            root["nodeData"]["Data"].append(
+                {
+                    "NodeIndex": index,
+                    "Id": f"fixture-{index}",
+                    "Position": {"X": index * 20, "Y": 0, "Z": 0},
+                    "Orientation": {"i": 0, "j": 0, "k": 0, "r": 1},
+                }
+            )
+
+        add_node("worldAISpotNode", debug_name="sit_bar")
+        add_node("worldCrowdParkingSpaceNode", debug_name="parkingSpace_001")
+        add_node(
+            "worldDeviceNode",
+            resource=r"base\gameplay\devices\masters\computers\computer_1.ent",
+        )
+        add_node(
+            "worldDeviceNode",
+            resource=r"base\gameplay\devices\masters\access_points\router_wall.ent",
+        )
+        add_node(
+            "worldDeviceNode",
+            resource=r"base\gameplay\devices\masters\access_points\virtual_accesspoint.ent",
+        )
+        add_node(
+            "worldEntityNode",
+            resource=r"base\gameplay\devices\doors\final\single_door.ent",
+        )
+        add_node(
+            "worldEntityNode",
+            resource=r"base\gameplay\devices\doors\final\single_door_decorative.ent",
+        )
+        add_node(
+            "worldEntityNode",
+            resource=r"base\gameplay\devices\masters\fuse_box\generator.ent",
+        )
+        add_node(
+            "worldEntityNode",
+            resource=r"base\gameplay\devices\drop_points\drop_point.ent",
+        )
+        add_node(
+            "worldDeviceNode",
+            resource=r"base\gameplay\devices\distractors\plate_antenna_large.ent",
+        )
+        add_node(
+            "worldDeviceNode",
+            resource=r"base\gameplay\devices\security_system\cameras\surveillance_camera.ent",
+        )
+        add_node("worldCommunityRegistryNode", debug_name="vanilla_community")
+        add_node("worldQuestAreaNode", debug_name="vanilla_quest_area")
+        add_node(
+            "worldEntityNode",
+            resource=r"base\gameplay\loot\containers\crates\crate_small.ent",
+        )
+        add_node(
+            "worldEntityNode",
+            resource=r"base\gameplay\loot\containers\bodies\ma_corpse_container.ent",
+            debug_name="vendor_body_false_positive",
+        )
+        self.sector.write_text(json.dumps(document), encoding="utf-8")
+
+        rows = extract_sector(self.sector, self.sector.name, self.config)
+        categories = [row["category"] for row in rows]
+        self.assertEqual(
+            [
+                "ai_workspot",
+                "parking_space",
+                "terminal",
+                "access_point",
+                "virtual_access_point",
+                "door_gate",
+                "utility_device",
+                "drop_point",
+                "antenna",
+                "security_device",
+                "vanilla_occupancy",
+                "quest_ownership",
+                "loot_container",
+            ],
+            categories,
+        )
+        self.assertNotIn("shop", categories)
+        roles = {
+            row["category"]: json.loads(row["metadata_json"])["anchor_roles"]
+            for row in rows
+        }
+        self.assertIn("capture_origin", roles["ai_workspot"])
+        self.assertEqual(["ownership_risk"], roles["quest_ownership"])
+        self.assertIn("semantic_evidence", roles["security_device"])
+
     def test_location_area_outline_supplies_named_polygon(self) -> None:
         document = sector_document()
         area = document["Data"]["RootChunk"]["nodes"][-1]["Data"]
@@ -418,7 +524,7 @@ class IndexAndPlanTests(unittest.TestCase):
                 (json.dumps("Kabuki Road"),),
             )
         result = plan_locations(self.connection, self.config)
-        self.assertEqual(1, result["object_places"])
+        self.assertEqual(2, result["object_places"])
         self.assertEqual(2, result["road_places"])
         vending = self.connection.execute(
             "SELECT * FROM places WHERE category='vending_machine'"
@@ -975,6 +1081,8 @@ class ResumeAndRetryTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(payload).hexdigest(), row[hash_column])
         sidecar = json.loads(Path(row["sidecar_path"]).read_text(encoding="utf-8"))
         self.assertEqual("vending_machine", sidecar["anchor"]["category"])
+        self.assertIn("capture_origin", sidecar["anchor"]["roles"])
+        self.assertIn("vending", sidecar["anchor"]["tags"])
         self.assertEqual(row["image_sha256"], sidecar["files"]["png_sha256"])
         self.assertIn("location_metadata", sidecar)
         self.assertEqual(

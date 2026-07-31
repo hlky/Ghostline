@@ -97,9 +97,49 @@ resources, and tags.
 Classification is controlled by `classification_rules` in
 `tools/world-location-capture-v1.json`. Rules can match resource paths, node
 types, debug names, component data, and tags. The checked rules cover vending
-machines, loot containers, shops/storefronts, roads, fast-travel points, and
-named-area shapes. Add new categories by adding another versioned rule; no
+machines, non-body loot containers, shops/storefronts, roads, fast-travel
+points, AI workspots, crowd parking spaces, drop points, computers/terminals,
+physical and virtual access points, functional doors/gates, utility devices,
+gameplay antennas, security devices, named-area shapes, vanilla occupancy, and
+quest-ownership areas. Add new categories by adding another versioned rule; no
 Python edit is required.
+
+Use `resource_patterns` when a family must match its actual depot path rather
+than arbitrary strings elsewhere in the serialized node. This prevents debug
+names, prefab paths, or nested references from turning corpse containers into
+shops or billboards into doors. `exclude_resource_patterns` applies the same
+field-specific rule to exclusions. The older `patterns` and `exclude_patterns`
+continue to search the complete serialized node text when that broad behavior
+is intentional.
+
+Each rule declares one or more `anchor_roles`, which are copied into feature
+metadata and tags and included in new capture sidecars and exports:
+
+- `capture_origin` identifies a calibrated coordinate eligible for planning;
+- `semantic_evidence` describes nearby site utility without promising that the
+  vanilla object can be reused;
+- `spatial_metadata` and `route_evidence` enrich geographic queries;
+- `ownership_risk` identifies vanilla quest, community, population, or
+  security evidence that requires rejection or explicit runtime review.
+
+The configured capture origins use category-specific 3D spacing. AI workspots
+and parking nodes are aggressively deduplicated because the serialized world
+contains tens of thousands of workspots and both raw and compiled parking
+representations. Workspot resource paths retain useful staging vocabulary such
+as chair, bar, stairs, lean, stand, or synced interaction. They remain vanilla
+activity evidence: do not reuse an existing workspot or community solely
+because its coordinate was capturable. Drone and vehicle workspots are excluded
+from ground-level capture planning.
+
+Fast-travel points now provide sparse capture origins in addition to nearest
+fast-travel metadata. Virtual access points, gameplay antennas, security
+devices, vanilla occupancy, and quest areas remain semantic/risk features and
+do not enter the capture queue.
+
+Changing `extraction_rule_version` deliberately invalidates every sector's
+classification cache. Stop any active capture session before running `index`
+with a new rule version, then run `plan` and inspect the category counts before
+starting another capture batch.
 
 Capture eligibility is independent from extraction. Every matched feature is
 kept, while a feature is queued only when both `capture_enabled` and
