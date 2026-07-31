@@ -417,6 +417,40 @@ def sector_is_current(
     )
 
 
+def prepare_sector_feature_deletion(
+    connection: sqlite3.Connection, sector_id: int
+) -> None:
+    """Detach durable place history from replaceable features in one sector.
+
+    Feature extraction is rebuilt per sector. Unattempted planned places may
+    cascade away with their old anchor, but a place referenced by a capture
+    attempt must survive so its capture history remains valid. Cached nearest
+    fast-travel links must also be cleared before their feature-backed rows can
+    cascade away; planning restores them from the refreshed feature set.
+    """
+    connection.execute(
+        """UPDATE places SET nearest_fast_travel_id=NULL
+           WHERE nearest_fast_travel_id IN (
+             SELECT fast_travel_id FROM fast_travel_points
+             WHERE feature_id IN (
+               SELECT feature_id FROM features WHERE sector_id=?
+             )
+           )""",
+        (sector_id,),
+    )
+    connection.execute(
+        """UPDATE places SET anchor_feature_id=NULL
+           WHERE anchor_feature_id IN (
+             SELECT feature_id FROM features WHERE sector_id=?
+           )
+           AND EXISTS (
+             SELECT 1 FROM capture_attempts
+             WHERE capture_attempts.location_id=places.location_id
+           )""",
+        (sector_id,),
+    )
+
+
 def replace_sector(
     connection: sqlite3.Connection,
     *,
@@ -454,6 +488,7 @@ def replace_sector(
             "SELECT sector_id FROM source_sectors WHERE relative_path=?",
             (relative_path,),
         ).fetchone()[0]
+        prepare_sector_feature_deletion(connection, sector_id)
         connection.execute("DELETE FROM features WHERE sector_id=?", (sector_id,))
         statement = """INSERT INTO features(
             feature_id,sector_id,source_sector,node_index,instance_index,instance_id,
@@ -499,6 +534,7 @@ def record_sector_error(
         ).fetchone()[0]
         # A changed sector that no longer parses must not leave stale features
         # looking current in spatial or text indexes.
+        prepare_sector_feature_deletion(connection, sector_id)
         connection.execute("DELETE FROM features WHERE sector_id=?", (sector_id,))
 
 

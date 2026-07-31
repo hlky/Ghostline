@@ -318,6 +318,65 @@ class IndexAndPlanTests(unittest.TestCase):
             [row["location_id"] for row in retained],
         )
 
+    def test_reindex_preserves_attempted_places_and_detaches_replaceable_links(self) -> None:
+        index_sectors(self.connection, self.source, self.config)
+        plan_locations(self.connection, self.config)
+        place = self.connection.execute(
+            "SELECT * FROM places WHERE category='vending_machine'"
+        ).fetchone()
+        self.assertIsNotNone(place["nearest_fast_travel_id"])
+        with transaction(self.connection):
+            self.connection.execute(
+                """INSERT INTO capture_sessions(session_id,game_profile,capture_profile_json,
+                       runtime_path,started_at,status)
+                   VALUES('reindex-session','test','{}','test','2026-01-01','completed')"""
+            )
+            self.connection.execute(
+                """INSERT INTO capture_attempts(attempt_id,session_id,location_id,command_id,
+                       attempt_number,status)
+                   VALUES('reindex-attempt','reindex-session',?,'reindex-command',1,'captured')""",
+                (place["location_id"],),
+            )
+            self.connection.execute(
+                "UPDATE places SET queue_status='captured' WHERE location_id=?",
+                (place["location_id"],),
+            )
+
+        changed_config = dict(self.config)
+        changed_config["extraction_rule_version"] = "reindex-test"
+        counts = index_sectors(self.connection, self.source, changed_config)
+
+        self.assertEqual(0, counts["errors"])
+        retained = self.connection.execute(
+            "SELECT * FROM places WHERE location_id=?", (place["location_id"],)
+        ).fetchone()
+        self.assertIsNotNone(retained)
+        self.assertIsNone(retained["anchor_feature_id"])
+        self.assertIsNone(retained["nearest_fast_travel_id"])
+        self.assertEqual("captured", retained["queue_status"])
+        self.assertEqual(
+            1,
+            self.connection.execute(
+                "SELECT COUNT(*) FROM capture_attempts WHERE location_id=?",
+                (place["location_id"],),
+            ).fetchone()[0],
+        )
+
+        plan_locations(self.connection, changed_config)
+        historical = self.connection.execute(
+            "SELECT * FROM places WHERE location_id=?", (place["location_id"],)
+        ).fetchone()
+        self.assertIsNone(historical["anchor_feature_id"])
+        self.assertEqual("captured", historical["queue_status"])
+        refreshed = self.connection.execute(
+            """SELECT * FROM places
+               WHERE category='vending_machine' AND location_id!=?""",
+            (place["location_id"],),
+        ).fetchone()
+        self.assertIsNotNone(refreshed["anchor_feature_id"])
+        self.assertIsNotNone(refreshed["nearest_fast_travel_id"])
+        self.assertEqual("pending", refreshed["queue_status"])
+
     def test_nearest_runtime_area_is_bounded_and_requires_runtime_provenance(self) -> None:
         index_sectors(self.connection, self.source, self.config)
         plan_locations(self.connection, self.config)

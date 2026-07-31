@@ -13,6 +13,7 @@ import struct
 from typing import Any, Callable
 
 from .database import (
+    prepare_sector_feature_deletion,
     record_sector_error,
     replace_sector,
     sector_is_current,
@@ -555,6 +556,8 @@ def index_sectors(
             stale = [
                 row["sector_id"] for row in rows if row["relative_path"] not in seen
             ]
+            for sector_id in stale:
+                prepare_sector_feature_deletion(connection, sector_id)
             connection.executemany(
                 "DELETE FROM source_sectors WHERE sector_id=?",
                 ((value,) for value in stale),
