@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "frame": "female_average",
+  "source": "base\\characters\\common\\player_base_bodies\\appearances\\entity\\i0_000_pwa_base__penis.ent",
+  "purpose": "Vanilla feminine-body penis mesh and dangle-animation components for static NPV appearances.",
+  "components": [
+    {
+      "name": "i0_000_pwa_base__penis",
+      "normal": {
+        "$type": "entSkinnedMeshComponent",
+        "acceptDismemberment": 1,
+        "autoHideDistance": 0,
+        "castLocalShadows": "Always",
+        "castShadows": "Never",
+        "chunkMask": "9223372036854775807",
+        "forcedLodDistance": "Default",
+        "forceLODLevel": 0,
+        "id": "2010111922413584384",
+        "isEnabled": 1,
+        "isReplicable": 0,
+        "localTransform": {
+          "$type": "WorldTransform",
+          "Orientation": {
+            "$type": "Quaternion",
+            "i": 0,
+            "j": 0,
+            "k": 0,
+            "r": 1
+          },
+          "Position": {
+            "$type": "WorldPosition",
+            "x": { "$type": "FixedPoint", "Bits": 0 },
+            "y": { "$type": "FixedPoint", "Bits": 0 },
+            "z": { "$type": "FixedPoint", "Bits": 0 }
+          }
+        },
+        "LODMode": "AlwaysVisible",
+        "mesh": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis.mesh"
+          },
+          "Flags": "Default"
+        },
+        "meshAppearance": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "02_ca_limestone"
+        },
+        "name": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "i0_000_pwa_base__penis"
+        },
+        "navigationImpact": {
+          "$type": "NavGenNavigationSetting",
+          "navmeshImpact": "Ignored"
+        },
+        "order": 0,
+        "overrideMeshNavigationImpact": 1,
+        "parentTransform": { "HandleRefId": "852144" },
+        "renderingPlaneAnimationParam": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        },
+        "renderSceneLayerMask": "Default",
+        "skinning": { "HandleRefId": "852145" },
+        "useProxyMeshAsShadowMesh": 0,
+        "useSkinningLOD": 0,
+        "version": 1,
+        "visibilityAnimationParam": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        }
+      },
+      "compiled": {
+        "$type": "entSkinnedMeshComponent",
+        "acceptDismemberment": 1,
+        "autoHideDistance": 0,
+        "castLocalShadows": "Always",
+        "castShadows": "Never",
+        "chunkMask": "9223372036854775807",
+        "forcedLodDistance": "Default",
+        "forceLODLevel": 0,
+        "id": "2010111922413584384",
+        "isEnabled": 1,
+        "isReplicable": 0,
+        "localTransform": {
+          "$type": "WorldTransform",
+          "Orientation": {
+            "$type": "Quaternion",
+            "i": 0,
+            "j": 0,
+            "k": 0,
+            "r": 1
+          },
+          "Position": {
+            "$type": "WorldPosition",
+            "x": { "$type": "FixedPoint", "Bits": 0 },
+            "y": { "$type": "FixedPoint", "Bits": 0 },
+            "z": { "$type": "FixedPoint", "Bits": 0 }
+          }
+        },
+        "LODMode": "AlwaysVisible",
+        "mesh": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis.mesh"
+          },
+          "Flags": "Default"
+        },
+        "meshAppearance": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "02_ca_limestone"
+        },
+        "name": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "i0_000_pwa_base__penis"
+        },
+        "navigationImpact": {
+          "$type": "NavGenNavigationSetting",
+          "navmeshImpact": "Ignored"
+        },
+        "order": 0,
+        "overrideMeshNavigationImpact": 1,
+        "parentTransform": {
+          "HandleId": "852144",
+          "Data": {
+            "$type": "entHardTransformBinding",
+            "bindName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "penis_dangles"
+            }
+          }
+        },
+        "renderingPlaneAnimationParam": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        },
+        "renderSceneLayerMask": "Default",
+        "skinning": {
+          "HandleId": "852145",
+          "Data": {
+            "$type": "entSkinningBinding",
+            "bindName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "penis_dangles"
+            }
+          }
+        },
+        "useProxyMeshAsShadowMesh": 0,
+        "useSkinningLOD": 0,
+        "version": 1,
+        "visibilityAnimationParam": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        }
+      }
+    },
+    {
+      "name": "penis_dangles",
+      "normal": {
+        "$type": "entAnimatedComponent",
+        "name": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "penis_dangles"
+        },
+        "id": "2010264274248482816",
+        "parentTransform": { "HandleRefId": "852146" },
+        "controlBinding": { "HandleRefId": "852147" },
+        "rig": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\characters\\common\\player_base_bodies\\player_female_average\\t0_000_pwa_base__full_dangle_skeleton.rig"
+          },
+          "Flags": "Obligatory"
+        },
+        "graph": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\characters\\common\\player_base_bodies\\player_female_average\\t0_000_pwa_base__full_dangle.animgraph"
+          },
+          "Flags": "Obligatory"
+        },
+        "animations": {
+          "$type": "animAnimSetup",
+          "hash": "1099511628211"
+        }
+      },
+      "compiled": {
+        "$type": "entAnimatedComponent",
+        "name": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "penis_dangles"
+        },
+        "id": "2010264274248482816",
+        "parentTransform": {
+          "HandleId": "852146",
+          "Data": {
+            "$type": "entHardTransformBinding",
+            "bindName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "root"
+            }
+          }
+        },
+        "controlBinding": {
+          "HandleId": "852147",
+          "Data": {
+            "$type": "entAnimationControlBinding",
+            "bindName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "root"
+            }
+          }
+        },
+        "rig": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\characters\\common\\player_base_bodies\\player_female_average\\t0_000_pwa_base__full_dangle_skeleton.rig"
+          },
+          "Flags": "Obligatory"
+        },
+        "graph": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\characters\\common\\player_base_bodies\\player_female_average\\t0_000_pwa_base__full_dangle.animgraph"
+          },
+          "Flags": "Obligatory"
+        },
+        "animations": {
+          "$type": "animAnimSetup",
+          "hash": "1099511628211"
+        }
+      }
+    }
+  ]
+}

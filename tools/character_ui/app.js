@@ -315,7 +315,12 @@ function render(data) {
       node.textContent = option.label;
       select.append(node);
     }
-    select.value = state.manifest.appearance.selections[categoryId];
+    const optionIds = Object.keys(category.options);
+    const selectedOption = state.manifest.appearance.selections[categoryId];
+    select.value = category.options[selectedOption] ? selectedOption : optionIds[0];
+    if (!category.options[selectedOption] && select.value) {
+      state.manifest.appearance.selections[categoryId] = select.value;
+    }
     const updateDescription = () => {
       description.textContent = category.options[select.value]?.description || "";
     };

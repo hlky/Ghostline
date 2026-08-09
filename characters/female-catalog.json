@@ -63,6 +63,100 @@
         }
       }
     },
+    "genitals": {
+      "label": "Genitals",
+      "options": {
+        "vulva": {
+          "label": "Vulva / no penis",
+          "description": "Keeps the feminine-body NPV's normal lower-body setup.",
+          "changes": []
+        },
+        "penis_uncircumcised_average": {
+          "label": "Penis — average, uncircumcised",
+          "description": "Vanilla feminine-body average penis mesh with its native dangle rig and animation graph.",
+          "component_names": [
+            "i0_000_pwa_base__penis",
+            "penis_dangles"
+          ],
+          "changes": []
+        },
+        "penis_uncircumcised_small": {
+          "label": "Penis — small, uncircumcised",
+          "description": "Vanilla feminine-body small penis mesh with its native dangle rig and animation graph.",
+          "component_names": [
+            "i0_000_pwa_base__penis",
+            "penis_dangles"
+          ],
+          "changes": [
+            {
+              "component": "i0_000_pwa_base__penis",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis_small.mesh"
+            }
+          ]
+        },
+        "penis_uncircumcised_large": {
+          "label": "Penis — large, uncircumcised",
+          "description": "Vanilla feminine-body large penis mesh with its native dangle rig and animation graph.",
+          "component_names": [
+            "i0_000_pwa_base__penis",
+            "penis_dangles"
+          ],
+          "changes": [
+            {
+              "component": "i0_000_pwa_base__penis",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis_big.mesh"
+            }
+          ]
+        },
+        "penis_circumcised_average": {
+          "label": "Penis — average, circumcised",
+          "description": "Vanilla feminine-body average circumcised penis mesh with its native dangle rig and animation graph.",
+          "component_names": [
+            "i0_000_pwa_base__penis",
+            "penis_dangles"
+          ],
+          "changes": [
+            {
+              "component": "i0_000_pwa_base__penis",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis_circumcised.mesh"
+            }
+          ]
+        },
+        "penis_circumcised_small": {
+          "label": "Penis — small, circumcised",
+          "description": "Vanilla feminine-body small circumcised penis mesh with its native dangle rig and animation graph.",
+          "component_names": [
+            "i0_000_pwa_base__penis",
+            "penis_dangles"
+          ],
+          "changes": [
+            {
+              "component": "i0_000_pwa_base__penis",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis_circumcised_small.mesh"
+            }
+          ]
+        },
+        "penis_circumcised_large": {
+          "label": "Penis — large, circumcised",
+          "description": "Vanilla feminine-body large circumcised penis mesh with its native dangle rig and animation graph.",
+          "component_names": [
+            "i0_000_pwa_base__penis",
+            "penis_dangles"
+          ],
+          "changes": [
+            {
+              "component": "i0_000_pwa_base__penis",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\player_base_bodies\\player_female_average\\genitals\\i0_000_pwa_base__penis_circumcised_big.mesh"
+            }
+          ]
+        }
+      }
+    },
     "inner_torso": {
       "label": "Inner torso",
       "indexed_override": {

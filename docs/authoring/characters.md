@@ -227,8 +227,10 @@ Donors contain only complete prototypes that the builder can select. The
 female donor's redundant `naked` appearance was removed; its sole component
 not already covered by `base` or `extended_garments`, `t0_pubic_hair`, is
 preserved with both normal and compiled copies in
-`characters/components/npv-female-naked-only.components.json`. That archive is
-not an appearance and is not selected implicitly.
+`characters/components/npv-female-naked-only.components.json`. Supplemental
+archives are listed by the frame's component-library descriptor. They are not
+appearances: the builder copies only the normal/compiled pairs required by the
+active catalog selections into the selected prototype.
 
 At generation time the builder derives the required component names from the
 manifest and catalog, then chooses the smallest library prototype that covers
@@ -238,6 +240,15 @@ prototype is copied into the empty shell, renamed for the character, mutated by
 catalog selections, and validated in both its normal and compiled component
 copies. This keeps implementation topology out of manifests while preserving
 known-good CR2W structure.
+
+The female catalog's `genitals` category uses a second supplemental archive,
+`characters/components/npv-female-genitals.components.json`. It provides the
+vanilla PWA penis mesh component and its required `penis_dangles` animated
+component. The creator exposes small, average, and large static meshes in both
+circumcised and uncircumcised forms. These are the game's feminine-body assets,
+not PMA meshes rebound to a female rig. The current bundle uses the donor's
+`02_ca_limestone` mesh appearance; exact genital-to-body skin-tone propagation
+remains a separate catalog improvement.
 
 The frame-specific `.ent` shells retain their full runtime component graphs.
 Those graphs are engine scaffolding rather than appearance choices, so reducing
@@ -251,6 +262,12 @@ populated appearance array, and Patch's current packed `.app` still lacks an
 `NPCPuppet` export instance required by its generated JSON. Use WolvenKit when
 that compatibility check fails, then verify the resulting binary and serialized
 structure before applying it.
+
+Adding the genital bundle grows an appearance from 35 to 37 compiled chunks.
+The current native template-backed writer preserves the original 35-chunk
+package, so genital-enabled `.app` files must be created with WolvenKit's JSON
+deserializer. Serialize the result back to JSON and confirm both
+`i0_000_pwa_base__penis` and `penis_dangles` survived before packing.
 
 `null` head-shape values are intentional in this example: Patch's current
 geometry does not record the original character-creator preset. The migration
@@ -407,6 +424,11 @@ Seed this catalog from the current cheat sheets and NPV template. Store:
   facial setup; and
 - known creator-to-shape-key index corrections.
 
+For female-average genitals, the installed game provides PWA-specific base,
+small, and big penis meshes for both circumcised and uncircumcised variants.
+The vanilla morph target contains the named small and big targets, but a static
+NPV appearance uses the concrete mesh variants selected by the catalog.
+
 ### Clothing catalog
 
 Generate candidates from player-equipment and compatible NPC garment paths in
@@ -489,6 +511,7 @@ provide:
 - character identity, body frame and skin controls;
 - face shape selectors with current option ranges;
 - hair, beard, makeup, cyberware, scar, tattoo and piercing selectors;
+- body-compatible genital type, size, and circumcision selectors;
 - clothing slots with appearance variants and compatibility filtering;
 - multiple named outfits backed by one character `.app`;
 - dependency and conflict warnings before build;

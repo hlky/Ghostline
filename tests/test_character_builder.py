@@ -121,6 +121,40 @@ class CharacterBuilderTests(unittest.TestCase):
             character_builder.component_name(preserved["compiled"]),
         )
 
+    def test_female_genital_catalog_adds_vanilla_large_circumcised_bundle(
+        self,
+    ) -> None:
+        manifest = copy.deepcopy(self.female_manifest)
+        manifest["appearance"]["selections"]["genitals"] = (
+            "penis_circumcised_large"
+        )
+
+        report = character_builder.validate_manifest(manifest, self.female_catalog)
+        self.assertTrue(report.ok, report.errors)
+        self.assertEqual(report.details["component_prototype"], "base")
+
+        entity, app, _, _, _ = character_builder.generate_documents(
+            manifest, self.female_catalog
+        )
+        appearance = character_builder.appearance_data(app)[0]
+        mappings = character_builder.components_by_name(appearance)
+        expected_mesh = (
+            "base\\characters\\common\\player_base_bodies\\player_female_average"
+            "\\genitals\\i0_000_pwa_base__penis_circumcised_big.mesh"
+        )
+        for mapping in mappings:
+            penis = mapping["i0_000_pwa_base__penis"]
+            self.assertEqual(penis["$type"], "entSkinnedMeshComponent")
+            self.assertEqual(penis["mesh"]["DepotPath"]["$value"], expected_mesh)
+            self.assertEqual(penis["meshAppearance"]["$value"], "02_ca_limestone")
+            self.assertIn("penis_dangles", mapping)
+
+        generated = character_builder.validate_generated(
+            manifest, entity, app
+        )
+        self.assertTrue(generated.ok, generated.errors)
+        self.assertEqual(generated.details["app_components"], 37)
+
     def test_appearance_shells_are_empty_and_library_selection_is_automatic(self) -> None:
         for manifest, catalog, expected in (
             (self.manifest, self.catalog, "base"),
@@ -1143,6 +1177,7 @@ class CharacterBuilderTests(unittest.TestCase):
             set(bootstrap["catalog"]["categories"]),
             {
                 "hair",
+                "genitals",
                 "inner_torso",
                 "outer_torso",
                 "business_extras",

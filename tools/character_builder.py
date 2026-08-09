@@ -395,6 +395,62 @@ def load_component_library(manifest: dict[str, Any]) -> tuple[dict[str, Any], Pa
     return library, repo_path(donor_value)
 
 
+def load_component_archives(
+    library: dict[str, Any], frame: str
+) -> dict[str, tuple[dict[str, Any], dict[str, Any]]]:
+    """Load optional normal/compiled component pairs that extend donor prototypes."""
+    archive_values = library.get("component_archives", [])
+    if not isinstance(archive_values, list) or any(
+        not isinstance(value, str) or not value for value in archive_values
+    ):
+        raise CharacterBuildError(
+            "Component library component_archives must be repository paths"
+        )
+
+    archived: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
+    for archive_value in archive_values:
+        archive_path = repo_path(archive_value)
+        if not archive_path.is_file():
+            raise CharacterBuildError(f"Component archive does not exist: {archive_value}")
+        archive = read_json(archive_path)
+        if archive.get("schema_version") != 1:
+            raise CharacterBuildError(
+                f"Component archive {archive_value} must use schema_version 1"
+            )
+        if archive.get("frame") != frame:
+            raise CharacterBuildError(
+                f"Component archive {archive_value} frame must match {frame}"
+            )
+        components = archive.get("components")
+        if not isinstance(components, list):
+            raise CharacterBuildError(
+                f"Component archive {archive_value} components must be a list"
+            )
+        for row in components:
+            if not isinstance(row, dict):
+                raise CharacterBuildError(
+                    f"Component archive {archive_value} entries must be objects"
+                )
+            name = row.get("name")
+            normal = row.get("normal")
+            compiled = row.get("compiled")
+            if (
+                not isinstance(name, str)
+                or not name
+                or not isinstance(normal, dict)
+                or not isinstance(compiled, dict)
+                or component_name(normal) != name
+                or component_name(compiled) != name
+            ):
+                raise CharacterBuildError(
+                    f"Component archive {archive_value} has an invalid normal/compiled pair"
+                )
+            if name in archived:
+                raise CharacterBuildError(f"Archived component {name!r} is duplicated")
+            archived[name] = (normal, compiled)
+    return archived
+
+
 def select_component_prototype(
     manifest: dict[str, Any],
     catalog: dict[str, Any],
@@ -402,6 +458,7 @@ def select_component_prototype(
     donor: dict[str, Any],
 ) -> tuple[str, dict[str, Any]]:
     required = required_component_names(manifest, catalog)
+    archived = load_component_archives(library, str(manifest.get("frame", "")))
     candidates: list[tuple[int, str, dict[str, Any]]] = []
     prototypes = library.get("prototypes")
     if not isinstance(prototypes, list) or not prototypes:
@@ -427,15 +484,30 @@ def select_component_prototype(
             )
         seen_ids.add(prototype_id)
         seen_appearances.add(appearance_name)
-        appearance = find_appearance(donor, appearance_name)
+        appearance = copy.deepcopy(find_appearance(donor, appearance_name))
         mappings = components_by_name(appearance)
         if len(mappings) != 2:
             raise CharacterBuildError(
                 f"Component prototype {prototype_id!r} must contain normal and compiled copies"
             )
-        available = set(mappings[0]) & set(mappings[1])
+        native = set(mappings[0]) & set(mappings[1])
+        available = native | set(archived)
         if required <= available:
-            candidates.append((len(component_sets(appearance)[0]), prototype_id, appearance))
+            normal_components = appearance.get("components")
+            compiled_components = (
+                appearance.get("compiledData", {}).get("Data", {}).get("Chunks")
+            )
+            if not isinstance(normal_components, list) or not isinstance(
+                compiled_components, list
+            ):
+                raise CharacterBuildError(
+                    f"Component prototype {prototype_id!r} has malformed component copies"
+                )
+            for name in sorted(required - native):
+                normal, compiled = archived[name]
+                normal_components.append(copy.deepcopy(normal))
+                compiled_components.append(copy.deepcopy(compiled))
+            candidates.append((len(normal_components), prototype_id, appearance))
 
     if not candidates:
         missing = ", ".join(sorted(required)) or "<no named requirements>"
