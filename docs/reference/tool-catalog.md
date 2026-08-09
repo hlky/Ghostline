@@ -926,3 +926,30 @@ expected node count, node-definition index, and node type), node/entity
 transforms, entity template and appearance, and selected component details.
 The same action is available as the assignable CET hotkey
 `ghostline_indoor_copy_inspected`.
+
+## Vanilla Sex RID Catalog
+
+`tools/sex_rid_catalog.py` builds a depot-path-preserving technical catalog of
+multi-clip `.scenerid` resources, merges their registrations from serialized
+vanilla scenes, maintains a separate human annotation layer, and generates a
+stable preview manifest plus portable review page.
+
+`tools/sex_rid_preview.py` decodes SIMD and compressed body tracks into
+role-colored neutral proxies and renders MP4/contact-sheet evidence for that
+review page. It can also emit decoded preview JSON alone with `--decode-only`.
+`tools/sex_rid_preview_batch.py` adds resumable catalog rendering and human-role
+selection. Facial tracks, RID cameras, props, and full scene-take assembly are
+not yet implemented.
+
+```powershell
+py -B .\tools\sex_rid_catalog.py build `
+  --rid-json-root .\.tmp\vanilla-sex-rids-json `
+  --binary-root .\.tmp\vanilla-sex-rids `
+  --scene-json-root .\.tmp\vanilla-sex-scenes-json `
+  --output .\reference\animations\sex\vanilla-sex-rids.json
+```
+
+The checked catalog covers the 60 generic sex RIDs and the 11 bespoke RIDs
+referenced by the inspected Panam, Kerry, River, and Judy scenes. Extraction,
+serializer fallback, annotations, preview status, reuse boundaries, and the
+review commands are documented in `docs/authoring/sex-rids.md`.
