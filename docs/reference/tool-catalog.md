@@ -887,3 +887,42 @@ City sectors into an R-tree/FTS5 SQLite index, derives calibrated object and
 and CET installation. The state-restoration contract, metadata review,
 commands, output layout, and acceptance gates are documented in
 `docs/authoring/world-locations.md`.
+
+## Indoor Location Candidates
+
+`tools/indoor_location_candidates.py` is a standalone, read-only indexer for
+serialized vanilla world sectors. It prefilters the full sector corpus for
+`worldInteriorAreaNode`, ranks nearby doors, workspots, devices, furnishings,
+population, and vehicle signals, and labels each area `likely_unowned` or
+`quest_linked`. It does not invoke or import `world_location_capture.py`.
+
+```powershell
+py -B .\tools\indoor_location_candidates.py build
+py -B .\tools\indoor_location_candidates.py list `
+  --ownership likely_unowned --limit 50
+
+py -B .\tools\indoor_location_candidates.py install-cet `
+  --game-root "H:\Cyberpunk 2077"
+```
+
+The default ignored output is
+`generated/world-locations/indoor-candidates.json`. `likely_unowned` is a
+discovery classification, not proof that a location is safe: shortlisted
+sites still require in-game access and world-state validation.
+
+The standalone CET mod opens **Ghostline Indoor Locations** with the CET
+overlay. It provides ownership and score filters, text search, previous/next
+selection, semantic site types, a default retail/service exclusion, configurable
+teleport Z offset, direct teleport, nearest-to-player recovery, and return to
+the previous position. Favorite and rejected decisions persist in the CET mod's
+`reviews.json`; reinstalling the catalog does not overwrite them. Its bindings
+can also be assigned in CET for teleport and previous/next selection. Re-run
+`install-cet` after rebuilding the manifest to refresh the installed list.
+
+When RedHotTools is installed, **Copy inspected node JSON** copies the current
+World Inspector target as a compact capture record. The record preserves
+64-bit IDs as strings and includes the ArchiveXL removal tuple (sector path,
+expected node count, node-definition index, and node type), node/entity
+transforms, entity template and appearance, and selected component details.
+The same action is available as the assignable CET hotkey
+`ghostline_indoor_copy_inspected`.
