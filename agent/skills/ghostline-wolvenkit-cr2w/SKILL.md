@@ -1,6 +1,6 @@
 ---
 name: ghostline-wolvenkit-cr2w
-description: Use for Ghostline CR2W/raw conversion and verification. Prefer the pinned ghostline-red submodule; use WolvenKit only for unsupported editor, mesh, or novel-layout work.
+description: Use for Ghostline CR2W/raw conversion and verification. Use WolvenKit for runtime archive packing and unsupported editor, mesh, animation, or novel-layout work; prefer the pinned ghostline-red submodule for supported template-backed CR2W operations.
 ---
 
 # Ghostline Native CR2W Workflow
@@ -66,19 +66,26 @@ validation.
 
 ## Archive Operations
 
+Runtime archives must be packed with WolvenKit. The current `ghostline-red
+pack` output is not runtime-safe and has caused a reproducible startup crash.
+
 ```powershell
-& $red pack .\source\archive -o H:\Ghostline-builds\native-candidate
-& $red archive-list H:\Ghostline-builds\native-candidate\archive.archive `
-  --paths-root .\source\archive
-& $red extract H:\Ghostline-builds\native-candidate\archive.archive `
-  -o H:\Ghostline-builds\native-candidate\extracted `
-  --paths-root .\source\archive
+& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' pack `
+  .\source\archive `
+  -o H:\Ghostline-builds\wkit-candidate
+& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' archive `
+  H:\Ghostline-builds\wkit-candidate\archive.archive `
+  -l
 ```
+
+The native archive reader/extractor remains useful for diagnostics and payload
+hash checks, but do not use its pack command for an install candidate.
 
 ## WolvenKit Fallback Boundary
 
 Keep WolvenKit for:
 
+- packing every runtime/install archive;
 - the graphical CR2W, graph, scene, and Tweak Browser editors;
 - mesh and morphtarget GLB import/export and garment-support rebuilding;
 - creating a class layout that has no compatible binary template;

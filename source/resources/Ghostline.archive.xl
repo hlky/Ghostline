@@ -8,12 +8,15 @@ quest:
     parent: base\quest\cyberpunk2077.quest
   - path: mod\gqt006\phases\gqt006_goth_baddie_cyberpsycho.questphase
     parent: base\quest\cyberpunk2077.quest
+  - path: mod\gqt007\phases\gqt007_barry_lipsync.questphase
+    parent: base\quest\cyberpunk2077.quest
 journal:
 - mod\gq000\journal\gq000.journal
 - mod\gq001\journal\gq001.journal
 - mod\gq002\journal\gq002.journal
 - mod\gqt005\journal\gqt005.journal
 - mod\gqt006\journal\gqt006.journal
+- mod\gqt007\journal\gqt007.journal
 localization:
   onscreens:
     en-us:
@@ -23,6 +26,7 @@ localization:
     - mod\gq002\localization\en-us\onscreens\gq002.json
     - mod\gqt005\localization\en-us\onscreens\gqt005.json
     - mod\gqt006\localization\en-us\onscreens\gqt006.json
+    - mod\gqt007\localization\en-us\onscreens\gqt007.json
   subtitles:
     en-us:
     - mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json
@@ -36,6 +40,11 @@ localization:
     - mod\gq003\localization\en-us\subtitles\gq003_21_subtitles_map.json
     - mod\gq003\localization\en-us\subtitles\gq003_30_subtitles_map.json
     - mod\gq003\localization\en-us\subtitles\gq003_36_subtitles_map.json
+    - mod\gqt007\localization\en-us\subtitles\gqt007_subtitles_map.json
+  lipmaps:
+    en-us:
+    - mod\gq000\localization\en-us\gq000.lipmap
+    - mod\gqt007\localization\en-us\gqt007.lipmap
   vomaps:
     en-us:
     - mod\gq000\localization\en-us\vo\gq000_01.json
@@ -49,6 +58,7 @@ localization:
     - mod\gq003\localization\en-us\vo\gq003_21.json
     - mod\gq003\localization\en-us\vo\gq003_30.json
     - mod\gq003\localization\en-us\vo\gq003_36.json
+    - mod\gqt007\localization\en-us\vo\gqt007.json
 streaming:
   blocks:
   - mod\gq000\world\gq000_patch_meet.streamingblock
@@ -56,6 +66,7 @@ streaming:
   - mod\gq002\world\gq002_machine_stops.streamingblock
   - mod\gqt005\world\gqt005_braindance_analysis.streamingblock
   - mod\gqt006\world\gqt006_goth_baddie_cyberpsycho.streamingblock
+  - mod\gqt007\world\gqt007_barry_lipsync.streamingblock
 resource:
   patch:
     mod\gq000\world\gq000_custom_devices.devices:

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "gqt007_barry_lipsync",
+  "title": "Barry Lipsync A/B",
+  "description": "Runtime A/B fixture for comparing vanilla and modified lipsync curves on Barry.",
+  "phase_prefabs": ["#gqt007_pr_barry_lipsync"],
+  "debug_fact": "gqt007_debug_step",
+  "stages": [
+    {
+      "id": "compare_barry_lipsync",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt007\\phases\\gqt007_compare_barry_lipsync.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "#gqt007_com_barry",
+        "#gq000_01_sm_patch_bridge": "#gqt007_sm_barry",
+        "#gq000_01_tr_setup": "#gqt007_tr_setup",
+        "#gq000_pr_patch_meet": "#gqt007_pr_barry_lipsync",
+        "gq000_job_accepted": "gqt007_comparison_finished",
+        "gq000_patch_meet": "gqt007_barry_lipsync",
+        "job_accept": "end",
+        "patch": "barry",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gqt007\\scenes\\gqt007_barry_lipsync.scene",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "quests/minor_quest/gqt007/gqt007_01/gqt007_01_obj_compare_lipsync",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "quests/minor_quest/gqt007/gqt007_01/gqt007_01_obj_compare_lipsync/gqt007_01_qmp_barry"
+      },
+      "contact": "barry",
+      "scene": "mod\\gqt007\\scenes\\gqt007_barry_lipsync.scene",
+      "community": "#gqt007_com_barry",
+      "appearance": "default",
+      "objective": "quests/minor_quest/gqt007/gqt007_01/gqt007_01_obj_compare_lipsync",
+      "description_entry": "quests/minor_quest/gqt007/gqt007_01/gqt007_01_obj_compare_lipsync/gqt007_01_desc_compare_lipsync",
+      "mappin": "quests/minor_quest/gqt007/gqt007_01/gqt007_01_obj_compare_lipsync/gqt007_01_qmp_barry"
+    }
+  ]
+}

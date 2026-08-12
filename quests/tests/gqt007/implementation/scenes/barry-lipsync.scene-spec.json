@@ -1,0 +1,81 @@
+{
+  "name": "gqt007_barry_lipsync",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "quests/tests/gqt007/implementation/dialogue/gqt007_barry_lipsync.manifest.json",
+  "raw_path": "source/raw/mod/gqt007/scenes/gqt007_barry_lipsync.scene.json",
+  "archive_path": "source/archive/mod/gqt007/scenes/gqt007_barry_lipsync.scene",
+  "choice_locales": ["db_db", "pl_pl", "en_us"],
+  "section_tail_padding_ms": 300,
+  "lipsync_animset": "mod\\gqt007\\scenes\\lipsync\\en\\gqt007_barry_lipsync\\civ_low_m_11_enus_40_fat.anims",
+  "actors": [
+    {
+      "key": "barry",
+      "name": "barry",
+      "kind": "community",
+      "id": 0,
+      "entry": "barry",
+      "community_ref": "#gqt007_com_barry",
+      "appearance": "default",
+      "lipsync": 0,
+      "voicetag": "1624173162010260376"
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 0
+    }
+  ],
+  "spoken_line_order": ["barry_vanilla", "barry_modified"],
+  "choice_line_order": ["play_vanilla", "play_modified"],
+  "entry_point": {"name": "start", "node_id": 1},
+  "exit_points": [{"name": "end", "node_id": 5}],
+  "start_node": {"node_id": 1, "on_start": [{"node_id": 2}]},
+  "graph_order": [1, 2, 3, 4, 5],
+  "sections": [
+    {
+      "key": "vanilla_playback",
+      "node_id": 3,
+      "lines": ["barry_vanilla"],
+      "on_end": [{"node_id": 2}],
+      "on_cancel": [{"node_id": 5}]
+    },
+    {
+      "key": "modified_playback",
+      "node_id": 4,
+      "lines": ["barry_modified"],
+      "on_end": [{"node_id": 2}],
+      "on_cancel": [{"node_id": 5}]
+    }
+  ],
+  "choices": [
+    {
+      "key": "comparison_choice",
+      "node_id": 2,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "play_vanilla",
+          "caption": "Play vanilla lipsync",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 3
+        },
+        {
+          "choice_key": "play_modified",
+          "caption": "Play modified lipsync",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 4
+        }
+      ]
+    }
+  ],
+  "quest_nodes": [],
+  "xor_nodes": [],
+  "end_node": {"node_id": 5}
+}

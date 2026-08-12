@@ -1,0 +1,73 @@
+{
+  "_note": "Barry lipsync A/B test, placed a short distance east of the proven GQT005 outdoor test site.",
+  "name": "gqt007",
+  "prefab_root": "$/mod/gqt007/#gqt007_pr_barry_lipsync",
+  "block_path": "mod\\gqt007\\world\\gqt007_barry_lipsync.streamingblock",
+  "quest_sector_path": "mod\\gqt007\\world\\gqt007_barry_lipsync.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt007\\world\\gqt007_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1068.2563,
+    "y": 1313.9362,
+    "z": 5.174843,
+    "yaw": -3.628360655
+  },
+  "markers": [
+    {
+      "ref": "#gqt007_sm_barry",
+      "sector": "always_loaded",
+      "position": {"from": "origin"},
+      "yaw": "origin",
+      "scene_marker": true,
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt007_tr_setup",
+      "position": {"from": "origin", "up": -4},
+      "outline": {
+        "type": "circle",
+        "radius": 12,
+        "segments": 12,
+        "height": 8
+      },
+      "notifiers": ["quest"],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    }
+  ],
+  "community": {
+    "ref": "#gqt007_com_barry",
+    "entry": "barry",
+    "phase": "default",
+    "period": "Day",
+    "character": "Character.mq010_barry",
+    "appearance": "citizen__lowlife_mb__mq010__barry",
+    "voice_tag": "civ_low_m_11_enus_40_fat",
+    "source_object_id": "auto",
+    "registry_node_id": "auto",
+    "registry_debug_name": "gqt007_barry_registry",
+    "active_on_start": 0,
+    "streaming_distance": 160,
+    "node_data": {
+      "max_streaming_distance": 280,
+      "streaming_distance": 240
+    },
+    "spot": {
+      "ref": "#gqt007_spot_barry",
+      "position": {"from": "origin"},
+      "yaw": "origin",
+      "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__01.workspot",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  }
+}

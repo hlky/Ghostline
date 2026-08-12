@@ -261,6 +261,47 @@ TEXT = {
 PLAY_BRAINDANCE_CHOICE = "gqt005_play_braindance"
 PLAY_BRAINDANCE_TEXT = "Play braindance"
 PLAY_BRAINDANCE_ICON = "ChoiceCaptionParts.BraindanceIcon"
+PATCH_VOICETAG = "1624173162010260376"
+PATCH_LIPSYNC_ANIMSET = (
+    "base\\localization\\en-us\\lipsync\\mod\\gq000\\scenes\\gq000_patch_meet\\"
+    "civ_low_m_11_enus_40_fat.anims"
+)
+PATCH_LIPSYNC_LINES = (
+    {
+        "choice_key": "gqt005_replay_lipsync_intro",
+        "caption": "Replay: You made it",
+        "locstring": "3552541838326363267",
+        "screenplay_item_id": 1,
+        "node_id": 11,
+    },
+    {
+        "choice_key": "gqt005_replay_lipsync_location",
+        "caption": "Replay: Knew you would",
+        "locstring": "1728179479238269697",
+        "donor_screenplay_item_id": 2817,
+        "screenplay_item_id": 257,
+        "node_id": 12,
+    },
+    {
+        "choice_key": "gqt005_replay_lipsync_cache",
+        "caption": "Replay: Pull the cache",
+        "locstring": "1563333104533324901",
+        "donor_screenplay_item_id": 3073,
+        "screenplay_item_id": 513,
+        "node_id": 13,
+    },
+    {
+        "choice_key": "gqt005_replay_lipsync_network",
+        "caption": "Replay: That's the point",
+        "locstring": "1855362652331361983",
+        "donor_screenplay_item_id": 513,
+        "screenplay_item_id": 769,
+        "node_id": 14,
+    },
+)
+PATCH_REPLAY_LOOKAT_DONOR = (
+    ROOT / "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json"
+)
 
 
 def write(path: Path, value: dict[str, Any]) -> None:
@@ -722,10 +763,11 @@ def _remap_owned_handle_ids(value: Any, *, first_id: int) -> None:
         next_id += 1
 
 
-def _play_braindance_choice(
+def _launch_choice(
     root: dict[str, Any],
     *,
-    target_node_id: int,
+    braindance_node_id: int,
+    allocator: scene_builder.HandleAllocator,
 ) -> dict[str, Any]:
     donor_root = _scene_root(load(CHOICE_DONOR))
     choice_shell = next(
@@ -737,22 +779,66 @@ def _play_braindance_choice(
         "node_id": 10,
         "actor_id": 0,
         "options": [
+            *(
+                {
+                    "choice_key": line["choice_key"],
+                    "caption": line["caption"],
+                    "single_choice": False,
+                    "choice_type": 1,
+                    "target_node_id": line["node_id"],
+                }
+                for line in PATCH_LIPSYNC_LINES
+            ),
             {
                 "choice_key": PLAY_BRAINDANCE_CHOICE,
                 "caption": PLAY_BRAINDANCE_TEXT,
                 "single_choice": True,
                 "choice_type": 1,
                 "icon_tags": [PLAY_BRAINDANCE_ICON],
-                "target_node_id": target_node_id,
+                "target_node_id": braindance_node_id,
             }
         ],
     }
     return scene_builder.build_choice_node(
         choice_shell,
         choice_spec,
-        {PLAY_BRAINDANCE_CHOICE: 2},
-        scene_builder.HandleAllocator(_next_handle_id(root)),
+        {
+            **{
+                line["choice_key"]: 2 + (index * 256)
+                for index, line in enumerate(PATCH_LIPSYNC_LINES)
+            },
+            PLAY_BRAINDANCE_CHOICE: 2 + (len(PATCH_LIPSYNC_LINES) * 256),
+        },
+        allocator,
     )
+
+
+def _patch_player_lookat_event(
+    allocator: scene_builder.HandleAllocator,
+    *,
+    node_id: int,
+    duration: int,
+) -> dict[str, Any]:
+    donor_root = _scene_root(load(PATCH_REPLAY_LOOKAT_DONOR))
+    event = copy.deepcopy(
+        next(
+            event
+            for wrapper in donor_root["sceneGraph"]["Data"]["graph"]
+            for event in wrapper["Data"].get("events", [])
+            if event["Data"].get("$type") == "scnLookAtEvent"
+            and event["Data"]["basicData"]["basic"]["isStart"] == 1
+            and event["Data"]["basicData"]["basic"]["performerId"]["id"] == 1
+            and event["Data"]["basicData"]["basic"]["targetPerformerId"]["id"]
+            == 257
+        )
+    )
+    scene_builder.reassign_handle_ids(event, allocator)
+    event["Data"]["id"]["id"] = scene_builder.deterministic_event_id(
+        LAUNCH_NAME, "patch_player_lookat", node_id
+    )
+    event["Data"]["startTime"] = 0
+    event["Data"]["duration"] = duration
+    return event
 
 
 def generate_launch_scene() -> dict[str, Any]:
@@ -767,6 +853,7 @@ def generate_launch_scene() -> dict[str, Any]:
     patch["communityParams"]["reference"]["$storage"] = "string"
     patch["communityParams"]["reference"]["$value"] = COMMUNITY
     patch["communityParams"]["forceMaxVisibility"] = 0
+    patch["voicetagId"]["id"] = PATCH_VOICETAG
 
     graph = root["sceneGraph"]["Data"]
     selected_nodes = {
@@ -789,8 +876,58 @@ def generate_launch_scene() -> dict[str, Any]:
         scene_builder.output_socket(0, 0, [(10, 0, 0)]),
         scene_builder.output_socket(1, 0, [(19, 0, 0)]),
     ]
-    choice = _play_braindance_choice(root, target_node_id=19)
-    graph["graph"] = [start, section, choice, end]
+    allocator = scene_builder.HandleAllocator(_next_handle_id(root))
+    donor_root = _scene_root(load(CHOICE_DONOR))
+    replay_shell = next(
+        wrapper
+        for wrapper in donor_root["sceneGraph"]["Data"]["graph"]
+        if wrapper["Data"].get("nodeId", {}).get("id") == 2
+    )
+    donor_events = {
+        event["Data"]["screenplayLineId"]["id"]: event
+        for wrapper in donor_root["sceneGraph"]["Data"]["graph"]
+        if wrapper["Data"].get("$type") == "scnSectionNode"
+        for event in wrapper["Data"].get("events", [])
+        if event["Data"].get("$type") == "scnDialogLineEvent"
+    }
+    replays = []
+    for line in PATCH_LIPSYNC_LINES:
+        replay = copy.deepcopy(replay_shell)
+        replay["Data"]["events"] = [
+            copy.deepcopy(
+                donor_events.get(
+                    line.get("donor_screenplay_item_id", line["screenplay_item_id"])
+                )
+            )
+        ]
+        replay["Data"]["events"][0]["Data"]["screenplayLineId"] = (
+            scene_builder.screenplay_item_id(line["screenplay_item_id"])
+        )
+        replay["Data"]["events"][0]["Data"]["startTime"] = 0
+        line_duration = replay["Data"]["events"][0]["Data"]["duration"]
+        replay["Data"]["events"].append(
+            _patch_player_lookat_event(
+                allocator,
+                node_id=line["node_id"],
+                duration=line_duration,
+            )
+        )
+        replay["Data"]["sectionDuration"]["stu"] = (
+            line_duration + 400
+        )
+        scene_builder.reassign_handle_ids(replay, allocator)
+        replay["Data"]["nodeId"] = scene_builder.scene_node_id(line["node_id"])
+        replay["Data"]["outputSockets"] = [
+            scene_builder.output_socket(0, 0, [(10, 0, 0)]),
+            scene_builder.output_socket(1, 0, [(10, 0, 0)]),
+        ]
+        replays.append(replay)
+    choice = _launch_choice(
+        root,
+        braindance_node_id=19,
+        allocator=allocator,
+    )
+    graph["graph"] = [start, section, choice, *replays, end]
     graph["startNodes"] = [{"$type": "scnNodeId", "id": 1}]
     graph["endNodes"] = [{"$type": "scnNodeId", "id": 19}]
 
@@ -811,6 +948,15 @@ def generate_launch_scene() -> dict[str, Any]:
 
     choice_string_id = scene_builder.fnv1a64(f"{LAUNCH_NAME}:{PLAY_BRAINDANCE_CHOICE}")
     choice_manifest = {
+        **{
+            line["choice_key"]: {
+                "string_id": scene_builder.fnv1a64(
+                    f"{LAUNCH_NAME}:{line['choice_key']}"
+                ),
+                "text": line["caption"],
+            }
+            for line in PATCH_LIPSYNC_LINES
+        },
         PLAY_BRAINDANCE_CHOICE: {
             "string_id": choice_string_id,
             "text": PLAY_BRAINDANCE_TEXT,
@@ -819,16 +965,51 @@ def generate_launch_scene() -> dict[str, Any]:
     root["locStore"] = scene_builder.build_loc_store(
         {
             "name": LAUNCH_NAME,
-            "choice_line_order": [PLAY_BRAINDANCE_CHOICE],
+            "choice_line_order": [
+                *(line["choice_key"] for line in PATCH_LIPSYNC_LINES),
+                PLAY_BRAINDANCE_CHOICE,
+            ],
             "choice_locales": ["db_db", "pl_pl", "en_us"],
         },
         choice_manifest,
     )
+    donor_lines = {
+        line["locstringId"]["ruid"]: line
+        for line in donor_root["screenplayStore"]["lines"]
+    }
     root["screenplayStore"]["lines"] = []
+    for spec in PATCH_LIPSYNC_LINES:
+        line = copy.deepcopy(donor_lines[spec["locstring"]])
+        line["itemId"] = scene_builder.screenplay_item_id(
+            spec["screenplay_item_id"]
+        )
+        animation_name = f"f_{int(spec['locstring']):016X}"
+        line["femaleLipsyncAnimationName"] = scene_builder.cname(animation_name)
+        line["maleLipsyncAnimationName"] = scene_builder.cname(animation_name)
+        root["screenplayStore"]["lines"].append(line)
     root["screenplayStore"]["options"] = [
+        *(
+            {
+            "$type": "scnscreenplayChoiceOption",
+            "itemId": scene_builder.screenplay_item_id(2 + (index * 256)),
+            "locstringId": scene_builder.locstring_id(
+                choice_manifest[line["choice_key"]]["string_id"]
+            ),
+            "usage": {
+                "$type": "scnscreenplayOptionUsage",
+                "playerGenderMask": {
+                    "$type": "scnGenderMask",
+                    "mask": 3,
+                },
+            },
+            }
+            for index, line in enumerate(PATCH_LIPSYNC_LINES)
+        ),
         {
             "$type": "scnscreenplayChoiceOption",
-            "itemId": scene_builder.screenplay_item_id(2),
+            "itemId": scene_builder.screenplay_item_id(
+                2 + (len(PATCH_LIPSYNC_LINES) * 256)
+            ),
             "locstringId": scene_builder.locstring_id(choice_string_id),
             "usage": {
                 "$type": "scnscreenplayOptionUsage",
@@ -869,6 +1050,17 @@ def generate_launch_scene() -> dict[str, Any]:
     for field, value in references.items():
         if field != "$type" and isinstance(value, list):
             references[field] = []
+    references["lipsyncAnimSets"] = [
+        {
+            "$type": "scnLipsyncAnimSetSRRef",
+            "asyncRefLipsyncAnimSet": scene_builder.resource_path(PATCH_LIPSYNC_ANIMSET),
+            "lipsyncAnimSet": scene_builder.resource_path(
+                0,
+                storage="uint64",
+                flags="Default",
+            ),
+        }
+    ]
     for scenario in root["interruptionScenarios"]:
         scenario["enabled"] = 0
     result["Header"]["ArchiveFileName"] = str(LAUNCH_SCENE_ARCHIVE.resolve())

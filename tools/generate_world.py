@@ -904,6 +904,17 @@ def community_registry_node(
         entry_name = entry.spec.get("entry", "patch")
         phase = entry.spec.get("phase", "default")
         period = entry.spec.get("period", "Day")
+        initializers = []
+        if voice_tag := entry.spec.get("voice_tag"):
+            initializers.append(
+                {
+                    "HandleId": handles.take(),
+                    "Data": {
+                        "$type": "communityVoiceTagInitializer",
+                        "voiceTagName": cname(str(voice_tag)),
+                    },
+                }
+            )
         appearances = entry.spec.get("appearances", [entry.spec.get("appearance", "default")])
         if not isinstance(appearances, list):
             appearances = [appearances]
@@ -922,7 +933,7 @@ def community_registry_node(
                     "$type": "communitySpawnEntry",
                     "characterRecordId": tweakdbid(entry.spec.get("character", "Character.GhostlinePatch")),
                     "entryName": cname(entry_name),
-                    "initializers": [],
+                    "initializers": initializers,
                     "phases": [
                         {
                             "HandleId": handles.take(),

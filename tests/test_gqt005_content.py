@@ -1371,7 +1371,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
             6,
         )
 
-    def test_launch_scene_is_patch_only_braindance_choice(self) -> None:
+    def test_launch_scene_has_repeatable_patch_lipsync_and_braindance_choices(self) -> None:
         scene = load(LAUNCH_SCENE)["Data"]["RootChunk"]
         graph = scene["sceneGraph"]["Data"]["graph"]
         self.assertEqual(
@@ -1380,6 +1380,10 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
                 "scnStartNode",
                 "scnSectionNode",
                 "scnChoiceNode",
+                "scnSectionNode",
+                "scnSectionNode",
+                "scnSectionNode",
+                "scnSectionNode",
                 "scnEndNode",
             ],
         )
@@ -1392,15 +1396,73 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         choice = graph[2]["Data"]
         self.assertEqual(choice["mode"], "attachToActor")
         self.assertEqual(choice["ataParams"]["actorId"]["id"], 0)
-        self.assertEqual(len(choice["options"]), 1)
-        self.assertEqual(choice["options"][0]["caption"]["$value"], "Play braindance")
+        self.assertEqual(len(choice["options"]), 5)
         self.assertEqual(
-            choice["options"][0]["iconTagIds"][0]["$value"],
+            [option["caption"]["$value"] for option in choice["options"]],
+            [
+                "Replay: You made it",
+                "Replay: Knew you would",
+                "Replay: Pull the cache",
+                "Replay: That's the point",
+                "Play braindance",
+            ],
+        )
+        self.assertEqual(
+            choice["options"][4]["iconTagIds"][0]["$value"],
             "ChoiceCaptionParts.BraindanceIcon",
         )
-        self.assertEqual(choice["options"][0]["isSingleChoice"], 1)
-        self.assertEqual(len(scene["screenplayStore"]["options"]), 1)
-        self.assertEqual(len(scene["locStore"]["vdEntries"]), 4)
+        self.assertTrue(all(option["isSingleChoice"] == 0 for option in choice["options"][:4]))
+        self.assertEqual(choice["options"][4]["isSingleChoice"], 1)
+        lines = scene["screenplayStore"]["lines"]
+        expected_locstrings = [
+            "3552541838326363267",
+            "1728179479238269697",
+            "1563333104533324901",
+            "1855362652331361983",
+        ]
+        self.assertEqual(
+            [line["locstringId"]["ruid"] for line in lines],
+            expected_locstrings,
+        )
+        self.assertEqual(
+            [line["itemId"]["id"] for line in lines],
+            [1, 257, 513, 769],
+        )
+        self.assertEqual(
+            [
+                node["Data"]["events"][0]["Data"]["screenplayLineId"]["id"]
+                for node in graph[3:7]
+            ],
+            [1, 257, 513, 769],
+        )
+        for node in graph[3:7]:
+            events = node["Data"]["events"]
+            self.assertEqual(
+                [event["Data"]["$type"] for event in events],
+                ["scnDialogLineEvent", "scnLookAtEvent"],
+            )
+            lookat = events[1]["Data"]["basicData"]["basic"]
+            self.assertEqual(lookat["performerId"]["id"], 1)
+            self.assertEqual(lookat["targetPerformerId"]["id"], 257)
+            self.assertEqual(lookat["targetSlot"]["$value"], "pla_default_tgt")
+        self.assertEqual(
+            [line["femaleLipsyncAnimationName"]["$value"] for line in lines],
+            [f"f_{int(locstring):016X}" for locstring in expected_locstrings],
+        )
+        self.assertEqual(
+            [line["maleLipsyncAnimationName"]["$value"] for line in lines],
+            [f"f_{int(locstring):016X}" for locstring in expected_locstrings],
+        )
+        self.assertEqual(len(scene["screenplayStore"]["options"]), 5)
+        self.assertEqual(len(scene["locStore"]["vdEntries"]), 20)
+        self.assertEqual(scene["actors"][0]["voicetagId"]["id"], "1624173162010260376")
+        self.assertEqual(choice["options"][4]["screenplayOptionId"]["id"], 1026)
+        self.assertEqual(
+            scene["resouresReferences"]["lipsyncAnimSets"][0][
+                "asyncRefLipsyncAnimSet"
+            ]["DepotPath"]["$value"],
+            r"base\localization\en-us\lipsync\mod\gq000\scenes\gq000_patch_meet\civ_low_m_11_enus_40_fat.anims",
+        )
         self.assertEqual(
             scene["exitPoints"][0]["name"]["$value"],
             "play_braindance",
@@ -1425,6 +1487,15 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         self.assertTrue(scene["interruptionScenarios"])
         self.assertTrue(
             all(scenario["enabled"] == 0 for scenario in scene["interruptionScenarios"])
+        )
+
+        world_spec = load(
+            ROOT
+            / "quests/tests/gqt005/implementation/world/braindance-analysis.world.json"
+        )
+        self.assertEqual(
+            world_spec["community"]["spot"]["workspot"],
+            r"base\workspots\common\ground\generic__stand_ground__stand_around__01.workspot",
         )
 
     def test_meet_contact_owns_patch_and_bd_phase_owns_player_handoff(self) -> None:
@@ -1747,7 +1818,12 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         self.assertNotIn("#gqt005_com_bd_replacer", encoded)
         self.assertNotIn("#gqt005_ws_bd_replacer", encoded)
         self.assertIn("#gqt005_com_contact", encoded)
-        self.assertIn("Character.GhostlinePatch", encoded)
+        self.assertIn("Character.GhostlinePatchLipsyncTest", encoded)
+        tweak = (
+            ROOT / "source/resources/r6/tweaks/ghostline/gqt005_lipsync.yaml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("$base: Character.GhostlinePatch", tweak)
+        self.assertIn("voiceTag: civ_low_m_11_enus_40_fat", tweak)
         self.assertIn("#gqt005_tr_wake", encoded)
         self.assertIn("#gqt005_tr_setup", encoded)
         self.assertIn("#gqt005_bd_camera", encoded)

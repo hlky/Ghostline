@@ -381,14 +381,16 @@ def build_screenplay_store(
         addressee = actors[str(line["addressee"]).casefold()]
         item_id = 1 + index * 256
         line_ids[line_key] = item_id
+        female_lipsync = str(line.get("female_lipsync_animation", "None"))
+        male_lipsync = str(line.get("male_lipsync_animation", "None"))
         lines.append(
             {
                 "$type": "scnscreenplayDialogLine",
                 "addressee": actor_id(addressee.id),
-                "femaleLipsyncAnimationName": cname("None"),
+                "femaleLipsyncAnimationName": cname(female_lipsync),
                 "itemId": screenplay_item_id(item_id),
                 "locstringId": locstring_id(line["string_id"]),
-                "maleLipsyncAnimationName": cname("None"),
+                "maleLipsyncAnimationName": cname(male_lipsync),
                 "speaker": actor_id(speaker.id),
                 "usage": {"$type": "scnscreenplayLineUsage", "playerGenderMask": {"$type": "scnGenderMask", "mask": 3}},
             }

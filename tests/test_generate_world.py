@@ -131,6 +131,28 @@ class GenerateWorldTests(unittest.TestCase):
         )
         self.assertEqual(appearances, ["ghostline_patch_default"])
 
+    def test_registry_can_inject_a_voice_tag(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["community"]["voice_tag"] = "civ_low_m_11_enus_40_fat"
+        _, always_loaded_sector = self.build_production_world(spec)
+        registry = next(
+            node["Data"]
+            for node in always_loaded_sector["Data"]["RootChunk"]["nodes"]
+            if node["Data"]["$type"] == "worldCommunityRegistryNode"
+        )
+        initializers = registry["communitiesData"][0]["template"]["Data"][
+            "entries"
+        ][0]["Data"]["initializers"]
+
+        self.assertEqual(len(initializers), 1)
+        self.assertEqual(
+            initializers[0]["Data"]["$type"], "communityVoiceTagInitializer"
+        )
+        self.assertEqual(
+            initializers[0]["Data"]["voiceTagName"]["$value"],
+            "civ_low_m_11_enus_40_fat",
+        )
+
     def test_registry_node_rejects_community_source_id_collision(self) -> None:
         spec = copy.deepcopy(self.spec)
         spec["community"]["registry_node_id"] = "7897875840529598144"

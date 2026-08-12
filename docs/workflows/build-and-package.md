@@ -44,17 +44,17 @@ NodeRefs are valid.
 
 ## Scoped Archive Build
 
-Use the pinned `ghostline-red` packer for the normal archive build. Pack only
-`source/archive`:
+Use WolvenKit for the runtime archive build. Pack only `source/archive`.
+`ghostline-red pack` is not runtime-safe for the current payload and produced
+a reproducible startup crash during the GQT007 lipsync test:
 
 ```powershell
-git submodule update --init --recursive .\tools\ghostline-red
-cargo build --release --manifest-path .\tools\ghostline-red\Cargo.toml
-$red = '.\tools\ghostline-red\target\release\ghostline-red.exe'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $buildDir = Join-Path '.tmp\package' "manual-$stamp"
 New-Item -ItemType Directory -Path $buildDir | Out-Null
-& $red pack .\source\archive -o $buildDir
+& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' pack `
+  .\source\archive `
+  -o $buildDir
 $candidate = Join-Path $buildDir 'archive.archive'
 ```
 
@@ -77,7 +77,9 @@ editor, mesh, morphtarget, or unsupported CR2W work, not for routine packing.
 List the candidate and inspect the depot paths before installing it:
 
 ```powershell
-& $red archive-list $candidate --paths-root .\source\archive
+& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' archive `
+  $candidate `
+  -l
 ```
 
 Reject a build containing repository/support roots such as `source\raw`,
@@ -88,7 +90,9 @@ Extract the candidate to a new verification directory:
 ```powershell
 $verifyDir = Join-Path $buildDir 'extracted'
 New-Item -ItemType Directory -Path $verifyDir | Out-Null
-& $red extract $candidate -o $verifyDir --paths-root .\source\archive
+& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' extract `
+  $candidate `
+  -o $verifyDir
 ```
 
 Then verify:

@@ -641,6 +641,198 @@ Pass one or more localization files with repeated `--file` arguments:
 py .\tools\explore_localization.py --file .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json --file .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json check
 ```
 
+## Lipsync Explorer
+
+`tools/explore_lipsync.py` inspects localized dialogue `.anims` sets and
+WolvenKit-exported animation GLBs. For `.anims` input it uses the repository's
+WolvenKit CLI build to decode the compressed animation buffers; pass
+`--game-path` if the Cyberpunk installation is not found from GOG or the
+`CYBERPUNK_2077_PATH` environment variable.
+
+```powershell
+py .\tools\explore_lipsync.py --file .\actor.anims summary
+py .\tools\explore_lipsync.py --file .\actor.anims lines
+py .\tools\explore_lipsync.py --file .\actor.anims tracks 1772112601784938496 --query lips
+py .\tools\explore_lipsync.py --file .\actor.anims track 1772112601784938496 jaw_mid_openLipsyncPoseOutput
+py .\tools\explore_lipsync.py --file .\actor.anims track 1772112601784938496 jaw_mid_open --format csv
+```
+
+Line selectors accept an animation index, an `f_<hex>` animation name, a
+decimal locstring ID, or a `0x` hexadecimal locstring ID. Track selectors
+accept a numeric rig-track index or a case-insensitive name substring.
+
+`tools/build_lipsync_dataset.py` forced-aligns a known ARPAbet sequence to its
+voiceover and joins the labels to interpolated facial curves at 30 fps. Its
+default 39-phone CTC model downloads to the Hugging Face cache on first use.
+Use `--device cuda` from the ROCm Python environment for large corpus runs;
+short validation lines can run on CPU.
+
+```powershell
+py .\tools\build_lipsync_dataset.py `
+  --file .\actor.anims `
+  --line 1772112601784938496 `
+  --audio .\civ_low_m_11_enus_40_fat_mq010_f_1897cf05b3627000.wem `
+  --text "Who is it?" `
+  --phones "HH UW1 IH0 Z IH1 T" `
+  --output .\generated\lipsync\who-is-it.csv `
+  --alignment-output .\generated\lipsync\who-is-it.alignment.json
+```
+
+WEM input is decoded through WolvenKit's `WolvenKit.Core.Wwise.Wem` converter
+by `tools/convert_wem_to_ogg.ps1`. The default `mouth` track set contains the
+lipsync envelope, jaw/lip/tongue/throat pose outputs, and JALI/muzzle controls.
+Use `--track-set all-lipsync` or `all-dynamic` for wider research datasets.
+
+`tools/build_lipsync_corpus.py` automates the vanilla join from lipmap scene and
+actor entries through animsets, subtitles, the five English VO maps, WEMs,
+phonemes, alignments, and sampled curve rows. Archive inventories, extracted
+resources, serialized JSON, and exported GLBs are content-path cached. Each
+aligned line has its own CSV and JSON report, and `alignment.status.json` makes
+the alignment pass resumable after interruption or a bad line.
+
+Build an initial 500-line quest-dialogue catalog without loading Torch:
+
+```powershell
+py -B .\tools\build_lipsync_corpus.py `
+  --work .\generated\lipsync-corpus `
+  --max-lines 500 `
+  --max-animsets 50
+```
+
+Install the deterministic English G2P dependency once in the ROCm environment.
+Current NLTK releases require the explicitly named English tagger in addition
+to the resources bootstrapped by `g2p_en`:
+
+```powershell
+& 'H:\dinoml_v2\.venv\rocm\Scripts\python.exe' -m pip install g2p_en
+& 'H:\dinoml_v2\.venv\rocm\Scripts\python.exe' `
+  -m nltk.downloader averaged_perceptron_tagger_eng
+```
+
+Then run or resume GPU acoustic inference and CPU forced alignment:
+
+```powershell
+& 'H:\dinoml_v2\.venv\rocm\Scripts\python.exe' -B `
+  .\tools\build_lipsync_corpus.py `
+  --work .\generated\lipsync-corpus `
+  --max-lines 500 `
+  --max-animsets 50 `
+  --align --device cuda
+```
+
+ROCm executes the CTC acoustic model. The installed torchaudio build exposes
+its dynamic-programming `forced_align` operator only on CPU, so the tool moves
+the compact model logits to CPU for that final operation. This is intentional;
+it does not move model inference off the GPU.
+
+`tools/learn_lipsync_templates.py` consumes the completed per-line CSV/JSON
+pairs and learns robust temporal templates. Every phoneme occurrence is
+resampled to the same phase grid so long vowels do not outweigh short phones.
+It records median/interquartile/std curves, duration and alignment confidence,
+previous/next-phone residuals, and fixed-millisecond boundary profiles. The
+reduced viseme clustering uses visible jaw/lip/tongue controls while preserving
+all 79 mouth controls in the synthesis templates.
+
+```powershell
+py -B .\tools\learn_lipsync_templates.py `
+  --corpus .\generated\lipsync-corpus `
+  --visemes 13 `
+  --minimum-context 8
+```
+
+Outputs are written under `generated/lipsync-corpus/templates`:
+
+- `lipsync-templates.json` is the complete compiler/model input.
+- `phone-summary.csv` gives phone counts, durations, confidence, and mapping.
+- `summary.json` records corpus coverage and clustering diagnostics.
+
+The default training cutoff keeps alignments scoring at least `0.5`. Boundary
+profiles cover ±200 ms and report scalar anticipation/release at 50% projected
+activation. A `null` or censored timing means the corpus does not support one
+context-independent scalar; synthesis should use the stored boundary and
+neighbour-conditioned curves instead.
+
+`tools/synthesize_lipsync_line.py` evaluates a genuinely held-out vanilla line.
+First rebuild templates with the locstring excluded, then synthesize at the
+original animation frame times:
+
+```powershell
+$line = '1857724060742172672'
+py -B .\tools\learn_lipsync_templates.py `
+  --corpus .\generated\lipsync-corpus `
+  --output ".\generated\lipsync-corpus\heldout\$line\templates" `
+  --exclude-line $line
+
+py -B .\tools\synthesize_lipsync_line.py `
+  --templates ".\generated\lipsync-corpus\heldout\$line\templates\lipsync-templates.json" `
+  --alignment ".\generated\lipsync-corpus\lines\$line.alignment.json" `
+  --original ".\generated\lipsync-corpus\lines\$line.csv" `
+  --output ".\generated\lipsync-corpus\heldout\$line\evaluation"
+```
+
+The evaluator refuses a model that did not record the line as excluded. It
+writes predicted/original curves, numerical metrics against phone-only and
+silence baselines, and a PNG comparison of the most active controls.
+
+`tools/compile_lipsync_line.py` is the production text/audio-to-GLB step. It
+phonemizes or accepts an explicit ARPAbet pronunciation, aligns the phones,
+synthesizes all 79 learned controls, duplicates a donor animation as
+`f_<locstring hex>`, and replaces its speech tracks. For every generated
+`LipsyncPoseOutput`, it also emits vanilla's corresponding negative
+`AnimOverrideWeight`. An isolated glTF duration accessor prevents WolvenKit
+from clamping a generated line to the donor clip's length.
+
+```powershell
+& 'H:\dinoml_v2\.venv\rocm\Scripts\python.exe' `
+  .\tools\compile_lipsync_line.py `
+  .\quests\story\ghostline\gq000\voice\source\patch_i_54a4cb510257868f.wav `
+  .\export\civ_low_m_11_enus_40_fat.anims.glb `
+  .\generated\patch\civ_low_m_11_enus_40_fat.anims.glb `
+  --text 'You made it. Good. Keep your voice down.' `
+  --phones 'Y UW M EY D IH T G UH D K IY P Y ER V OY S D AW N' `
+  --locstring 3552541838326363267 `
+  --source f_1897D00455627000
+```
+
+Omit `--phones` for deterministic G2P. Use the override when the recording
+contains a reduced or project-specific pronunciation; here, Patch says
+“your” as `Y ER`, which aligns materially better than the default `Y AA R`.
+The output directory also receives an alignment report beside the GLB unless
+`--report` selects another path. Import the GLB with
+`tools/WolvenKit.AnimImport`, with a vanilla `.anims` of the same basename in
+the output directory, then re-export the rebuilt CR2W for numeric verification.
+
+`tools/make_lipsync_ab_glb.py` duplicates one animation in a WolvenKit-exported
+GLB and rewrites selected float-track keys. It is intended for controlled
+runtime A/B probes rather than final authored speech:
+
+```powershell
+py .\tools\make_lipsync_ab_glb.py `
+  .\export\actor.anims.glb `
+  .\rebuild\actor.anims.glb `
+  --source f_1897CF05B3627000 `
+  --name gqt007_who_is_it_modified `
+  --track '^jaliJaw$' `
+  --value 1.0
+```
+
+`tools/WolvenKit.AnimImport` is a small import host for WolvenKit's animation
+API. Unlike the stock CLI import command, it explicitly selects animation
+import and loads the installed game archives so the animset's rig can be
+resolved:
+
+```powershell
+dotnet build .\tools\WolvenKit.AnimImport\WolvenKit.AnimImport.csproj -c Release
+& .\tools\WolvenKit.AnimImport\bin\Release\net8.0\WolvenKit.AnimImport.exe `
+  'H:\Cyberpunk 2077' `
+  '.\rebuild\actor.anims.glb' `
+  '.\rebuild'
+```
+
+The output directory must already contain the original `.anims` with the same
+basename as the input `.anims.glb`; the importer updates matching clips,
+retains omitted originals, and can add newly named animations.
+
 ## Entity And Appearance Explorer
 
 `tools/explore_ent_app.py` inspects deserialized `.ent` and `.app` CR2W-JSON.

@@ -142,6 +142,29 @@ class GenerateSceneTests(unittest.TestCase):
         )
         self.assertEqual(option_ids, [2, 258, 514, 770, 1026])
 
+    def test_spoken_line_can_select_an_explicit_lipsync_animation(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        manifest = generate_scene.load_json(ROOT / spec["manifest"])
+        line = manifest["spoken_lines"][0]
+        line["female_lipsync_animation"] = "gqt007_modified"
+        line["male_lipsync_animation"] = "gqt007_modified"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = Path(tmp) / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            spec["manifest"] = str(manifest_path)
+            scene = generate_scene.build_scene(spec)
+
+        screenplay_line = scene["Data"]["RootChunk"]["screenplayStore"]["lines"][0]
+        self.assertEqual(
+            screenplay_line["femaleLipsyncAnimationName"]["$value"],
+            "gqt007_modified",
+        )
+        self.assertEqual(
+            screenplay_line["maleLipsyncAnimationName"]["$value"],
+            "gqt007_modified",
+        )
+
     def test_fixture_choice_node_has_padded_sockets_and_locstore_entries(self) -> None:
         choices = [
             node["Data"]
