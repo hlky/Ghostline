@@ -34,6 +34,21 @@ def validate_acquire_item(
         )
 
 
+def validate_phone_job_offer(
+    stage: dict[str, Any], context: str, stage_id: str, diagnostics: list[Diagnostic]
+) -> None:
+    hours = stage.get("delay_game_hours", 0)
+    if (
+        not isinstance(hours, int) or isinstance(hours, bool)
+        or not 0 <= hours <= 2147483647
+    ):
+        diagnostics.append(Diagnostic(
+            "error", "invalid_phone_game_delay",
+            f"{context}.delay_game_hours must be an integer between 0 and 2147483647",
+            stage_id or None,
+        ))
+
+
 def validate_time_gate(
     stage: dict[str, Any], context: str, stage_id: str, diagnostics: list[Diagnostic]
 ) -> None:
@@ -1369,6 +1384,7 @@ def validate_phone_conversation(
 
 
 VALIDATORS = {
+    "phone_job_offer": validate_phone_job_offer,
     "acquire_item": validate_acquire_item,
     "time_gate": validate_time_gate,
     "read_shard": validate_read_shard,

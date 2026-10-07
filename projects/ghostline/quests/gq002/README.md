@@ -29,9 +29,11 @@ and falsify evidence of a shutdown. Neither outcome is perfectly clean.
 
 ## Build
 
-The initial phone offer waits for `gq001_completed > 0`. GQ001 sets that fact
-after the delivery, Morrow response, and completion reward; accepting Patch's
-first job does not unlock GQ002. Test this ordering on a pre-Ghostline save,
+The initial phone offer waits for `gq001_completed > 0`, then waits another
+12 in-game hours (`delay_game_hours: 12`) before activating the message and
+reply choices. The timer starts when the completion gate passes. GQ001 sets
+that fact after the delivery, Morrow response, and completion reward;
+accepting Patch's first job does not unlock GQ002. Test this ordering on a pre-Ghostline save,
 because an offer already sent by an earlier build persists in saved journal state.
 
 The manifest's `composition` section owns the journal, onscreen text, contacts,

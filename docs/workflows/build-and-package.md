@@ -107,6 +107,15 @@ outputs; none is the source of truth. Record focused in-game results in
 [runtime testing](runtime-testing.md), and retain the corresponding verification
 receipt so observations identify the exact candidate.
 
+For local story testing, autosave suppression can remain installed separately
+from the release profile: `projects/ghostline/source/resources/engine/config/base/user.ini`
+sets `AutoSaveEnabled = false`, and
+`projects/ghostline/source/resources/r6/scripts/Tduality/autosave_is_Not_included.reds`
+suppresses the vendor/ripperdoc leave-scenario autosaves. The October 7 story
+cleanup disabled these files; they were subsequently restored at the user's
+request. Normal story installation replaces its declared files and does not
+remove these local settings. Restart the game after changing them.
+
 ## Runtime Dependencies
 
 - ArchiveXL is required for questphase, journal, localization, and streaming

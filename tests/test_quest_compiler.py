@@ -226,6 +226,42 @@ class QuestCompilerTests(unittest.TestCase):
         self.assertIn('"iris"', encoded)
         self.assertNotIn("gq000_job_accepted", encoded)
 
+    def test_phone_offer_game_delay_carries_whole_days_and_keeps_zero_immediate(self) -> None:
+        spec, _ = quest_compiler.load_spec(self.path)
+        assert spec is not None
+        for hours, expected in [(0, None), (24, (1, 0)), (30, (1, 6))]:
+            with self.subTest(hours=hours):
+                stage = copy.deepcopy(spec.stages[0])
+                stage.data["delay_game_hours"] = hours
+                phase = quest_compiler.build_stage_phase(stage, ROOT / "generated/tests/offer.questphase")
+
+                def conditions(value):
+                    if isinstance(value, dict):
+                        if value.get("$type") == "questGameTimeDelay_ConditionType":
+                            yield value
+                        for child in value.values():
+                            yield from conditions(child)
+                    elif isinstance(value, list):
+                        for child in value:
+                            yield from conditions(child)
+
+                timers = list(conditions(phase))
+                if expected is None:
+                    self.assertEqual(timers, [])
+                else:
+                    self.assertEqual(len(timers), 1)
+                    self.assertEqual((timers[0]["days"], timers[0]["hours"]), expected)
+
+    def test_phone_offer_rejects_invalid_game_delay_before_building(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            for hours in (-1, 1.5, True, "12", 2147483648):
+                with self.subTest(hours=hours):
+                    value = copy.deepcopy(self.raw)
+                    value["stages"][0]["delay_game_hours"] = hours
+                    spec, diagnostics = quest_compiler.load_spec(self.write_manifest(Path(directory), value))
+                    self.assertIsNone(spec)
+                    self.assertIn("invalid_phone_game_delay", {item.code for item in diagnostics})
+
     def test_phone_stage_builds_choice_branches_and_completion_fact(self) -> None:
         value = {
             "schema_version": 1,

@@ -992,6 +992,11 @@
                   "type": "string",
                   "pattern": "^[a-z][a-z0-9_]*$"
                 },
+                "delay_game_hours": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
                 "contact": {
                   "type": "string",
                   "minLength": 1
@@ -3841,6 +3846,16 @@
                         },
                         {
                           "$ref": "#/$defs/stage/oneOf/2/allOf/1/properties/prerequisite_fact"
+                        }
+                      ]
+                    },
+                    "delay_game_hours": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/2/allOf/1/properties/delay_game_hours"
                         }
                       ]
                     },

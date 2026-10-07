@@ -69,6 +69,7 @@ class Gq002ContentTests(unittest.TestCase):
         from explore_questphase import QuestphaseExplorer
 
         self.assertEqual(self.quest["stages"][0]["prerequisite_fact"], "gq001_completed")
+        self.assertEqual(self.quest["stages"][0]["delay_game_hours"], 12)
         phase = QuestphaseExplorer(
             ROOT / "projects/ghostline/source/raw/mod/gq002/phases/gq002_job_offer.questphase.json"
         )
@@ -83,9 +84,21 @@ class Gq002ContentTests(unittest.TestCase):
         edges = {(ids[e.source_node], ids[e.destination_node])
                  for e in phase.edges_by_handle.values()}
         self.assertIn(("0", "15"), edges)
-        self.assertIn(("15", "10"), edges)
+        self.assertIn(("15", "16"), edges)
+        self.assertIn(("16", "10"), edges)
+        self.assertEqual({target for source, target in edges if source == "15"}, {"16"})
+        self.assertEqual({target for source, target in edges if source == "16"}, {"10"})
         self.assertNotIn(("0", "10"), edges)
         self.assertEqual({target for source, target in edges if source == "0"}, {"15"})
+        delay_handle = next(handle for handle, node_id in ids.items() if node_id == "16")
+        delay = phase.node_data_by_handle[delay_handle]
+        self.assertEqual(delay["$type"], "questPauseConditionNodeDefinition")
+        condition = delay["condition"]["Data"]
+        self.assertEqual(condition["$type"], "questTimeCondition")
+        self.assertEqual(condition["type"]["Data"], {
+            "$type": "questGameTimeDelay_ConditionType",
+            "days": 0, "hours": 12, "minutes": 0, "seconds": 0,
+        })
 
     def test_shard_handoff_routes_back_to_relay_before_combat(self):
         return_stage = next(

@@ -39,11 +39,11 @@ EXPECTED = {
         "text_count": 36,
     },
     "gq002": {
-        # Reviewed series-order correction: the phone offer waits for GQ001.
-        "manifest": "1ad689a02d7a3442db9f85a49f7b231d3296631813273553f3e9bfdcddd6d178",
+        # Reviewed series-order correction: wait for GQ001, then 12 game hours.
+        "manifest": "7d02ffb2b8db2f5e66a48e9ed777d608cb5e746cedc817f8342f505c06d1cfe3",
         "journal": "fc8f092c799bb9b757a945a1871ea1759fe8358a79a15acfb422204645cc5211",
         "onscreens": "4bf6da550e35d2d51c0c6ee17e56925c685618d5db300b2bea6feb946664a9c5",
-        "phases": "0b448fb120bc6191eb576acc8ceab828f84ec87c28fceb0bd70291134bb6ae4e",
+        "phases": "6bfb20019ca7f75aa2bcbd915a3e253c9399219d45b0565e04ae420400509f02",
         "phase_count": 13,
         "stage_count": 12,
         "text_count": 50,

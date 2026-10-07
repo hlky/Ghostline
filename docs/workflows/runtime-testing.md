@@ -10,6 +10,47 @@ installed or registered.
 
 ## Isolated Story Project Install (2026-10-07)
 
+### Delayed follow-up and restored local autosave settings
+
+The GQ002 offer now follows `gq001_completed > 0` with a separate
+`questGameTimeDelay_ConditionType` pause condition: zero days, 12 hours,
+zero minutes, zero seconds. The timer starts after completion, and neither
+the message nor its reply choices can activate while either gate is pending.
+This follows the completion-then-game-time-delay pattern documented in
+`modding_docs/modding-guides/quest/how-to-add-new-text-messages-thread-to-cyberpunk-2077.md`;
+the vanilla `sq011_follow_up.questphase` also uses the same condition type.
+
+Installed candidate: `projects/ghostline/generated/packages/story-8089469b907f`.
+The archive SHA-256 is
+`9baeb18c2629caa53070c8d96bf13d6bd32d60fb1e7088b2e35bd78912942cee`.
+All 174 archive payloads and ZIP entries match their frozen inputs, and all
+seven story install files match the verified candidate. The project gate
+passes 753 Python tests, Ruff, and seven Rust voice-tool tests. Cooked typed
+readback verifies the completion gate, timer values, and graph connections.
+
+At the user's request, the local `engine/config/base/user.ini` setting
+`AutoSaveEnabled = false` and
+`r6/scripts/Tduality/autosave_is_Not_included.reds` were restored separately
+from the story release profile. The latter suppresses vendor/ripperdoc
+leave-scenario autosaves. Both installed files match their authored resources;
+the earlier `.disabled-story-20261007-185644` backups remain preserved.
+The story installer does not delete these separately installed settings.
+
+The subsequent Iris screenshots show an intact head during speech, with a
+reported faint mark near the forehead that appears/disappears as her head
+turns. Cooked appearance readback preserves the authored skinning and parent
+bindings. Every bone referenced by the head, facial-cyberware, and personal-link
+meshes exists in Iris's facial rig. No detached binding or missing bone was
+identified; the images cannot distinguish minor hair/cyberware surface clipping
+from a rendering artifact. Iris's appearance remains unchanged.
+
+The install receipt, previous-install backup, autosave restoration receipt,
+Iris investigation, and conversion/test logs are under
+`projects/ghostline/generated/runtime-followup-20261007`. Restart the game to
+apply the package and autosave settings. Validate that GQ002's text arrives
+only after GQ001 completes and another 12 game hours elapse. This timer has
+not yet been observed in game; it cannot retract a previously delivered text.
+
 ### Playback repair after in-game feedback
 
 The first isolated install sent both quest offers immediately. The supplied

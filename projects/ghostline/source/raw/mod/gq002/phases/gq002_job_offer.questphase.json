@@ -110,19 +110,19 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "50",
+                          "HandleId": "57",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
                               "HandleRefId": "6"
                             },
                             "source": {
-                              "HandleId": "44",
+                              "HandleId": "51",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "50"
+                                    "HandleRefId": "57"
                                   }
                                 ],
                                 "name": {
@@ -181,7 +181,7 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "45",
+                          "HandleId": "20",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
@@ -190,13 +190,13 @@
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "45"
+                                    "HandleRefId": "20"
                                   }
                                 ],
                                 "name": {
                                   "$type": "CName",
                                   "$storage": "string",
-                                  "$value": "Active"
+                                  "$value": "In"
                                 },
                                 "type": "Input"
                               }
@@ -236,8 +236,8 @@
             {
               "HandleId": "16",
               "Data": {
-                "$type": "questJournalNodeDefinition",
-                "id": 10,
+                "$type": "questPauseConditionNodeDefinition",
+                "id": 16,
                 "sockets": [
                   {
                     "HandleId": "17",
@@ -259,22 +259,9 @@
                     "HandleId": "19",
                     "Data": {
                       "$type": "questSocketDefinition",
-                      "connections": [],
-                      "name": {
-                        "$type": "CName",
-                        "$storage": "string",
-                        "$value": "Inactive"
-                      },
-                      "type": "Input"
-                    }
-                  },
-                  {
-                    "HandleId": "20",
-                    "Data": {
-                      "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "46",
+                          "HandleId": "52",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
@@ -283,7 +270,7 @@
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "46"
+                                    "HandleRefId": "52"
                                   }
                                 ],
                                 "name": {
@@ -295,7 +282,7 @@
                               }
                             },
                             "source": {
-                              "HandleRefId": "20"
+                              "HandleRefId": "19"
                             }
                           }
                         }
@@ -309,25 +296,20 @@
                     }
                   }
                 ],
-                "type": {
+                "condition": {
                   "HandleId": "15",
                   "Data": {
-                    "$type": "questJournalEntry_NodeType",
-                    "path": {
+                    "$type": "questTimeCondition",
+                    "type": {
                       "HandleId": "14",
                       "Data": {
-                        "$type": "gameJournalPath",
-                        "className": {
-                          "$type": "CName",
-                          "$storage": "string",
-                          "$value": "gameJournalPhoneMessage"
-                        },
-                        "editorPath": "",
-                        "fileEntryIndex": 1,
-                        "realPath": "contacts/patch/gq002_01_start/01_msg_cinder"
+                        "$type": "questGameTimeDelay_ConditionType",
+                        "days": 0,
+                        "hours": 12,
+                        "minutes": 0,
+                        "seconds": 0
                       }
-                    },
-                    "sendNotification": 1
+                    }
                   }
                 }
               }
@@ -336,7 +318,7 @@
               "HandleId": "23",
               "Data": {
                 "$type": "questJournalNodeDefinition",
-                "id": 11,
+                "id": 10,
                 "sockets": [
                   {
                     "HandleId": "24",
@@ -373,22 +355,22 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "47",
+                          "HandleId": "53",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
-                              "HandleId": "31",
+                              "HandleId": "32",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "47"
+                                    "HandleRefId": "53"
                                   }
                                 ],
                                 "name": {
                                   "$type": "CName",
                                   "$storage": "string",
-                                  "$value": "In"
+                                  "$value": "Active"
                                 },
                                 "type": "Input"
                               }
@@ -419,11 +401,11 @@
                         "className": {
                           "$type": "CName",
                           "$storage": "string",
-                          "$value": "gameJournalPhoneChoiceGroup"
+                          "$value": "gameJournalPhoneMessage"
                         },
                         "editorPath": "",
                         "fileEntryIndex": 1,
-                        "realPath": "contacts/patch/gq002_01_start/02_ch_meet_cinder"
+                        "realPath": "contacts/patch/gq002_01_start/01_msg_cinder"
                       }
                     },
                     "sendNotification": 1
@@ -432,13 +414,13 @@
               }
             },
             {
-              "HandleId": "29",
+              "HandleId": "30",
               "Data": {
-                "$type": "questFactsDBManagerNodeDefinition",
-                "id": 12,
+                "$type": "questJournalNodeDefinition",
+                "id": 11,
                 "sockets": [
                   {
-                    "HandleId": "30",
+                    "HandleId": "31",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -451,15 +433,28 @@
                     }
                   },
                   {
-                    "HandleRefId": "31"
+                    "HandleRefId": "32"
                   },
                   {
-                    "HandleId": "32",
+                    "HandleId": "33",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Inactive"
+                      },
+                      "type": "Input"
+                    }
+                  },
+                  {
+                    "HandleId": "34",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "48",
+                          "HandleId": "54",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
@@ -468,7 +463,7 @@
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "48"
+                                    "HandleRefId": "54"
                                   }
                                 ],
                                 "name": {
@@ -480,7 +475,7 @@
                               }
                             },
                             "source": {
-                              "HandleRefId": "32"
+                              "HandleRefId": "34"
                             }
                           }
                         }
@@ -495,12 +490,24 @@
                   }
                 ],
                 "type": {
-                  "HandleId": "28",
+                  "HandleId": "29",
                   "Data": {
-                    "$type": "questSetVar_NodeType",
-                    "factName": "gq002_phone_start_sent",
-                    "setExactValue": 1,
-                    "value": 1
+                    "$type": "questJournalEntry_NodeType",
+                    "path": {
+                      "HandleId": "28",
+                      "Data": {
+                        "$type": "gameJournalPath",
+                        "className": {
+                          "$type": "CName",
+                          "$storage": "string",
+                          "$value": "gameJournalPhoneChoiceGroup"
+                        },
+                        "editorPath": "",
+                        "fileEntryIndex": 1,
+                        "realPath": "contacts/patch/gq002_01_start/02_ch_meet_cinder"
+                      }
+                    },
+                    "sendNotification": 1
                   }
                 }
               }
@@ -508,8 +515,8 @@
             {
               "HandleId": "36",
               "Data": {
-                "$type": "questPauseConditionNodeDefinition",
-                "id": 13,
+                "$type": "questFactsDBManagerNodeDefinition",
+                "id": 12,
                 "sockets": [
                   {
                     "HandleId": "37",
@@ -533,16 +540,16 @@
                       "$type": "questSocketDefinition",
                       "connections": [
                         {
-                          "HandleId": "49",
+                          "HandleId": "55",
                           "Data": {
                             "$type": "graphGraphConnectionDefinition",
                             "destination": {
-                              "HandleId": "43",
+                              "HandleId": "45",
                               "Data": {
                                 "$type": "questSocketDefinition",
                                 "connections": [
                                   {
-                                    "HandleRefId": "49"
+                                    "HandleRefId": "55"
                                   }
                                 ],
                                 "name": {
@@ -568,16 +575,90 @@
                     }
                   }
                 ],
-                "condition": {
+                "type": {
                   "HandleId": "35",
+                  "Data": {
+                    "$type": "questSetVar_NodeType",
+                    "factName": "gq002_phone_start_sent",
+                    "setExactValue": 1,
+                    "value": 1
+                  }
+                }
+              }
+            },
+            {
+              "HandleId": "43",
+              "Data": {
+                "$type": "questPauseConditionNodeDefinition",
+                "id": 13,
+                "sockets": [
+                  {
+                    "HandleId": "44",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "CutDestination"
+                      },
+                      "type": "CutDestination"
+                    }
+                  },
+                  {
+                    "HandleRefId": "45"
+                  },
+                  {
+                    "HandleId": "46",
+                    "Data": {
+                      "$type": "questSocketDefinition",
+                      "connections": [
+                        {
+                          "HandleId": "56",
+                          "Data": {
+                            "$type": "graphGraphConnectionDefinition",
+                            "destination": {
+                              "HandleId": "50",
+                              "Data": {
+                                "$type": "questSocketDefinition",
+                                "connections": [
+                                  {
+                                    "HandleRefId": "56"
+                                  }
+                                ],
+                                "name": {
+                                  "$type": "CName",
+                                  "$storage": "string",
+                                  "$value": "In"
+                                },
+                                "type": "Input"
+                              }
+                            },
+                            "source": {
+                              "HandleRefId": "46"
+                            }
+                          }
+                        }
+                      ],
+                      "name": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Out"
+                      },
+                      "type": "Output"
+                    }
+                  }
+                ],
+                "condition": {
+                  "HandleId": "42",
                   "Data": {
                     "$type": "questJournalCondition",
                     "type": {
-                      "HandleId": "34",
+                      "HandleId": "41",
                       "Data": {
                         "$type": "questJournalEntryVisited_ConditionType",
                         "path": {
-                          "HandleId": "33",
+                          "HandleId": "40",
                           "Data": {
                             "$type": "gameJournalPath",
                             "className": {
@@ -598,13 +679,13 @@
               }
             },
             {
-              "HandleId": "41",
+              "HandleId": "48",
               "Data": {
                 "$type": "questFactsDBManagerNodeDefinition",
                 "id": 14,
                 "sockets": [
                   {
-                    "HandleId": "42",
+                    "HandleId": "49",
                     "Data": {
                       "$type": "questSocketDefinition",
                       "connections": [],
@@ -617,14 +698,14 @@
                     }
                   },
                   {
-                    "HandleRefId": "43"
+                    "HandleRefId": "50"
                   },
                   {
-                    "HandleRefId": "44"
+                    "HandleRefId": "51"
                   }
                 ],
                 "type": {
-                  "HandleId": "40",
+                  "HandleId": "47",
                   "Data": {
                     "$type": "questSetVar_NodeType",
                     "factName": "gq002_phone_reply_on_my_way",

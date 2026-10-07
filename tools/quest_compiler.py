@@ -1773,6 +1773,13 @@ def build_phone_job_offer_phase(
     if prerequisite := stage.data.get("prerequisite_fact"):
         previous = fact_condition_node(builder, 15, prerequisite)
         builder.connect(phase_input, previous)
+    if delay_hours := stage.data.get("delay_game_hours", 0):
+        days, hours = divmod(delay_hours, 24)
+        delay = game_time_delay_node(
+            builder, 16, days=days, hours=hours, minutes=0, seconds=0
+        )
+        builder.connect(previous, delay, destination_socket="In")
+        previous = delay
     message = journal_entry_node(
         builder,
         10,
