@@ -1,13 +1,18 @@
 # Ghostline Agent Guide
 
-Ghostline is a Cyberpunk 2077 WolvenKit quest-mod repo. Keep this file as the
+Ghostline contains a quest-building system and separate Cyberpunk 2077 WolvenKit
+mod projects. Keep this file as the
 always-loaded routing layer; task-specific instructions live in repo-local
 skill-style files under `agent/skills`.
 
 ## First Rules
 
 - Work from the repository root unless a command says otherwise.
-- Read `quests/story/ghostline/gq000/implementation/runtime-flow.md` before changing the current root/child phase
+- Read `docs/reference/project-layout.md` for project ownership and build paths.
+  `source`, `generated`, and `packed` are project-relative. There is no shared
+  repository-root `source` tree. Use `tools/project_layout.py` to resolve projects
+  and depot owners; never assume the repository root is a WolvenKit project.
+- Read `projects/ghostline/quests/gq000/implementation/runtime-flow.md` before changing the current root/child phase
   handoff, meeting lifecycle, scene exits, triggers, or localization lookup
   paths.
 - Treat `modding_docs` as a local reference submodule, not Ghostline-owned
@@ -45,37 +50,48 @@ global Codex skills, so use the paths above as explicit references.
 
 ## Project Map
 
+- `projects/ghostline` owns the story `.cpmodproj`, story source trees,
+  Iris/Cinder authoring, and story/development package profiles.
+- `projects/test-quests/gqt###` are independent test WolvenKit projects,
+  each owning its manifest, implementation, source trees, and package profile.
+- `projects/shared/ghostline-runtime` owns Patch, shared runtime assets, and
+  GQ000 baseline resources. Dependencies are explicit in each `project.json`.
+- `projects/catalog.json` maps IDs and depot ownership. Game depot paths remain
+  unchanged when workspace files move between owners.
+- `quests/examples` and `quests/templates` belong to the building system.
+  Templates have separate input source trees under `quests/templates/source`;
+  neutral character catalogs/components/shells are in `quests/templates/characters`.
+
 - `source/archive` contains packed/game-ready CR2W resources.
 - `source/raw` contains editable CR2W-JSON for packed resources.
 - `source/resources` contains WolvenKit loose resources, including ArchiveXL
   `.xl`, TweakXL YAML, REDscript, and engine config files. Project
   builds/staging copy them, but a manual scoped `pack source/archive` command
   does not.
-- `characters` contains plain character manifests and curated component
-  catalogs consumed by `tools/character_builder.py` and the local character UI.
+- Project `characters` directories contain plain character manifests consumed
+  by `tools/character_builder.py` and the local character UI.
   They are authoring inputs, not directly packed game resources.
-- `braindance` contains braindance performance specs, rig contracts, templates,
-  and render presets. These are authoring inputs, not WolvenKit project source.
-- `quests/story/ghostline` contains the series bible and per-quest narrative,
+- `braindance` contains reusable rig contracts, templates, and render presets.
+  Quest-specific performance specs belong to the owning project. These are authoring inputs, not WolvenKit project source.
+- `projects/ghostline/quests` contains the series bible and per-quest narrative,
   script, compiler-manifest, and implementation documentation.
-- `quests/examples` and `quests/tests` contain generic compiler examples and
-  `gqt###` test-quest manifests and build plans.
-- `source/archive/base` may contain supporting base-game files. It currently
+- `projects/test-quests` also contains the test quest index, scenarios, and evidence.
+- `projects/shared/ghostline-runtime/source/archive/base` may contain supporting base-game files. It currently
   contains base player-head mesh and morphtarget support resources. Treat them
   as unvalidated global overrides, not normal shipping content.
 - `source/archive/mod` contains mod-owned packed resources.
-- `source/archive/mod/ghostline` contains generic Ghostline resources shared
-  across the quest series, such as characters.
-- `source/archive/mod/ghostline/characters/patch` contains Patch's custom NPC
+- `projects/shared/ghostline-runtime/source/archive/mod/ghostline` contains generic Ghostline resources shared
+  across the quest series, such as Patch's character resources.
+- `projects/shared/ghostline-runtime/source/archive/mod/ghostline/characters/patch` contains Patch's custom NPC
   template set.
-- `source/archive/mod/gq000` contains the superseded prototype and reusable
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000` contains the superseded prototype and reusable
   runtime baseline. `gq001` extends it and is the first canonical Ghostline
   story quest.
-- `source/archive/mod/gq000/phases` contains the main and stage questphase
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000/phases` contains the main and stage questphase
   resources.
-- `source/archive/mod/gq000/scenes` contains scene resources for dialogue,
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000/scenes` contains scene resources for dialogue,
   interactions, animations, and related scene work.
-- `source/archive/mod/gq000/localization/en-us` contains quest subtitles,
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us` contains quest subtitles,
   voiceover maps, and quest-specific onscreen localization.
 - `reference/journal` contains serialized base-game `.journal` reference
   slices.

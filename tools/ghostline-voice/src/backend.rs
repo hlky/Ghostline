@@ -33,6 +33,9 @@ pub struct GeneratedAudio {
 /// The interface is intentionally serial. A persistent HTTP implementation
 /// can satisfy the same contract without changing the authoring pipeline.
 pub trait VoiceBackend {
+    /// Stable identity of model artifacts and backend execution policy.
+    fn identity(&self) -> &str;
+
     /// Synthesizes one request into canonical WAV bytes.
     ///
     /// # Errors

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import csv
 import json
 import math
@@ -130,6 +131,11 @@ def collect_occurrences(
         if not csv_path.is_file():
             skipped["missing_csv"] += 1
             continue
+        if report.get("csv_sha256"):
+            with csv_path.open("rb") as stream:
+                actual = hashlib.file_digest(stream, "sha256").hexdigest()
+            if actual != report["csv_sha256"]:
+                raise ValueError(f"Curve CSV does not match its sampling report: {csv_path}")
         tracks, times, curves, silence = load_curve_csv(csv_path)
         if expected_tracks is None:
             expected_tracks = tracks

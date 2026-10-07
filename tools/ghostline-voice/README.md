@@ -21,7 +21,7 @@ cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- `
 ```powershell
 cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- `
   convert-embedding `
-  .\quests\story\ghostline\shared\voice\embeddings\v.safetensors `
+  .\projects\ghostline\quests\shared\voice\embeddings\v.safetensors `
   .\generated-voices\embeddings\v.json
 ```
 
@@ -44,7 +44,27 @@ from the chosen dialogue manifests.
 The checkpoint and artifact libraries are trusted native inputs. `render-local`
 loads them in-process once, then serially renders every selected line and
 candidate version. Each WAV receives DinoML's versioned reproducibility
-sidecar, and reruns reuse only outputs whose seed and SHA-256 still match.
+sidecar and a Ghostline request receipt. Reuse requires matching text,
+embedding content, language, sampling, frame cap, seed, backend artifact
+content, and output SHA-256. Artifact/checkpoint files are hashed once when
+the backend loads. `--force` rerenders every selected candidate, including
+valid outputs, and recovers missing or malformed receipts.
+
+`render-report.json` is the candidate inventory for review:
+
+```powershell
+py -B tools/build_voice_selection_csv.py --manifest PATH_TO_MANIFEST `
+  --report generated-voices/gq003/render-report.json --output generated-voices/review.csv
+py -B tools/promote_voice_selections.py --manifest PATH_TO_MANIFEST `
+  --csv generated-voices/review.csv --output-dir PATH_TO_QUEST_VOICE_SOURCE
+```
+
+Mark the chosen rows in the CSV's `selected` column before promotion. Designs
+are consistent per speaker; optional manifest `voice_designs` values or selected
+reference rows can pin a particular speaker's design. Promotion checks reviewed
+file hashes and WAV readability before copying. Historical `design/line/take-*.wav`
+directories remain available through `--auditions PATH --legacy-layout`; a
+historical `reference.wav` additionally requires `--reference-speaker NAME`.
 
 ## Generate and serialize localization
 
@@ -54,6 +74,14 @@ cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- locali
 cargo run --release --manifest-path .\tools\ghostline-voice\Cargo.toml -- serialize
 ```
 
+Pure validation/localization builds can add `--no-default-features` to omit
+the TTS/model runtime. The `render-local` feature is enabled by default for
+compatibility. `localize-manifest --manifest PATH --quest QUEST --dialogue ID`
+uses the same localization writer for one manifest, supports historical audio
+basenames, and honors optional `male_audio_path`. The Python
+`tools/generate_dialogue_localization.py` command is a compatibility adapter
+for this operation; it uses a current native binary or Cargo's model-free build.
+
 `serialize` uses GQ003's 23-entry `gq003_17` subtitle and VO resources plus
 GQ000's one-entry subtitle map as audited templates. WolvenKit was needed once
 to bootstrap the two larger inline-array layouts; normal regeneration is then
@@ -62,3 +90,6 @@ native. Every result is decoded again and compared with the authored
 
 WEM conversion remains an explicit external Wwise step through
 `tools/convert_wavs_to_wem.ps1`. Packing remains a separate reviewed build step.
+Each conversion allocates a fresh output directory, verifies its complete WEM
+set, and publishes with rollback if replacement fails. `-NoCopy` verifies the
+outputs and prints that run's directory without changing active WEMs.

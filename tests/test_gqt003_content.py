@@ -3,9 +3,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 from typing import Any
+
+from test_quest_block_builders import GraphRun
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,8 +51,45 @@ def handle_definitions(value: Any) -> dict[str, dict[str, Any]]:
 
 
 class ExtractAndHoldTests(unittest.TestCase):
+    def test_failed_binary_conversion_preserves_entire_previous_artifact_set(
+        self,
+    ) -> None:
+        import quest_build as build
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            artifacts = []
+            for name in ("first", "second"):
+                raw = root / "source/raw/mod/gqt003" / f"{name}.questphase.json"
+                archive = root / "source/archive/mod/gqt003" / f"{name}.questphase"
+                raw.parent.mkdir(parents=True, exist_ok=True)
+                archive.parent.mkdir(parents=True, exist_ok=True)
+                raw.write_text("previous raw", encoding="utf-8")
+                archive.write_bytes(b"CR2Wprevious")
+                artifacts.append(
+                    build.QuestArtifact(raw, archive, {"Header": {}, "Data": {}})
+                )
+
+            def convert(raw, candidate, template, **kwargs):
+                if raw.name.startswith("second"):
+                    raise RuntimeError("injected converter failure")
+                candidate.write_bytes(b"CR2Wcandidate")
+
+            with (
+                mock.patch.object(build, "ROOT", root),
+                mock.patch.object(build, "_convert", side_effect=convert) as converter,
+            ):
+                with self.assertRaisesRegex(RuntimeError, "injected converter failure"):
+                    build.publish_build(artifacts, namespace="gqt003", deserialize=True)
+            self.assertEqual(converter.call_count, 2)
+            for artifact in artifacts:
+                self.assertEqual(artifact.archive_path.read_bytes(), b"CR2Wprevious")
+                self.assertEqual(
+                    artifact.raw_path.read_text(encoding="utf-8"), "previous raw"
+                )
+
     def test_manifest_has_the_expected_runtime_ready_flow(self) -> None:
-        path = ROOT / "quests/tests/gqt003_extract_and_hold.quest.json"
+        path = ROOT / "projects/test-quests/gqt003/gqt003_extract_and_hold.quest.json"
         spec, diagnostics = quest_compiler.load_spec(path)
 
         self.assertFalse(
@@ -86,7 +127,7 @@ class ExtractAndHoldTests(unittest.TestCase):
         self,
     ) -> None:
         phase = load(
-            ROOT / "source/raw/mod/gqt003/phases/gqt003_escort_patch.questphase.json"
+            ROOT / "projects/test-quests/gqt003/source/raw/mod/gqt003/phases/gqt003_escort_patch.questphase.json"
         )
         nodes = graph_nodes(phase)
         commands = [
@@ -104,14 +145,21 @@ class ExtractAndHoldTests(unittest.TestCase):
             follower["role"]["Data"]["followerRef"]["reference"]["$value"],
             "#player",
         )
-        self.assertNotIn(
-            "AIClearRoleCommandParams",
-            {command["$type"] for command in commands},
-        )
+        succeeded = GraphRun(phase)
+        for index in (1, 2, 3):
+            succeeded.events(f"#gqt003_03_tr_escort_gate_0{index}")
+        self.assertEqual(succeeded.outputs, ["Out1"])
+        self.assertEqual(succeeded.actions("AIClearRoleCommandParams"), [])
+        failed = GraphRun(phase)
+        failed.events("defeated")
+        self.assertEqual(failed.outputs, ["Failure"])
+        self.assertEqual(len(failed.actions("AIClearRoleCommandParams")), 1)
+        self.assertNotIn("gqt003_escort_complete", failed.facts)
         gates = [
             node["condition"]["Data"]["triggerAreaRef"]["$value"]
             for node in nodes
             if node["$type"] == "questPauseConditionNodeDefinition"
+            and "triggerAreaRef" in node["condition"]["Data"]
         ]
         self.assertEqual(
             gates,
@@ -123,25 +171,23 @@ class ExtractAndHoldTests(unittest.TestCase):
         )
         mappins = [
             node
-            for node in nodes
+            for node, socket in succeeded.trace
             if node["$type"] == "questMappinManagerNodeDefinition"
+            and socket == "Active"
         ]
-        self.assertEqual(len(mappins), 6)
+        self.assertEqual(len(mappins), 3)
         self.assertEqual(
             [node["path"]["Data"]["realPath"].rsplit("/", 1)[-1] for node in mappins],
             [
                 "gqt003_03_qmp_escort_gate_01",
-                "gqt003_03_qmp_escort_gate_01",
                 "gqt003_03_qmp_escort_gate_02",
-                "gqt003_03_qmp_escort_gate_02",
-                "gqt003_03_qmp_escort_gate_03",
                 "gqt003_03_qmp_escort_gate_03",
             ],
         )
 
     def test_timed_defend_has_success_failure_and_twenty_second_race(self) -> None:
         phase = load(
-            ROOT / "source/raw/mod/gqt003/phases/gqt003_defend_patch.questphase.json"
+            ROOT / "projects/test-quests/gqt003/source/raw/mod/gqt003/phases/gqt003_defend_patch.questphase.json"
         )
         nodes = graph_nodes(phase)
         delays = [
@@ -159,7 +205,7 @@ class ExtractAndHoldTests(unittest.TestCase):
         }
         self.assertEqual(
             facts,
-            {"gqt003_hold_complete", "gqt003_completed", "gqt003_patch_lost"},
+            {"gqt003_hold_complete", "gqt003_patch_lost"},
         )
         clear_roles = [
             node
@@ -167,11 +213,28 @@ class ExtractAndHoldTests(unittest.TestCase):
             if node["$type"] == "questMiscAICommandNode"
             and node["params"]["Data"]["$type"] == "AIClearRoleCommandParams"
         ]
-        self.assertEqual(len(clear_roles), 1)
+        self.assertEqual(len(clear_roles), 2)
+        for signal, outcome, fact in [
+            ("timer", "Out1", "gqt003_hold_complete"),
+            ("defeated", "Failure", "gqt003_patch_lost"),
+        ]:
+            run = GraphRun(phase)
+            run.events("#gqt003_04_com_attackers")
+            run.events(signal)
+            self.assertEqual(run.outputs, [outcome])
+            self.assertEqual(len(run.actions("AIClearRoleCommandParams")), 1)
+            self.assertEqual({key for key in facts if run.facts.get(key)}, {fact})
         combat_nodes = [
             node for node in nodes if node["$type"] == "questCombatNodeDefinition"
         ]
         self.assertEqual(len(combat_nodes), 3)
+        self.assertEqual(
+            {node["function"]["$value"] for node in combat_nodes},
+            {"questCombatNodeParams_ShootAt"},
+        )
+        self.assertEqual(
+            {node["params"]["Data"]["duration"] for node in combat_nodes}, {0}
+        )
         self.assertEqual(
             [node["entityReference"]["names"][0]["$value"] for node in combat_nodes],
             ["attacker_ranged_m", "attacker_ranged_f", "attacker_melee"],
@@ -183,7 +246,12 @@ class ExtractAndHoldTests(unittest.TestCase):
             ],
             ["#gqt003_com_patch", "#gqt003_com_patch", "#player"],
         )
-        handles = handle_definitions(phase)
+        root = load(
+            ROOT
+            / "projects/test-quests/gqt003/source/raw/mod/gqt003/phases/gqt003_extract_and_hold.questphase.json"
+        )
+        nodes = graph_nodes(root)
+        handles = handle_definitions(root)
         quest_states = [
             socket_data["name"]["$value"]
             for node in nodes
@@ -200,12 +268,23 @@ class ExtractAndHoldTests(unittest.TestCase):
         ]
         self.assertEqual(quest_states.count("Succeeded"), 1)
         self.assertEqual(quest_states.count("Failed"), 1)
+        for outcome in ("Out1", "Failure"):
+            run = GraphRun(root)
+            for child in ("reach_extraction_relay", "release_patch", "escort_patch"):
+                run.complete_phase(rf"mod\gqt003\phases\gqt003_{child}.questphase")
+            run.complete_phase(
+                r"mod\gqt003\phases\gqt003_defend_patch.questphase", outcome
+            )
+            self.assertEqual(run.outputs, ["Out1"])
+            self.assertEqual(
+                run.facts.get("gqt003_completed", 0), int(outcome == "Out1")
+            )
 
     def test_world_keeps_patch_persistent_and_defines_four_authored_triggers(
         self,
     ) -> None:
         world = load(
-            ROOT / "quests/tests/gqt003/implementation/world/"
+            ROOT / "projects/test-quests/gqt003/implementation/world/"
             "extract-and-hold.world.json"
         )
         patch = world["communities"][0]
@@ -247,12 +326,12 @@ class ExtractAndHoldTests(unittest.TestCase):
         )
 
     def test_archive_xl_keeps_runtime_proven_gqt003_inactive(self) -> None:
-        config = (ROOT / "source/resources/Ghostline.archive.xl").read_text(
+        config = (ROOT / "projects/ghostline/source/resources/Ghostline.archive.xl").read_text(
             encoding="utf-8"
         )
         self.assertNotIn(r"mod\gqt003_extract_and_hold\phases", config)
         self.assertNotIn(r"mod\gqt003\world\gqt003_custom_devices.devices:", config)
-        self.assertIn(
+        self.assertNotIn(
             r"mod\gqt005\phases\gqt005_braindance_analysis.questphase",
             config,
         )

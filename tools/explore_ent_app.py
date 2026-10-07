@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from cr2w_helpers import (
+    search_scalars,
     bounded,
     collect_type_counts,
     first_scalar_label,
@@ -27,8 +28,8 @@ from cr2w_helpers import (
 
 
 DEFAULT_FILES = [
-    Path("source/raw/mod/ghostline/characters/patch/patch.ent.json"),
-    Path("source/raw/mod/ghostline/characters/patch/patch.app.json"),
+    Path("projects/shared/ghostline-runtime/source/raw/mod/ghostline/characters/patch/patch.ent.json"),
+    Path("projects/shared/ghostline-runtime/source/raw/mod/ghostline/characters/patch/patch.app.json"),
 ]
 
 
@@ -339,19 +340,7 @@ class EntAppFile:
         )
 
     def search(self, terms: list[str], limit: int) -> list[tuple[str, str]]:
-        normalized_terms = [term.casefold() for term in terms if term]
-        matches: list[tuple[str, str]] = []
-        for path, value in walk(self.data):
-            if isinstance(value, (dict, list)):
-                continue
-            path_text = path_to_string(path)
-            value_text = str(value)
-            haystack = f"{path_text} {value_text}".casefold()
-            if all(term in haystack for term in normalized_terms):
-                matches.append((path_text, value_text))
-                if limit > 0 and len(matches) >= limit:
-                    break
-        return matches
+        return search_scalars(self.data, terms, limit)
 
 
 class EntAppExplorer:

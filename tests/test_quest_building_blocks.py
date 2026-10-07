@@ -559,17 +559,19 @@ class QuestBuildingBlockTests(unittest.TestCase):
         ):
             self.assertIn(expected, encoded)
 
-    def test_investigate_clues_rejects_partial_generated_threshold(self) -> None:
+    def test_investigate_clues_accepts_partial_generated_threshold(self) -> None:
+        from test_quest_block_builders import GraphRun
+
         value = stage("investigate_clues")
         value.pop("phase_template")
         value["clues"].append({"id": "clue_b", "object_ref": "#test_clue_b"})
         value["required_count"] = 1
-        spec, diagnostics = self.load([value])
-        self.assertIsNone(spec)
-        self.assertIn(
-            "unsupported_clue_threshold",
-            {diagnostic.code for diagnostic in diagnostics},
-        )
+        phase = self.build_direct(value)
+        for clue in value["clues"]:
+            run = GraphRun(phase)
+            self.assertEqual(run.outputs, [])
+            run.events(clue["object_ref"])
+            self.assertEqual(run.outputs, ["Out1"])
 
     def test_leave_area_can_deactivate_a_community(self) -> None:
         value = stage("leave_area")

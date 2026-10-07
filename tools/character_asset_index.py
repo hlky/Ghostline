@@ -13,12 +13,18 @@ import sys
 import tempfile
 from collections import Counter
 from pathlib import Path
+
+from artifact_io import atomic_write_json
+
+from toolchain import default_tool_path
+import character_cache
+
 from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_GAME = Path(r"H:\Cyberpunk 2077")
-DEFAULT_WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
+DEFAULT_GAME = default_tool_path("game")
+DEFAULT_WOLVENKIT = default_tool_path("wolvenkit")
 DEFAULT_OUTPUT = ROOT / "converted/character-index/assets.json"
 DEFAULT_ARCHIVE_RELATIVE_PATHS = (
     Path("archive/pc/content/basegame_4_appearance.archive"),
@@ -61,24 +67,7 @@ class CharacterAssetIndexError(RuntimeError):
 
 
 def write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            newline="\n",
-            dir=path.parent,
-            prefix=f".{path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as stream:
-            stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
-            temporary = Path(stream.name)
-        temporary.replace(path)
-    finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
+    atomic_write_json(path, value)
 
 
 def replace_file(source: Path, target: Path) -> None:
@@ -499,120 +488,85 @@ def prepare_mesh_preview(
     archive = source_archive_path(index, asset)
     normalized = str(asset["depot_path"])
     relative_mesh = Path(*normalized.split("\\"))
-    raw_root = output_dir / "raw"
-    cooked_root = output_dir / "dependencies"
-    expected_glb = (raw_root / relative_mesh).with_suffix(".glb")
-    expected_cooked = cooked_root / relative_mesh
-    metadata_root = output_dir / "metadata"
-    expected_metadata = metadata_root / f"{relative_mesh.name}.json"
+    relative_glb = (Path("raw") / relative_mesh).with_suffix(".glb")
+    relative_cooked = Path("dependencies") / relative_mesh
+    relative_metadata = Path("metadata") / f"{relative_mesh.name}.json"
+    expected_glb = output_dir / relative_glb
     manifest_path = output_dir / "preview-manifest.json"
     cache_key = mesh_preview_cache_key(normalized, archive, wolvenkit, game_path)
-    try:
-        old_manifest = read_json(manifest_path) if manifest_path.is_file() else {}
-    except CharacterAssetIndexError:
-        old_manifest = {}
-    reused = (
-        expected_glb.is_file()
-        and expected_cooked.is_file()
-        and old_manifest.get("cache_key") == cache_key
-    )
+    required = [relative_glb, relative_cooked, relative_metadata]
+    reused = character_cache.cache_matches(manifest_path, cache_key, [output_dir / p for p in required])
     command: list[str] = []
     metadata_command: list[str] = []
-    metadata_reused = (
-        reused and expected_metadata.is_file() and old_manifest.get("cache_key") == cache_key
-    )
-    appearance_rows: list[dict[str, Any]]
-    if not reused:
-        output_dir.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(
-            dir=output_dir.parent, prefix=f".{output_dir.name}.refresh."
-        ) as staging_directory:
-            staging_root = Path(staging_directory)
-            staging_raw = staging_root / "raw"
-            staging_cooked = staging_root / "dependencies"
-            staging_glb = (staging_raw / relative_mesh).with_suffix(".glb")
-            staging_cooked_mesh = staging_cooked / relative_mesh
-            command = [
-                str(wolvenkit),
-                "extract-and-export",
-                str(archive),
-                "-o",
-                str(staging_cooked),
-                "-or",
-                str(staging_raw),
-                "-r",
-                f"^{re.escape(normalized)}$",
-                "--gamepath",
-                str(game_path),
-                "--mesh-export-type",
-                "MeshOnly",
-                "--mesh-export-lod-filter",
-                "-v",
-                "Minimal",
-            ]
-            completed = subprocess.run(
-                command, cwd=ROOT, text=True, capture_output=True, check=False
-            )
-            if (
-                completed.returncode != 0
-                or not staging_glb.is_file()
-                or not staging_cooked_mesh.is_file()
-            ):
-                raise CharacterAssetIndexError(
-                    f"WolvenKit did not produce a fresh preview ({completed.returncode}): "
-                    f"{' '.join(command)}\n{completed.stdout}\n{completed.stderr}"
-                )
-            metadata_command, staging_metadata, appearance_rows = serialize_mesh_metadata(
-                staging_cooked_mesh, staging_root / "metadata", wolvenkit
-            )
-            replace_file(staging_glb, expected_glb)
-            replace_file(staging_cooked_mesh, expected_cooked)
-            replace_file(staging_metadata, expected_metadata)
-    elif not metadata_reused:
-        output_dir.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(
-            dir=output_dir.parent, prefix=f".{output_dir.name}.metadata."
-        ) as staging_directory:
-            metadata_command, staging_metadata, appearance_rows = serialize_mesh_metadata(
-                expected_cooked, Path(staging_directory), wolvenkit
-            )
-            replace_file(staging_metadata, expected_metadata)
-    else:
-        if not expected_cooked.is_file():
-            raise CharacterAssetIndexError(
-                f"Cached preview has no cooked mesh for metadata: {expected_cooked}"
-            )
-        appearance_rows = mesh_appearance_metadata(read_json(expected_metadata))
-    mesh_appearances = [row["name"] for row in appearance_rows]
-    support = selection_support(asset, required_frame_token)
-    warnings = list(asset.get("warnings", []))
-    if not mesh_appearances:
-        warnings.append("The mesh did not advertise any selectable appearances")
-    if support["supported"]:
-        warnings.append(
-            "Assignment replaces only the slot's primary mesh; its curated cuff/shadow companion remains"
-        )
+    appearance_rows: list[dict[str, Any]] = []
+    if reused:
+        try:
+            appearance_rows = mesh_appearance_metadata(read_json(output_dir / relative_metadata))
+        except CharacterAssetIndexError:
+            reused = False
+    metadata_reused = reused
 
-    manifest = {
-        "schema_version": 2,
-        "preview_kind": "asset",
-        "source": normalized,
-        "cache_key": cache_key,
-        "models": [
-            {
-                "id": preview_cache_id(normalized),
-                "file": expected_glb.relative_to(output_dir).as_posix(),
-                "source_type": "mesh",
-                "color": "#77cfc4",
-            }
-        ],
-        "morph_mapping": {},
-        "mesh_appearances": mesh_appearances,
-        "appearance_materials": appearance_rows,
-        "assignment": support,
-        "warnings": warnings,
-    }
-    write_json(manifest_path, manifest)
+    def make_manifest(appearance_rows: list[dict[str, Any]]) -> dict[str, Any]:
+        mesh_appearances = [row["name"] for row in appearance_rows]
+        support = selection_support(asset, required_frame_token)
+        warnings = list(asset.get("warnings", []))
+        if not mesh_appearances:
+            warnings.append("The mesh did not advertise any selectable appearances")
+        if support["supported"]:
+            warnings.append(
+                "Assignment replaces only the slot's primary mesh; its curated cuff/shadow companion remains"
+            )
+
+        manifest = {
+            "schema_version": 2,
+            "preview_kind": "asset",
+            "source": normalized,
+            "cache_key": cache_key,
+            "models": [
+                {
+                    "id": preview_cache_id(normalized),
+                    "file": expected_glb.relative_to(output_dir).as_posix(),
+                    "source_type": "mesh",
+                    "color": "#77cfc4",
+                }
+            ],
+            "morph_mapping": {},
+            "mesh_appearances": mesh_appearances,
+            "appearance_materials": appearance_rows,
+            "assignment": support,
+            "warnings": warnings,
+        }
+        return manifest
+
+    def export(staging: Path) -> list[dict[str, Any]]:
+        nonlocal command, metadata_command
+        command = [
+            str(wolvenkit), "extract-and-export", str(archive),
+            "-o", str(staging / "dependencies"), "-or", str(staging / "raw"),
+            "-r", f"^{re.escape(normalized)}$", "--gamepath", str(game_path),
+            "--mesh-export-type", "MeshOnly", "--mesh-export-lod-filter", "-v", "Minimal",
+        ]
+        completed = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
+        if completed.returncode != 0 or not (staging / relative_glb).is_file() or not (staging / relative_cooked).is_file():
+            raise CharacterAssetIndexError(
+                f"WolvenKit did not produce a fresh preview ({completed.returncode}): "
+                f"{' '.join(command)}\n{completed.stdout}\n{completed.stderr}"
+            )
+        metadata_command, _, rows = serialize_mesh_metadata(
+            staging / relative_cooked, staging / "metadata", wolvenkit,
+        )
+        write_json(staging / "preview-manifest.json", make_manifest(rows))
+        return rows
+
+    if not reused:
+        appearance_rows = character_cache.refresh_export(
+            output_dir, [*required, Path("preview-manifest.json")], export
+        )
+    manifest = make_manifest(appearance_rows)
+    mesh_appearances = manifest["mesh_appearances"]
+    support = manifest["assignment"]
+    if reused:
+        write_json(manifest_path, manifest)
     return {
         "ok": True,
         "source": normalized,

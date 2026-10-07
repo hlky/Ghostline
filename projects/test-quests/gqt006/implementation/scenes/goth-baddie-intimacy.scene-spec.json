@@ -1,0 +1,69 @@
+{
+  "name": "gqt006_goth_baddie_intimacy",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/test-quests/gqt006/script/gqt006_10_manifest.json",
+  "raw_path": "projects/test-quests/gqt006/source/raw/mod/gqt006/scenes/gqt006_goth_baddie_intimacy.scene.json",
+  "archive_path": "projects/test-quests/gqt006/source/archive/mod/gqt006/scenes/gqt006_goth_baddie_intimacy.scene",
+  "exported_datetime": "2026-08-12T00:00:00Z",
+  "choice_locales": ["db_db", "pl_pl", "en_us"],
+  "section_tail_padding_ms": 0,
+  "line_gap_ms": 0,
+  "actors": [
+    {"key":"goth","name":"Goth Baddie","kind":"community","id":0,"entry":"goth_baddie","community_ref":"#gqt006_com_goth_baddie","appearance":"ghostline_goth_baddie_intimacy","lipsync":0,"rid_anim_sets":[0],"rid_facial_anim_sets":[]},
+    {"key":"v","name":"V","kind":"player","id":1,"record":"Character.Player_Puppet_Base","appearance":"default","lipsync":0,"rid_anim_sets":[1],"rid_facial_anim_sets":[]}
+  ],
+  "spoken_line_order": [],
+  "choice_line_order": [],
+  "entry_point": {"name":"start","node_id":1},
+  "entry_points": [{"name":"start","node_id":1}],
+  "exit_points": [{"name":"done","node_id":50}],
+  "start_node": {"node_id":1,"on_start":[{"node_id":10,"input_name":0,"input_ordinal":1}]},
+  "start_nodes": [{"node_id":1,"on_start":[{"node_id":10,"input_name":0,"input_ordinal":1}]}],
+  "graph_order": [1,10,11,15,13,14,12,18,19,30,31,33,20,34,35,37,21,50],
+  "sections": [
+    {"key":"female_sex_14","node_id":19,"lines":[],"rid_duration_ms":2000,"rid_events":[{"actor":"goth","component":"body","anim_ref_id":0,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"goth","component":"head","anim_ref_id":1,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"v","component":"body","anim_ref_id":2,"origin":"#gqt006_sm_intimacy","duration_ms":2000,"fpp":true,"fpp_gender_params":{"transition_blend_in_trajectory_space_angles":[{"pitch":50.4963608,"roll":8.62380409,"yaw":-176.292374}],"transition_end_input_angles":[{"pitch":50.4963608,"roll":8.62380409,"yaw":-176.292374},{"pitch":85.9406357,"roll":0.0000241216112,"yaw":125.740959}]}}],"rid_camera":{"camera_ref_id":0,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":2000},"on_end":[{"node_id":30}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+    {"key":"female_sex_05","node_id":30,"lines":[],"rid_duration_ms":5000,"rid_events":[{"actor":"v","component":"body","anim_ref_id":3,"origin":"#gqt006_sm_intimacy","duration_ms":5000,"fpp":true,"fpp_gender_params":{"transition_blend_in_trajectory_space_angles":[{"pitch":19.9029903,"roll":63.3925056,"yaw":-89.2551193}],"transition_end_input_angles":[{"pitch":50.0517883,"roll":111.73719,"yaw":-117.334091},{"pitch":42.1894302,"roll":0.00000460920955,"yaw":-110.593819}]}},{"actor":"goth","component":"body","anim_ref_id":4,"origin":"#gqt006_sm_intimacy","duration_ms":5000},{"actor":"goth","component":"head","anim_ref_id":5,"origin":"#gqt006_sm_intimacy","duration_ms":5000}],"rid_camera":{"camera_ref_id":1,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":5000},"on_end":[{"node_id":31}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+    {"key":"female_sex_11","node_id":31,"lines":[],"rid_duration_ms":2000,"rid_events":[{"actor":"goth","component":"body","anim_ref_id":6,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"goth","component":"head","anim_ref_id":7,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"v","component":"body","anim_ref_id":8,"origin":"#gqt006_sm_intimacy","duration_ms":2000,"fpp":true,"fpp_gender_params":{"transition_blend_in_trajectory_space_angles":[{"pitch":82.1717758,"roll":62.195507,"yaw":114.725563}],"transition_end_input_angles":[{"pitch":82.1717758,"roll":62.195507,"yaw":114.725563},{"pitch":81.8940201,"roll":0,"yaw":109.762398}]}}],"rid_camera":{"camera_ref_id":2,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":2000},"on_end":[{"node_id":33}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+    {"key":"female_sex_13","node_id":33,"lines":[],"rid_duration_ms":2000,"rid_events":[{"actor":"goth","component":"body","anim_ref_id":10,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"goth","component":"head","anim_ref_id":11,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"v","component":"body","anim_ref_id":12,"origin":"#gqt006_sm_intimacy","duration_ms":2000,"fpp":true,"fpp_gender_params":{"transition_blend_in_trajectory_space_angles":[{"pitch":77.0472717,"roll":17.4194565,"yaw":-91.0938797}],"transition_end_input_angles":[{"pitch":77.0472717,"roll":17.4194565,"yaw":-91.0938797},{"pitch":0,"roll":0,"yaw":-89.5742874}]}}],"rid_camera":{"camera_ref_id":3,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":2000},"on_end":[{"node_id":21,"input_name":0,"input_ordinal":1}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+
+    {"key":"male_sex_14","node_id":20,"lines":[],"rid_duration_ms":2000,"rid_events":[{"actor":"goth","component":"body","anim_ref_id":0,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"goth","component":"head","anim_ref_id":1,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"v","component":"body","anim_ref_id":2,"origin":"#gqt006_sm_intimacy","duration_ms":2000,"fpp":true}],"rid_camera":{"camera_ref_id":0,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":2000},"on_end":[{"node_id":34}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+    {"key":"male_sex_05","node_id":34,"lines":[],"rid_duration_ms":5000,"rid_events":[{"actor":"v","component":"body","anim_ref_id":3,"origin":"#gqt006_sm_intimacy","duration_ms":5000,"fpp":true},{"actor":"goth","component":"body","anim_ref_id":4,"origin":"#gqt006_sm_intimacy","duration_ms":5000},{"actor":"goth","component":"head","anim_ref_id":5,"origin":"#gqt006_sm_intimacy","duration_ms":5000}],"rid_camera":{"camera_ref_id":1,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":5000},"on_end":[{"node_id":35}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+    {"key":"male_sex_11","node_id":35,"lines":[],"rid_duration_ms":2000,"rid_events":[{"actor":"goth","component":"body","anim_ref_id":6,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"goth","component":"head","anim_ref_id":7,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"v","component":"body","anim_ref_id":9,"origin":"#gqt006_sm_intimacy","duration_ms":2000,"fpp":true}],"rid_camera":{"camera_ref_id":2,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":2000},"on_end":[{"node_id":37}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]},
+    {"key":"male_sex_13","node_id":37,"lines":[],"rid_duration_ms":2000,"rid_events":[{"actor":"goth","component":"body","anim_ref_id":10,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"goth","component":"head","anim_ref_id":11,"origin":"#gqt006_sm_intimacy","duration_ms":2000},{"actor":"v","component":"body","anim_ref_id":13,"origin":"#gqt006_sm_intimacy","duration_ms":2000,"fpp":true}],"rid_camera":{"camera_ref_id":3,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":2000},"on_end":[{"node_id":21,"input_name":0,"input_ordinal":1}],"on_cancel":[{"node_id":21,"input_name":0,"input_ordinal":1}]}
+  ],
+  "props": [{"id":0,"name":"gqt006_intimacy_camera","node_ref":"#gqt006_sm_intimacy_cam"}],
+  "choices": [],
+  "quest_nodes": [
+    {"kind":"appearance","node_id":10,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_intimacy","on_out":[{"node_id":11,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_actor","node_id":11,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","by_item":true,"item_id":"Items.Preset_Katana_E3","slot_id":"AttachmentSlots.WeaponRight","unequip_types":"AllItems","instant":true,"on_out":[{"node_id":15,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_player","node_id":15,"unequip_types":"AllWeapons","instant":true,"on_out":[{"node_id":13,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_player","node_id":13,"unequip_types":"AllClothing","instant":false,"on_out":[{"node_id":14,"input_name":0,"input_ordinal":1}]},
+    {"kind":"realtime_delay","node_id":14,"duration_ms":500,"on_out":[{"node_id":12,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":12,"tier":"Tier4_FPPCinematic","force_empty_hands":true,"on_out":[{"node_id":18,"input_name":0,"input_ordinal":1}]},
+    {"kind":"character_gender","node_id":18,"gender":"Male","on_true":[{"node_id":20}],"on_false":[{"node_id":19}]},
+    {"kind":"render_fade","node_id":21,"fade_in":false,"duration_seconds":0.25,"on_out":[{"node_id":50}]}
+  ],
+  "xor_nodes": [],
+  "end_nodes": [{"node_id":50}],
+  "rid_resources": [
+    {"resource_id":324761749,"path":"base\\animations\\quest\\lore\\generic_sex\\intercourse\\sex_14_2s_f.scenerid"},
+    {"resource_id":2942000068,"path":"base\\animations\\quest\\lore\\generic_sex\\intercourse\\sex_05_5s_f.scenerid"},
+    {"resource_id":1448827967,"path":"base\\animations\\quest\\lore\\generic_sex\\intercourse\\sex_11_2s_f.scenerid"},
+    {"resource_id":4082858110,"path":"base\\animations\\quest\\lore\\generic_sex\\intercourse\\sex_13_2s_f.scenerid"}
+  ],
+  "rid_animations": [
+    {"resource_id":324761749,"serial_number":1},{"resource_id":324761749,"serial_number":8},{"resource_id":324761749,"serial_number":5},
+    {"resource_id":2942000068,"serial_number":5},{"resource_id":2942000068,"serial_number":9},{"resource_id":2942000068,"serial_number":11},
+    {"resource_id":1448827967,"serial_number":1},{"resource_id":1448827967,"serial_number":8},{"resource_id":1448827967,"serial_number":11},{"resource_id":1448827967,"serial_number":5},
+    {"resource_id":4082858110,"serial_number":1},{"resource_id":4082858110,"serial_number":8},{"resource_id":4082858110,"serial_number":11},{"resource_id":4082858110,"serial_number":5}
+  ],
+  "rid_anim_sets": [{"animations":[0,1,4,5,6,7,10,11]},{"animations":[2,3,8,9,12,13]}],
+  "rid_facial_anim_sets": [],
+  "rid_camera_animations": [
+    {"resource_id":324761749,"serial_number":7},
+    {"resource_id":2942000068,"serial_number":7},
+    {"resource_id":1448827967,"serial_number":7},
+    {"resource_id":4082858110,"serial_number":7}
+  ]
+}

@@ -36,7 +36,7 @@ resource:
       - base\worlds\03_night_city\_compiled\default\exterior_-18_28_0_0.streamingsector
 ```
 
-`source/raw/mod/gqt001/world/gqt001_laptop_instance.streamingsector.json`
+`projects/test-quests/gqt001/source/raw/mod/gqt001/world/gqt001_laptop_instance.streamingsector.json`
 contains the selected node, its original NodeRef/transform identity, and a
 replacement `ComputerControllerPS` with the SIGNAL DELAY file. It does not
 replace the laptop entity template or any other node.
@@ -58,7 +58,7 @@ This is embedded-resource replacement, not field-level merging. Multiple
 patches compose when they target different embedded depot paths. If multiple
 patches replace the same embedded path, normal ArchiveXL patch order applies.
 
-Do not restore the full base-path override under `source/archive/base/worlds`.
+Do not restore the full base-path override under `projects/shared/ghostline-runtime/source/archive/base/worlds`.
 
 ## Local Build
 

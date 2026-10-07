@@ -21,21 +21,22 @@ import json
 from pathlib import Path
 from typing import Any
 
-from generate_cache_phase import (
-    GraphNode,
-    PhaseGraphBuilder,
-    cname,
-    entity_reference,
-    input_node,
-    node_ref,
-    objective_node,
-    output_node,
+from phase_graph import phase_document as shared_phase_document
+from phase_graph import (
+    GraphNode as GraphNode,
+    PhaseGraphBuilder as PhaseGraphBuilder,
+    cname as cname,
+    entity_reference as entity_reference,
+    input_node as input_node,
+    node_ref as node_ref,
+    objective_node as objective_node,
+    output_node as output_node,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW_ROOT = ROOT / "source/raw/mod/ghostline/quest_blocks/templates"
-ARCHIVE_ROOT = ROOT / "source/archive/mod/ghostline/quest_blocks/templates"
+RAW_ROOT = ROOT / "quests/templates/source/raw/mod/ghostline/quest_blocks/templates"
+ARCHIVE_ROOT = ROOT / "quests/templates/source/archive/mod/ghostline/quest_blocks/templates"
 
 COMMUNITY = "{{community}}"
 ENTRY = "{{entry}}"
@@ -199,27 +200,8 @@ def vehicle_stopped_condition(
 
 
 def phase_document(builder: PhaseGraphBuilder, archive_target: Path) -> JsonObject:
-    return {
-        "Header": {
-            "WolvenKitVersion": "8.17.4",
-            "WKitJsonVersion": "0.0.9",
-            "GameVersion": 2310,
-            "ExportedDateTime": "2026-07-23T00:00:00Z",
-            "DataType": "CR2W",
-            "ArchiveFileName": str(archive_target.resolve()),
-        },
-        "Data": {
-            "Version": 195,
-            "BuildVersion": 0,
-            "RootChunk": {
-                "$type": "questQuestPhaseResource",
-                "cookingPlatform": "PLATFORM_PC",
-                "graph": builder.graph,
-                "phasePrefabs": [],
-            },
-            "EmbeddedFiles": [],
-        },
-    }
+    return shared_phase_document(builder, archive_target,
+        exported_datetime="2026-07-23T00:00:00Z", include_inplace_phases=False)
 
 
 def finish_linear(

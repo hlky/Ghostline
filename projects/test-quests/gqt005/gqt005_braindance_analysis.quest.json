@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "id": "gqt005_braindance_analysis",
+  "title": "Braindance Analysis",
+  "description": "Runtime fixture for authored RID animation, rewindable playback, clue layers, and scene cleanup.",
+  "phase_prefabs": [
+    "@locations.pr_braindance_analysis.ref"
+  ],
+  "debug_fact": "@facts.debug_step",
+  "stages": [
+    {
+      "id": "approach_patch",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt005\\phases\\gqt005_approach_patch.questphase",
+      "trigger": "@locations.tr_wake.ref",
+      "objective": "@objectives.review_braindance.path",
+      "description_entry": "@objectives.review_braindance.description_entry",
+      "mappin": "@objectives.review_braindance.mappins.braindance.path",
+      "disable_previous_mappins": true
+    },
+    {
+      "id": "meet_patch",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt005\\phases\\gqt005_meet_patch.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.com_contact.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.bd_origin.ref",
+        "#gq000_01_tr_setup": "@locations.tr_setup.ref",
+        "#gq000_pr_patch_meet": "@locations.pr_braindance_analysis.ref",
+        "gq000_job_accepted": "@facts.braindance_started",
+        "gq000_patch_meet": "gqt005_patch_meet",
+        "job_accept": "play_braindance",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gqt005\\scenes\\gqt005_patch_start.scene",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.review_braindance.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.review_braindance.mappins.braindance.path"
+      },
+      "contact": "patch",
+      "scene": "mod\\gqt005\\scenes\\gqt005_patch_start.scene",
+      "community": "@locations.com_contact.ref",
+      "appearance": "ghostline_patch_default",
+      "objective": "@objectives.review_braindance.path",
+      "description_entry": "@objectives.review_braindance.description_entry",
+      "mappin": "@objectives.review_braindance.mappins.braindance.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\patch\\patch.ent"
+      ],
+      "objective_lifecycle": {
+        "on_success": "retain"
+      }
+    },
+    {
+      "id": "review_braindance",
+      "type": "braindance_analysis",
+      "status": "ready",
+      "phase_resource": "mod\\gqt005\\phases\\gqt005_review_braindance.questphase",
+      "scene": "mod\\gqt005\\scenes\\gqt005_braindance_analysis.scene",
+      "scene_origin": "@locations.bd_origin.ref",
+      "player_anchor": "@locations.bd_player_hold.ref",
+      "player_return": "@locations.bd_player_return.ref",
+      "objective": "@objectives.review_braindance.path",
+      "clue_facts": [
+        "@facts.bd_encrypted_shard_found",
+        "@facts.bd_guard_warning_found",
+        "@facts.bd_guard_implant_heat_found"
+      ],
+      "completion_fact": "@facts.completed",
+      "objective_lifecycle": {
+        "on_enter": "retain"
+      }
+    }
+  ],
+  "composition": {
+    "namespace": "gqt005",
+    "journal_template": "gqt001_shapes",
+    "quest": {
+      "title": "Braindance Analysis",
+      "localization_key": "gl_gqt005_title"
+    },
+    "objectives": {
+      "review_braindance": {
+        "id": "gqt005_01_obj_review_braindance",
+        "phase_id": "gqt005_01",
+        "text": "Review the recording and scan all three clue layers.",
+        "localization_key": "gl_gqt005_01_objective_review_braindance",
+        "description_id": "gqt005_01_desc_review_braindance",
+        "description": "Exercise authored braindance animation, rewind, analysis layers, and cleanup.",
+        "description_key": "gl_gqt005_description",
+        "counter": 3,
+        "mappins": {
+          "braindance": {
+            "id": "gqt005_01_qmp_braindance",
+            "ref": "@locations.bd_origin.ref",
+            "text": "Braindance test",
+            "localization_key": "gl_gqt005_mappin",
+            "debug_caption": "gl_gqt005_mappin"
+          }
+        }
+      }
+    },
+    "points_of_interest": {
+      "braindance": {
+        "id": "gqt005_01_poi_braindance",
+        "ref": "@locations.bd_origin.ref"
+      }
+    },
+    "locations": {
+      "pr_braindance_analysis": "#gqt005_pr_braindance_analysis",
+      "tr_wake": "#gqt005_tr_wake",
+      "com_contact": "#gqt005_com_contact",
+      "bd_origin": "#gqt005_bd_origin",
+      "tr_setup": "#gqt005_tr_setup",
+      "bd_player_hold": "#gqt005_bd_player_hold",
+      "bd_player_return": "#gqt005_bd_player_return"
+    },
+    "facts": {
+      "debug_step": "gqt005_debug_step",
+      "braindance_started": "gqt005_braindance_started",
+      "bd_encrypted_shard_found": "gqt005_bd_encrypted_shard_found",
+      "bd_guard_warning_found": "gqt005_bd_guard_warning_found",
+      "bd_guard_implant_heat_found": "gqt005_bd_guard_implant_heat_found",
+      "completed": "gqt005_completed"
+    },
+    "text": {
+      "gl_gqt005_bd_clue_encrypted_shard_name": "Encrypted Shard",
+      "gl_gqt005_bd_clue_encrypted_shard_description_01": "An encrypted shard used during the recorded exchange.",
+      "gl_gqt005_bd_clue_encrypted_shard_description_02": "Its protection obscures the data and its intended recipient.",
+      "gl_gqt005_bd_clue_guard_warning_name": "Guard's Warning",
+      "gl_gqt005_bd_clue_guard_warning_description_01": "A warning concealed beneath the surrounding street noise.",
+      "gl_gqt005_bd_clue_guard_warning_description_02": "The speaker is alerting Patch to danger around the exchange.",
+      "gl_gqt005_bd_clue_guard_implant_heat_name": "Overheated Implant",
+      "gl_gqt005_bd_clue_guard_implant_heat_description_01": "An abnormal heat signature is coming from the guard's implant.",
+      "gl_gqt005_bd_clue_guard_implant_heat_description_02": "The thermal spike suggests the implant was under heavy load."
+    }
+  }
+}

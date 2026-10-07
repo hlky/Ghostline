@@ -27,6 +27,25 @@ def connect(path: Path) -> sqlite3.Connection:
     return connection
 
 
+def connect_readonly(path: Path) -> sqlite3.Connection:
+    """Inspect an existing database without creating it or running migrations."""
+    if not path.is_file():
+        raise FileNotFoundError(f"location database does not exist: {path}")
+    connection = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA query_only = ON")
+    return connection
+
+
+def require_idle(connection: sqlite3.Connection) -> None:
+    if connection.execute(
+        "SELECT 1 FROM capture_sessions WHERE status='running' LIMIT 1"
+    ).fetchone():
+        raise ValueError(
+            "Stop the capture session before changing its queue or source data"
+        )
+
+
 @contextmanager
 def transaction(connection: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
     connection.execute("BEGIN IMMEDIATE")
@@ -582,4 +601,80 @@ def status_counts(connection: sqlite3.Connection) -> dict[str, Any]:
             "SELECT COUNT(*) FROM places WHERE publishable=1"
         ).fetchone()[0],
         "captures": connection.execute("SELECT COUNT(*) FROM captures").fetchone()[0],
+        "capture_validation": {
+            row["validation_status"]: row["count"]
+            for row in connection.execute(
+                "SELECT validation_status,COUNT(*) AS count FROM captures GROUP BY validation_status"
+            )
+        },
     }
+
+
+def requeue_places(
+    connection: sqlite3.Connection,
+    *,
+    location_ids: list[str] | None = None,
+    failure_codes: list[str] | None = None,
+    categories: list[str] | None = None,
+    recapture: bool = False,
+) -> int:
+    """Retry failed locations; recapturing successful images requires explicit IDs.
+
+    Disabled and interrupted locations cannot be resurrected by a retry filter.
+    The capture controller owns interrupted-session recovery.
+    """
+    if recapture and not location_ids:
+        raise ValueError("--recapture requires explicit --location-id selections")
+    clauses = ["scope_status='in_scope'", "review_status!='rejected'"]
+    clauses.append(
+        "queue_status IN ('captured','failed','pending')"
+        if recapture
+        else "queue_status='failed'"
+    )
+    parameters: list[Any] = []
+    for column, values in (("location_id", location_ids), ("category", categories)):
+        if values:
+            clauses.append(f"{column} IN ({','.join('?' for _ in values)})")
+            parameters.extend(values)
+    if failure_codes:
+        placeholders = ",".join("?" for _ in failure_codes)
+        clauses.append(
+            f"""(failure_code IN ({placeholders}) OR EXISTS(
+                SELECT 1 FROM capture_attempts a WHERE a.location_id=places.location_id
+                AND a.rowid=(SELECT MAX(last.rowid) FROM capture_attempts last
+                             WHERE last.location_id=places.location_id)
+                AND a.error_code IN ({placeholders})))"""
+        )
+        parameters.extend([*failure_codes, *failure_codes])
+    with transaction(connection):
+        require_idle(connection)
+        if location_ids:
+            found = {
+                row["location_id"]: row
+                for row in connection.execute(
+                    f"SELECT * FROM places WHERE location_id IN ({','.join('?' for _ in location_ids)})",
+                    location_ids,
+                )
+            }
+            missing = sorted(set(location_ids) - found.keys())
+            if missing:
+                raise ValueError(f"Unknown location IDs: {', '.join(missing)}")
+            for row in found.values():
+                if (
+                    row["scope_status"] != "in_scope"
+                    or row["queue_status"] in ("disabled", "in_progress")
+                    or row["review_status"] == "rejected"
+                ):
+                    raise ValueError(
+                        f"Location is not eligible for retry: {row['location_id']}"
+                    )
+                if row["queue_status"] == "captured" and not recapture:
+                    raise ValueError(
+                        "Use --recapture with explicit IDs to replace captured views"
+                    )
+        cursor = connection.execute(
+            f"""UPDATE places SET queue_status='pending',failure_code=NULL,failure_detail=NULL,
+                   publishable=0,updated_at=? WHERE {" AND ".join(clauses)}""",
+            (utc_now(), *parameters),
+        )
+        return cursor.rowcount

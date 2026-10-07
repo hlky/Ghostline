@@ -9,7 +9,7 @@ import hashlib
 import json
 import shutil
 import wave
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 
@@ -52,26 +52,25 @@ def read_rows(path: Path) -> list[dict[str, str]]:
 
 def validate(
     manifest: dict[str, Any], rows: list[dict[str, str]]
-) -> tuple[str, dict[str, dict[str, str]]]:
+) -> tuple[dict[str, str], dict[str, dict[str, str]]]:
     selected = [row for row in rows if is_selected(row.get("selected", ""))]
     references = [row for row in selected if row.get("line_key") == REFERENCE_KEY]
-    if len(references) > 1:
-        raise ValueError(f"Select at most one Cinder design reference; found {len(references)}")
-    if references:
-        design = references[0]["design"]
-    else:
-        cinder_designs = {
-            row.get("design", "")
-            for row in selected
-            if row.get("speaker", "").casefold() == "cinder"
-            and row.get("line_key") != REFERENCE_KEY
-        }
-        if len(cinder_designs) != 1:
+    designs = {
+        str(speaker).casefold(): str(design)
+        for speaker, design in manifest.get("voice_designs", {}).items()
+    }
+    referenced_speakers = set()
+    for reference in references:
+        speaker = reference.get("speaker", "").casefold()
+        design = reference.get("design", "")
+        if not speaker or not design or speaker in referenced_speakers:
+            raise ValueError("Select at most one named design reference per speaker")
+        referenced_speakers.add(speaker)
+        if speaker in designs and designs[speaker] != design:
             raise ValueError(
-                "Select one Cinder design reference, or choose all Cinder lines "
-                f"from exactly one design; found {len(cinder_designs)} designs"
+                f"Reference for {speaker} disagrees with configured voice design"
             )
-        design = cinder_designs.pop()
+        designs[speaker] = design
 
     by_key: dict[str, list[dict[str, str]]] = {}
     for row in selected:
@@ -80,6 +79,8 @@ def validate(
             by_key.setdefault(key, []).append(row)
 
     spoken = {line["key"]: line for line in manifest["spoken_lines"]}
+    if not spoken or len(spoken) != len(manifest["spoken_lines"]):
+        raise ValueError("Manifest must contain unique spoken-line keys")
     unknown = sorted(set(by_key) - set(spoken))
     if unknown:
         raise ValueError(f"Selected unknown spoken line(s): {', '.join(unknown)}")
@@ -92,13 +93,23 @@ def validate(
         row = matches[0]
         if row.get("speaker", "").casefold() != str(line["speaker"]).casefold():
             raise ValueError(f"Speaker mismatch for {key}")
-        if str(line["speaker"]).casefold() == "cinder" and row.get("design") != design:
-            raise ValueError(f"{key} uses {row.get('design')}, not selected design {design}")
+        speaker = str(line["speaker"]).casefold()
+        design = row.get("design", "")
+        if not design:
+            raise ValueError(f"Missing voice design for {key}")
+        if speaker in designs and design != designs[speaker]:
+            raise ValueError(
+                f"{key} uses {design}, not selected design {designs[speaker]}"
+            )
+        designs[speaker] = design
         source = Path(row["file"])
         if not source.is_file() or source.stat().st_size == 0:
             raise ValueError(f"Missing or empty selected WAV for {key}: {source}")
+        duration_ms(source)  # Check every selected WAV before publishing any take.
+        if row.get("sha256") and row["sha256"] != sha256(source):
+            raise ValueError(f"Selected WAV changed since review: {source}")
         choices[key] = row
-    return design, choices
+    return designs, choices
 
 
 def main() -> int:
@@ -114,12 +125,16 @@ def main() -> int:
     design, choices = validate(manifest, read_rows(args.csv))
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    receipt: dict[str, Any] = {"voice_design": design, "lines": []}
+    receipt: dict[str, Any] = {
+        "schema_version": 2,
+        "voice_designs": design,
+        "lines": [],
+    }
     for line in manifest["spoken_lines"]:
         key = line["key"]
         row = choices[key]
         source = Path(row["file"])
-        audio_name = Path(line["audio_path"]).with_suffix(".wav").name
+        audio_name = PureWindowsPath(line["audio_path"]).with_suffix(".wav").name
         target = args.output_dir / audio_name
         shutil.copy2(source, target)
         measured_ms = duration_ms(target)

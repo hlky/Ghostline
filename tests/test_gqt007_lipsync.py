@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import copy
 import json
 import sys
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import yaml
@@ -16,7 +18,7 @@ if str(TOOLS) not in sys.path:
 
 SPEC = importlib.util.spec_from_file_location(
     "gqt007_build",
-    ROOT / "quests/tests/gqt007/implementation/build.py",
+    ROOT / "projects/test-quests/gqt007/implementation/build.py",
 )
 assert SPEC is not None
 gqt007 = importlib.util.module_from_spec(SPEC)
@@ -91,11 +93,17 @@ class Gqt007LipsyncTests(unittest.TestCase):
         lipmap = gqt007.generate_lipmap()["Data"]["RootChunk"]
         self.assertEqual(
             lipmap["scenePaths"],
-            [str(gqt007.scene_builder.fnv1a64(gqt007.SCENE_DEPOT_PATH))],
+            [
+                str(
+                    gqt007.scene_builder.fnv1a64(
+                        r"mod\gqt007\scenes\gqt007_barry_lipsync.scene"
+                    )
+                )
+            ],
         )
         self.assertEqual(
             lipmap["sceneEntries"][0]["actorVoiceTags"],
-            [gqt007.BARRY_VOICE_TAG_ID],
+            ["1624173162010260376"],
         )
         self.assertEqual(
             lipmap["sceneEntries"][0]["animSets"][0]["DepotPath"]["$value"],
@@ -103,24 +111,70 @@ class Gqt007LipsyncTests(unittest.TestCase):
         )
 
     def test_audio_and_subtitles_are_self_contained(self) -> None:
-        subtitles = gqt007.generate_subtitles()["Data"]["RootChunk"]["root"][
-            "Data"
-        ]["entries"]
-        vomap = gqt007.generate_vomap()["Data"]["RootChunk"]["root"]["Data"][
+        subtitles = gqt007.generate_subtitles()["Data"]["RootChunk"]["root"]["Data"][
             "entries"
         ]
-        self.assertEqual([entry["stringId"] for entry in subtitles], list(gqt007.LINE_IDS))
-        self.assertEqual([entry["stringId"] for entry in vomap], list(gqt007.LINE_IDS))
+        vomap = gqt007.generate_vomap()["Data"]["RootChunk"]["root"]["Data"]["entries"]
+        line_ids = ["9041139144898214479", "14094805234786396679"]
+        self.assertEqual([entry["stringId"] for entry in subtitles], line_ids)
+        self.assertEqual([entry["stringId"] for entry in vomap], line_ids)
         self.assertEqual(
             [entry["femaleResPath"]["DepotPath"]["$value"] for entry in vomap],
-            list(gqt007.WEM_DEPOT_PATHS),
+            [r"mod\gqt007\localization\en-us\vo\barry_who_is_it.wem"] * 2,
         )
-        self.assertTrue(all(path.is_file() for path in gqt007.WEM_ARCHIVE_PATHS))
+        self.assertTrue(all(path.is_file() for path in gqt007.wem_archive_paths()))
+
+    def test_subtitles_and_audio_follow_authored_dialogue_changes(self) -> None:
+        spoken, choices = gqt007.scene_builder.load_manifest(self.spec)
+        changed = copy.deepcopy(spoken)
+        line = changed["barry_vanilla"]
+        line.update(
+            text="A revised line.",
+            string_id="123456789",
+            audio_path=r"mod\test\revised.wem",
+            male_audio_path=r"mod\test\revised_male.wem",
+        )
+        with mock.patch.object(
+            gqt007.scene_builder, "load_manifest", return_value=(changed, choices)
+        ):
+            subtitles = gqt007.generate_subtitles()["Data"]["RootChunk"]["root"][
+                "Data"
+            ]["entries"]
+            audio = gqt007.generate_vomap()["Data"]["RootChunk"]["root"]["Data"][
+                "entries"
+            ]
+        self.assertEqual(subtitles[0]["stringId"], "123456789")
+        self.assertEqual(subtitles[0]["femaleVariant"], "A revised line.")
+        self.assertEqual(subtitles[0]["maleVariant"], "A revised line.")
+        self.assertEqual(audio[0]["stringId"], "123456789")
+        self.assertEqual(
+            audio[0]["femaleResPath"]["DepotPath"]["$value"], r"mod\test\revised.wem"
+        )
+        self.assertEqual(
+            audio[0]["maleResPath"]["DepotPath"]["$value"], r"mod\test\revised_male.wem"
+        )
+        self.assertEqual(
+            subtitles[1]["stringId"], spoken["barry_modified"]["string_id"]
+        )
+
+    def test_lipmap_follows_authored_scene_and_actor_identity(self) -> None:
+        changed = copy.deepcopy(self.spec)
+        changed["archive_path"] = "projects/test-quests/gqt007/source/archive/mod/gqt007/scenes/revised.scene"
+        next(actor for actor in changed["actors"] if actor["key"] == "barry")[
+            "voicetag"
+        ] = "987654321"
+        with mock.patch.object(gqt007, "load", return_value=changed):
+            lipmap = gqt007.generate_lipmap()["Data"]["RootChunk"]
+        self.assertEqual(
+            lipmap["scenePaths"],
+            [str(gqt007.scene_builder.fnv1a64(r"mod\gqt007\scenes\revised.scene"))],
+        )
+        self.assertEqual(lipmap["sceneEntries"][0]["actorVoiceTags"], ["987654321"])
 
     def test_checked_in_raw_scene_matches_generator(self) -> None:
         raw = json.loads(
             (
-                ROOT / "source/raw/mod/gqt007/scenes/gqt007_barry_lipsync.scene.json"
+                ROOT / "projects/test-quests/gqt007/source/raw/mod/gqt007/scenes/gqt007_barry_lipsync.scene.json"
             ).read_text(encoding="utf-8")
         )
         self.assertEqual(raw, self.scene)
@@ -131,9 +185,7 @@ class Gqt007LipsyncTests(unittest.TestCase):
 
     def test_archive_xl_registers_all_runtime_roots(self) -> None:
         config = yaml.safe_load(
-            (ROOT / "source/resources/Ghostline.archive.xl").read_text(
-                encoding="utf-8"
-            )
+            (ROOT / "projects/test-quests/gqt007/source/resources/Ghostline_GQT007.archive.xl").read_text(encoding="utf-8")
         )
         self.assertIn(
             {

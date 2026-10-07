@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "id": "gqt004_vehicle_lab",
+  "title": "Vehicle Lab",
+  "description": "Runtime fixture for a contact ride followed by a designated vehicle theft and delivery.",
+  "phase_prefabs": [
+    "@locations.prefab.ref"
+  ],
+  "debug_fact": "@facts.debug_step",
+  "stages": [
+    {
+      "id": "enter_contact_vehicle",
+      "type": "enter_vehicle",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_enter_contact_vehicle.questphase",
+      "vehicle_community": "@locations.ride_vehicle.ref",
+      "vehicle_entry": "@locations.ride_vehicle.entry",
+      "objective": "@objectives.enter_vehicle.path",
+      "mappin": "@objectives.enter_vehicle.mappin",
+      "phase_prefabs": []
+    },
+    {
+      "id": "ride_with_patch",
+      "type": "ride_with_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_ride_with_patch.questphase",
+      "vehicle_community": "@locations.ride_vehicle.ref",
+      "vehicle_entry": "@locations.ride_vehicle.entry",
+      "contact_community": "@contacts.patch.community",
+      "contact_entry": "@contacts.patch.entry",
+      "objective": "@objectives.ride_with_patch.path",
+      "phase_prefabs": []
+    },
+    {
+      "id": "drive_contact_to_destination",
+      "type": "drive_to",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_drive_contact_to_destination.questphase",
+      "vehicle_community": "@locations.ride_vehicle.ref",
+      "vehicle_entry": "@locations.ride_vehicle.entry",
+      "destination": "@locations.ride_destination.ref",
+      "completion_fact": "@facts.contact_ride_complete",
+      "objective": "@objectives.drive_contact.path",
+      "mappin": "@objectives.drive_contact.mappin",
+      "phase_prefabs": []
+    },
+    {
+      "id": "steal_test_vehicle",
+      "type": "steal_vehicle",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_steal_test_vehicle.questphase",
+      "inherit_phase_prefabs": false,
+      "vehicle_community": "@locations.theft_vehicle.ref",
+      "vehicle_entry": "@locations.theft_vehicle.entry",
+      "objective": "@objectives.steal_vehicle.path",
+      "mappin": "@objectives.steal_vehicle.mappin",
+      "completion_fact": "@facts.vehicle_stolen"
+    },
+    {
+      "id": "deliver_test_vehicle",
+      "type": "drive_to",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_deliver_test_vehicle.questphase",
+      "inherit_phase_prefabs": false,
+      "vehicle_community": "@locations.theft_vehicle.ref",
+      "vehicle_entry": "@locations.theft_vehicle.entry",
+      "destination": "@locations.theft_destination.ref",
+      "completion_fact": "@facts.theft_delivery_complete",
+      "objective": "@objectives.deliver_vehicle.path",
+      "mappin": "@objectives.deliver_vehicle.mappin"
+    },
+    {
+      "id": "cleanup_test_vehicle",
+      "type": "vehicle_cleanup",
+      "status": "ready",
+      "phase_resource": "mod\\gqt004\\phases\\gqt004_cleanup_test_vehicle.questphase",
+      "phase_template": "mod\\gqt004\\templates\\gqt004_final_cleanup.questphase",
+      "player_vehicle_record": "Vehicle.GhostlineGQT004Theft",
+      "completion_fact": "@facts.completed",
+      "phase_prefabs": []
+    }
+  ],
+  "composition": {
+    "namespace": "gqt004",
+    "journal_template": "gqt001_shapes",
+    "locations": {
+      "prefab": {
+        "ref": "#gqt004_pr_vehicle_lab"
+      },
+      "ride_vehicle": {
+        "ref": "#gqt004_com_ride_vehicle",
+        "entry": "ride_vehicle",
+        "marker": "#gqt004_01_mp_ride_vehicle"
+      },
+      "ride_destination": {
+        "ref": "#gqt004_03_tr_ride_destination",
+        "marker": "#gqt004_03_mp_ride_destination"
+      },
+      "theft_vehicle": {
+        "ref": "#gqt004_com_theft_vehicle_r2",
+        "entry": "theft_vehicle_r2",
+        "marker": "#gqt004_04_mp_theft_vehicle"
+      },
+      "theft_destination": {
+        "ref": "#gqt004_05_tr_theft_destination",
+        "marker": "#gqt004_05_mp_theft_destination"
+      }
+    },
+    "facts": {
+      "debug_step": "gqt004_debug_step",
+      "contact_ride_complete": "gqt004_contact_ride_complete",
+      "vehicle_stolen": "gqt004_vehicle_stolen",
+      "theft_delivery_complete": "gqt004_theft_delivery_complete",
+      "completed": "gqt004_completed"
+    },
+    "objectives": {
+      "enter_vehicle": {
+        "phase_id": "gqt004_01",
+        "id": "gqt004_01_obj_enter_vehicle",
+        "text": "Enter the contact vehicle.",
+        "localization_key": "gl_gqt004_01_objective_enter_vehicle",
+        "description_id": "gqt004_01_desc_enter_vehicle",
+        "description": "Exercise the Ghostline vehicle lifecycle fixtures.",
+        "description_key": "gl_gqt004_description",
+        "mappins": {
+          "target": {
+            "id": "gqt004_01_qmp_enter_vehicle",
+            "ref": "@locations.ride_vehicle.marker",
+            "text": "Vehicle test",
+            "localization_key": "gl_gqt004_mappin",
+            "debug_caption": "gl_gqt004_mappin"
+          }
+        }
+      },
+      "ride_with_patch": {
+        "phase_id": "gqt004_02",
+        "id": "gqt004_02_obj_ride_with_patch",
+        "text": "Ride with Patch.",
+        "localization_key": "gl_gqt004_02_objective_ride_with_patch",
+        "description_id": "gqt004_02_desc_ride_with_patch",
+        "description": "Exercise the Ghostline vehicle lifecycle fixtures.",
+        "description_key": "gl_gqt004_description"
+      },
+      "drive_contact": {
+        "phase_id": "gqt004_03",
+        "id": "gqt004_03_obj_drive_contact",
+        "text": "Drive to the first test point.",
+        "localization_key": "gl_gqt004_03_objective_drive_contact",
+        "description_id": "gqt004_03_desc_drive_contact",
+        "description": "Exercise the Ghostline vehicle lifecycle fixtures.",
+        "description_key": "gl_gqt004_description",
+        "mappins": {
+          "target": {
+            "id": "gqt004_03_qmp_drive_contact",
+            "ref": "@locations.ride_destination.marker",
+            "text": "Vehicle test",
+            "localization_key": "gl_gqt004_mappin",
+            "debug_caption": "gl_gqt004_mappin"
+          }
+        }
+      },
+      "steal_vehicle": {
+        "phase_id": "gqt004_04",
+        "id": "gqt004_04_obj_steal_vehicle",
+        "text": "Take the designated test vehicle.",
+        "localization_key": "gl_gqt004_04_objective_steal_vehicle",
+        "description_id": "gqt004_04_desc_steal_vehicle",
+        "description": "Exercise the Ghostline vehicle lifecycle fixtures.",
+        "description_key": "gl_gqt004_description",
+        "mappins": {
+          "target": {
+            "id": "gqt004_04_qmp_steal_vehicle",
+            "ref": "@locations.theft_vehicle.marker",
+            "text": "Vehicle test",
+            "localization_key": "gl_gqt004_mappin",
+            "debug_caption": "gl_gqt004_mappin"
+          }
+        }
+      },
+      "deliver_vehicle": {
+        "phase_id": "gqt004_05",
+        "id": "gqt004_05_obj_deliver_vehicle",
+        "text": "Deliver the test vehicle.",
+        "localization_key": "gl_gqt004_05_objective_deliver_vehicle",
+        "description_id": "gqt004_05_desc_deliver_vehicle",
+        "description": "Exercise the Ghostline vehicle lifecycle fixtures.",
+        "description_key": "gl_gqt004_description",
+        "mappins": {
+          "target": {
+            "id": "gqt004_05_qmp_deliver_vehicle",
+            "ref": "@locations.theft_destination.marker",
+            "text": "Vehicle test",
+            "localization_key": "gl_gqt004_mappin",
+            "debug_caption": "gl_gqt004_mappin"
+          }
+        }
+      }
+    },
+    "contacts": {
+      "patch": {
+        "id": "patch",
+        "community": "#gqt004_com_contact",
+        "entry": "patch",
+        "localization_key": "gl_gq001_phone_patch_name"
+      }
+    },
+    "points_of_interest": {
+      "start": {
+        "id": "gqt004_01_poi_vehicle",
+        "ref": "@locations.ride_vehicle.marker"
+      }
+    }
+  }
+}

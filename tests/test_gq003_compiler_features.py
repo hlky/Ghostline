@@ -26,7 +26,7 @@ class Gq003CompilerFeatureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.path = (
-            ROOT / "quests/story/ghostline/gq003/implementation/quest.json"
+            ROOT / "projects/ghostline/quests/gq003/implementation/quest.json"
         )
         cls.spec, cls.diagnostics = quest_compiler.load_spec(cls.path)
         assert cls.spec is not None

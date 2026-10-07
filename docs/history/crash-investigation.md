@@ -5,7 +5,7 @@ July 2026 stability work. It is an investigation history, not the target
 specification or a description of the current candidate unless a section says
 so explicitly.
 
-For the current runtime model, use `quests/story/ghostline/gq000/implementation/runtime-flow.md`; for target scene
+For the current runtime model, use `projects/ghostline/quests/gq000/implementation/runtime-flow.md`; for target scene
 structure, use `docs/authoring/scenes.md`. Vanilla patterns override failed
 Ghostline probe results. If a vanilla pattern crashed in a probe, assume the
 Ghostline implementation was incomplete or malformed.
@@ -164,7 +164,7 @@ regression protect:
 The installed sorted-locStore archive changes only the meeting scene from the
 successful slot-0 runtime baseline. All-five-label confirmation is still
 pending; see `docs/workflows/runtime-testing.md` for the exact test route and
-`quests/story/ghostline/gq000/implementation/runtime-flow.md` for the concrete current flow and lookup model.
+`projects/ghostline/quests/gq000/implementation/runtime-flow.md` for the concrete current flow and lookup model.
 
 ## Earlier Runtime Read
 
@@ -215,7 +215,7 @@ scene/quest structure.
 
 ## Useful Findings
 
-- Excluding `source/archive/base` did not stop the crash. Base-path overrides
+- Excluding `projects/shared/ghostline-runtime/source/archive/base` did not stop the crash. Base-path overrides
   are still a shipping risk, but they were not the sole cause of that
   historical runtime crash.
 - Earlier `Engine/LoadExports` hashes resolved to built-in always-loaded

@@ -9,32 +9,41 @@ inventory shard is equivalent to reading a computer document.
 
 from __future__ import annotations
 
+from phase_graph import phase_document as shared_phase_document
+from phase_graph import (
+    device_manager_node as device_manager,
+    device_condition_node as device_condition,
+)
+
 import json
 from pathlib import Path
 from typing import Any
 
-from generate_cache_phase import (
-    GraphNode,
-    PhaseGraphBuilder,
-    cname,
-    entity_reference,
-    fact_node,
-    input_node,
-    journal_path,
-    local_player_reference,
-    mappin_node,
-    node_ref,
-    objective_node,
-    output_node,
-    realtime_delay_node,
-    tweakdbid,
+from phase_graph import (
+    GraphNode as GraphNode,
+    PhaseGraphBuilder as PhaseGraphBuilder,
+    cname as cname,
+    entity_reference as entity_reference,
+    fact_node as fact_node,
+    input_node as input_node,
+    journal_path as journal_path,
+    local_player_reference as local_player_reference,
+    mappin_node as mappin_node,
+    node_ref as node_ref,
+    objective_node as objective_node,
+    output_node as output_node,
+    realtime_delay_node as realtime_delay_node,
+    tweakdbid as tweakdbid,
 )
-from generate_delivery_phase import fact_condition_node, logical_xor_node
+from phase_graph import (
+    fact_condition_node as fact_condition_node,
+    logical_xor_node as logical_xor_node,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW_ROOT = ROOT / "source/raw/mod/ghostline/quest_blocks/templates"
-ARCHIVE_ROOT = ROOT / "source/archive/mod/ghostline/quest_blocks/templates"
+RAW_ROOT = ROOT / "quests/templates/source/raw/mod/ghostline/quest_blocks/templates"
+ARCHIVE_ROOT = ROOT / "quests/templates/source/archive/mod/ghostline/quest_blocks/templates"
 
 OBJECTIVE = "{{objective}}"
 COMPLETION_FACT = "{{completion_fact}}"
@@ -76,27 +85,8 @@ JsonObject = dict[str, Any]
 
 
 def phase_document(builder: PhaseGraphBuilder, name: str) -> JsonObject:
-    return {
-        "Header": {
-            "WolvenKitVersion": "8.17.4",
-            "WKitJsonVersion": "0.0.9",
-            "GameVersion": 2310,
-            "ExportedDateTime": "2026-07-24T00:00:00Z",
-            "DataType": "CR2W",
-            "ArchiveFileName": str((ARCHIVE_ROOT / f"{name}.questphase").resolve()),
-        },
-        "Data": {
-            "Version": 195,
-            "BuildVersion": 0,
-            "RootChunk": {
-                "$type": "questQuestPhaseResource",
-                "cookingPlatform": "PLATFORM_PC",
-                "graph": builder.graph,
-                "phasePrefabs": [],
-            },
-            "EmbeddedFiles": [],
-        },
-    }
+    return shared_phase_document(builder, ARCHIVE_ROOT / f"{name}.questphase",
+        exported_datetime="2026-07-24T00:00:00Z", include_inplace_phases=False)
 
 
 def finish(
@@ -108,58 +98,6 @@ def finish(
 ) -> None:
     builder.connect_to_earlier_output(
         previous, end, source_socket=source_socket
-    )
-
-
-def device_manager(
-    builder: PhaseGraphBuilder, quest_id: int, device: str, controller: str, action: str
-) -> GraphNode:
-    params = builder.handles.wrap(
-        {
-            "$type": "questDeviceManager_NodeTypeParams",
-            "actionProperties": [],
-            "deviceAction": cname(action),
-            "deviceControllerClass": cname(controller),
-            "entityRef": entity_reference(),
-            "objectRef": node_ref(device),
-            "slotName": cname("None"),
-        }
-    )
-    node_type = builder.handles.wrap(
-        {"$type": "questDeviceManager_NodeType", "params": [params]}
-    )
-    return builder.node(
-        quest_id,
-        "questInteractiveObjectManagerNodeDefinition",
-        input_names=("In",),
-        properties={"type": node_type},
-    )
-
-
-def device_condition(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    device: str,
-    controller: str,
-    function: str,
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questDevice_ConditionType",
-            "deviceConditionFunction": cname(function),
-            "deviceControllerClass": cname(controller),
-            "functionParameters": [],
-            "objectRef": node_ref(device),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questObjectCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
     )
 
 

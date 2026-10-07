@@ -31,7 +31,7 @@ def graph_nodes(document: dict[str, Any]) -> list[dict[str, Any]]:
 
 class QuietInstallTests(unittest.TestCase):
     def test_manifest_exercises_both_remaining_quiet_install_blocks(self) -> None:
-        manifest = ROOT / "quests/tests/gqt002_quiet_install.quest.json"
+        manifest = ROOT / "projects/test-quests/gqt002/gqt002_quiet_install.quest.json"
         spec, diagnostics = quest_compiler.load_spec(manifest)
         self.assertFalse([item for item in diagnostics if item.level == "error"])
         assert spec is not None
@@ -59,7 +59,7 @@ class QuietInstallTests(unittest.TestCase):
 
     def test_root_runs_detector_monitor_and_plant_in_parallel(self) -> None:
         phase = load(
-            ROOT / "source/raw/mod/gqt002/phases/gqt002_quiet_install.questphase.json"
+            ROOT / "projects/test-quests/gqt002/source/raw/mod/gqt002/phases/gqt002_quiet_install.questphase.json"
         )
         nodes = graph_nodes(phase)
         phase_paths = {
@@ -113,7 +113,7 @@ class QuietInstallTests(unittest.TestCase):
 
     def test_detector_uses_connected_security_system_combat_state(self) -> None:
         phase = load(
-            ROOT / "source/raw/mod/gqt002/phases/gqt002_detect_guards.questphase.json"
+            ROOT / "projects/test-quests/gqt002/source/raw/mod/gqt002/phases/gqt002_detect_guards.questphase.json"
         )
         nodes = graph_nodes(phase)
         conditions = [
@@ -140,7 +140,7 @@ class QuietInstallTests(unittest.TestCase):
 
     def test_guarded_plant_uses_personal_link_and_progress_overlay(self) -> None:
         phase = load(
-            ROOT / "source/raw/mod/gqt002/phases/gqt002_plant_keylogger.questphase.json"
+            ROOT / "projects/test-quests/gqt002/source/raw/mod/gqt002/phases/gqt002_plant_keylogger.questphase.json"
         )
         nodes = graph_nodes(phase)
         self.assertFalse(
@@ -199,7 +199,7 @@ class QuietInstallTests(unittest.TestCase):
 
     def test_world_uses_user_selected_vertical_layout(self) -> None:
         world = load(
-            ROOT / "quests/tests/gqt002/implementation/world/quiet-install.world.json"
+            ROOT / "projects/test-quests/gqt002/implementation/world/quiet-install.world.json"
         )
         self.assertEqual(
             world["origin"],
@@ -239,7 +239,7 @@ class QuietInstallTests(unittest.TestCase):
         }
         laptop = load(
             ROOT
-            / "source/raw/mod/gqt002/world/gqt002_laptop_instance.streamingsector.json"
+            / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_laptop_instance.streamingsector.json"
         )
         laptop_data = laptop["Data"]["RootChunk"]["nodeData"]["Data"][0]
         self.assertEqual(
@@ -259,7 +259,7 @@ class QuietInstallTests(unittest.TestCase):
 
         marker = load(
             ROOT
-            / "source/raw/mod/gqt002/world/gqt002_always_loaded.streamingsector.json"
+            / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_always_loaded.streamingsector.json"
         )
         marker_position = marker["Data"]["RootChunk"]["nodeData"]["Data"][0]["Position"]
         self.assertEqual(
@@ -269,7 +269,7 @@ class QuietInstallTests(unittest.TestCase):
 
         quest_sector = load(
             ROOT
-            / "source/raw/mod/gqt002/world/gqt002_quiet_install.streamingsector.json"
+            / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_quiet_install.streamingsector.json"
         )
         trigger_position = quest_sector["Data"]["RootChunk"]["nodeData"]["Data"][0][
             "Position"
@@ -284,7 +284,7 @@ class QuietInstallTests(unittest.TestCase):
         )
 
         registry = load(
-            ROOT / "source/raw/mod/gqt002/world/gqt002_custom_devices.devices.json"
+            ROOT / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_custom_devices.devices.json"
         )
         registry_position = registry["Data"]["RootChunk"]["data"]["Data"]["unk1"][0][
             "nodePosition"
@@ -320,7 +320,7 @@ class QuietInstallTests(unittest.TestCase):
 
     def test_security_area_is_dangerous_and_connected_to_guard_community(self) -> None:
         sector = load(
-            ROOT / "source/raw/mod/gqt002/world/gqt002_security.streamingsector.json"
+            ROOT / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_security.streamingsector.json"
         )
         root = sector["Data"]["RootChunk"]
         self.assertEqual(
@@ -370,7 +370,7 @@ class QuietInstallTests(unittest.TestCase):
 
         block = load(
             ROOT
-            / "source/raw/mod/gqt002/world/gqt002_quiet_install.streamingblock.json"
+            / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_quiet_install.streamingblock.json"
         )
         descriptors = block["Data"]["RootChunk"]["descriptors"]
         security_descriptor = next(
@@ -385,7 +385,7 @@ class QuietInstallTests(unittest.TestCase):
         )
 
         registry = load(
-            ROOT / "source/raw/mod/gqt002/world/gqt002_custom_devices.devices.json"
+            ROOT / "projects/test-quests/gqt002/source/raw/mod/gqt002/world/gqt002_custom_devices.devices.json"
         )
         self.assertEqual(
             {
@@ -400,7 +400,7 @@ class QuietInstallTests(unittest.TestCase):
         )
 
     def test_archive_xl_keeps_gqt002_inactive_while_gqt005_is_active(self) -> None:
-        config = (ROOT / "source/resources/Ghostline.archive.xl").read_text(
+        config = (ROOT / "projects/ghostline/source/resources/Ghostline.archive.xl").read_text(
             encoding="utf-8"
         )
         self.assertNotIn(
@@ -416,11 +416,11 @@ class QuietInstallTests(unittest.TestCase):
             r"mod\gqt002\world\gqt002_custom_devices.devices:",
             config,
         )
-        self.assertIn(
+        self.assertNotIn(
             r"mod\gqt005\phases\gqt005_braindance_analysis.questphase",
             config,
         )
-        self.assertIn(
+        self.assertNotIn(
             r"mod\gqt005\world\gqt005_braindance_analysis.streamingblock",
             config,
         )

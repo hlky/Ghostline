@@ -54,7 +54,7 @@ pub fn serialize_all(
     let schema = RedSchema::from_slice(&schema_bytes)?;
     let mut outputs = Vec::with_capacity(plan.dialogues.len() * 3);
     for dialogue in &plan.dialogues {
-        let paths = dialogue_paths(plan, &dialogue.index.id);
+        let paths = dialogue_paths(plan, &dialogue.index.id)?;
         outputs.push(serialize_one(
             &dialogue.index.id,
             "subtitles",
@@ -92,7 +92,7 @@ pub fn require_raw_inputs(plan: &VoicePlan) -> Result<Vec<DialogueLocalizationPa
     plan.dialogues
         .iter()
         .map(|dialogue| {
-            let paths = dialogue_paths(plan, &dialogue.index.id);
+            let paths = dialogue_paths(plan, &dialogue.index.id)?;
             for path in [
                 &paths.subtitle_raw,
                 &paths.subtitle_map_raw,

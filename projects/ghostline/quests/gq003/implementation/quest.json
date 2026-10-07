@@ -1,0 +1,2045 @@
+{
+  "schema_version": 1,
+  "id": "gq003",
+  "title": "Black Lantern",
+  "description": "Quiet Spine moved stolen identities through paired human couriers. Rescue Mara Venn, recover her reconstruction cipher, and decide whether the route is evidence worth preserving or a weapon that must be destroyed.",
+  "phase_prefabs": [
+    "@locations.gq003_pr_iris_site.ref",
+    "@locations.gq003_pr_freight_yard.ref",
+    "@locations.gq003_pr_memory_clinic.ref",
+    "@locations.gq003_pr_freight_interchange.ref",
+    "@locations.gq003_pr_reconstruction_relay.ref",
+    "@locations.gq003_pr_delivery.ref"
+  ],
+  "parallel_groups": [
+    {
+      "id": "freight_yard_operations",
+      "branches": [
+        [
+          "remain_undetected"
+        ],
+        [
+          "investigate_yard",
+          "read_expedited_handoff",
+          "plant_routing_beacon",
+          "breach_dispatch_relay",
+          "leave_freight_yard"
+        ]
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "patch_job_offer",
+      "type": "phone_job_offer",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_patch_job_offer.questphase",
+      "phase_prefabs": [],
+      "contact": "@contacts.patch.contact",
+      "message": "@contacts.patch.threads.gq003_01_offer.entries.entry_01_msg_quiet_spine_opened.path",
+      "choice_group": "@contacts.patch.threads.gq003_01_offer.entries.entry_02_ch_respond.path",
+      "accept_choice": "@contacts.patch.threads.gq003_01_offer.entries.entry_02_ch_respond.entries.entry_02a_ch_send_location.path",
+      "start_fact": "@facts.gq003_phone_start_sent",
+      "accepted_fact": "@facts.gq003_phone_reply_on_my_way",
+      "notes": "Text is locked. Journal contact entries and localization remain to be authored. This accepts the meeting, not the job."
+    },
+    {
+      "id": "meet_iris_briefing",
+      "type": "meet_contact",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_iris_briefing.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_iris_site.ref"
+      ],
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.gq003_02_com_iris.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.gq003_02_sm_iris.ref",
+        "#gq000_01_tr_setup": "@locations.gq003_02_tr_setup.ref",
+        "#gq000_pr_patch_meet": "@locations.gq003_pr_iris_site.ref",
+        "gq000_job_accepted": "gq003_job_accepted",
+        "gq000_patch_meet": "gq003_iris_briefing",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq003\\scenes\\gq003_iris_briefing.scene",
+        "patch": "@contacts.iris.contact",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.gq003_02_obj_meet_iris.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.gq003_02_obj_meet_iris.mappins.gq003_02_qmp_iris.path"
+      },
+      "contact": "@contacts.iris.contact",
+      "scene": "mod\\gq003\\scenes\\gq003_iris_briefing.scene",
+      "community": "@locations.gq003_02_com_iris.ref",
+      "appearance": "ghostline_iris_default",
+      "objective": "@objectives.gq003_02_obj_meet_iris.path",
+      "description_entry": "@objectives.gq003_02_obj_meet_iris.description_entry",
+      "mappin": "@objectives.gq003_02_obj_meet_iris.mappins.gq003_02_qmp_iris.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\iris\\iris.ent",
+        "mod\\gq003\\scenes\\gq003_iris_briefing.scene"
+      ],
+      "notes": "Community and NodeRefs are stable placeholders until the briefing/safe-site origin is selected. Scene exit job_accept owns gq003_job_accepted."
+    },
+    {
+      "id": "read_reconstruction_report",
+      "type": "read_terminal_document",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_read_reconstruction_report.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_iris_site.ref"
+      ],
+      "computer": "@locations.gq003_03_computer_reconstruction_report.ref",
+      "document_entry": "@readables.reconstruction_report.path",
+      "completion_fact": "@facts.gq003_report_read",
+      "objective": "@objectives.gq003_03_obj_read_report.path",
+      "notes": "Computer NodeRef is a placeholder at the future Iris site; the final device must set gq003_report_read when the report is opened."
+    },
+    {
+      "id": "wait_for_transfer_window",
+      "type": "time_gate",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_wait_for_transfer_window.questphase",
+      "phase_prefabs": [],
+      "hours": 6,
+      "completion_fact": "@facts.gq003_transfer_window_open",
+      "notes": "Six elapsed game hours is a tuning placeholder. Keep elapsed-time semantics unless an absolute time-of-day block is deliberately added."
+    },
+    {
+      "id": "receive_yard_identifier",
+      "type": "phone_conversation",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_receive_yard_identifier.questphase",
+      "phase_prefabs": [],
+      "contact": "@contacts.patch.contact",
+      "thread": "@contacts.patch.threads.gq003_05_yard_identifier.path",
+      "messages": [
+        "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_01_msg_yard_alias.path",
+        "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_02_msg_gate_phrase.path"
+      ],
+      "choice_group": "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_03_ch_ack.path",
+      "choices": [
+        {
+          "choice": "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_03_ch_ack.entries.entry_03a_ch_understood.path",
+          "reply": "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_04a_msg_location_sent.path"
+        },
+        {
+          "choice": "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_03_ch_ack.entries.entry_03b_ch_repeat_phrase.path",
+          "reply": "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_04b_msg_phrase_repeated.path"
+        }
+      ],
+      "final_message": "@contacts.patch.threads.gq003_05_yard_identifier.entries.entry_05_msg_route_ready.path",
+      "notes": "The required acknowledgement group is locked: V can confirm or ask Patch to repeat the freight-gate phrase."
+    },
+    {
+      "id": "reach_freight_yard",
+      "type": "reach_area",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_reach_freight_yard.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "trigger": "@locations.gq003_06_tr_freight_yard.ref",
+      "objective": "@objectives.gq003_06_obj_reach_yard.path",
+      "description_entry": "@objectives.gq003_06_obj_reach_yard.description_entry",
+      "mappin": "@objectives.gq003_06_obj_reach_yard.mappins.gq003_06_qmp_yard.path",
+      "start_fact": "@facts.gq003_yard_reached",
+      "notes": "Trigger and mappin NodeRefs are placeholders until the freight-yard origin is reviewed."
+    },
+    {
+      "id": "remain_undetected",
+      "type": "stealth_monitor",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_remain_undetected.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "objective": "@objectives.gq003_07_obj_remain_undetected.path",
+      "failure_fact": "@facts.gq003_stealth_failed",
+      "success_fact": "@facts.gq003_stealth_succeeded",
+      "stop_fact": "@facts.gq003_yard_cleared",
+      "notes": "Must run in parallel with stages 8-12 inside a quest-local compound root. Linear prototype orchestration is not a playable topology for this stage."
+    },
+    {
+      "id": "investigate_yard",
+      "type": "investigate_clues",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_investigate_yard.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "objective": "@objectives.gq003_08_obj_investigate_yard.path",
+      "description_entry": "@objectives.gq003_08_obj_investigate_yard.description_entry",
+      "required_count": 3,
+      "completion_fact": "@facts.gq003_yard_investigation_complete",
+      "clues": [
+        {
+          "id": "transfer_board",
+          "object_ref": "@locations.gq003_08_clue_transfer_board.ref",
+          "completion_fact": "@facts.gq003_clue_board_scanned",
+          "mappin": "@objectives.gq003_08_obj_investigate_yard.mappins.gq003_08_qmp_transfer_board.path"
+        },
+        {
+          "id": "neural_stabilizers",
+          "object_ref": "@locations.gq003_08_clue_neural_stabilizers.ref",
+          "completion_fact": "@facts.gq003_clue_stabilizers_scanned",
+          "mappin": "@objectives.gq003_08_obj_investigate_yard.mappins.gq003_08_qmp_neural_stabilizers.path"
+        },
+        {
+          "id": "restraint_case",
+          "object_ref": "@locations.gq003_08_clue_restraint_case.ref",
+          "completion_fact": "@facts.gq003_clue_restraint_scanned",
+          "grant_items": [
+            "Items.GhostlineBlackLanternRouteAuth",
+            "Items.GhostlineExpeditedHandoff"
+          ],
+          "mappin": "@objectives.gq003_08_obj_investigate_yard.mappins.gq003_08_qmp_restraint_case.path"
+        }
+      ],
+      "notes": "All clue NodeRefs are placeholders. The restraint clue grants both the route-auth token and readable expedited-handoff shard."
+    },
+    {
+      "id": "read_expedited_handoff",
+      "type": "read_shard",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_read_expedited_handoff.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "journal_entry": "@readables.expedited_handoff.path",
+      "file_entry_index": 5,
+      "item": "Items.GhostlineExpeditedHandoff",
+      "acquisition_fact": "@facts.gq003_clue_restraint_scanned",
+      "presentation_delay_seconds": 3,
+      "objective": "@objectives.gq003_09_obj_read_handoff.path",
+      "completion_fact": "@facts.gq003_yard_shard_read",
+      "notes": "file_entry_index follows the current Ghostline shards hierarchy and must be rechecked against the authored gq003 journal file."
+    },
+    {
+      "id": "plant_routing_beacon",
+      "type": "plant_item",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_plant_routing_beacon.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "item": "Items.GhostlineBlackLanternRouteBeacon",
+      "device": "@locations.gq003_10_device_beacon_mount.ref",
+      "controller_class": "ScriptableDeviceComponentPS",
+      "action": "QuestForceDisconnectPersonalLink",
+      "completion_function": "IsPersonalLinkConnected",
+      "completion_fact": "@facts.gq003_beacon_planted",
+      "objective": "@objectives.gq003_10_obj_plant_beacon.path",
+      "consume_item": true,
+      "notes": "Item record, target NodeRef, and device contract are placeholders. Select the interaction shape after the yard location and plant target are reviewed."
+    },
+    {
+      "id": "breach_dispatch_relay",
+      "type": "hack_access_point",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_breach_dispatch_relay.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "device": "@locations.gq003_11_ap_dispatch_relay.ref",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ToggleON",
+      "send_action": false,
+      "completion_function": "WasHackingMinigameSucceeded",
+      "objective": "@objectives.gq003_11_obj_breach_dispatch.path",
+      "description_entry": "@objectives.gq003_11_obj_breach_dispatch.description_entry",
+      "mappin": "@objectives.gq003_11_obj_breach_dispatch.mappins.gq003_11_qmp_dispatch.path",
+      "success_fact": "@facts.gq003_dispatch_breached",
+      "notes": "Dispatch access-point NodeRef is a placeholder. The generated phase observes native breach completion and sets the Pair 07-B identification fact."
+    },
+    {
+      "id": "leave_freight_yard",
+      "type": "leave_area",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_leave_freight_yard.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_yard.ref"
+      ],
+      "trigger": "@locations.gq003_12_tr_freight_yard_cleanup.ref",
+      "objective": "@objectives.gq003_12_obj_leave_yard.path",
+      "description_entry": "@objectives.gq003_12_obj_leave_yard.description_entry",
+      "completion_fact": "@facts.gq003_yard_cleared",
+      "cleanup_community": "@locations.gq003_06_com_yard_security.ref",
+      "notes": "Cleanup boundary and yard community are placeholders. gq003_yard_cleared stops the parallel stealth monitor."
+    },
+    {
+      "id": "clinic_location_call",
+      "type": "phone_conversation",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_clinic_location_call.questphase",
+      "phase_prefabs": [],
+      "contact": "@contacts.iris.contact",
+      "thread": "@contacts.iris.threads.gq003_13_clinic_location.path",
+      "messages": [
+        "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_01_msg_trace_ready.path"
+      ],
+      "opening_branches": [
+        {
+          "condition": "@facts.gq003_stealth_succeeded",
+          "messages": [
+            "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_02a_msg_clean_yard.path"
+          ]
+        },
+        {
+          "condition": "@facts.gq003_stealth_failed",
+          "messages": [
+            "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_02b_msg_detected_yard.path"
+          ]
+        }
+      ],
+      "conditional_message_groups": [
+        {
+          "id": "patch_yard_reaction",
+          "branches": [
+            {
+              "condition": "@facts.gq003_stealth_succeeded",
+              "messages": [
+                "@contacts.patch.threads.gq003_13_clinic_location.entries.entry_01a_msg_clean_yard.path"
+              ]
+            },
+            {
+              "condition": "@facts.gq003_stealth_failed",
+              "messages": [
+                "@contacts.patch.threads.gq003_13_clinic_location.entries.entry_01b_msg_detected_yard.path"
+              ]
+            }
+          ]
+        }
+      ],
+      "choice_group": "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_03_ch_ack.path",
+      "choices": [
+        {
+          "choice": "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_03_ch_ack.entries.entry_03a_ch_send_location.path",
+          "reply": "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_04a_msg_location_sent.path"
+        },
+        {
+          "choice": "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_03_ch_ack.entries.entry_03b_ch_jammer.path",
+          "reply": "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_04b_msg_jammer_warning.path"
+        }
+      ],
+      "final_message": "@contacts.iris.threads.gq003_13_clinic_location.entries.entry_05_msg_clinic_marked.path",
+      "notes": "The locked call activates Iris's clean/detected branch, then the matching non-gating Patch companion message before V's acknowledgement."
+    },
+    {
+      "id": "reach_memory_clinic",
+      "type": "reach_area",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_reach_memory_clinic.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_memory_clinic.ref"
+      ],
+      "trigger": "@locations.gq003_14_tr_memory_clinic.ref",
+      "objective": "@objectives.gq003_14_obj_reach_clinic.path",
+      "description_entry": "@objectives.gq003_14_obj_reach_clinic.description_entry",
+      "mappin": "@objectives.gq003_14_obj_reach_clinic.mappins.gq003_14_qmp_clinic.path",
+      "start_fact": "@facts.gq003_clinic_reached",
+      "notes": "Clinic trigger and mappin NodeRefs are placeholders."
+    },
+    {
+      "id": "clear_clinic_security",
+      "type": "combat_encounter",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_clear_clinic_security.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_memory_clinic.ref"
+      ],
+      "community": "@locations.gq003_15_com_clinic_security.ref",
+      "entries": [
+        "clinic_guard_01",
+        "clinic_guard_02",
+        "clinic_guard_03",
+        "clinic_guard_04"
+      ],
+      "hostility": "already_hostile",
+      "completion": "all_defeated",
+      "nonlethal_allowed": true,
+      "objective": "@objectives.gq003_15_obj_clear_security.path",
+      "description_entry": "@objectives.gq003_15_obj_clear_security.description_entry",
+      "completion_fact": "@facts.gq003_clinic_security_resolved",
+      "cleanup_on_exit": false,
+      "notes": "Community and four entry names are placeholders pending encounter layout. Mara's later defense may reuse surviving clinic-space anchors, not this guard community."
+    },
+    {
+      "id": "disable_neural_jammer",
+      "type": "interact_device",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_disable_neural_jammer.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_memory_clinic.ref"
+      ],
+      "device": "@locations.gq003_16_ap_neural_jammer.ref",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ToggleON",
+      "send_action": false,
+      "completion_function": "WasHackingMinigameSucceeded",
+      "objective": "@objectives.gq003_16_obj_disable_jammer.path",
+      "description_entry": "@objectives.gq003_16_obj_disable_jammer.description_entry",
+      "mappin": "@objectives.gq003_16_obj_disable_jammer.mappins.gq003_16_qmp_jammer.path",
+      "success_fact": "@facts.gq003_jammer_disabled",
+      "notes": "Access-point NodeRef and controller shape are placeholders pending clinic device selection."
+    },
+    {
+      "id": "release_mara",
+      "type": "release_or_rescue_npc",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_release_mara.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_memory_clinic.ref"
+      ],
+      "community": "@locations.gq003_17_com_mara.ref",
+      "entry": "mara",
+      "device": "@locations.gq003_17_device_mara_restraint.ref",
+      "controller_class": "ScriptableDeviceComponentPS",
+      "action": "ForceEnabled",
+      "completion_function": "IsPersonalLinkConnected",
+      "completion_fact": "@facts.gq003_mara_released",
+      "objective": "@objectives.gq003_17_obj_release_mara.path",
+      "notes": "Mara community, restraint NodeRef, and device action are placeholders. The community must remain active after release."
+    },
+    {
+      "id": "escort_mara",
+      "type": "escort_npc",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_escort_mara.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_memory_clinic.ref"
+      ],
+      "community": "@locations.gq003_17_com_mara.ref",
+      "entry": "mara",
+      "destinations": [
+        "@locations.gq003_18_tr_escort_gate_01.ref",
+        "@locations.gq003_18_tr_escort_gate_02.ref",
+        "@locations.gq003_18_tr_escort_gate_03.ref"
+      ],
+      "objective": "@objectives.gq003_18_obj_escort_mara.path",
+      "mappin": "@objectives.gq003_18_obj_escort_mara.mappins.gq003_18_qmp_escort_gate_01.path",
+      "route_mappins": [
+        "@objectives.gq003_18_obj_escort_mara.mappins.gq003_18_qmp_escort_gate_01.path",
+        "@objectives.gq003_18_obj_escort_mara.mappins.gq003_18_qmp_escort_gate_02.path",
+        "@objectives.gq003_18_obj_escort_mara.mappins.gq003_18_qmp_escort_gate_03.path"
+      ],
+      "completion_fact": "@facts.gq003_mara_escorted",
+      "notes": "All route gates are placeholders and require a continuous navmesh review. Use the retained-escort topology so Mara remains staged for defense."
+    },
+    {
+      "id": "stabilize_mara",
+      "type": "defend_target",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_stabilize_mara.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_memory_clinic.ref"
+      ],
+      "checkpoint": "gq003_mara_stabilization",
+      "retry_checkpoint": true,
+      "block_on_failure": true,
+      "community": "@locations.gq003_17_com_mara.ref",
+      "entry": "mara",
+      "completion_fact": "@facts.gq003_mara_stabilized",
+      "failure_fact": "@facts.gq003_mara_lost",
+      "objective": "@objectives.gq003_19_obj_stabilize_mara.path",
+      "notes": "The root writes a retry-enabled checkpoint before the generated blocking defense. Success exits normally; Mara loss fails the objective, sets gq003_mara_lost, and emits no Out1 progression. Fixed attackers and the 90-second completion signal remain encounter-owned world/AI work."
+    },
+    {
+      "id": "meet_iris_safe_site",
+      "type": "meet_contact",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_iris_safe_site.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_iris_site.ref"
+      ],
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.gq003_20_com_iris.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.gq003_20_sm_iris.ref",
+        "#gq000_01_tr_setup": "@locations.gq003_20_tr_setup.ref",
+        "#gq000_pr_patch_meet": "@locations.gq003_pr_iris_site.ref",
+        "gq000_job_accepted": "gq003_safe_site_briefed",
+        "gq000_patch_meet": "gq003_iris_safe_site",
+        "job_accept": "continue_route",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq003\\scenes\\gq003_iris_safe_site.scene",
+        "patch": "@contacts.iris.contact",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.gq003_20_obj_meet_iris.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.gq003_20_obj_meet_iris.mappins.gq003_20_qmp_iris.path"
+      },
+      "contact": "@contacts.iris.contact",
+      "scene": "mod\\gq003\\scenes\\gq003_iris_safe_site.scene",
+      "community": "@locations.gq003_20_com_iris.ref",
+      "appearance": "ghostline_iris_default",
+      "objective": "@objectives.gq003_20_obj_meet_iris.path",
+      "description_entry": "@objectives.gq003_20_obj_meet_iris.description_entry",
+      "mappin": "@objectives.gq003_20_obj_meet_iris.mappins.gq003_20_qmp_iris.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\iris\\iris.ent",
+        "mod\\gq003\\scenes\\gq003_iris_safe_site.scene"
+      ],
+      "notes": "NodeRefs are placeholders at the reused Iris origin. Mara remains physically staged outside the formal two-performer Iris/V scene. Scene exit continue_route sets gq003_safe_site_briefed."
+    },
+    {
+      "id": "patch_confession",
+      "type": "phone_conversation",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_patch_confession.questphase",
+      "phase_prefabs": [],
+      "contact": "@contacts.patch.contact",
+      "thread": "@contacts.patch.threads.gq003_21_confession.path",
+      "messages": [
+        "@contacts.patch.threads.gq003_21_confession.entries.entry_01_msg_iris_told_you.path"
+      ],
+      "choice_group": "@contacts.patch.threads.gq003_21_confession.entries.entry_02_ch_confront.path",
+      "choices": [
+        {
+          "choice": "@contacts.patch.threads.gq003_21_confession.entries.entry_02_ch_confront.entries.entry_02a_ch_knew_couriers.path",
+          "reply": "@contacts.patch.threads.gq003_21_confession.entries.entry_03a_msg_confession.path"
+        },
+        {
+          "choice": "@contacts.patch.threads.gq003_21_confession.entries.entry_02_ch_confront.entries.entry_02b_ch_how_many.path",
+          "reply": "@contacts.patch.threads.gq003_21_confession.entries.entry_03b_msg_four_runs.path"
+        }
+      ],
+      "final_message": "@contacts.patch.threads.gq003_21_confession.entries.entry_04_msg_vehicle_sent.path",
+      "notes": "The second choice folds the authored courier-run question into the confession thread before Patch sends the vehicle."
+    },
+    {
+      "id": "enter_patch_vehicle",
+      "type": "enter_vehicle",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_enter_patch_vehicle.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_iris_site.ref"
+      ],
+      "vehicle_community": "@locations.gq003_22_com_patch_vehicle.ref",
+      "vehicle_entry": "patch_vehicle",
+      "objective": "@objectives.gq003_22_obj_enter_vehicle.path",
+      "mappin": "@objectives.gq003_22_obj_enter_vehicle.mappins.gq003_22_qmp_vehicle.path",
+      "notes": "Temporary vehicle community and entry are placeholders at the safe site."
+    },
+    {
+      "id": "ride_with_patch",
+      "type": "ride_with_contact",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_ride_with_patch.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_iris_site.ref"
+      ],
+      "vehicle_community": "@locations.gq003_22_com_patch_vehicle.ref",
+      "vehicle_entry": "patch_vehicle",
+      "contact_community": "@locations.gq003_23_com_patch.ref",
+      "contact_entry": "@contacts.patch.contact",
+      "objective": "@objectives.gq003_23_obj_wait_for_patch.path",
+      "notes": "Patch community/spot is a placeholder. Ambient route dialogue may ship as phone/HUD text before a drive scene exists."
+    },
+    {
+      "id": "drive_patch_to_interchange",
+      "type": "drive_to",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_drive_patch_to_interchange.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_iris_site.ref",
+        "@locations.gq003_pr_freight_interchange.ref"
+      ],
+      "vehicle_community": "@locations.gq003_22_com_patch_vehicle.ref",
+      "vehicle_entry": "patch_vehicle",
+      "destination": "@locations.gq003_24_tr_freight_interchange.ref",
+      "completion_fact": "@facts.gq003_patch_ride_complete",
+      "objective": "@objectives.gq003_24_obj_drive_interchange.path",
+      "mappin": "@objectives.gq003_24_obj_drive_interchange.mappins.gq003_24_qmp_interchange.path",
+      "notes": "Destination trigger and map marker are placeholders pending a drivable interchange origin."
+    },
+    {
+      "id": "steal_pair_07b",
+      "type": "steal_vehicle",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_steal_pair_07b.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_interchange.ref"
+      ],
+      "vehicle_community": "@locations.gq003_25_com_pair_07b.ref",
+      "vehicle_entry": "pair_07b",
+      "objective": "@objectives.gq003_25_obj_steal_carrier.path",
+      "mappin": "@objectives.gq003_25_obj_steal_carrier.mappins.gq003_25_qmp_carrier.path",
+      "completion_fact": "@facts.gq003_carrier_stolen",
+      "notes": "Carrier community, entry, and parking placement are placeholders. The reusable theft template now sets gq003_carrier_stolen after V mounts Pair 07-B."
+    },
+    {
+      "id": "drive_carrier_to_relay",
+      "type": "drive_to",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_drive_carrier_to_relay.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_freight_interchange.ref",
+        "@locations.gq003_pr_reconstruction_relay.ref"
+      ],
+      "vehicle_community": "@locations.gq003_25_com_pair_07b.ref",
+      "vehicle_entry": "pair_07b",
+      "destination": "@locations.gq003_26_tr_reconstruction_relay_parking.ref",
+      "completion_fact": "@facts.gq003_carrier_arrived",
+      "objective": "@objectives.gq003_26_obj_drive_carrier.path",
+      "mappin": "@objectives.gq003_26_obj_drive_carrier.mappins.gq003_26_qmp_relay.path",
+      "notes": "Relay parking trigger and marker are placeholders."
+    },
+    {
+      "id": "cleanup_patch_vehicle",
+      "type": "vehicle_cleanup",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_cleanup_patch_vehicle.questphase",
+      "phase_prefabs": [],
+      "player_vehicle_record": "Vehicle.GhostlineBlackLanternPatchVan",
+      "completion_fact": "@facts.gq003_patch_vehicle_cleaned",
+      "notes": "Vehicle record is a placeholder. Cleanup must remove only Patch's temporary player vehicle and leave Pair 07-B staged."
+    },
+    {
+      "id": "enter_reconstruction_relay",
+      "type": "reach_area",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_enter_reconstruction_relay.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_reconstruction_relay.ref"
+      ],
+      "trigger": "@locations.gq003_28_tr_reconstruction_relay.ref",
+      "objective": "@objectives.gq003_28_obj_enter_relay.path",
+      "description_entry": "@objectives.gq003_28_obj_enter_relay.description_entry",
+      "mappin": "@objectives.gq003_28_obj_enter_relay.mappins.gq003_28_qmp_relay.path",
+      "start_fact": "@facts.gq003_relay_entered",
+      "notes": "Relay trigger and marker are placeholders."
+    },
+    {
+      "id": "defeat_retrieval_team",
+      "type": "combat_encounter",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_defeat_retrieval_team.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_reconstruction_relay.ref"
+      ],
+      "community": "@locations.gq003_29_com_retrieval_team.ref",
+      "entries": [
+        "retrieval_ranged_01",
+        "retrieval_ranged_02",
+        "retrieval_melee_01",
+        "retrieval_netrunner_01"
+      ],
+      "hostility": "already_hostile",
+      "completion": "all_defeated",
+      "nonlethal_allowed": true,
+      "objective": "@objectives.gq003_29_obj_defeat_retrieval.path",
+      "description_entry": "@objectives.gq003_29_obj_defeat_retrieval.description_entry",
+      "completion_fact": "@facts.gq003_retrieval_team_resolved",
+      "cleanup_on_exit": false,
+      "notes": "Community and entry roster are placeholders pending relay encounter layout."
+    },
+    {
+      "id": "investigate_reconstruction_relay",
+      "type": "investigate_clues",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_investigate_reconstruction_relay.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_reconstruction_relay.ref"
+      ],
+      "objective": "@objectives.gq003_30_obj_investigate_relay.path",
+      "description_entry": "@objectives.gq003_30_obj_investigate_relay.description_entry",
+      "required_count": 3,
+      "completion_fact": "@facts.gq003_relay_investigation_complete",
+      "clues": [
+        {
+          "id": "carrier_rack",
+          "object_ref": "@locations.gq003_30_clue_carrier_rack.ref",
+          "completion_fact": "@facts.gq003_clue_carrier_rack_scanned",
+          "grant_item": "Items.GhostlineBlackLanternCipher",
+          "mappin": "@objectives.gq003_30_obj_investigate_relay.mappins.gq003_30_qmp_carrier_rack.path"
+        },
+        {
+          "id": "reconstruction_core",
+          "object_ref": "@locations.gq003_30_clue_reconstruction_core.ref",
+          "completion_fact": "@facts.gq003_clue_core_scanned",
+          "mappin": "@objectives.gq003_30_obj_investigate_relay.mappins.gq003_30_qmp_core.path"
+        },
+        {
+          "id": "courier_ledger",
+          "object_ref": "@locations.gq003_30_clue_courier_ledger.ref",
+          "completion_fact": "@facts.gq003_clue_ledger_scanned",
+          "mappin": "@objectives.gq003_30_obj_investigate_relay.mappins.gq003_30_qmp_ledger.path"
+        }
+      ],
+      "notes": "All clue NodeRefs are placeholders. Carrier rack grants the outcome-bearing cipher."
+    },
+    {
+      "id": "argue_relay_outcome",
+      "type": "phone_conversation",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_argue_relay_outcome.questphase",
+      "phase_prefabs": [],
+      "contact": "@contacts.morrow.contact",
+      "thread": "@contacts.morrow.threads.gq003_31_relay_argument.path",
+      "messages": [
+        "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_01_msg_morrow_preserve.path",
+        "@contacts.iris.threads.gq003_31_relay_argument.entries.entry_02_msg_iris_burn.path",
+        "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_03_msg_morrow_future.path",
+        "@contacts.iris.threads.gq003_31_relay_argument.entries.entry_04_msg_iris_present.path",
+        "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_05_msg_morrow_trace.path",
+        "@contacts.iris.threads.gq003_31_relay_argument.entries.entry_06_msg_iris_erase.path"
+      ],
+      "choice_group": "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_07_ch_outcome.path",
+      "choices": [
+        {
+          "choice": "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_07_ch_outcome.entries.entry_07a_ch_preserve.path",
+          "reply": "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_08a_msg_preserve_confirmed.path",
+          "set_fact": "@facts.gq003_scene_choice_preserve"
+        },
+        {
+          "choice": "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_07_ch_outcome.entries.entry_07b_ch_burn.path",
+          "reply": "@contacts.iris.threads.gq003_31_relay_argument.entries.entry_08b_msg_burn_confirmed.path",
+          "set_fact": "@facts.gq003_scene_choice_burn"
+        }
+      ],
+      "final_message": "@contacts.morrow.threads.gq003_31_relay_argument.entries.entry_09_msg_operate_core.path",
+      "notes": "Message paths alternate between Morrow and Iris contacts in one generated sequence, so both arguments arrive before the choice without a quest-local custom phase."
+    },
+    {
+      "id": "choose_relay_outcome",
+      "type": "choice_gate",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_choose_relay_outcome.questphase",
+      "phase_prefabs": [],
+      "gate_kind": "fact",
+      "branches": [
+        {
+          "id": "preserve",
+          "condition": "@facts.gq003_scene_choice_preserve",
+          "set_fact": "@facts.gq003_choice_preserve"
+        },
+        {
+          "id": "burn",
+          "condition": "@facts.gq003_scene_choice_burn",
+          "set_fact": "@facts.gq003_choice_burn"
+        }
+      ],
+      "join": true
+    },
+    {
+      "id": "operate_reconstruction_core",
+      "type": "interact_device",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_operate_reconstruction_core.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_reconstruction_relay.ref"
+      ],
+      "device": "@locations.gq003_33_ap_reconstruction_core.ref",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ToggleON",
+      "send_action": false,
+      "completion_function": "WasHackingMinigameSucceeded",
+      "objective": "@objectives.gq003_33_obj_operate_core.path",
+      "description_entry": "@objectives.gq003_33_obj_operate_core.description_entry",
+      "mappin": "@objectives.gq003_33_obj_operate_core.mappins.gq003_33_qmp_core.path",
+      "success_fact": "@facts.gq003_core_operated",
+      "outcome_branches": [
+        {
+          "id": "preserve",
+          "condition": "@facts.gq003_choice_preserve",
+          "set_fact": "@facts.gq003_route_preserved"
+        },
+        {
+          "id": "burn",
+          "condition": "@facts.gq003_choice_burn",
+          "set_fact": "@facts.gq003_route_burned",
+          "remove_items": [
+            "Items.GhostlineBlackLanternCipher"
+          ],
+          "add_items": [
+            "Items.GhostlineBlackLanternReceipt"
+          ]
+        }
+      ],
+      "notes": "The generated outcome operation waits for the common device completion, applies the selected inventory mutation, sets exactly one route fact, and reconverges on gq003_core_operated. Core NodeRef is a placeholder."
+    },
+    {
+      "id": "leave_reconstruction_relay",
+      "type": "leave_area",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_leave_reconstruction_relay.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_reconstruction_relay.ref"
+      ],
+      "trigger": "@locations.gq003_34_tr_reconstruction_relay_cleanup.ref",
+      "objective": "@objectives.gq003_34_obj_leave_relay.path",
+      "description_entry": "@objectives.gq003_34_obj_leave_relay.description_entry",
+      "completion_fact": "@facts.gq003_relay_cleared",
+      "cleanup_community": "@locations.gq003_29_com_retrieval_team.ref",
+      "notes": "Cleanup trigger is a placeholder and must sit outside visible encounter range."
+    },
+    {
+      "id": "deliver_black_lantern_package",
+      "type": "deliver_drop_point",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_deliver_black_lantern_package.questphase",
+      "phase_prefabs": [
+        "@locations.gq003_pr_delivery.ref"
+      ],
+      "item_branches": [
+        {
+          "id": "preserve",
+          "condition": "@facts.gq003_route_preserved",
+          "item": "Items.GhostlineBlackLanternCipher"
+        },
+        {
+          "id": "burn",
+          "condition": "@facts.gq003_route_burned",
+          "item": "Items.GhostlineBlackLanternReceipt"
+        }
+      ],
+      "drop_point": "$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y",
+      "deposit_fact": "@facts.gq003_cipher_delivered",
+      "objective": "@objectives.gq003_35_obj_deliver_package.path",
+      "description_entry": "@objectives.gq003_35_obj_deliver_package.description_entry",
+      "mappin": "@objectives.gq003_35_obj_deliver_package.mappins.gq003_35_qmp_drop_point.path",
+      "notes": "Kabuki drop_point_009 is the runtime-confirmed provisional target. The generated phase selects cipher or receipt by route fact; both final item records use friendlyName gq003_cipher_delivered."
+    },
+    {
+      "id": "black_lantern_debrief",
+      "type": "phone_conversation",
+      "status": "planned",
+      "phase_resource": "mod\\gq003\\phases\\gq003_black_lantern_debrief.questphase",
+      "phase_prefabs": [],
+      "contact": "@contacts.morrow.contact",
+      "thread": "@contacts.morrow.threads.gq003_36_debrief.path",
+      "messages": [],
+      "conditional_message_groups": [
+        {
+          "id": "route_outcome",
+          "branches": [
+            {
+              "condition": "@facts.gq003_route_preserved",
+              "messages": [
+                "@contacts.morrow.threads.gq003_36_debrief.entries.entry_01a_msg_route_preserved.path",
+                "@contacts.iris.threads.gq003_36_debrief.entries.entry_02a_msg_route_preserved.path"
+              ]
+            },
+            {
+              "condition": "@facts.gq003_route_burned",
+              "messages": [
+                "@contacts.morrow.threads.gq003_36_debrief.entries.entry_01b_msg_route_burned.path",
+                "@contacts.iris.threads.gq003_36_debrief.entries.entry_02b_msg_route_burned.path"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yard_stealth",
+          "branches": [
+            {
+              "condition": "@facts.gq003_stealth_succeeded",
+              "messages": [
+                "@contacts.morrow.threads.gq003_36_debrief.entries.entry_03a_msg_stealth_succeeded.path"
+              ]
+            },
+            {
+              "condition": "@facts.gq003_stealth_failed",
+              "messages": [
+                "@contacts.morrow.threads.gq003_36_debrief.entries.entry_03b_msg_stealth_failed.path"
+              ]
+            }
+          ]
+        }
+      ],
+      "choice_group": "@contacts.morrow.threads.gq003_36_debrief.entries.entry_04_ch_response.path",
+      "choices": [
+        {
+          "choice": "@contacts.morrow.threads.gq003_36_debrief.entries.entry_04_ch_response.entries.entry_04a_ch_people_not_infrastructure.path",
+          "reply": "@contacts.morrow.threads.gq003_36_debrief.entries.entry_05a_msg_leverage.path"
+        },
+        {
+          "choice": "@contacts.morrow.threads.gq003_36_debrief.entries.entry_04_ch_response.entries.entry_04b_ch_morita_out_there.path",
+          "reply": "@contacts.morrow.threads.gq003_36_debrief.entries.entry_05b_msg_adapt.path"
+        }
+      ],
+      "final_message": "@contacts.morrow.threads.gq003_36_debrief.entries.entry_06_msg_payment.path",
+      "postscript_messages": [
+        "@contacts.patch.threads.gq003_36_debrief.entries.entry_07_msg_confession_postscript.path"
+      ],
+      "objective": "@objectives.gq003_36_obj_respond_ghostline.path",
+      "description_entry": "@objectives.gq003_36_obj_respond_ghostline.description_entry",
+      "reward": "QuestRewards.gq003_completion",
+      "completion_fact": "@facts.gq003_completed",
+      "complete_quest": "quests/minor_quest/gq003",
+      "notes": "Two sequential conditional groups cover route outcome and yard stealth without a four-way cross product. Iris messages use Iris's contact path; Patch's postscript activates after Morrow's required close without becoming a progression gate."
+    }
+  ],
+  "composition": {
+    "namespace": "gq003",
+    "journal_template": "gq002_shapes",
+    "quest": {
+      "title": "Black Lantern",
+      "localization_key": "gl_gq003_title"
+    },
+    "objectives": {
+      "gq003_02_obj_meet_iris": {
+        "phase_id": "gq003_02",
+        "id": "gq003_02_obj_meet_iris",
+        "text": "Meet Iris.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_02_gq003_02_obj_meet_iris",
+        "description": "Iris has reconstructed part of Quiet Spine. Meet her and learn who is still trapped inside the route.",
+        "description_id": "gq003_02_desc_meet_iris",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_02_gq003_02_obj_meet_iris_gq003_02_desc_meet_iris",
+        "mappins": {
+          "gq003_02_qmp_iris": {
+            "id": "gq003_02_qmp_iris",
+            "ref": "@locations.gq003_02_mp_iris.ref",
+            "text": "Iris",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_02_gq003_02_obj_meet_iris_gq003_02_qmp_iris",
+            "debug_caption": "Iris"
+          }
+        }
+      },
+      "gq003_03_obj_read_report": {
+        "phase_id": "gq003_03",
+        "id": "gq003_03_obj_read_report",
+        "text": "Read Iris's reconstruction report.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_03_gq003_03_obj_read_report",
+        "description": "Review Iris's analysis of Mara Venn, Pair 07-B, and the Black Lantern transfer route.",
+        "description_id": "gq003_03_desc_read_report",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_03_gq003_03_obj_read_report_gq003_03_desc_read_report",
+        "mappins": {}
+      },
+      "gq003_06_obj_reach_yard": {
+        "phase_id": "gq003_06",
+        "id": "gq003_06_obj_reach_yard",
+        "text": "Reach the Black Lantern freight yard.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_06_gq003_06_obj_reach_yard",
+        "description": "Find the municipal-salvage front Patch identified and locate Pair Seven's transfer records.",
+        "description_id": "gq003_06_desc_reach_yard",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_06_gq003_06_obj_reach_yard_gq003_06_desc_reach_yard",
+        "mappins": {
+          "gq003_06_qmp_yard": {
+            "id": "gq003_06_qmp_yard",
+            "ref": "@locations.gq003_06_mp_yard.ref",
+            "text": "Black Lantern freight yard",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_06_gq003_06_obj_reach_yard_gq003_06_qmp_yard",
+            "debug_caption": "Black Lantern freight yard"
+          }
+        }
+      },
+      "gq003_07_obj_remain_undetected": {
+        "phase_id": "gq003_07",
+        "id": "gq003_07_obj_remain_undetected",
+        "text": "Optional: Remain undetected.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_07_gq003_07_obj_remain_undetected",
+        "description": "Avoid raising the yard alarm while you identify and mark the expedited shipment.",
+        "description_id": "gq003_07_desc_remain_undetected",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_07_gq003_07_obj_remain_undetected_gq003_07_desc_remain_undetected",
+        "mappins": {}
+      },
+      "gq003_08_obj_investigate_yard": {
+        "phase_id": "gq003_08",
+        "id": "gq003_08_obj_investigate_yard",
+        "text": "Investigate the transfer yard.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_08_gq003_08_obj_investigate_yard",
+        "description": "Scan the transfer board, neural stabilizers, and conscious-transport restraint case.",
+        "description_id": "gq003_08_desc_investigate_yard",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_08_gq003_08_obj_investigate_yard_gq003_08_desc_investigate_yard",
+        "mappins": {
+          "gq003_08_qmp_transfer_board": {
+            "id": "gq003_08_qmp_transfer_board",
+            "ref": "@locations.gq003_08_clue_transfer_board.ref",
+            "text": "Expedited transfer board",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_08_gq003_08_obj_investigate_yard_gq003_08_qmp_transfer_board",
+            "debug_caption": "Expedited transfer board"
+          },
+          "gq003_08_qmp_neural_stabilizers": {
+            "id": "gq003_08_qmp_neural_stabilizers",
+            "ref": "@locations.gq003_08_clue_neural_stabilizers.ref",
+            "text": "Neural stabilizers",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_08_gq003_08_obj_investigate_yard_gq003_08_qmp_neural_stabilizers",
+            "debug_caption": "Neural stabilizers"
+          },
+          "gq003_08_qmp_restraint_case": {
+            "id": "gq003_08_qmp_restraint_case",
+            "ref": "@locations.gq003_08_clue_restraint_case.ref",
+            "text": "Conscious-transport restraint",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_08_gq003_08_obj_investigate_yard_gq003_08_qmp_restraint_case",
+            "debug_caption": "Conscious-transport restraint"
+          }
+        }
+      },
+      "gq003_09_obj_read_handoff": {
+        "phase_id": "gq003_09",
+        "id": "gq003_09_obj_read_handoff",
+        "text": "Read the archived conversation.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_09_gq003_09_obj_read_handoff",
+        "description": "The restraint case contained a conversation between Sato and K. Morita.",
+        "description_id": "gq003_09_desc_read_handoff",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_09_gq003_09_obj_read_handoff_gq003_09_desc_read_handoff",
+        "mappins": {}
+      },
+      "gq003_10_obj_plant_beacon": {
+        "phase_id": "gq003_10",
+        "id": "gq003_10_obj_plant_beacon",
+        "text": "Install the routing beacon.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_10_gq003_10_obj_plant_beacon",
+        "description": "Mount Iris's beacon on the Black Lantern routing hardware without interrupting its heartbeat.",
+        "description_id": "gq003_10_desc_plant_beacon",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_10_gq003_10_obj_plant_beacon_gq003_10_desc_plant_beacon",
+        "mappins": {}
+      },
+      "gq003_11_obj_breach_dispatch": {
+        "phase_id": "gq003_11",
+        "id": "gq003_11_obj_breach_dispatch",
+        "text": "Breach the dispatch relay.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_11_gq003_11_obj_breach_dispatch",
+        "description": "Use the authenticated route to identify Pair 07-B and Mara's current clinic.",
+        "description_id": "gq003_11_desc_breach_dispatch",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_11_gq003_11_obj_breach_dispatch_gq003_11_desc_breach_dispatch",
+        "mappins": {
+          "gq003_11_qmp_dispatch": {
+            "id": "gq003_11_qmp_dispatch",
+            "ref": "@locations.gq003_11_mp_dispatch.ref",
+            "text": "Dispatch relay",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_11_gq003_11_obj_breach_dispatch_gq003_11_qmp_dispatch",
+            "debug_caption": "Dispatch relay"
+          }
+        }
+      },
+      "gq003_12_obj_leave_yard": {
+        "phase_id": "gq003_12",
+        "id": "gq003_12_obj_leave_yard",
+        "text": "Leave the freight yard.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_12_gq003_12_obj_leave_yard",
+        "description": "Clear the yard before Black Lantern can isolate the compromised route.",
+        "description_id": "gq003_12_desc_leave_yard",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_12_gq003_12_obj_leave_yard_gq003_12_desc_leave_yard",
+        "mappins": {}
+      },
+      "gq003_14_obj_reach_clinic": {
+        "phase_id": "gq003_14",
+        "id": "gq003_14_obj_reach_clinic",
+        "text": "Reach the memory clinic.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_14_gq003_14_obj_reach_clinic",
+        "description": "Go to the clinic holding Mara Venn.",
+        "description_id": "gq003_14_desc_reach_clinic",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_14_gq003_14_obj_reach_clinic_gq003_14_desc_reach_clinic",
+        "mappins": {
+          "gq003_14_qmp_clinic": {
+            "id": "gq003_14_qmp_clinic",
+            "ref": "@locations.gq003_14_mp_clinic.ref",
+            "text": "Memory clinic",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_14_gq003_14_obj_reach_clinic_gq003_14_qmp_clinic",
+            "debug_caption": "Memory clinic"
+          }
+        }
+      },
+      "gq003_15_obj_clear_security": {
+        "phase_id": "gq003_15",
+        "id": "gq003_15_obj_clear_security",
+        "text": "Neutralize the clinic security.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_15_gq003_15_obj_clear_security",
+        "description": "Resolve the armed clinic personnel guarding Mara and the neural jammer.",
+        "description_id": "gq003_15_desc_clear_security",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_15_gq003_15_obj_clear_security_gq003_15_desc_clear_security",
+        "mappins": {}
+      },
+      "gq003_16_obj_disable_jammer": {
+        "phase_id": "gq003_16",
+        "id": "gq003_16_obj_disable_jammer",
+        "text": "Disable the neural jammer.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_16_gq003_16_obj_disable_jammer",
+        "description": "Shut down the field compressing the foreign memories inside Mara's implant.",
+        "description_id": "gq003_16_desc_disable_jammer",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_16_gq003_16_obj_disable_jammer_gq003_16_desc_disable_jammer",
+        "mappins": {
+          "gq003_16_qmp_jammer": {
+            "id": "gq003_16_qmp_jammer",
+            "ref": "@locations.gq003_16_mp_jammer.ref",
+            "text": "Neural jammer",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_16_gq003_16_obj_disable_jammer_gq003_16_qmp_jammer",
+            "debug_caption": "Neural jammer"
+          }
+        }
+      },
+      "gq003_17_obj_release_mara": {
+        "phase_id": "gq003_17",
+        "id": "gq003_17_obj_release_mara",
+        "text": "Release Mara.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_17_gq003_17_obj_release_mara",
+        "description": "Open Mara's restraint and keep the clinic from reclaiming her.",
+        "description_id": "gq003_17_desc_release_mara",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_17_gq003_17_obj_release_mara_gq003_17_desc_release_mara",
+        "mappins": {}
+      },
+      "gq003_18_obj_escort_mara": {
+        "phase_id": "gq003_18",
+        "id": "gq003_18_obj_escort_mara",
+        "text": "Escort Mara out of the clinic.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_18_gq003_18_obj_escort_mara",
+        "description": "Keep Mara with you through the clinic exits and reach the stabilization point.",
+        "description_id": "gq003_18_desc_escort_mara",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_18_gq003_18_obj_escort_mara_gq003_18_desc_escort_mara",
+        "mappins": {
+          "gq003_18_qmp_escort_gate_01": {
+            "id": "gq003_18_qmp_escort_gate_01",
+            "ref": "@locations.gq003_18_mp_escort_gate_01.ref",
+            "text": "Clinic exit",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_18_gq003_18_obj_escort_mara_gq003_18_qmp_escort_gate_01",
+            "debug_caption": "Clinic exit"
+          },
+          "gq003_18_qmp_escort_gate_02": {
+            "id": "gq003_18_qmp_escort_gate_02",
+            "ref": "@locations.gq003_18_tr_escort_gate_02.ref",
+            "text": "Service corridor",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_18_gq003_18_obj_escort_mara_gq003_18_qmp_escort_gate_02",
+            "debug_caption": "Service corridor"
+          },
+          "gq003_18_qmp_escort_gate_03": {
+            "id": "gq003_18_qmp_escort_gate_03",
+            "ref": "@locations.gq003_18_tr_escort_gate_03.ref",
+            "text": "Stabilization point",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_18_gq003_18_obj_escort_mara_gq003_18_qmp_escort_gate_03",
+            "debug_caption": "Stabilization point"
+          }
+        }
+      },
+      "gq003_19_obj_stabilize_mara": {
+        "phase_id": "gq003_19",
+        "id": "gq003_19_obj_stabilize_mara",
+        "text": "Protect Mara while Iris stabilizes her implant.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_19_gq003_19_obj_stabilize_mara",
+        "description": "Hold the perimeter until Iris isolates the foreign memory loops.",
+        "description_id": "gq003_19_desc_stabilize_mara",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_19_gq003_19_obj_stabilize_mara_gq003_19_desc_stabilize_mara",
+        "mappins": {}
+      },
+      "gq003_20_obj_meet_iris": {
+        "phase_id": "gq003_20",
+        "id": "gq003_20_obj_meet_iris",
+        "text": "Meet Iris at the safe site.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_20_gq003_20_obj_meet_iris",
+        "description": "Bring the stabilized Mara to Iris and decide how to recover Pair 07-B's cipher.",
+        "description_id": "gq003_20_desc_meet_iris",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_20_gq003_20_obj_meet_iris_gq003_20_desc_meet_iris",
+        "mappins": {
+          "gq003_20_qmp_iris": {
+            "id": "gq003_20_qmp_iris",
+            "ref": "@locations.gq003_20_mp_iris.ref",
+            "text": "Iris's safe site",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_20_gq003_20_obj_meet_iris_gq003_20_qmp_iris",
+            "debug_caption": "Iris's safe site"
+          }
+        }
+      },
+      "gq003_22_obj_enter_vehicle": {
+        "phase_id": "gq003_22",
+        "id": "gq003_22_obj_enter_vehicle",
+        "text": "Get in Patch's vehicle.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_22_gq003_22_obj_enter_vehicle",
+        "description": "Use Patch's temporary van to pass the interchange's first security scan.",
+        "description_id": "gq003_22_desc_enter_vehicle",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_22_gq003_22_obj_enter_vehicle_gq003_22_desc_enter_vehicle",
+        "mappins": {
+          "gq003_22_qmp_vehicle": {
+            "id": "gq003_22_qmp_vehicle",
+            "ref": "@locations.gq003_22_mp_vehicle.ref",
+            "text": "Patch's vehicle",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_22_gq003_22_obj_enter_vehicle_gq003_22_qmp_vehicle",
+            "debug_caption": "Patch's vehicle"
+          }
+        }
+      },
+      "gq003_23_obj_wait_for_patch": {
+        "phase_id": "gq003_23",
+        "id": "gq003_23_obj_wait_for_patch",
+        "text": "Wait for Patch.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_23_gq003_23_obj_wait_for_patch",
+        "description": "Let Patch join you before taking the van to the freight interchange.",
+        "description_id": "gq003_23_desc_wait_for_patch",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_23_gq003_23_obj_wait_for_patch_gq003_23_desc_wait_for_patch",
+        "mappins": {}
+      },
+      "gq003_24_obj_drive_interchange": {
+        "phase_id": "gq003_24",
+        "id": "gq003_24_obj_drive_interchange",
+        "text": "Drive to the freight interchange.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_24_gq003_24_obj_drive_interchange",
+        "description": "Take Patch's van to the parking row marked by Iris's beacon.",
+        "description_id": "gq003_24_desc_drive_interchange",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_24_gq003_24_obj_drive_interchange_gq003_24_desc_drive_interchange",
+        "mappins": {
+          "gq003_24_qmp_interchange": {
+            "id": "gq003_24_qmp_interchange",
+            "ref": "@locations.gq003_24_mp_interchange.ref",
+            "text": "Freight interchange",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_24_gq003_24_obj_drive_interchange_gq003_24_qmp_interchange",
+            "debug_caption": "Freight interchange"
+          }
+        }
+      },
+      "gq003_25_obj_steal_carrier": {
+        "phase_id": "gq003_25",
+        "id": "gq003_25_obj_steal_carrier",
+        "text": "Steal the Black Lantern carrier.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_25_gq003_25_obj_steal_carrier",
+        "description": "Find the refrigerated Pair 07-B box truck and take control of it.",
+        "description_id": "gq003_25_desc_steal_carrier",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_25_gq003_25_obj_steal_carrier_gq003_25_desc_steal_carrier",
+        "mappins": {
+          "gq003_25_qmp_carrier": {
+            "id": "gq003_25_qmp_carrier",
+            "ref": "@locations.gq003_25_mp_carrier.ref",
+            "text": "Pair 07-B carrier",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_25_gq003_25_obj_steal_carrier_gq003_25_qmp_carrier",
+            "debug_caption": "Pair 07-B carrier"
+          }
+        }
+      },
+      "gq003_26_obj_drive_carrier": {
+        "phase_id": "gq003_26",
+        "id": "gq003_26_obj_drive_carrier",
+        "text": "Drive the carrier to the reconstruction relay.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_26_gq003_26_obj_drive_carrier",
+        "description": "Move Pair 07-B to the relay before Black Lantern can revoke its cipher.",
+        "description_id": "gq003_26_desc_drive_carrier",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_26_gq003_26_obj_drive_carrier_gq003_26_desc_drive_carrier",
+        "mappins": {
+          "gq003_26_qmp_relay": {
+            "id": "gq003_26_qmp_relay",
+            "ref": "@locations.gq003_26_mp_relay.ref",
+            "text": "Reconstruction relay",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_26_gq003_26_obj_drive_carrier_gq003_26_qmp_relay",
+            "debug_caption": "Reconstruction relay"
+          }
+        }
+      },
+      "gq003_28_obj_enter_relay": {
+        "phase_id": "gq003_28",
+        "id": "gq003_28_obj_enter_relay",
+        "text": "Enter the reconstruction relay.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_28_gq003_28_obj_enter_relay",
+        "description": "Reach the relay interior and secure the core before the retrieval team does.",
+        "description_id": "gq003_28_desc_enter_relay",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_28_gq003_28_obj_enter_relay_gq003_28_desc_enter_relay",
+        "mappins": {
+          "gq003_28_qmp_relay": {
+            "id": "gq003_28_qmp_relay",
+            "ref": "@locations.gq003_28_mp_relay.ref",
+            "text": "Reconstruction relay",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_28_gq003_28_obj_enter_relay_gq003_28_qmp_relay",
+            "debug_caption": "Reconstruction relay"
+          }
+        }
+      },
+      "gq003_29_obj_defeat_retrieval": {
+        "phase_id": "gq003_29",
+        "id": "gq003_29_obj_defeat_retrieval",
+        "text": "Defeat Morita's retrieval team.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_29_gq003_29_obj_defeat_retrieval",
+        "description": "Resolve the Black Lantern team sent to recover Pair 07-B.",
+        "description_id": "gq003_29_desc_defeat_retrieval",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_29_gq003_29_obj_defeat_retrieval_gq003_29_desc_defeat_retrieval",
+        "mappins": {}
+      },
+      "gq003_30_obj_investigate_relay": {
+        "phase_id": "gq003_30",
+        "id": "gq003_30_obj_investigate_relay",
+        "text": "Investigate the reconstruction relay.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_30_gq003_30_obj_investigate_relay",
+        "description": "Scan the cipher rack, reconstruction core, and courier ledger.",
+        "description_id": "gq003_30_desc_investigate_relay",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_30_gq003_30_obj_investigate_relay_gq003_30_desc_investigate_relay",
+        "mappins": {
+          "gq003_30_qmp_carrier_rack": {
+            "id": "gq003_30_qmp_carrier_rack",
+            "ref": "@locations.gq003_30_clue_carrier_rack.ref",
+            "text": "Pair 07-B cipher rack",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_30_gq003_30_obj_investigate_relay_gq003_30_qmp_carrier_rack",
+            "debug_caption": "Pair 07-B cipher rack"
+          },
+          "gq003_30_qmp_core": {
+            "id": "gq003_30_qmp_core",
+            "ref": "@locations.gq003_30_clue_reconstruction_core.ref",
+            "text": "Mnemonic reconstruction core",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_30_gq003_30_obj_investigate_relay_gq003_30_qmp_core",
+            "debug_caption": "Mnemonic reconstruction core"
+          },
+          "gq003_30_qmp_ledger": {
+            "id": "gq003_30_qmp_ledger",
+            "ref": "@locations.gq003_30_clue_courier_ledger.ref",
+            "text": "Black Lantern courier ledger",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_30_gq003_30_obj_investigate_relay_gq003_30_qmp_ledger",
+            "debug_caption": "Black Lantern courier ledger"
+          }
+        }
+      },
+      "gq003_33_obj_operate_core": {
+        "phase_id": "gq003_33",
+        "id": "gq003_33_obj_operate_core",
+        "text": "Jack in to the reconstruction core.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_33_gq003_33_obj_operate_core",
+        "description": "Apply your decision to the Black Lantern index and wait for the core to confirm it.",
+        "description_id": "gq003_33_desc_operate_core",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_33_gq003_33_obj_operate_core_gq003_33_desc_operate_core",
+        "mappins": {
+          "gq003_33_qmp_core": {
+            "id": "gq003_33_qmp_core",
+            "ref": "@locations.gq003_33_mp_core.ref",
+            "text": "Reconstruction core",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_33_gq003_33_obj_operate_core_gq003_33_qmp_core",
+            "debug_caption": "Reconstruction core"
+          }
+        }
+      },
+      "gq003_34_obj_leave_relay": {
+        "phase_id": "gq003_34",
+        "id": "gq003_34_obj_leave_relay",
+        "text": "Leave the reconstruction relay.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_34_gq003_34_obj_leave_relay",
+        "description": "Clear the site while Ghostline verifies what survived.",
+        "description_id": "gq003_34_desc_leave_relay",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_34_gq003_34_obj_leave_relay_gq003_34_desc_leave_relay",
+        "mappins": {}
+      },
+      "gq003_35_obj_deliver_package": {
+        "phase_id": "gq003_35",
+        "id": "gq003_35_obj_deliver_package",
+        "text": "Deposit the Black Lantern package.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_35_gq003_35_obj_deliver_package",
+        "description": "Deliver the preserved cipher or signed destruction receipt to Ghostline's drop point.",
+        "description_id": "gq003_35_desc_deliver_package",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_35_gq003_35_obj_deliver_package_gq003_35_desc_deliver_package",
+        "mappins": {
+          "gq003_35_qmp_drop_point": {
+            "id": "gq003_35_qmp_drop_point",
+            "ref": "@locations.gq003_35_mp_drop_point.ref",
+            "text": "Ghostline drop point",
+            "localization_key": "gl_quests_minor_quest_gq003_gq003_35_gq003_35_obj_deliver_package_gq003_35_qmp_drop_point",
+            "debug_caption": "Ghostline drop point"
+          }
+        }
+      },
+      "gq003_36_obj_respond_ghostline": {
+        "phase_id": "gq003_36",
+        "id": "gq003_36_obj_respond_ghostline",
+        "text": "Respond to Ghostline.",
+        "localization_key": "gl_quests_minor_quest_gq003_gq003_36_gq003_36_obj_respond_ghostline",
+        "description": "Review the outcome with Morrow, Iris, and Patch.",
+        "description_id": "gq003_36_desc_respond_ghostline",
+        "description_key": "gl_quests_minor_quest_gq003_gq003_36_gq003_36_obj_respond_ghostline_gq003_36_desc_respond_ghostline",
+        "mappins": {}
+      }
+    },
+    "contacts": {
+      "patch": {
+        "id": "patch",
+        "localization_key": "gq_npc_patch",
+        "template": "patch",
+        "threads": {
+          "gq003_01_offer": {
+            "id": "gq003_01_offer",
+            "title": "Black Lantern",
+            "title_key": "gl_contacts_patch_gq003_01_offer_title",
+            "entries": {
+              "entry_01_msg_quiet_spine_opened": {
+                "type": "message",
+                "id": "01_msg_quiet_spine_opened",
+                "localization_key": "gl_contacts_patch_gq003_01_offer_01_msg_quiet_spine_opened",
+                "text": "Need you to meet Iris. Quiet Spine finally opened. She says the cache contained a person who is still alive.",
+                "delay": 1
+              },
+              "entry_02_ch_respond": {
+                "type": "choice_group",
+                "id": "02_ch_respond",
+                "entries": {
+                  "entry_02a_ch_send_location": {
+                    "id": "02a_ch_send_location",
+                    "text": "Send the location.",
+                    "localization_key": "gl_contacts_patch_gq003_01_offer_02_ch_respond_02a_ch_send_location"
+                  }
+                }
+              }
+            }
+          },
+          "gq003_05_yard_identifier": {
+            "id": "gq003_05_yard_identifier",
+            "title": "Priority Weather",
+            "title_key": "gl_contacts_patch_gq003_05_yard_identifier_title",
+            "entries": {
+              "entry_01_msg_yard_alias": {
+                "type": "message",
+                "id": "01_msg_yard_alias",
+                "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_01_msg_yard_alias",
+                "text": "Yard calls itself Kuroda Municipal Salvage. It is neither Kuroda, municipal, nor interested in salvage.",
+                "delay": 1
+              },
+              "entry_02_msg_gate_phrase": {
+                "type": "message",
+                "id": "02_msg_gate_phrase",
+                "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_02_msg_gate_phrase",
+                "text": "Freight gate phrase is BLACK LANTERN, PAIR SEVEN, PRIORITY WEATHER.",
+                "delay": 1
+              },
+              "entry_03_ch_ack": {
+                "type": "choice_group",
+                "id": "03_ch_ack",
+                "entries": {
+                  "entry_03a_ch_understood": {
+                    "id": "03a_ch_understood",
+                    "text": "Understood.",
+                    "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_03_ch_ack_03a_ch_understood"
+                  },
+                  "entry_03b_ch_repeat_phrase": {
+                    "id": "03b_ch_repeat_phrase",
+                    "text": "Repeat the phrase.",
+                    "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_03_ch_ack_03b_ch_repeat_phrase"
+                  }
+                }
+              },
+              "entry_04a_msg_location_sent": {
+                "type": "message",
+                "id": "04a_msg_location_sent",
+                "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_04a_msg_location_sent",
+                "text": "Sending the yard coordinates now.",
+                "delay": 1
+              },
+              "entry_04b_msg_phrase_repeated": {
+                "type": "message",
+                "id": "04b_msg_phrase_repeated",
+                "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_04b_msg_phrase_repeated",
+                "text": "BLACK LANTERN, PAIR SEVEN, PRIORITY WEATHER. Look annoyed if anyone asks.",
+                "delay": 1
+              },
+              "entry_05_msg_route_ready": {
+                "type": "message",
+                "id": "05_msg_route_ready",
+                "localization_key": "gl_contacts_patch_gq003_05_yard_identifier_05_msg_route_ready",
+                "text": "If anybody asks what it means, tell them Morita changed it twice already.",
+                "delay": 1
+              }
+            }
+          },
+          "gq003_13_clinic_location": {
+            "id": "gq003_13_clinic_location",
+            "title": "Lantern 07-A",
+            "title_key": "gl_contacts_patch_gq003_13_clinic_location_title",
+            "entries": {
+              "entry_01a_msg_clean_yard": {
+                "type": "message",
+                "id": "01a_msg_clean_yard",
+                "localization_key": "gl_contacts_patch_gq003_13_clinic_location_01a_msg_clean_yard",
+                "text": "Clean enough to make me jealous. I try that and a door asks for three references.",
+                "delay": 1
+              },
+              "entry_01b_msg_detected_yard": {
+                "type": "message",
+                "id": "01b_msg_detected_yard",
+                "localization_key": "gl_contacts_patch_gq003_13_clinic_location_01b_msg_detected_yard",
+                "text": "Freight crew is shouting into every channel they own. Clinic will be awake. Probably armed. Definitely rude.",
+                "delay": 1
+              }
+            }
+          },
+          "gq003_21_confession": {
+            "id": "gq003_21_confession",
+            "title": "Sealed Cases",
+            "title_key": "gl_contacts_patch_gq003_21_confession_title",
+            "entries": {
+              "entry_01_msg_iris_told_you": {
+                "type": "message",
+                "id": "01_msg_iris_told_you",
+                "localization_key": "gl_contacts_patch_gq003_21_confession_01_msg_iris_told_you",
+                "text": "Iris told you.",
+                "delay": 1
+              },
+              "entry_02_ch_confront": {
+                "type": "choice_group",
+                "id": "02_ch_confront",
+                "entries": {
+                  "entry_02a_ch_knew_couriers": {
+                    "id": "02a_ch_knew_couriers",
+                    "text": "You knew about the couriers.",
+                    "localization_key": "gl_contacts_patch_gq003_21_confession_02_ch_confront_02a_ch_knew_couriers"
+                  },
+                  "entry_02b_ch_how_many": {
+                    "id": "02b_ch_how_many",
+                    "text": "How many courier runs did you touch?",
+                    "localization_key": "gl_contacts_patch_gq003_21_confession_02_ch_confront_02b_ch_how_many"
+                  }
+                }
+              },
+              "entry_03a_msg_confession": {
+                "type": "message",
+                "id": "03a_msg_confession",
+                "localization_key": "gl_contacts_patch_gq003_21_confession_03a_msg_confession",
+                "text": "Knew they used people. Did not know they used the people. I believed not asking kept the route cheap and me alive.",
+                "delay": 1
+              },
+              "entry_03b_msg_four_runs": {
+                "type": "message",
+                "id": "03b_msg_four_runs",
+                "localization_key": "gl_contacts_patch_gq003_21_confession_03b_msg_four_runs",
+                "text": "Four sealed cases. Two dead drops. No names.",
+                "delay": 1
+              },
+              "entry_04_msg_vehicle_sent": {
+                "type": "message",
+                "id": "04_msg_vehicle_sent",
+                "localization_key": "gl_contacts_patch_gq003_21_confession_04_msg_vehicle_sent",
+                "text": "I have a van at the safe site. Registry clears the first scan. After that, we improvise in person.",
+                "delay": 1
+              }
+            }
+          },
+          "gq003_36_debrief": {
+            "id": "gq003_36_debrief",
+            "title": "Black Lantern",
+            "title_key": "gl_contacts_patch_gq003_36_debrief_title",
+            "entries": {
+              "entry_07_msg_confession_postscript": {
+                "type": "message",
+                "id": "07_msg_confession_postscript",
+                "localization_key": "gl_contacts_patch_gq003_36_debrief_07_msg_confession_postscript",
+                "text": "Should've told you what I knew. Next time I sell confidence, ask what I'm using as collateral.",
+                "delay": 1
+              }
+            }
+          }
+        }
+      },
+      "iris": {
+        "id": "iris",
+        "localization_key": "gq_npc_iris",
+        "template": "morrow",
+        "threads": {
+          "gq003_13_clinic_location": {
+            "id": "gq003_13_clinic_location",
+            "title": "Lantern 07-A",
+            "title_key": "gl_contacts_iris_gq003_13_clinic_location_title",
+            "entries": {
+              "entry_01_msg_trace_ready": {
+                "type": "message",
+                "id": "01_msg_trace_ready",
+                "localization_key": "gl_contacts_iris_gq003_13_clinic_location_01_msg_trace_ready",
+                "text": "The beacon resolved Mara's clinic. I have the location.",
+                "delay": 1
+              },
+              "entry_02a_msg_clean_yard": {
+                "type": "message",
+                "id": "02a_msg_clean_yard",
+                "localization_key": "gl_contacts_iris_gq003_13_clinic_location_02a_msg_clean_yard",
+                "text": "The beacon authenticated without an alarm. Black Lantern still believes Pair Seven is on schedule.",
+                "delay": 1
+              },
+              "entry_02b_msg_detected_yard": {
+                "type": "message",
+                "id": "02b_msg_detected_yard",
+                "localization_key": "gl_contacts_iris_gq003_13_clinic_location_02b_msg_detected_yard",
+                "text": "Yard raised an intrusion flag. The beacon is still transmitting, but the clinic will know somebody touched the route.",
+                "delay": 1
+              },
+              "entry_03_ch_ack": {
+                "type": "choice_group",
+                "id": "03_ch_ack",
+                "entries": {
+                  "entry_03a_ch_send_location": {
+                    "id": "03a_ch_send_location",
+                    "text": "Send the location.",
+                    "localization_key": "gl_contacts_iris_gq003_13_clinic_location_03_ch_ack_03a_ch_send_location"
+                  },
+                  "entry_03b_ch_jammer": {
+                    "id": "03b_ch_jammer",
+                    "text": "What about the jammer?",
+                    "localization_key": "gl_contacts_iris_gq003_13_clinic_location_03_ch_ack_03b_ch_jammer"
+                  }
+                }
+              },
+              "entry_04a_msg_location_sent": {
+                "type": "message",
+                "id": "04a_msg_location_sent",
+                "localization_key": "gl_contacts_iris_gq003_13_clinic_location_04a_msg_location_sent",
+                "text": "Uploading the clinic coordinates.",
+                "delay": 1
+              },
+              "entry_04b_msg_jammer_warning": {
+                "type": "message",
+                "id": "04b_msg_jammer_warning",
+                "localization_key": "gl_contacts_iris_gq003_13_clinic_location_04b_msg_jammer_warning",
+                "text": "It is stronger than the clinic walls. Disable it before you search for Mara.",
+                "delay": 1
+              },
+              "entry_05_msg_clinic_marked": {
+                "type": "message",
+                "id": "05_msg_clinic_marked",
+                "localization_key": "gl_contacts_iris_gq003_13_clinic_location_05_msg_clinic_marked",
+                "text": "Clinic marked. Bring Mara out conscious if you can.",
+                "delay": 1
+              }
+            }
+          },
+          "gq003_31_relay_argument": {
+            "id": "gq003_31_relay_argument",
+            "title": "The Route",
+            "title_key": "gl_contacts_iris_gq003_31_relay_argument_title",
+            "entries": {
+              "entry_02_msg_iris_burn": {
+                "type": "message",
+                "id": "02_msg_iris_burn",
+                "localization_key": "gl_contacts_iris_gq003_31_relay_argument_02_msg_iris_burn",
+                "text": "The same route carries names for every stolen identity. Leave it open and anyone with the cipher can reconstruct them again.",
+                "delay": 1
+              },
+              "entry_04_msg_iris_present": {
+                "type": "message",
+                "id": "04_msg_iris_present",
+                "localization_key": "gl_contacts_iris_gq003_31_relay_argument_04_msg_iris_present",
+                "text": "Preserve it and the people already inside remain inventory. A future rescue does not cancel a present weapon.",
+                "delay": 1
+              },
+              "entry_06_msg_iris_erase": {
+                "type": "message",
+                "id": "06_msg_iris_erase",
+                "localization_key": "gl_contacts_iris_gq003_31_relay_argument_06_msg_iris_erase",
+                "text": "There is no harmless copy. Erase the index and issue the wipe. Mara keeps her life. The route loses everyone else's.",
+                "delay": 1
+              },
+              "entry_08b_msg_burn_confirmed": {
+                "type": "message",
+                "id": "08b_msg_burn_confirmed",
+                "localization_key": "gl_contacts_iris_gq003_31_relay_argument_08b_msg_burn_confirmed",
+                "text": "Confirmed. Revoke every package, then destroy the local key.",
+                "delay": 1
+              }
+            }
+          },
+          "gq003_36_debrief": {
+            "id": "gq003_36_debrief",
+            "title": "Black Lantern",
+            "title_key": "gl_contacts_iris_gq003_36_debrief_title",
+            "entries": {
+              "entry_02a_msg_route_preserved": {
+                "type": "message",
+                "id": "02a_msg_route_preserved",
+                "localization_key": "gl_contacts_iris_gq003_36_debrief_02a_msg_route_preserved",
+                "text": "You gave Morrow a map made of people. Make sure he remembers what the symbols mean.",
+                "delay": 1
+              },
+              "entry_02b_msg_route_burned": {
+                "type": "message",
+                "id": "02b_msg_route_burned",
+                "localization_key": "gl_contacts_iris_gq003_36_debrief_02b_msg_route_burned",
+                "text": "Mara remembers one apartment now. Her own. That will have to count as a victory.",
+                "delay": 1
+              }
+            }
+          }
+        }
+      },
+      "morrow": {
+        "id": "morrow",
+        "localization_key": "gq_npc_morrow",
+        "template": "morrow",
+        "threads": {
+          "gq003_31_relay_argument": {
+            "id": "gq003_31_relay_argument",
+            "title": "The Route",
+            "title_key": "gl_contacts_morrow_gq003_31_relay_argument_title",
+            "entries": {
+              "entry_01_msg_morrow_preserve": {
+                "type": "message",
+                "id": "01_msg_morrow_preserve",
+                "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_01_msg_morrow_preserve",
+                "text": "The ledger carries Morita's live attestation. Preserve the route and I can follow the next handshake upstream.",
+                "delay": 1
+              },
+              "entry_03_msg_morrow_future": {
+                "type": "message",
+                "id": "03_msg_morrow_future",
+                "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_03_msg_morrow_future",
+                "text": "Burn it and Morita disappears behind the organization that paid him. We save today's couriers and guarantee replacements tomorrow.",
+                "delay": 1
+              },
+              "entry_05_msg_morrow_trace": {
+                "type": "message",
+                "id": "05_msg_morrow_trace",
+                "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_05_msg_morrow_trace",
+                "text": "V, keep the line open. We trace Morita, copy what we need, then close it from the top.",
+                "delay": 1
+              },
+              "entry_07_ch_outcome": {
+                "type": "choice_group",
+                "id": "07_ch_outcome",
+                "entries": {
+                  "entry_07a_ch_preserve": {
+                    "id": "07a_ch_preserve",
+                    "text": "Keep the line open. Find Morita.",
+                    "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_07_ch_outcome_07a_ch_preserve"
+                  },
+                  "entry_07b_ch_burn": {
+                    "id": "07b_ch_burn",
+                    "text": "Erase the route. Nobody gets the names.",
+                    "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_07_ch_outcome_07b_ch_burn"
+                  }
+                }
+              },
+              "entry_08a_msg_preserve_confirmed": {
+                "type": "message",
+                "id": "08a_msg_preserve_confirmed",
+                "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_08a_msg_preserve_confirmed",
+                "text": "Confirmed. Authenticate the cipher and leave the uplink intact.",
+                "delay": 1
+              },
+              "entry_09_msg_operate_core": {
+                "type": "message",
+                "id": "09_msg_operate_core",
+                "localization_key": "gl_contacts_morrow_gq003_31_relay_argument_09_msg_operate_core",
+                "text": "Decision recorded. Operate the reconstruction core.",
+                "delay": 1
+              }
+            }
+          },
+          "gq003_36_debrief": {
+            "id": "gq003_36_debrief",
+            "title": "Black Lantern",
+            "title_key": "gl_contacts_morrow_gq003_36_debrief_title",
+            "entries": {
+              "entry_01a_msg_route_preserved": {
+                "type": "message",
+                "id": "01a_msg_route_preserved",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_01a_msg_route_preserved",
+                "text": "Black Lantern is still carrying traffic. Now it carries our shadow with it.",
+                "delay": 1
+              },
+              "entry_01b_msg_route_burned": {
+                "type": "message",
+                "id": "01b_msg_route_burned",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_01b_msg_route_burned",
+                "text": "You protected the couriers and destroyed the only clean path upward. Iris calls that mercy. I call it an expensive preference.",
+                "delay": 1
+              },
+              "entry_03a_msg_stealth_succeeded": {
+                "type": "message",
+                "id": "03a_msg_stealth_succeeded",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_03a_msg_stealth_succeeded",
+                "text": "The freight yard still treats Pair Seven as an internal failure. No public description, no bounty. Clean work.",
+                "delay": 1
+              },
+              "entry_03b_msg_stealth_failed": {
+                "type": "message",
+                "id": "03b_msg_stealth_failed",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_03b_msg_stealth_failed",
+                "text": "Freight security circulated your description. Black Lantern knows the route was attacked, even if it does not know what survived.",
+                "delay": 1
+              },
+              "entry_04_ch_response": {
+                "type": "choice_group",
+                "id": "04_ch_response",
+                "entries": {
+                  "entry_04a_ch_people_not_infrastructure": {
+                    "id": "04a_ch_people_not_infrastructure",
+                    "text": "People aren't route infrastructure.",
+                    "localization_key": "gl_contacts_morrow_gq003_36_debrief_04_ch_response_04a_ch_people_not_infrastructure"
+                  },
+                  "entry_04b_ch_morita_out_there": {
+                    "id": "04b_ch_morita_out_there",
+                    "text": "Morita is still out there.",
+                    "localization_key": "gl_contacts_morrow_gq003_36_debrief_04_ch_response_04b_ch_morita_out_there"
+                  }
+                }
+              },
+              "entry_05a_msg_leverage": {
+                "type": "message",
+                "id": "05a_msg_leverage",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_05a_msg_leverage",
+                "text": "No. They were leverage. Our disagreement is whether destroying the leverage removes the hand holding it.",
+                "delay": 1
+              },
+              "entry_05b_msg_adapt": {
+                "type": "message",
+                "id": "05b_msg_adapt",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_05b_msg_adapt",
+                "text": "Correct. You changed the route, not the destination. We adapt.",
+                "delay": 1
+              },
+              "entry_06_msg_payment": {
+                "type": "message",
+                "id": "06_msg_payment",
+                "localization_key": "gl_contacts_morrow_gq003_36_debrief_06_msg_payment",
+                "text": "Payment transferred. Keep the channel open. Black Lantern was a route, not the destination.",
+                "delay": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "readables": {
+      "expedited_handoff": {
+        "kind": "onscreen",
+        "group": "shards",
+        "id": "expedited_handoff",
+        "title": "Archived conversation: Sato and K. Morita",
+        "text": "SATO: Kabuki classifier is gone. Pair Seven needs moving tonight.\n\nK. MORITA: Mnemonic subject first. Cipher remains on the freight route.\n\nSATO: Subject is rejecting the graft.\n\nK. MORITA: Rejection proves the original personality is still present.\n\nSATO: Clinic wants authorization to wipe her.\n\nK. MORITA: Denied. An empty courier cannot confirm the reconstruction.\n\nSATO: And after confirmation?\n\nK. MORITA: The clinic has standing disposal terms. Do not ask a question your invoice already answers.",
+        "title_key": "gl_onscreens_emails_quests_minor_quest_gq003_shards_expedited_handoff_title",
+        "text_key": "gl_onscreens_emails_quests_minor_quest_gq003_shards_expedited_handoff_body",
+        "tag": "technology"
+      },
+      "reconstruction_report": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "reconstruction_report",
+        "title": "QUIET SPINE RECONSTRUCTION / BLACK LANTERN",
+        "text": "AUTHOR: IRIS\nSTATUS: PARTIAL RECONSTRUCTION\nSOURCE: QUIET SPINE CACHE\n\nThe source contains indexed mnemonic fragments and the route metadata required to recombine them.\n\nPAIR 07-A\nMNEMONIC SUBJECT: MARA VENN\nFUNCTION: carries autobiographical fragments embedded as personal experience\nCURRENT STATE: active / graft rejection detected\n\nPAIR 07-B\nCIPHER SUBJECT: FREIGHT VEHICLE BL-07B\nFUNCTION: carries reconstruction key, fragment index, and route attestation\nCURRENT STATE: expedited handoff\n\nNeither half is sufficient alone. The mnemonic subject cannot identify the foreign fragments. The cipher can identify them but contains no experiential payload.\n\nROUTING ALIAS: BLACK LANTERN\nDISPATCH AUTHORITY: K. MORITA\nTRIGGER FOR EXPEDITED HANDOFF: KABUKI CLASSIFIER OFFLINE\n\nASSESSMENT:\nQuiet Spine did not move files. It moved the instructions for rebuilding people.",
+        "title_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_reconstruction_report_title",
+        "text_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_reconstruction_report_body",
+        "tag": "technology"
+      },
+      "clinic_intake": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "clinic_intake",
+        "title": "Patient intake: Lantern 07-A",
+        "text": "PATIENT ALIAS: LANTERN 07-A\nINTAKE CONDITION: ambulatory, disoriented, combative when addressed as MARA\nIMPLANT: obsolete Zetatech mnemonic co-processor, aftermarket maintenance\nGRAFT ACCEPTANCE: 61 percent and declining\n\nREPORTED CONTAMINATION:\n- recalls three apartments under three legal names\n- identifies ventilation faults in buildings not present in employment record\n- responds to the name AKIKO during REM intrusion\n- repeatedly asks whether the hallway has been moved\n\nCLIENT INSTRUCTION:\nMaintain conscious state. Do not wipe without K. MORITA authorization.\n\nCLINIC NOTE:\nPatient keeps repairing the room thermostat. We disconnected it. She repaired the wall sensor instead.",
+        "title_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_clinic_intake_title",
+        "text_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_clinic_intake_body",
+        "tag": "technology"
+      },
+      "mara_maintenance_ticket": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "mara_maintenance_ticket",
+        "title": "Mara Venn: unsent maintenance ticket",
+        "text": "TENANT: MARA VENN\nBUILDING: H8 SERVICE STACK / UNIT 42\nTICKET: AIR HANDLER CYCLING FALSE HUMIDITY\n\nReplaced the intake sensor again. Controller still reports moisture when the duct is dry. Fault is upstream, probably the building relay copying stale readings into every apartment loop.\n\nIf management closes this as USER ERROR one more time, tell them the system is remembering weather that is not there.\n\nDraft not submitted.",
+        "title_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_mara_maintenance_ticket_title",
+        "text_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_mara_maintenance_ticket_body",
+        "tag": "technology"
+      },
+      "courier_ledger": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "courier_ledger",
+        "title": "Black Lantern courier ledger",
+        "text": "BLACK LANTERN / MNEMONIC TRANSPORT LEDGER\nAUTHORIZED VIEW: ROUTE OPERATOR\n\nPAIR 01  VERIFIED      SUBJECT INDEX SEALED\nPAIR 02  VERIFIED      SUBJECT INDEX SEALED\nPAIR 03  PARTIAL       MNEMONIC SUBJECT UNRECOVERABLE\nPAIR 04  VERIFIED      SUBJECT INDEX SEALED\nPAIR 05  REVOKED       CIPHER LOST / SUBJECTS WIPED\nPAIR 06  PARTIAL       DESTINATION IDENTITY UNSTABLE\nPAIR 07  EXPEDITED     MARA VENN / CIPHER INBOUND\n\nACTIVE ROUTE AUTHORITY: K. MORITA\nUPSTREAM AUTHORITY: [EXTERNAL ATTESTATION]\n\nOPERATOR NOTE:\nCourier names are retained until destination reconstruction is confirmed. Deletion before confirmation invalidates route payment and upstream audit.\n\nPENDING SIGNAL:\nPAIR 08 selection suspended -- KABUKI CLASSIFIER OFFLINE",
+        "title_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_courier_ledger_title",
+        "text_key": "gl_onscreens_emails_quests_minor_quest_gq003_files_courier_ledger_body",
+        "tag": "technology"
+      }
+    },
+    "locations": {
+      "gq003_pr_iris_site": {
+        "ref": "#gq003_pr_iris_site"
+      },
+      "gq003_pr_freight_yard": {
+        "ref": "#gq003_pr_freight_yard"
+      },
+      "gq003_pr_memory_clinic": {
+        "ref": "#gq003_pr_memory_clinic"
+      },
+      "gq003_pr_freight_interchange": {
+        "ref": "#gq003_pr_freight_interchange"
+      },
+      "gq003_pr_reconstruction_relay": {
+        "ref": "#gq003_pr_reconstruction_relay"
+      },
+      "gq003_pr_delivery": {
+        "ref": "#gq003_pr_delivery"
+      },
+      "gq003_02_com_iris": {
+        "ref": "#gq003_02_com_iris"
+      },
+      "gq003_02_sm_iris": {
+        "ref": "#gq003_02_sm_iris"
+      },
+      "gq003_02_tr_setup": {
+        "ref": "#gq003_02_tr_setup"
+      },
+      "gq003_03_computer_reconstruction_report": {
+        "ref": "#gq003_03_computer_reconstruction_report"
+      },
+      "gq003_06_tr_freight_yard": {
+        "ref": "#gq003_06_tr_freight_yard"
+      },
+      "gq003_08_clue_transfer_board": {
+        "ref": "#gq003_08_clue_transfer_board"
+      },
+      "gq003_08_clue_neural_stabilizers": {
+        "ref": "#gq003_08_clue_neural_stabilizers"
+      },
+      "gq003_08_clue_restraint_case": {
+        "ref": "#gq003_08_clue_restraint_case"
+      },
+      "gq003_10_device_beacon_mount": {
+        "ref": "#gq003_10_device_beacon_mount"
+      },
+      "gq003_11_ap_dispatch_relay": {
+        "ref": "#gq003_11_ap_dispatch_relay"
+      },
+      "gq003_12_tr_freight_yard_cleanup": {
+        "ref": "#gq003_12_tr_freight_yard_cleanup"
+      },
+      "gq003_06_com_yard_security": {
+        "ref": "#gq003_06_com_yard_security"
+      },
+      "gq003_14_tr_memory_clinic": {
+        "ref": "#gq003_14_tr_memory_clinic"
+      },
+      "gq003_15_com_clinic_security": {
+        "ref": "#gq003_15_com_clinic_security"
+      },
+      "gq003_16_ap_neural_jammer": {
+        "ref": "#gq003_16_ap_neural_jammer"
+      },
+      "gq003_17_com_mara": {
+        "ref": "#gq003_17_com_mara"
+      },
+      "gq003_17_device_mara_restraint": {
+        "ref": "#gq003_17_device_mara_restraint"
+      },
+      "gq003_18_tr_escort_gate_01": {
+        "ref": "#gq003_18_tr_escort_gate_01"
+      },
+      "gq003_18_tr_escort_gate_02": {
+        "ref": "#gq003_18_tr_escort_gate_02"
+      },
+      "gq003_18_tr_escort_gate_03": {
+        "ref": "#gq003_18_tr_escort_gate_03"
+      },
+      "gq003_20_com_iris": {
+        "ref": "#gq003_20_com_iris"
+      },
+      "gq003_20_sm_iris": {
+        "ref": "#gq003_20_sm_iris"
+      },
+      "gq003_20_tr_setup": {
+        "ref": "#gq003_20_tr_setup"
+      },
+      "gq003_22_com_patch_vehicle": {
+        "ref": "#gq003_22_com_patch_vehicle"
+      },
+      "gq003_23_com_patch": {
+        "ref": "#gq003_23_com_patch"
+      },
+      "gq003_24_tr_freight_interchange": {
+        "ref": "#gq003_24_tr_freight_interchange"
+      },
+      "gq003_25_com_pair_07b": {
+        "ref": "#gq003_25_com_pair_07b"
+      },
+      "gq003_26_tr_reconstruction_relay_parking": {
+        "ref": "#gq003_26_tr_reconstruction_relay_parking"
+      },
+      "gq003_28_tr_reconstruction_relay": {
+        "ref": "#gq003_28_tr_reconstruction_relay"
+      },
+      "gq003_29_com_retrieval_team": {
+        "ref": "#gq003_29_com_retrieval_team"
+      },
+      "gq003_30_clue_carrier_rack": {
+        "ref": "#gq003_30_clue_carrier_rack"
+      },
+      "gq003_30_clue_reconstruction_core": {
+        "ref": "#gq003_30_clue_reconstruction_core"
+      },
+      "gq003_30_clue_courier_ledger": {
+        "ref": "#gq003_30_clue_courier_ledger"
+      },
+      "gq003_33_ap_reconstruction_core": {
+        "ref": "#gq003_33_ap_reconstruction_core"
+      },
+      "gq003_34_tr_reconstruction_relay_cleanup": {
+        "ref": "#gq003_34_tr_reconstruction_relay_cleanup"
+      },
+      "gq003_02_mp_iris": {
+        "ref": "#gq003_02_mp_iris"
+      },
+      "gq003_06_mp_yard": {
+        "ref": "#gq003_06_mp_yard"
+      },
+      "gq003_11_mp_dispatch": {
+        "ref": "#gq003_11_mp_dispatch"
+      },
+      "gq003_14_mp_clinic": {
+        "ref": "#gq003_14_mp_clinic"
+      },
+      "gq003_16_mp_jammer": {
+        "ref": "#gq003_16_mp_jammer"
+      },
+      "gq003_18_mp_escort_gate_01": {
+        "ref": "#gq003_18_mp_escort_gate_01"
+      },
+      "gq003_20_mp_iris": {
+        "ref": "#gq003_20_mp_iris"
+      },
+      "gq003_22_mp_vehicle": {
+        "ref": "#gq003_22_mp_vehicle"
+      },
+      "gq003_24_mp_interchange": {
+        "ref": "#gq003_24_mp_interchange"
+      },
+      "gq003_25_mp_carrier": {
+        "ref": "#gq003_25_mp_carrier"
+      },
+      "gq003_26_mp_relay": {
+        "ref": "#gq003_26_mp_relay"
+      },
+      "gq003_28_mp_relay": {
+        "ref": "#gq003_28_mp_relay"
+      },
+      "gq003_33_mp_core": {
+        "ref": "#gq003_33_mp_core"
+      },
+      "gq003_35_mp_drop_point": {
+        "ref": "#gq003_35_mp_drop_point"
+      }
+    },
+    "facts": {
+      "gq003_phone_start_sent": "gq003_phone_start_sent",
+      "gq003_phone_reply_on_my_way": "gq003_phone_reply_on_my_way",
+      "gq003_report_read": "gq003_report_read",
+      "gq003_transfer_window_open": "gq003_transfer_window_open",
+      "gq003_yard_reached": "gq003_yard_reached",
+      "gq003_stealth_failed": "gq003_stealth_failed",
+      "gq003_stealth_succeeded": "gq003_stealth_succeeded",
+      "gq003_yard_cleared": "gq003_yard_cleared",
+      "gq003_yard_investigation_complete": "gq003_yard_investigation_complete",
+      "gq003_clue_board_scanned": "gq003_clue_board_scanned",
+      "gq003_clue_stabilizers_scanned": "gq003_clue_stabilizers_scanned",
+      "gq003_clue_restraint_scanned": "gq003_clue_restraint_scanned",
+      "gq003_yard_shard_read": "gq003_yard_shard_read",
+      "gq003_beacon_planted": "gq003_beacon_planted",
+      "gq003_dispatch_breached": "gq003_dispatch_breached",
+      "gq003_clinic_reached": "gq003_clinic_reached",
+      "gq003_clinic_security_resolved": "gq003_clinic_security_resolved",
+      "gq003_jammer_disabled": "gq003_jammer_disabled",
+      "gq003_mara_released": "gq003_mara_released",
+      "gq003_mara_escorted": "gq003_mara_escorted",
+      "gq003_mara_stabilized": "gq003_mara_stabilized",
+      "gq003_mara_lost": "gq003_mara_lost",
+      "gq003_patch_ride_complete": "gq003_patch_ride_complete",
+      "gq003_carrier_stolen": "gq003_carrier_stolen",
+      "gq003_carrier_arrived": "gq003_carrier_arrived",
+      "gq003_patch_vehicle_cleaned": "gq003_patch_vehicle_cleaned",
+      "gq003_relay_entered": "gq003_relay_entered",
+      "gq003_retrieval_team_resolved": "gq003_retrieval_team_resolved",
+      "gq003_relay_investigation_complete": "gq003_relay_investigation_complete",
+      "gq003_clue_carrier_rack_scanned": "gq003_clue_carrier_rack_scanned",
+      "gq003_clue_core_scanned": "gq003_clue_core_scanned",
+      "gq003_clue_ledger_scanned": "gq003_clue_ledger_scanned",
+      "gq003_scene_choice_preserve": "gq003_scene_choice_preserve",
+      "gq003_scene_choice_burn": "gq003_scene_choice_burn",
+      "gq003_choice_preserve": "gq003_choice_preserve",
+      "gq003_choice_burn": "gq003_choice_burn",
+      "gq003_core_operated": "gq003_core_operated",
+      "gq003_route_preserved": "gq003_route_preserved",
+      "gq003_route_burned": "gq003_route_burned",
+      "gq003_relay_cleared": "gq003_relay_cleared",
+      "gq003_cipher_delivered": "gq003_cipher_delivered",
+      "gq003_completed": "gq003_completed"
+    },
+    "points_of_interest": {
+      "gq003_02_poi_iris": {
+        "id": "gq003_02_poi_iris",
+        "ref": "@locations.gq003_02_mp_iris.ref"
+      }
+    },
+    "text": {
+      "gl_gq003_item_route_auth_name": "Black Lantern route authorization",
+      "gl_gq003_item_route_beacon_name": "Black Lantern routing beacon",
+      "gl_gq003_item_cipher_name": "Black Lantern reconstruction cipher",
+      "gl_gq003_item_receipt_name": "Black Lantern destruction receipt"
+    }
+  }
+}

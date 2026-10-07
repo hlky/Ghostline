@@ -26,7 +26,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 
-CACHE_FORMAT_VERSION = 3
+CACHE_FORMAT_VERSION = 4
 SECTOR_JSON_SUFFIX = ".streamingsector.json"
 
 
@@ -278,6 +278,7 @@ class RootSnapshot:
     file_count: int
     total_size: int
     max_mtime_ns: int
+    file_metadata_sha256: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -285,6 +286,7 @@ class RootSnapshot:
             "file_count": self.file_count,
             "total_size": self.total_size,
             "max_mtime_ns": self.max_mtime_ns,
+            "file_metadata_sha256": self.file_metadata_sha256,
         }
 
     @classmethod
@@ -294,6 +296,7 @@ class RootSnapshot:
             file_count=int(value["file_count"]),
             total_size=int(value["total_size"]),
             max_mtime_ns=int(value["max_mtime_ns"]),
+            file_metadata_sha256=str(value["file_metadata_sha256"]),
         )
 
 
@@ -480,11 +483,19 @@ def _discover_sectors(roots: tuple[Path, ...]) -> tuple[_DiscoveredSector, ...]:
 def _snapshot(
     roots: tuple[Path, ...], sectors: tuple[_DiscoveredSector, ...]
 ) -> RootSnapshot:
+    # Aggregate totals alone miss same-size changes to a file whose mtime is
+    # below the newest file, as well as renames that preserve those totals.
+    metadata = [
+        (_path_key(sector.path), sector.size, sector.mtime_ns) for sector in sectors
+    ]
     return RootSnapshot(
         roots=tuple(str(root) for root in roots),
         file_count=len(sectors),
         total_size=sum(sector.size for sector in sectors),
         max_mtime_ns=max((sector.mtime_ns for sector in sectors), default=0),
+        file_metadata_sha256=hashlib.sha256(
+            json.dumps(metadata, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
     )
 
 
@@ -691,9 +702,10 @@ def build_sector_spatial_index(
 ) -> SectorSpatialIndex:
     """Build or load an actual-content spatial index.
 
-    Cache validity is intentionally cheap to evaluate: normalized root paths,
-    matching file count, total byte size, and maximum nanosecond mtime.  A
-    rebuild is retried once if that snapshot changes while files are parsed.
+    Cache validity hashes every discovered path, byte size, and nanosecond
+    mtime without rereading file contents. Use ``force_rebuild`` after changes
+    that deliberately preserve both size and mtime. A rebuild is retried once
+    if the snapshot changes while files are parsed.
     """
 
     normalized_roots = _normalize_roots(roots)

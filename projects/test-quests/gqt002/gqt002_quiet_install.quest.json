@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "gqt002_quiet_install",
+  "title": "Quiet Install",
+  "description": "Runtime fixture for monitoring stealth while planting a quest item on a guarded computer.",
+  "phase_prefabs": [
+    "@locations.prefab.ref"
+  ],
+  "stages": [
+    {
+      "id": "remain_undetected",
+      "type": "stealth_monitor",
+      "status": "ready",
+      "phase_resource": "mod\\gqt002\\phases\\gqt002_remain_undetected.questphase",
+      "inherit_phase_prefabs": false,
+      "objective": "@objectives.remain_undetected.path",
+      "failure_fact": "@facts.stealth_failed",
+      "success_fact": "@facts.stealth_succeeded",
+      "stop_fact": "@facts.plant_complete",
+      "notes": "The custom root runs this monitor in parallel with the plant phase and a real guard-combat detector."
+    },
+    {
+      "id": "plant_keylogger",
+      "type": "plant_item",
+      "status": "ready",
+      "phase_resource": "mod\\gqt002\\phases\\gqt002_plant_keylogger.questphase",
+      "phase_template": "mod\\gqt002\\templates\\gqt002_guarded_plant.questphase",
+      "inherit_phase_prefabs": false,
+      "item": "@locations.target.item",
+      "device": "@locations.target.device",
+      "controller_class": "ScriptableDeviceComponentPS",
+      "action": "QuestForceDisconnectPersonalLink",
+      "completion_function": "IsPersonalLinkConnected",
+      "completion_fact": "@facts.plant_complete",
+      "objective": "@objectives.plant_keylogger.path",
+      "notes": "The custom harness template waits for V to connect the laptop personal link, presents a timed install overlay, force-disconnects, and completes from the quest fact."
+    }
+  ],
+  "composition": {
+    "namespace": "gqt002",
+    "journal_template": "gqt003_shapes",
+    "locations": {
+      "prefab": {
+        "ref": "#gqt002_pr_quiet_install"
+      },
+      "target": {
+        "ref": "#gqt002_02_mp_target",
+        "device": "#gqt002_02_computer_target_r2",
+        "full_ref": "$/mod/gqt002/#gqt002_pr_quiet_install/#gqt002_02_computer_target_r2",
+        "item": "Items.GhostlineGQT002Keylogger"
+      },
+      "guards": {
+        "ref": "#gqt002_01_com_guards",
+        "entries": [
+          "guard_ranged_m",
+          "guard_ranged_f",
+          "guard_melee"
+        ]
+      },
+      "security": {
+        "ref": "#gqt002_01_dvc_security_system",
+        "area": "#gqt002_01_dvc_security_area"
+      }
+    },
+    "facts": {
+      "stealth_failed": "gqt002_stealth_failed",
+      "stealth_succeeded": "gqt002_stealth_succeeded",
+      "plant_complete": "gqt002_plant_complete",
+      "completed": "gqt002_completed"
+    },
+    "objectives": {
+      "remain_undetected": {
+        "phase_id": "gqt002_01",
+        "id": "gqt002_01_obj_remain_undetected",
+        "text": "Remain undetected.",
+        "localization_key": "gl_gqt002_01_objective_remain_undetected",
+        "description_id": "gqt002_01_desc_remain_undetected",
+        "description": "Reach the elevated terminal and install the Ghostline package without alerting its guards.",
+        "description_key": "gl_gqt002_description",
+        "optional": true
+      },
+      "plant_keylogger": {
+        "phase_id": "gqt002_02",
+        "id": "gqt002_02_obj_plant_keylogger",
+        "text": "Plant the keylogger on the guarded computer.",
+        "localization_key": "gl_gqt002_02_objective_plant_keylogger",
+        "description_id": "gqt002_02_desc_plant_keylogger",
+        "description": "Reach the elevated terminal and install the Ghostline package without alerting its guards.",
+        "description_key": "gl_gqt002_description",
+        "mappins": {
+          "target": {
+            "id": "gqt002_02_qmp_target",
+            "ref": "@locations.target.ref",
+            "text": "Guarded computer",
+            "localization_key": "gl_gqt002_mappin",
+            "debug_caption": "gl_gqt002_mappin"
+          }
+        }
+      }
+    },
+    "points_of_interest": {
+      "start": {
+        "id": "gqt002_02_poi_target",
+        "ref": "@locations.target.ref"
+      }
+    },
+    "text": {
+      "gl_gqt002_item_keylogger_name": "Ghostline Keylogger",
+      "gl_gqt002_installing_keylogger": "INSTALLING KEYLOGGER...",
+      "gl_gqt002_do_not_disconnect": "DO NOT DISCONNECT"
+    }
+  }
+}

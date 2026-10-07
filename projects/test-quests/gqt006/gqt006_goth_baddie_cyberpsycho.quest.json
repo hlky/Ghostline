@@ -1,0 +1,409 @@
+{
+  "schema_version": 1,
+  "id": "gqt006_goth_baddie_cyberpsycho",
+  "title": "Cyberpsycho Sighting: Goth Baddie",
+  "description": "Relocatable Cyberpsycho encounter with a selected world origin, readable evidence shard, and outcome-sensitive Regina debrief.",
+  "phase_prefabs": [
+    "@locations.pr_goth_baddie_cyberpsycho.ref"
+  ],
+  "debug_fact": "@facts.debug_start",
+  "stages": [
+    {
+      "id": "challenge_goth_baddie",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_challenge_goth_baddie.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.com_goth_baddie.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.sm_intimacy.ref",
+        "#gq000_01_tr_setup": "@locations.tr_dialogue.ref",
+        "#gq000_pr_patch_meet": "@locations.pr_goth_baddie_cyberpsycho.ref",
+        "gq000_job_accepted": "@facts.fight_accepted",
+        "gq000_patch_meet": "gqt006_challenge_goth_baddie",
+        "job_accept": "start_combat",
+        "patch": "goth_baddie",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.neutralize_goth_baddie.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.neutralize_goth_baddie.mappins.goth_baddie.path"
+      },
+      "contact": "goth_baddie",
+      "opening_message": "@contacts.regina.threads.report.entries.ncpd_brief.path",
+      "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+      "community": "@locations.com_goth_baddie.ref",
+      "appearance": "ghostline_goth_baddie_default",
+      "objective": "@objectives.neutralize_goth_baddie.path",
+      "description_entry": "@objectives.neutralize_goth_baddie.description_entry",
+      "mappin": "@objectives.neutralize_goth_baddie.mappins.goth_baddie.path"
+    },
+    {
+      "id": "neutralize_goth_baddie",
+      "type": "cyberpsycho_encounter",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+      "community": "@locations.com_goth_baddie.ref",
+      "boss_entry": "goth_baddie",
+      "boss_character": "Character.GhostlineGothBaddie",
+      "activation_trigger": "@locations.tr_outer.ref",
+      "activation_mode": "IsInside",
+      "activate": true,
+      "reveal": {
+        "trigger": "@locations.tr_reveal.ref",
+        "scan": true,
+        "attacked_by_boss": true,
+        "boss_hit_by_player": true,
+        "boss_sees_player": true
+      },
+      "arena_trigger": "@locations.tr_arena.ref",
+      "arena_mode": "IsInside",
+      "alerted_path": "@locations.spl_goth_baddie_alerted.ref",
+      "alerted_spots": [
+        "@locations.ws_goth_baddie_alerted_001.ref",
+        "@locations.ws_goth_baddie_alerted_002.ref"
+      ],
+      "resolution": {
+        "allow_nonlethal": true,
+        "spared_fact": "@facts.goth_baddie_spared",
+        "killed_fact": "@facts.goth_baddie_killed"
+      },
+      "postfight_scene": {
+        "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+        "origin": "@locations.sm_intimacy.ref",
+        "entry": "v_wins",
+        "exit": "v_wins_done"
+      },
+      "player_defeat_scene": {
+        "debug_fact": "@facts.debug_goth_wins",
+        "defeat_fact": "@facts.v_defeated",
+        "health_percent": 5,
+        "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+        "origin": "@locations.sm_intimacy.ref",
+        "entry": "goth_wins_debug",
+        "exit": "goth_intimacy_requested",
+        "completion_branches": [
+          {
+            "exit": "goth_truce_done",
+            "set_fact": "@facts.goth_baddie_truce"
+          }
+        ],
+        "continuation_scene": {
+          "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie_intimacy.scene",
+          "origin": "@locations.sm_intimacy.ref",
+          "entry": "start",
+          "exit": "done"
+        },
+        "aftermath_scene": {
+          "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+          "origin": "@locations.sm_intimacy.ref",
+          "entry": "goth_after",
+          "exit": "goth_wins_done"
+        }
+      },
+      "objective": "@objectives.neutralize_goth_baddie.path",
+      "description_entry": "@objectives.neutralize_goth_baddie.description_entry",
+      "mappin": "@objectives.neutralize_goth_baddie.mappins.goth_baddie.path",
+      "completion_fact": "@facts.goth_baddie_resolved",
+      "authoring": {
+        "world_spec": "projects/test-quests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json",
+        "tweak_file": "projects/test-quests/gqt006/source/resources/r6/tweaks/ghostline/character_goth_baddie.yaml"
+      },
+      "required_assets": [
+        "mod\\ghostline\\characters\\goth_baddie\\goth_baddie.ent"
+      ],
+      "notes": "Cleanup is intentionally deferred until after the shard is read and V exits the arena."
+    },
+    {
+      "id": "recover_goth_baddie_shard",
+      "type": "acquire_item",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_recover_goth_baddie_shard.questphase",
+      "item": "Items.GhostlineGothBaddieDatashard",
+      "source": "grant",
+      "quantity": 1,
+      "acquisition_fact": "@facts.goth_baddie_shard_acquired",
+      "notes": "Reliable evidence delivery: the shard is granted after either lethal or nonlethal resolution."
+    },
+    {
+      "id": "read_goth_baddie_shard",
+      "type": "read_shard",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_read_goth_baddie_shard.questphase",
+      "journal_entry": "@readables.goth_baddie_datashard.path",
+      "file_entry_index": 1,
+      "item": "Items.GhostlineGothBaddieDatashard",
+      "acquisition_fact": "@facts.goth_baddie_shard_acquired",
+      "activate_entry": true,
+      "presentation_delay_seconds": 1,
+      "objective": "@objectives.read_goth_baddie_shard.path",
+      "description_entry": "@objectives.read_goth_baddie_shard.description_entry",
+      "completion_fact": "@facts.goth_baddie_shard_read"
+    },
+    {
+      "id": "leave_goth_baddie_site",
+      "type": "leave_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_leave_goth_baddie_site.questphase",
+      "trigger": "@locations.tr_cleanup.ref",
+      "objective": "@objectives.leave_goth_baddie_site.path",
+      "description_entry": "@objectives.leave_goth_baddie_site.description_entry",
+      "completion_fact": "@facts.left_goth_baddie_site",
+      "cleanup_community": "@locations.com_goth_baddie.ref"
+    },
+    {
+      "id": "report_goth_baddie_outcome",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gqt006\\phases\\gqt006_report_goth_baddie_outcome.questphase",
+      "contact": "regina_jones",
+      "thread": "@contacts.regina.threads.report.path",
+      "messages": [
+        "@contacts.regina.threads.report.entries.status.path"
+      ],
+      "opening_branches": [
+        {
+          "condition": "@facts.goth_baddie_killed",
+          "messages": [
+            "@contacts.regina.threads.report.entries.killed.path"
+          ]
+        },
+        {
+          "condition": "@facts.goth_baddie_truce",
+          "messages": [
+            "@contacts.regina.threads.report.entries.truce.path"
+          ]
+        },
+        {
+          "condition": "@facts.goth_baddie_spared",
+          "unless": "@facts.goth_baddie_truce",
+          "messages": [
+            "@contacts.regina.threads.report.entries.spared.path"
+          ]
+        }
+      ],
+      "choice_group": "@contacts.regina.threads.report.entries.response.path",
+      "choices": [
+        {
+          "choice": "@contacts.regina.threads.report.entries.response.entries.send_shard.path",
+          "reply": "@contacts.regina.threads.report.entries.shard.path"
+        },
+        {
+          "choice": "@contacts.regina.threads.report.entries.response.entries.ask_context.path",
+          "reply": "@contacts.regina.threads.report.entries.context.path"
+        }
+      ],
+      "final_message": "@contacts.regina.threads.report.entries.complete.path",
+      "objective": "@objectives.report_goth_baddie.path",
+      "description_entry": "@objectives.report_goth_baddie.description_entry",
+      "reward": "QuestRewards.gqt006_completion",
+      "completion_fact": "@facts.completed",
+      "complete_quest": "@quest.path"
+    }
+  ],
+  "composition": {
+    "namespace": "gqt006",
+    "journal_template": "gq001_shapes",
+    "quest": {
+      "title": "Cyberpsycho Sighting: Goth Baddie",
+      "localization_key": "gl_gqt006_title",
+      "type": "CyberPsycho"
+    },
+    "objectives": {
+      "neutralize_goth_baddie": {
+        "id": "gqt006_01_obj_neutralize_goth_baddie",
+        "phase_id": "gqt006_01",
+        "text": "Neutralize Goth Baddie",
+        "localization_key": "gl_gqt006_01_objective_neutralize_goth_baddie",
+        "description_id": "gqt006_01_desc_neutralize_goth_baddie",
+        "description": "Regina sent an NCPD Cyberpsycho alert from Kabuki. Neutralize Goth Baddie, and keep her alive if you can.",
+        "description_key": "gl_gqt006_01_description_neutralize_goth_baddie",
+        "counter": 0,
+        "mappins": {
+          "goth_baddie": {
+            "id": "gqt006_01_qmp_goth_baddie",
+            "ref": "@locations.mp_goth_baddie.ref",
+            "text": "Goth Baddie",
+            "localization_key": "gl_gqt006_01_mappin_goth_baddie",
+            "debug_caption": "gl_gqt006_01_mappin_goth_baddie",
+            "variant": "HuntForPsychoVariant"
+          }
+        }
+      },
+      "read_goth_baddie_shard": {
+        "id": "gqt006_02_obj_read_goth_baddie_shard",
+        "phase_id": "gqt006_02",
+        "text": "Read Goth Baddie's datashard",
+        "localization_key": "gl_gqt006_02_objective_read_goth_baddie_shard",
+        "description_id": "gqt006_02_desc_read_goth_baddie_shard",
+        "description": "The shard was still recording when Goth Baddie went down.",
+        "description_key": "gl_gqt006_02_description_read_goth_baddie_shard",
+        "counter": 0,
+        "mappins": {}
+      },
+      "leave_goth_baddie_site": {
+        "id": "gqt006_03_obj_leave_goth_baddie_site",
+        "phase_id": "gqt006_03",
+        "text": "Leave the area",
+        "localization_key": "gl_gqt006_03_objective_leave_goth_baddie_site",
+        "description_id": "gqt006_03_desc_leave_goth_baddie_site",
+        "description": "Get clear while Regina's people secure the scene.",
+        "description_key": "gl_gqt006_03_description_leave_goth_baddie_site",
+        "counter": 0,
+        "mappins": {}
+      },
+      "report_goth_baddie": {
+        "id": "gqt006_04_obj_report_goth_baddie",
+        "phase_id": "gqt006_04",
+        "text": "Report to Regina",
+        "localization_key": "gl_gqt006_04_objective_report_goth_baddie",
+        "description_id": "gqt006_04_desc_report_goth_baddie",
+        "description": "Send Regina Goth Baddie's status and recovered telemetry.",
+        "description_key": "gl_gqt006_04_description_report_goth_baddie",
+        "counter": 0,
+        "mappins": {}
+      }
+    },
+    "points_of_interest": {
+      "goth_baddie": {
+        "id": "gqt006_01_poi_goth_baddie",
+        "ref": "@locations.mp_goth_baddie.ref",
+        "variant": "HuntForPsychoVariant"
+      }
+    },
+    "contacts": {
+      "regina": {
+        "id": "regina_jones",
+        "localization_key": "LocKey#10891",
+        "template": {
+          "donor": "regina_cyberpsycho",
+          "id": "regina_jones"
+        },
+        "threads": {
+          "report": {
+            "id": "gqt006_04_report",
+            "title": "Cyberpsycho Sighting: Goth Baddie",
+            "title_key": "gl_gqt006_phone_report_title",
+            "template": {
+              "donor": "regina_cyberpsycho",
+              "id": "ma_wat_kab_08"
+            },
+            "entries": {
+              "ncpd_brief": {
+                "type": "message",
+                "id": "00_msg_ncpd_brief",
+                "text": "NCPD flagged another cyberpsycho in Kabuki. Calls herself Goth Baddie. Heavily chromed, armed with a katana, and she's already put down the first-response team. Take her alive if you can. Sending coordinates.",
+                "localization_key": "gl_gqt006_phone_msg_brief",
+                "template": {
+                  "donor": "regina_cyberpsycho",
+                  "id": "00_msg_intro"
+                },
+                "delay": 3,
+                "important": true,
+                "attachment": "@quest.path"
+              },
+              "status": {
+                "type": "message",
+                "id": "01_msg_status",
+                "text": "Combat spike just dropped. Status?",
+                "localization_key": "gl_gqt006_phone_msg_status"
+              },
+              "killed": {
+                "type": "message",
+                "id": "02a_msg_killed",
+                "text": "She's dead. Found a shard still recording.",
+                "localization_key": "gl_gqt006_phone_msg_killed",
+                "sender": "Player"
+              },
+              "spared": {
+                "type": "message",
+                "id": "02b_msg_spared",
+                "text": "Alive. Situation's contained. Found a shard still recording.",
+                "localization_key": "gl_gqt006_phone_msg_spared",
+                "sender": "Player"
+              },
+              "truce": {
+                "type": "message",
+                "id": "02c_msg_truce",
+                "text": "Fight went her way. I called the deal off and she stood down. She's alive. Found a shard still recording.",
+                "localization_key": "gl_gqt006_phone_msg_truce",
+                "sender": "Player"
+              },
+              "response": {
+                "type": "choice_group",
+                "id": "03_ch_response",
+                "entries": {
+                  "send_shard": {
+                    "id": "03a_ch_send_shard",
+                    "text": "Sending the shard now.",
+                    "localization_key": "gl_gqt006_phone_choice_send_shard"
+                  },
+                  "ask_context": {
+                    "id": "03b_ch_ask_context",
+                    "text": "Any idea what pushed her over?",
+                    "localization_key": "gl_gqt006_phone_choice_ask_context"
+                  }
+                }
+              },
+              "shard": {
+                "type": "message",
+                "id": "04a_msg_shard",
+                "text": "Got it. Clear the area—my people are on their way.",
+                "localization_key": "gl_gqt006_phone_reply_shard"
+              },
+              "context": {
+                "type": "message",
+                "id": "04b_msg_context",
+                "text": "Not yet. Send me the shard. If someone rewired her threat response, I want a name.",
+                "localization_key": "gl_gqt006_phone_reply_context"
+              },
+              "complete": {
+                "type": "message",
+                "id": "05_msg_complete",
+                "text": "Payment's transferred.",
+                "localization_key": "gl_gqt006_phone_msg_complete"
+              }
+            }
+          }
+        }
+      }
+    },
+    "readables": {
+      "goth_baddie_datashard": {
+        "kind": "onscreen",
+        "group": "shards",
+        "id": "goth_baddie_datashard",
+        "title": "GOTH BADDIE // DEADMAN LOOP",
+        "text": "Combat telemetry repeats one instruction: HOLD THE LINE. Friendly signatures disappear one by one, but the loop keeps assigning new targets. The final entries are scarred by self-targeting ICE.",
+        "title_key": "gl_gqt006_shard_goth_baddie_title",
+        "text_key": "gl_gqt006_shard_goth_baddie_body"
+      }
+    },
+    "locations": {
+      "pr_goth_baddie_cyberpsycho": "#gqt006_pr_goth_baddie_cyberpsycho",
+      "com_goth_baddie": "#gqt006_com_goth_baddie",
+      "sm_intimacy": "#gqt006_sm_intimacy",
+      "tr_dialogue": "#gqt006_tr_dialogue",
+      "tr_outer": "#gqt006_tr_outer",
+      "tr_reveal": "#gqt006_tr_reveal",
+      "tr_arena": "#gqt006_tr_arena",
+      "spl_goth_baddie_alerted": "#gqt006_spl_goth_baddie_alerted",
+      "ws_goth_baddie_alerted_001": "#gqt006_ws_goth_baddie_alerted_001",
+      "ws_goth_baddie_alerted_002": "#gqt006_ws_goth_baddie_alerted_002",
+      "tr_cleanup": "#gqt006_tr_cleanup",
+      "mp_goth_baddie": "#gqt006_mp_goth_baddie"
+    },
+    "facts": {
+      "debug_start": "gqt006_debug_start",
+      "fight_accepted": "gqt006_fight_accepted",
+      "goth_baddie_spared": "gqt006_goth_baddie_spared",
+      "goth_baddie_killed": "gqt006_goth_baddie_killed",
+      "debug_goth_wins": "gqt006_debug_goth_wins",
+      "v_defeated": "gqt006_v_defeated",
+      "goth_baddie_truce": "gqt006_goth_baddie_truce",
+      "goth_baddie_resolved": "gqt006_goth_baddie_resolved",
+      "goth_baddie_shard_acquired": "gqt006_goth_baddie_shard_acquired",
+      "goth_baddie_shard_read": "gqt006_goth_baddie_shard_read",
+      "left_goth_baddie_site": "gqt006_left_goth_baddie_site",
+      "completed": "gqt006_completed"
+    }
+  }
+}

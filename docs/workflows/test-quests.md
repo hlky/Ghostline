@@ -1,7 +1,7 @@
 # Test Quests
 
 Test quests isolate reusable quest behavior without requiring a coherent story.
-They live under `quests/tests` and use the `gqt` prefix. A stage remains
+They live under `projects/test-quests` and use the `gqt` prefix. A stage remains
 `planned` until its journal, scene, world, and localization resources exist and
 its selected world location has passed an in-game accessibility and quest-safety
 review.

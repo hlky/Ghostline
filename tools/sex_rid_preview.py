@@ -13,6 +13,8 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from toolchain import default_tool_path, resolve_tool
 from typing import Any
 
 from sex_rid_catalog import preview_slug
@@ -20,7 +22,7 @@ from sex_rid_catalog import preview_slug
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SKELETON = ROOT / "braindance/rigs/man_base.skeleton.json"
-DEFAULT_BLENDER = Path(r"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe")
+DEFAULT_BLENDER = default_tool_path("blender")
 BLENDER_SCRIPT = ROOT / "tools/sex_rid_preview_blender.py"
 PREVIEW_SCHEMA_VERSION = 1
 ACTOR_COLORS = (
@@ -704,15 +706,11 @@ def build_preview_data(
     }
 
 
-def _find_blender(explicit: Path | None) -> Path:
-    if explicit is not None and explicit.is_file():
-        return explicit
-    discovered = shutil.which("blender")
-    if discovered:
-        return Path(discovered)
-    if DEFAULT_BLENDER.is_file():
-        return DEFAULT_BLENDER
-    raise RidPreviewError("Blender was not found; pass --blender")
+def _find_blender(explicit: Path | None = None) -> Path:
+    try:
+        return resolve_tool("blender", explicit)
+    except (OSError, ValueError) as exc:
+        raise RidPreviewError(str(exc)) from exc
 
 
 def render_preview(

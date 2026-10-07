@@ -210,6 +210,32 @@ class NavigationSectorTests(unittest.TestCase):
 
 
 class NavigationIslandTests(unittest.TestCase):
+    def test_sampling_rejects_nonfinite_and_boolean_configuration_before_work(
+        self,
+    ) -> None:
+        for parameter in ("spacing_m", "camera_height_m", "vertical_weight"):
+            for value in (
+                float("nan"),
+                float("inf"),
+                float("-inf"),
+                True,
+                None,
+                "25",
+                -1,
+            ):
+                with (
+                    self.subTest(parameter=parameter, value=value),
+                    self.assertRaisesRegex(ValueError, parameter),
+                ):
+                    nav.sample_navigation_islands([], **{parameter: value})
+        for parameter in ("spacing_m", "vertical_weight"):
+            with (
+                self.subTest(parameter=parameter),
+                self.assertRaisesRegex(ValueError, parameter),
+            ):
+                nav.sample_navigation_islands([], **{parameter: 0})
+        self.assertEqual(nav.sample_navigation_islands([], camera_height_m=0), ())
+
     def test_maps_vand_component_order_to_world_coordinates(self) -> None:
         self.assertEqual(
             nav.Vec3(2452.0, -731.0, 64.0),

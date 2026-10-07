@@ -12,19 +12,19 @@ import argparse
 import copy
 import hashlib
 import json
-import os
 import re
-import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from toolchain import resolve_tool
 from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
 BLENDER_RUNNER = Path(__file__).with_name("braindance_scene_blender.py")
-DEFAULT_SPEC = ROOT / "source" / "braindance" / "tests" / "gqt005_braindance_analysis.json"
+DEFAULT_SPEC = ROOT / "projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json"
 SUPPORTED_SCHEMA_VERSION = 1
 NAME_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 INTERPOLATIONS = {"LINEAR", "BEZIER", "CONSTANT"}
@@ -820,28 +820,10 @@ def resolve_repo_path(path: str, *, repo_root: Path = ROOT) -> Path:
 
 
 def find_blender(explicit: Path | None = None) -> Path:
-    candidates: list[Path] = []
-    if explicit is not None:
-        candidates.append(explicit)
-    configured = os.environ.get("GHOSTLINE_BLENDER")
-    if configured:
-        candidates.append(Path(configured))
-    discovered = shutil.which("blender")
-    if discovered:
-        candidates.append(Path(discovered))
-    foundation = Path(r"C:\Program Files\Blender Foundation")
-    if foundation.exists():
-        candidates.extend(
-            sorted(foundation.glob("Blender */blender.exe"), reverse=True)
-        )
-    steam = Path(r"C:\Program Files\Steam\steamapps\common\Blender\blender.exe")
-    candidates.append(steam)
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate.resolve()
-    raise BraindanceBuildError(
-        "Blender was not found; pass --blender or set GHOSTLINE_BLENDER"
-    )
+    try:
+        return resolve_tool("blender", explicit)
+    except (OSError, ValueError) as exc:
+        raise BraindanceBuildError(str(exc)) from exc
 
 
 def print_report(report: ValidationReport) -> None:

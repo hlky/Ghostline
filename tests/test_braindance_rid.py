@@ -11,8 +11,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / "tools") not in sys.path:
+    sys.path.insert(0, str(ROOT / "tools"))
 TOOLS = ROOT / "tools"
-SPEC_PATH = ROOT / "braindance/tests/gqt005_braindance_analysis.json"
+SPEC_PATH = ROOT / "projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json"
 
 MODULE_SPEC = importlib.util.spec_from_file_location(
     "braindance_rid", TOOLS / "braindance_rid.py"

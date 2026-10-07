@@ -1,141 +1,111 @@
 # Build, Package, And Install
 
-This document defines the manual scoped build, verification, staging, and
-install workflow. Current archive/ZIP hashes and retained build directories
-belong in [`runtime-testing.md`](runtime-testing.md), not here.
+Use `tools/package_project.py` for runtime packages. It is the single owner of
+profile selection, WolvenKit packing, archive listing/extraction, payload hashes,
+loose-resource staging and ZIP verification. Successful extraction establishes
+package integrity; in-game behavior needs the focused runtime checks below.
 
-## Sources Of Truth
+Select a project with `--project ghostline` or `--project gqt###`. Every `source`
+path below is relative to that project's directory. The repository root owns
+the tools, not a combined source tree. See [project layout](../reference/project-layout.md).
 
-- `source/raw` is the editable CR2W-JSON source.
-- `source/archive` is the CR2W/depot tree passed to the archive packer.
-- `source/resources` contains loose ArchiveXL, TweakXL, script, and config
-  resources that must be staged separately from a manual archive pack.
-- `quests`, `characters`, and `braindance` contain plain authoring manifests,
-  documentation, templates, and build plans. They are generator inputs, not
-  packer inputs.
-- `packed` is ignored generated install/ZIP staging. Never edit it as source.
+## Sources And Pre-Pack Gate
 
-Do not pack from the repository root. An old `WolvenKit.CLI build .` workflow swept
-support paths such as `reference`, `source/raw`, `generated`,
-`GraphEditorStates`, `tools`, and `modding_docs` into an archive.
-
-## Pre-Pack Gate
-
-Before packing a changed scene, phase, world resource, or localization map:
+Edit CR2W-JSON under `source/raw`, then convert and round-trip changed resources
+into `source/archive` using the [CR2W workflow](../../agent/skills/ghostline-wolvenkit-cr2w/SKILL.md).
+Plain manifests under `quests`, `characters` and `braindance` are authoring inputs.
+ArchiveXL, TweakXL, REDscript and config inputs belong under `source/resources`.
 
 ```powershell
-py -B -m unittest discover -s tests -v
-py -B .\tools\generate_scene.py audit --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
-py -B .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
-py -B .\tools\generate_cache_phase.py --dry-run
-py -B .\tools\generate_delivery_phase.py --dry-run
-py -B .\tools\explore_localization.py check
+uv sync --locked --extra dev
+uv run python -B tools/check_project.py
 ```
 
-For every changed CR2W-JSON resource, deserialize the intended raw file into
-its matching `source/archive` directory and serialize that binary to an
-isolated round-trip directory. Compare the round-tripped structure and, where
-the resource is deterministic, its SHA-256. Follow
-`agent/skills/ghostline-wolvenkit-cr2w/SKILL.md`.
+Run the owning quest/scene/world/localization validators for changed assets.
+A `CR2W` header alone does not validate graph edges, handles, resource indexes,
+locStore order or NodeRefs. The package command does not rebuild authored raw
+files or silently convert working-tree binaries.
 
-A `CR2W` header proves only that a file is a CR2W container. It does not prove
-that graph edges, handle references, resource indexes, locStore order, or
-NodeRefs are valid.
+## Profiles
 
-## Scoped Archive Build
+Each project owns `packaging/profiles.json`. The root file only routes legacy
+profile names to those projects. These selections are available:
 
-Use WolvenKit for the runtime archive build. Pack only `source/archive`.
-`ghostline-red pack` is not runtime-safe for the current payload and produced
-a reproducible startup crash during the GQT007 lipsync test:
+| Profile | Activation and contents |
+| --- | --- |
+| `story` | GQ001/GQ002 roots, GQ000 runtime support, Patch/Iris/Cinder and their dependencies; no test activation, base-character overrides or autosave suppression |
+| `gqt001`–`gqt004` | One selected test quest and its explicit shared dependencies; GQT003 includes GQ000 runtime support |
+| `gqt005` | Braindance test, required Patch resources and its test tweaks |
+| `gqt006` | Standalone Goth Baddie encounter, including referenced custom animations; forbids tutorial dependencies |
+| `gqt007` | Barry lipsync test and localized animset |
+| `development` | Story-only active roots and shared support, base overrides and autosave suppression; excludes incomplete GQ003 preproduction assets/registration |
+
+Selection starts at each character entity and follows named references from
+packed CR2W string tables plus authored raw companions, including paths hidden
+in embedded/hash-only binary representations. The registered lipmap must prove
+any scene-local lipsync remapping. Missing owned references fail before packing.
+Typed numeric resource paths resolve against the inventoried depot hashes.
+When a selected character mesh has no parsed raw companion, the selector keeps
+that character's entire owning bundle, including textures and morph resources;
+this also applies to characters reached transitively. The report records each
+fallback. Fine-grained character pruning requires decoding the embedded material
+buffers first. The static audit reports unresolved hashes and external game
+dependencies; dynamic runtime behavior still needs game validation.
+
+Story/test profiles deduplicate byte-identical character meshes into deterministic
+shared paths and generate `resource.link` aliases for every original path. This
+requires ArchiveXL 1.14 or newer. `--keep-duplicate-meshes` produces a comparison
+candidate with original paths and no deduplication aliases. Authored binary
+resources remain unchanged. Tutorial support is included only through a named
+dependency; base-character overrides remain outside normal releases.
+
+## Build And Verify
 
 ```powershell
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$buildDir = Join-Path '.tmp\package' "manual-$stamp"
-New-Item -ItemType Directory -Path $buildDir | Out-Null
-& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' pack `
-  .\source\archive `
-  -o $buildDir
-$candidate = Join-Path $buildDir 'archive.archive'
+# Review selection without external tools or publication.
+uv run python -B tools/package_project.py --project ghostline --plan
+
+# Build, list, extract, hash-check and verify the ZIP.
+uv run python -B tools/package_project.py --project ghostline
+
+# Same gate for the standalone encounter.
+uv run python -B projects/test-quests/gqt006/implementation/package_standalone.py
 ```
 
-Because the input directory is named `archive`, the CLI output is normally
-`$candidate`. Rename it to `Ghostline.archive` only after verification.
+Paths resolve explicit CLI arguments, `GHOSTLINE_*` environment variables,
+`toolchain.local.json`, then discovery. Copy `toolchain.example.json` to configure
+your workstation. A supplied WolvenKit path is used for pack, list and extract.
 
-Expected depot roots are:
+Each run owns a unique `<project>/generated/packages/<profile>-<id>` directory containing
+the frozen archive/loose inputs, `selection.json`, pack/list/extract logs,
+verification extractions, final `install` tree, ZIP and `verification.json`.
+The receipt records every selected/extracted hash and every install/ZIP hash.
+An archive or ZIP mismatch fails the run before a verified result is returned.
+Files in failed run directories are diagnostic candidates, not verified builds.
 
-- `mod\gq###\...` for story quests that currently own packed resources;
-- `mod\gqt###\...` for intentionally included test quests;
-- `mod\ghostline\...`
-- `base\...` only for a deliberate test or validated dependency.
+The packer compares the exact path set, not only the file count. Every extracted
+payload must match its frozen input by length and SHA-256. ZIP entries and bytes
+must then match the staged install tree. Shared alias files are checked against
+the same source bytes used to establish deduplication.
 
-Keep arbitrary support files out of `source/archive`; the packer treats the
-directory as the intended depot payload tree. Use WolvenKit as the fallback for
-editor, mesh, morphtarget, or unsupported CR2W work, not for routine packing.
+Runtime archives use WolvenKit. The native packer's historical extraction
+success did not establish game-startup compatibility; see
+[native archive experiments](../history/native-archive-experiments.md).
+Never pack the repository root or install an unverified scratch candidate.
 
-## Archive Verification
+## Install
 
-List the candidate and inspect the depot paths before installing it:
+Add `--install --game <game-root>` to an already reviewed profile build when
+installation is intended. Installation rechecks staged hashes and rolls back
+replaced files if publication fails. The standalone wrapper also accepts
+`--disable-ghostline`; it requires `--install` and preserves uniquely named
+backups of the combined archive, registration and tweaks.
 
-```powershell
-& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' archive `
-  $candidate `
-  -l
-```
-
-Reject a build containing repository/support roots such as `source\raw`,
-`reference`, `generated`, `GraphEditorStates`, `tools`, or `modding_docs`.
-
-Extract the candidate to a new verification directory:
-
-```powershell
-$verifyDir = Join-Path $buildDir 'extracted'
-New-Item -ItemType Directory -Path $verifyDir | Out-Null
-& 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' extract `
-  $candidate `
-  -o $verifyDir
-```
-
-Then verify:
-
-- every listed depot path is intentional;
-- every extracted payload matches the corresponding `source/archive` file by
-  length and SHA-256;
-- no expected depot path was added or removed relative to the intended
-  baseline;
-- the candidate archive SHA-256 is recorded in
-  `docs/workflows/runtime-testing.md`;
-- the installed archive is byte-identical to the verified candidate.
-
-For a scene-only candidate, explicitly prove that only the intended scene
-payload changed from the last tested archive. Do not infer that from equal file
-counts.
-
-## Install Staging
-
-The generated `packed` tree should mirror Cyberpunk's game directory:
-
-```text
-packed\
-  archive\pc\mod\Ghostline.archive
-  archive\pc\mod\Ghostline.archive.xl
-  r6\tweaks\ghostline\character_patch.yaml
-  r6\tweaks\ghostline\faction_ghostline.yaml
-  r6\tweaks\ghostline\gq000_shards.yaml
-  engine\config\base\user.ini
-  r6\scripts\Tduality\autosave_is_Not_included.reds
-```
-
-The `.archive` comes from the verified `archive.archive`. The remaining files
-come from matching paths under `source/resources`.
-
-The config and REDscript files suppress autosaves during repeatable quest
-testing. They are development/test resources, not core Ghostline quest data;
-make an explicit release decision before shipping them publicly.
-
-Build a ZIP from the contents of `packed`, so `archive`, `r6`, and `engine` are
-ZIP roots rather than nesting everything under a `packed` directory. Extract
-the completed ZIP to a separate directory and compare every payload with its
-staged source before distributing it.
+Install/ZIP roots are `archive`, `r6`, and (development only) `engine`, without
+an enclosing `packed` directory. `packed`, `generated`, and `.tmp` are ignored
+outputs; none is the source of truth. Record focused in-game results in
+[runtime testing](runtime-testing.md), and retain the corresponding verification
+receipt so observations identify the exact candidate.
 
 ## Runtime Dependencies
 
@@ -158,7 +128,7 @@ staged source before distributing it.
 
 ## Base-Path Override Risk
 
-`source/archive/base` contains copied
+`projects/shared/ghostline-runtime/source/archive/base` contains copied
 `base\characters\head\player_base_heads\player_man_average\...` resources.
 Those are global overrides rather than Ghostline-owned depot paths. The current
 test archive retains them for baseline parity, but they should not ship in a

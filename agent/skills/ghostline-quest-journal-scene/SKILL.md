@@ -11,7 +11,7 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
   CR2W-JSON files into context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal
   behavior.
-- Read `quests/story/ghostline/gq000/implementation/runtime-flow.md` before changing the root/child phase handoff,
+- Read `projects/ghostline/quests/gq000/implementation/runtime-flow.md` before changing the root/child phase handoff,
   meeting lifecycle, trigger ownership, scene exits, or choice localization.
 - For fresh scene work, use `docs/authoring/scenes.md`. Vanilla patterns
   override failed Ghostline probe results.
@@ -47,7 +47,7 @@ Useful docs:
   on-screen text and the voiceover resource.
 - Spoken lines and choice labels use different localization paths. Spoken
   lines resolve through subtitle/VO resources; choices resolve through the
-  scene's embedded `locStore`. See `quests/story/ghostline/gq000/implementation/runtime-flow.md` for the complete
+  scene's embedded `locStore`. See `projects/ghostline/quests/gq000/implementation/runtime-flow.md` for the complete
   lookup chains and ID domains.
 - Keep the mq003-derived lifecycle boundary: the meeting questphase activates
   the community, waits for `CharacterSpawned`, and starts the scene at the
@@ -61,17 +61,17 @@ Useful docs:
 ## Current gq000 Resources
 
 - Main questphase:
-  - raw: `source/raw/mod/gq000/phases/gq000.questphase.json`
-  - packed: `source/archive/mod/gq000/phases/gq000.questphase`
+  - raw: `projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000.questphase.json`
+  - packed: `projects/shared/ghostline-runtime/source/archive/mod/gq000/phases/gq000.questphase`
 - Patch meet phase:
-  - raw: `source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
-  - packed: `source/archive/mod/gq000/phases/gq000_patch_meet.questphase`
+  - raw: `projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`
+  - packed: `projects/shared/ghostline-runtime/source/archive/mod/gq000/phases/gq000_patch_meet.questphase`
 - Post-accept phase:
-  - raw: `source/raw/mod/gq000/phases/gq000_post_accept.questphase.json`
-  - packed: `source/archive/mod/gq000/phases/gq000_post_accept.questphase`
+  - raw: `projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000_post_accept.questphase.json`
+  - packed: `projects/shared/ghostline-runtime/source/archive/mod/gq000/phases/gq000_post_accept.questphase`
 - Patch meet scene:
-  - raw: `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
-  - packed: `source/archive/mod/gq000/scenes/gq000_patch_meet.scene`
+  - raw: `projects/shared/ghostline-runtime/source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`
+  - packed: `projects/shared/ghostline-runtime/source/archive/mod/gq000/scenes/gq000_patch_meet.scene`
 - Current stage relationship:
   - `gq000.questphase` is the main questphase for `gq000`.
   - `gq000_patch_meet.questphase` is the first stage where the player meets
@@ -116,10 +116,10 @@ Known first-dot journal prefixes:
 
 Current `gq000` journal files:
 
-- raw: `source/raw/mod/gq000/journal/gq000.journal.json`
-- packed: `source/archive/mod/gq000/journal/gq000.journal`
+- raw: `projects/shared/ghostline-runtime/source/raw/mod/gq000/journal/gq000.journal.json`
+- packed: `projects/shared/ghostline-runtime/source/archive/mod/gq000/journal/gq000.journal`
 
 Current `gq000` quest onscreen localization:
 
-- raw: `source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
-- packed: `source/archive/mod/gq000/localization/en-us/onscreens/gq000.json`
+- raw: `projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json`
+- packed: `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/onscreens/gq000.json`

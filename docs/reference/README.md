@@ -1,6 +1,7 @@
 # Reference
 
 - [Tool catalog](tool-catalog.md)
+- [Projects and building tools](project-layout.md)
 - [Vanilla quest index](vanilla-quests/README.md)
 - [Vanilla Cyberpsycho encounters](vanilla-cyberpsycho-encounters.md)
 - [SQ021 computer/file-read flow](vanilla-sq021-computer-flow.md)

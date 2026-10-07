@@ -9,6 +9,7 @@ import re
 import sqlite3
 from typing import Any, Iterable, Mapping, Sequence
 
+from .config import validate_planning_config
 from .database import apply_reviewed_overrides, json_text, transaction, utc_now
 from .model import (
     Bounds,
@@ -331,13 +332,13 @@ def rebuild_areas(connection: sqlite3.Connection) -> int:
 
 def _nearest_fast_travel(connection: sqlite3.Connection, point: Vec3) -> dict[str, Any]:
     row = None
-    for radius in (100.0, 500.0, 2_000.0, 10_000.0, 50_000.0):
+    for radius in (100.0, 500.0, 2_000.0, 10_000.0, 50_000.0, math.inf):
         row = connection.execute(
             """SELECT f.*, ((f.x-?)*(f.x-?)+(f.y-?)*(f.y-?)) AS distance_squared
                FROM fast_travel_rtree r
                JOIN fast_travel_points f ON f.rowid=r.fast_travel_pk
                WHERE r.max_x>=? AND r.min_x<=? AND r.max_y>=? AND r.min_y<=?
-               ORDER BY distance_squared LIMIT 1""",
+               ORDER BY distance_squared,fast_travel_id LIMIT 1""",
             (
                 point.x,
                 point.x,
@@ -349,7 +350,7 @@ def _nearest_fast_travel(connection: sqlite3.Connection, point: Vec3) -> dict[st
                 point.y + radius,
             ),
         ).fetchone()
-        if row:
+        if row and row["distance_squared"] <= radius**2:
             break
     if not row:
         return {}
@@ -364,29 +365,38 @@ def _nearest_fast_travel(connection: sqlite3.Connection, point: Vec3) -> dict[st
 
 
 def _nearest_road(connection: sqlite3.Connection, point: Vec3) -> dict[str, Any]:
-    candidates: list[sqlite3.Row] = []
-    for radius in (100.0, 500.0, 2_000.0, 10_000.0, 50_000.0):
+    best: tuple[float, sqlite3.Row, Vec3] | None = None
+    for radius in (100.0, 500.0, 2_000.0, 10_000.0, 50_000.0, math.inf):
         candidates = connection.execute(
             """SELECT road.* FROM road_rtree r JOIN roads road ON road.road_pk=r.road_pk
-               WHERE r.max_x>=? AND r.min_x<=? AND r.max_y>=? AND r.min_y<=?""",
+               WHERE r.max_x>=? AND r.min_x<=? AND r.max_y>=? AND r.min_y<=?
+               ORDER BY road.road_id""",
             (point.x - radius, point.x + radius, point.y - radius, point.y + radius),
         ).fetchall()
-        if candidates:
+        best = None
+        for row in candidates:
+            points = [
+                Vec3(float(value["x"]), float(value["y"]), float(value["z"]))
+                for value in json.loads(row["points_json"])
+            ]
+            segments = (
+                zip(points, points[1:])
+                if len(points) > 1
+                else ((points[0], points[0]),)
+                if points
+                else ()
+            )
+            for left, right in segments:
+                closest, distance = closest_point_on_segment_2d(point, left, right)
+                if best is None or (distance, row["road_id"]) < (
+                    best[0],
+                    best[1]["road_id"],
+                ):
+                    best = (distance, row, closest)
+        # Outside this square every unseen segment is at least radius away.
+        # A road AABB intersecting the square alone does not prove nearness.
+        if best is not None and best[0] <= radius:
             break
-    # R-tree finds nearby splines; exact segment distance chooses among them.
-    best: tuple[float, sqlite3.Row, Vec3] | None = None
-    for row in candidates:
-        points = [
-            Vec3(float(value["x"]), float(value["y"]), float(value["z"]))
-            for value in json.loads(row["points_json"])
-        ]
-        candidates = (
-            zip(points, points[1:]) if len(points) > 1 else ((points[0], points[0]),)
-        )
-        for left, right in candidates:
-            closest, distance = closest_point_on_segment_2d(point, left, right)
-            if best is None or distance < best[0]:
-                best = (distance, row, closest)
     if best is None:
         return {}
     distance, row, closest = best
@@ -452,10 +462,18 @@ def _metadata_for_point(
         **_nearest_fast_travel(connection, point),
         **_nearest_road(connection, point),
         **_containing_area(connection, point),
-        **nearest_runtime_area,
     }
+    inferred = {
+        field: value
+        for field, value in nearest_runtime_area.items()
+        if value and not spatial.get(field)
+    }
+    spatial.update(inferred)
     overrides = apply_reviewed_overrides(connection, "place", location_id)
-    return resolve_metadata(None, spatial, overrides)
+    resolved, provenance = resolve_metadata(None, spatial, overrides)
+    for field in inferred:
+        provenance[field] = "spatial:nearby_runtime"
+    return resolved, provenance
 
 
 def _runtime_area_observations(
@@ -502,10 +520,9 @@ def evaluate_scope(point: Vec3, config: Mapping[str, Any]) -> dict[str, Any]:
         normal_x = -tangent_y / tangent_length
         normal_y = tangent_x / tangent_length
         inside = rule["in_scope_reference"]
-        inside_signed = (
-            (float(inside["x"]) - origin_x) * normal_x
-            + (float(inside["y"]) - origin_y) * normal_y
-        )
+        inside_signed = (float(inside["x"]) - origin_x) * normal_x + (
+            float(inside["y"]) - origin_y
+        ) * normal_y
         if inside_signed < 0.0:
             normal_x = -normal_x
             normal_y = -normal_y
@@ -517,18 +534,17 @@ def evaluate_scope(point: Vec3, config: Mapping[str, Any]) -> dict[str, Any]:
 
         outside = rule.get("out_of_scope_reference")
         if outside:
-            outside_signed = (
-                (float(outside["x"]) - origin_x) * normal_x
-                + (float(outside["y"]) - origin_y) * normal_y
-            )
+            outside_signed = (float(outside["x"]) - origin_x) * normal_x + (
+                float(outside["y"]) - origin_y
+            ) * normal_y
             if outside_signed >= 0.0:
                 raise ValueError(
                     f"scope rule {rule_id!r} does not separate its q000 references"
                 )
 
-        signed_distance = (
-            (point.x - origin_x) * normal_x + (point.y - origin_y) * normal_y
-        )
+        signed_distance = (point.x - origin_x) * normal_x + (
+            point.y - origin_y
+        ) * normal_y
         margin = float(rule.get("margin_m", 0.0))
         evaluation = {
             "rule_id": rule_id,
@@ -601,19 +617,9 @@ def _object_places(
             float(row["forward_x"]), float(row["forward_y"]), float(row["forward_z"])
         ).normalized(horizontal=True)
         metadata = json.loads(row["metadata_json"])
-        axis_name = metadata.get("orientation", {}).get("forward_axis", "+y")
-        local_axis = {
-            "+x": Vec3(1, 0, 0),
-            "-x": Vec3(-1, 0, 0),
-            "+y": Vec3(0, 1, 0),
-            "-y": Vec3(0, -1, 0),
-        }.get(str(axis_name).lower(), Vec3(0, 1, 0))
-        bounds = _feature_bounds(row)
-        extent = bounds.half_extent_along(local_axis) if bounds else None
-        extent_source = "oriented_instance_bounds"
-        if extent is None:
-            extent = float(metadata.get("front_extent_m", 0.0))
-            extent_source = "reviewed_rule_fallback"
+        # worldNodeData.Bounds contains streaming reference data, not a proven
+        # local mesh box. Keep placement on the calibrated family dimensions.
+        extent = float(metadata.get("front_extent_m", 0.0))
         clearance = float(metadata.get("clearance_m", 0.0))
         requested = anchor + forward * (extent + clearance)
         location_id = stable_id("place", row["feature_id"], "outward", version)
@@ -629,7 +635,7 @@ def _object_places(
             {
                 "anchor": f"feature:{row['feature_id']}",
                 "pose": f"placement_rule:{version}",
-                "front_extent": extent_source,
+                "front_extent": "reviewed_rule",
                 "ground_z": "serialized anchor height; CET resolves ground surface at runtime",
             }
         )
@@ -657,14 +663,23 @@ def _object_places(
 def _deduplicate_candidate_coordinates(
     records: Iterable[Mapping[str, Any]],
     minimum_separation_by_category: Mapping[str, float],
+    *,
+    preferred_ids: set[str] | frozenset[str] = frozenset(),
 ) -> tuple[list[Mapping[str, Any]], int]:
     """Greedily retain deterministic 3D candidates at the configured spacing."""
     retained: list[Mapping[str, Any]] = []
-    grids: dict[
-        str, dict[tuple[int, int, int], list[Mapping[str, Any]]]
-    ] = defaultdict(lambda: defaultdict(list))
+    grids: dict[str, dict[tuple[int, int, int], list[Mapping[str, Any]]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
     removed = 0
-    for record in sorted(records, key=lambda value: str(value["location_id"])):
+    for record in sorted(
+        records,
+        key=lambda value: (
+            value.get("scope_status") == "out_of_scope",
+            value["location_id"] not in preferred_ids,
+            str(value["location_id"]),
+        ),
+    ):
         category = str(record["category"])
         separation = float(minimum_separation_by_category.get(category, 0.0))
         if separation <= 0.0:
@@ -704,6 +719,8 @@ def _deduplicate_sparse_road_places(
     roads: Iterable[Mapping[str, Any]],
     objects: Iterable[Mapping[str, Any]],
     rules: Mapping[str, Any],
+    *,
+    preferred_ids: set[str] | frozenset[str] = frozenset(),
 ) -> tuple[list[Mapping[str, Any]], int]:
     proximity = float(rules.get("object_proximity_m", 0.0))
     separation = float(rules.get("minimum_separation_m", 0.0))
@@ -713,6 +730,8 @@ def _deduplicate_sparse_road_places(
 
     object_grid: dict[tuple[int, int], list[tuple[float, float]]] = defaultdict(list)
     for candidate in objects:
+        if candidate.get("scope_status") == "out_of_scope":
+            continue
         x = float(candidate["requested_x"])
         y = float(candidate["requested_y"])
         cell = (math.floor(x / proximity), math.floor(y / proximity))
@@ -742,14 +761,18 @@ def _deduplicate_sparse_road_places(
         )
         point_groups[key].append(road)
 
-    sparse_grid: dict[
-        tuple[int, int, int], list[tuple[float, float, float]]
-    ] = defaultdict(list)
+    sparse_grid: dict[tuple[int, int, int], list[tuple[float, float, float]]] = (
+        defaultdict(list)
+    )
     retained: list[Mapping[str, Any]] = []
     removed = 0
     for key, views in sorted(
         point_groups.items(),
-        key=lambda item: min(str(view["location_id"]) for view in item[1]),
+        key=lambda item: (
+            all(view.get("scope_status") == "out_of_scope" for view in item[1]),
+            not any(view["location_id"] in preferred_ids for view in item[1]),
+            min(str(view["location_id"]) for view in item[1]),
+        ),
     ):
         x, y, z = key
         keep = near_object(x, y)
@@ -786,6 +809,8 @@ def _deduplicate_physical_locations(
     records: Iterable[Mapping[str, Any]],
     minimum_separation_m: float,
     category_priority: Sequence[str] = (),
+    *,
+    preferred_ids: set[str] | frozenset[str] = frozenset(),
 ) -> tuple[list[Mapping[str, Any]], int]:
     """Space physical coordinates globally while retaining views of one winner.
 
@@ -802,12 +827,13 @@ def _deduplicate_physical_locations(
     priority = {category: index for index, category in enumerate(category_priority)}
     fallback_priority = len(priority)
 
-    def record_priority(record: Mapping[str, Any]) -> tuple[int, int, str, str]:
+    def record_priority(record: Mapping[str, Any]) -> tuple[int, int, str, bool, str]:
         category = str(record["category"])
         return (
             0 if record.get("scope_status") == "in_scope" else 1,
             priority.get(category, fallback_priority),
             category,
+            record["location_id"] not in preferred_ids,
             str(record["location_id"]),
         )
 
@@ -818,9 +844,9 @@ def _deduplicate_physical_locations(
             return ("road", str(record["road_id"]))
         return ("place", str(record["location_id"]))
 
-    coordinate_groups: dict[
-        tuple[float, float, float], list[Mapping[str, Any]]
-    ] = defaultdict(list)
+    coordinate_groups: dict[tuple[float, float, float], list[Mapping[str, Any]]] = (
+        defaultdict(list)
+    )
     for record in values:
         coordinate_groups[
             (
@@ -832,7 +858,7 @@ def _deduplicate_physical_locations(
 
     candidates: list[
         tuple[
-            tuple[int, int, str, str],
+            tuple[int, int, str, bool, str],
             tuple[float, float, float],
             list[Mapping[str, Any]],
         ]
@@ -851,9 +877,9 @@ def _deduplicate_physical_locations(
         removed += len(group) - len(views)
         candidates.append((record_priority(winner), coordinate, views))
 
-    grid: dict[
-        tuple[int, int, int], list[tuple[float, float, float]]
-    ] = defaultdict(list)
+    grid: dict[tuple[int, int, int], list[tuple[float, float, float]]] = defaultdict(
+        list
+    )
     retained: list[Mapping[str, Any]] = []
     for _, coordinate, views in sorted(candidates, key=lambda value: value[0]):
         x, y, z = coordinate
@@ -870,8 +896,7 @@ def _deduplicate_physical_locations(
                         grid.get((cell[0] + dx, cell[1] + dy, cell[2] + dz), ())
                     )
         if any(
-            (x - other_x) ** 2 + (y - other_y) ** 2 + (z - other_z) ** 2
-            < separation**2
+            (x - other_x) ** 2 + (y - other_y) ** 2 + (z - other_z) ** 2 < separation**2
             for other_x, other_y, other_z in nearby
         ):
             removed += len(views)
@@ -883,6 +908,7 @@ def _deduplicate_physical_locations(
 
 
 def _road_sample_distances(length: float, rules: Mapping[str, Any]) -> list[float]:
+    validate_planning_config({"road_rules": rules})
     short = float(rules.get("short_road_threshold_m", 100.0))
     if length < short:
         return [length * 0.5]
@@ -1097,75 +1123,155 @@ _PLACE_COLUMNS = (
 )
 
 
+_POSE_BINDING_FIELDS = (
+    "requested_x",
+    "requested_y",
+    "requested_z",
+    "requested_yaw",
+    "requested_pitch",
+    "requested_roll",
+    "category",
+    "direction",
+    "resource_path",
+    "source_sector",
+    "road_id",
+)
+_ACTUAL_FIELDS = (
+    "actual_x",
+    "actual_y",
+    "actual_z",
+    "actual_yaw",
+    "actual_pitch",
+    "actual_roll",
+    "actual_fov",
+)
+_RUNTIME_FIELDS = (*REQUIRED_NAME_FIELDS, "district", "subdistrict", "interior_state")
+
+
+def _same_pose_binding(previous: Mapping[str, Any], planned: Mapping[str, Any]) -> bool:
+    return all(previous[field] == planned[field] for field in _POSE_BINDING_FIELDS)
+
+
 def _upsert_places(
     connection: sqlite3.Connection, records: Iterable[Mapping[str, Any]]
 ) -> int:
     values = list(records)
+    previous = {
+        row["location_id"]: dict(row)
+        for row in connection.execute("SELECT * FROM places")
+    }
     now = utc_now()
-    placeholders = ",".join(f":{column}" for column in _PLACE_COLUMNS)
-    updates = ",".join(
-        f"{column}=excluded.{column}"
-        for column in _PLACE_COLUMNS
-        if column != "location_id"
+    state_columns = (
+        "queue_status",
+        "publishable",
+        "failure_code",
+        "failure_detail",
+        *_ACTUAL_FIELDS,
     )
-    statement = f"""INSERT INTO places({",".join(_PLACE_COLUMNS)},created_at,updated_at)
-        VALUES({placeholders},:created_at,:updated_at)
-        ON CONFLICT(location_id) DO UPDATE SET {updates}, updated_at=excluded.updated_at,
-          failure_code=NULL, failure_detail=NULL,
-          queue_status=CASE WHEN places.queue_status='captured' THEN 'captured' ELSE 'pending' END"""
-    active_ids = {record["location_id"] for record in values}
+    columns = (*_PLACE_COLUMNS, *state_columns)
+    updates = ",".join(
+        f"{column}=excluded.{column}" for column in columns if column != "location_id"
+    )
+    statement = f"""INSERT INTO places({",".join(columns)},created_at,updated_at)
+        VALUES({",".join(f":{column}" for column in columns)},:created_at,:updated_at)
+        ON CONFLICT(location_id) DO UPDATE SET {updates}, updated_at=excluded.updated_at"""
     with transaction(connection):
+        # Captures and attempts remain historical evidence. An obsolete plan
+        # must not stay eligible for capture or publication.
         connection.execute(
-            "UPDATE places SET queue_status='disabled',updated_at=? WHERE queue_status!='captured'",
+            "UPDATE places SET queue_status='disabled',publishable=0,updated_at=?",
             (now,),
         )
         for record in values:
             row = dict(record)
-            row["created_at"] = now
-            row["updated_at"] = now
-            connection.execute(statement, row)
-        connection.execute(
-            """UPDATE places SET queue_status='disabled',publishable=0,updated_at=?
-               WHERE scope_status='out_of_scope' AND queue_status!='captured'""",
-            (now,),
-        )
-        connection.execute(
-            "UPDATE places SET publishable=0 WHERE scope_status='out_of_scope'"
-        )
-        # Captured historical places are deliberately retained for provenance.
-        if active_ids:
-            connection.execute(
-                "UPDATE places SET publishable=0 WHERE review_status!='resolved'"
+            old = previous.get(row["location_id"])
+            unchanged = old is not None and _same_pose_binding(old, row)
+            row.update(
+                {
+                    field: None
+                    for field in (*_ACTUAL_FIELDS, "failure_code", "failure_detail")
+                }
             )
+            row.update(
+                queue_status="pending", publishable=0, created_at=now, updated_at=now
+            )
+            if unchanged:
+                row.update({field: old[field] for field in state_columns})
+                provenance = json.loads(row["provenance_json"])
+                old_provenance = json.loads(old["provenance_json"])
+                for field in _RUNTIME_FIELDS:
+                    if old_provenance.get(field) == "runtime" and old[field] not in (
+                        None,
+                        "",
+                    ):
+                        row[field] = old[field]
+                        provenance[field] = "runtime"
+                row["provenance_json"] = json_text(provenance)
+                row["review_status"] = (
+                    old["review_status"]
+                    if old["review_status"] in {"rejected", "needs_calibration"}
+                    else "resolved"
+                    if all(row[field] for field in REQUIRED_NAME_FIELDS)
+                    else "needs_metadata"
+                )
+                if old["queue_status"] == "disabled":
+                    row["queue_status"] = "pending"
+            if row["scope_status"] != "in_scope" or row["review_status"] == "rejected":
+                row["queue_status"] = "disabled"
+            if row["queue_status"] != "captured" or row["review_status"] != "resolved":
+                row["publishable"] = 0
+            connection.execute(statement, row)
     return len(values)
 
 
 def plan_locations(
     connection: sqlite3.Connection, config: Mapping[str, Any]
 ) -> dict[str, int]:
+    validate_planning_config(config)
+    evaluate_scope(Vec3(0, 0, 0), config)
     fast_travel_count = rebuild_fast_travel(connection)
     road_count = rebuild_roads(connection, str(config["placement_rule_version"]))
     area_count = rebuild_areas(connection)
     runtime_areas = _runtime_area_observations(connection)
-    object_candidates = _object_places(connection, config, runtime_areas)
+    object_candidates = _apply_scope(
+        _object_places(connection, config, runtime_areas), config
+    )
+    road_candidates = _apply_scope(
+        _road_places(connection, config, runtime_areas), config
+    )
+    captured = {
+        row["location_id"]: dict(row)
+        for row in connection.execute(
+            "SELECT * FROM places WHERE queue_status='captured' AND scope_status='in_scope'"
+        )
+    }
+    preferred_ids = {
+        row["location_id"]
+        for row in [*object_candidates, *road_candidates]
+        if row["location_id"] in captured
+        and _same_pose_binding(captured[row["location_id"]], row)
+    }
     minimum_separation = {
         str(rule["category"]): float(rule.get("minimum_candidate_separation_m", 0.0))
         for rule in config.get("classification_rules", ())
         if rule.get("category")
     }
     objects, deduplicated_objects = _deduplicate_candidate_coordinates(
-        object_candidates, minimum_separation
+        object_candidates, minimum_separation, preferred_ids=preferred_ids
     )
-    road_candidates = _road_places(connection, config, runtime_areas)
     roads, deduplicated_roads = _deduplicate_sparse_road_places(
-        road_candidates, objects, config.get("sparse_road_rules", {})
+        road_candidates,
+        objects,
+        config.get("sparse_road_rules", {}),
+        preferred_ids=preferred_ids,
     )
-    scoped_candidates = _apply_scope([*objects, *roads], config)
+    scoped_candidates = [*objects, *roads]
     spacing_rules = config.get("location_spacing_rules", {})
     places, deduplicated_physical_places = _deduplicate_physical_locations(
         scoped_candidates,
         float(spacing_rules.get("minimum_separation_m", 0.0)),
         [str(category) for category in spacing_rules.get("category_priority", ())],
+        preferred_ids=preferred_ids,
     )
     place_count = _upsert_places(connection, places)
     in_scope = sum(record["scope_status"] == "in_scope" for record in places)

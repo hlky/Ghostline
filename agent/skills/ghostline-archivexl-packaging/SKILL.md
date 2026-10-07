@@ -14,22 +14,23 @@ procedure.
 
 ## ArchiveXL Resources
 
-- `source/resources/Ghostline.archive.xl` is the ArchiveXL registration file.
+- `projects/ghostline/source/resources/Ghostline.archive.xl` is the ArchiveXL registration file.
 - Keep `Ghostline.archive.xl` in `source/resources`. A full WolvenKit project
   build may stage it beside the archive, but the current manual scoped pack
   does not; copy it separately into the install/ZIP tree so ArchiveXL can
   process it.
-- Use `quest: phases:` entries to attach Ghostline root questphases to the
-  game, usually with `mod\gq000\phases\gq000.questphase` parented to
-  `base\quest\cyberpunk2077.quest`.
+- Use `quest: phases:` entries to attach the selected profile's root questphases
+  to `base\quest\cyberpunk2077.quest`. The story profile activates GQ001/GQ002;
+  individual test profiles activate only their owning test. GQ000 is reusable
+  support, not the active story root. Each project's `packaging/profiles.json` owns selection; the root file routes legacy profile names.
 - Add a Phantom Liberty standalone parent only when the quest is intended to
   initialize from PL standalone starts.
 - Use `localization: onscreens:` entries to register custom onscreen
   translation JSON files.
-- The current `localization: subtitles:` registration is
-  `mod\gq000\localization\en-us\subtitles\gq000_01_subtitles_map.json`.
-- The current `localization: vomaps:` registration is
-  `mod\gq000\localization\en-us\vo\gq000_01.json`.
+- Register the selected quests' subtitle, VO and lipmap paths under
+  `localization`. Each project owns its available registrations; the packager merges only
+  declared dependency registrations, then filters for the selected roots and
+  support quests and verifies their dependencies.
 - Tweak fields like `displayName`, `fullDisplayName`, and faction
   `localizedName` should have matching globally unique `secondaryKey` entries,
   with `primaryKey` left as `0` for ArchiveXL-generated keys.
@@ -58,8 +59,8 @@ Useful docs:
 
 ## Packing And Load Order
 
-- A manual `WolvenKit.CLI pack .\source\archive` build contains only archive
-  payloads. It does not copy `source/resources/Ghostline.archive.xl`, TweakXL
+- A manual `WolvenKit.CLI pack <project>\source\archive` build contains only archive
+  payloads. It does not copy `projects/ghostline/source/resources/Ghostline.archive.xl`, TweakXL
   YAML, REDscript, or config files; stage those separately as documented in
   `docs/workflows/build-and-package.md`.
 - A scoped pack from a directory named `archive` normally produces

@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
 
-from tools.indoor_location_candidates import build_manifest, cet_manifest, classify_site
+from tools.indoor_location_candidates import (
+    build_manifest,
+    cet_manifest,
+    classify_site,
+    vector,
+)
 
 
 def handle(node_type: str, name: str) -> dict:
@@ -40,10 +46,18 @@ def placement(index: int, x: float, quest_ref: str = "0") -> dict:
 
 
 class IndoorLocationCandidatesTests(unittest.TestCase):
-    def write_sector(self, root: Path, name: str, nodes: list[dict], placements: list[dict]) -> None:
+    def write_sector(
+        self, root: Path, name: str, nodes: list[dict], placements: list[dict]
+    ) -> None:
         path = root / name
         path.write_text(
-            json.dumps({"Data": {"RootChunk": {"nodes": nodes, "nodeData": {"Data": placements}}}}),
+            json.dumps(
+                {
+                    "Data": {
+                        "RootChunk": {"nodes": nodes, "nodeData": {"Data": placements}}
+                    }
+                }
+            ),
             encoding="utf-8",
         )
 
@@ -53,7 +67,11 @@ class IndoorLocationCandidatesTests(unittest.TestCase):
             self.write_sector(
                 root,
                 "exterior_1_1_0_0.streamingsector.json",
-                [handle("worldInteriorAreaNode", "quiet_room"), handle("worldAISpotNode", "sit_at_bar"), handle("worldEntityNode", "front_door")],
+                [
+                    handle("worldInteriorAreaNode", "quiet_room"),
+                    handle("worldAISpotNode", "sit_at_bar"),
+                    handle("worldEntityNode", "front_door"),
+                ],
                 [placement(0, 0), placement(1, 3), placement(2, 4)],
             )
             result = build_manifest(root, support_radius=10, quest_radius=20)
@@ -61,7 +79,10 @@ class IndoorLocationCandidatesTests(unittest.TestCase):
             self.assertEqual("likely_unowned", candidate["ownership"])
             self.assertEqual(1, candidate["nearby_signals"]["workspots"])
             self.assertEqual(1, candidate["nearby_signals"]["doors"])
-            self.assertEqual({"points": 4, "width": 8.0, "depth": 4.0, "height": 6.0}, candidate["outline"])
+            self.assertEqual(
+                {"points": 4, "width": 8.0, "depth": 4.0, "height": 6.0},
+                candidate["outline"],
+            )
 
     def test_labels_nearby_quest_identifier(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -69,7 +90,10 @@ class IndoorLocationCandidatesTests(unittest.TestCase):
             self.write_sector(
                 root,
                 "exterior_2_2_0_0.streamingsector.json",
-                [handle("worldInteriorAreaNode", "back_room"), handle("worldEntityNode", "sq021_control")],
+                [
+                    handle("worldInteriorAreaNode", "back_room"),
+                    handle("worldEntityNode", "sq021_control"),
+                ],
                 [placement(0, 0), placement(1, 8, "$/loc_sq021_trailer")],
             )
             result = build_manifest(root, support_radius=10, quest_radius=20)
@@ -84,10 +108,16 @@ class IndoorLocationCandidatesTests(unittest.TestCase):
             self.write_sector(
                 root,
                 "exterior_3_3_0_0.streamingsector.json",
-                [handle("worldInteriorAreaNode", "room"), handle("worldMeshNode", "outdoor_bench"), handle("worldMeshNode", "advertising_lifted_a")],
+                [
+                    handle("worldInteriorAreaNode", "room"),
+                    handle("worldMeshNode", "outdoor_bench"),
+                    handle("worldMeshNode", "advertising_lifted_a"),
+                ],
                 [placement(0, 0), placement(1, 2), placement(2, 3)],
             )
-            candidate = build_manifest(root, support_radius=10, quest_radius=20)["candidates"][0]
+            candidate = build_manifest(root, support_radius=10, quest_radius=20)[
+                "candidates"
+            ][0]
             self.assertNotIn("doors", candidate["nearby_signals"])
             self.assertNotIn("elevators", candidate["nearby_signals"])
             self.assertEqual(1, candidate["nearby_signals"]["seating"])
@@ -98,12 +128,19 @@ class IndoorLocationCandidatesTests(unittest.TestCase):
             self.write_sector(
                 root,
                 "exterior_4_4_0_0.streamingsector.json",
-                [handle("worldInteriorAreaNode", "room"), handle("worldEntityNode", "ma_hey_rey_06_access_point")],
+                [
+                    handle("worldInteriorAreaNode", "room"),
+                    handle("worldEntityNode", "ma_hey_rey_06_access_point"),
+                ],
                 [placement(0, 0), placement(1, 4)],
             )
-            candidate = build_manifest(root, support_radius=10, quest_radius=20)["candidates"][0]
+            candidate = build_manifest(root, support_radius=10, quest_radius=20)[
+                "candidates"
+            ][0]
             self.assertEqual("quest_linked", candidate["ownership"])
-            self.assertEqual(["ma_hey_rey_06"], candidate["quest_evidence"]["quest_ids"])
+            self.assertEqual(
+                ["ma_hey_rey_06"], candidate["quest_evidence"]["quest_ids"]
+            )
 
     def test_cet_export_is_compact_and_filterable(self) -> None:
         source = {
@@ -133,9 +170,103 @@ class IndoorLocationCandidatesTests(unittest.TestCase):
         self.assertEqual({"doors": 2}, result["locations"][0]["signals"])
 
     def test_classifies_retail_and_story_locations(self) -> None:
-        self.assertEqual(("clothing_shop", True, False), classify_site("{wbr_jpn_cloth_01_interior_area}"))
-        self.assertEqual(("ripperdoc", True, False), classify_site("{std_arr_ripdoc_01_interior}"))
-        self.assertEqual(("story_landmark", False, True), classify_site("{loc_arasaka_tower_interior_area_jungle}"))
+        self.assertEqual(
+            ("clothing_shop", True, False),
+            classify_site("{wbr_jpn_cloth_01_interior_area}"),
+        )
+        self.assertEqual(
+            ("ripperdoc", True, False), classify_site("{std_arr_ripdoc_01_interior}")
+        )
+        self.assertEqual(
+            ("story_landmark", False, True),
+            classify_site("{loc_arasaka_tower_interior_area_jungle}"),
+        )
+
+    def test_candidate_and_cet_export_preserve_source_fingerprint_and_limits(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            name = "exterior_room.streamingsector.json"
+            self.write_sector(
+                root, name, [handle("worldInteriorAreaNode", "room")], [placement(0, 0)]
+            )
+            # Quest evidence in another sector is deliberately outside this
+            # indexer's scan; the shortlist must disclose that limitation.
+            self.write_sector(
+                root,
+                "quest_adjacent.streamingsector.json",
+                [handle("worldEntityNode", "sq021_guard")],
+                [placement(0, 0)],
+            )
+            manifest = build_manifest(root, support_radius=10, quest_radius=20)
+            candidate = manifest["candidates"][0]
+            expected_hash = hashlib.sha256((root / name).read_bytes()).hexdigest()
+            self.assertEqual(candidate["source"]["sha256"], expected_hash)
+            self.assertEqual(
+                candidate["source"]["size_bytes"], (root / name).stat().st_size
+            )
+            self.assertEqual(candidate["quest_evidence"]["scope"], "source_sector_only")
+            self.assertEqual(
+                candidate["position_evidence"],
+                {
+                    "method": "interior_area_placement",
+                    "walkability": "unverified",
+                    "visibility": "unverified",
+                },
+            )
+            exported = cet_manifest(manifest)["locations"][0]
+            self.assertEqual(exported["source_sha256"], expected_hash)
+            self.assertEqual(
+                exported["position_evidence"], candidate["position_evidence"]
+            )
+            self.assertEqual(exported["evidence_scope"], "source_sector_only")
+            self.assertIn("source sector", candidate["quest_evidence"]["reasons"][0])
+
+    def test_source_edits_change_fingerprint_without_changing_review_identity(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            name = "room.streamingsector.json"
+            self.write_sector(
+                root, name, [handle("worldInteriorAreaNode", "room")], [placement(0, 0)]
+            )
+            first = build_manifest(root, support_radius=10, quest_radius=20)[
+                "candidates"
+            ][0]
+            self.write_sector(
+                root, name, [handle("worldInteriorAreaNode", "room")], [placement(0, 1)]
+            )
+            second = build_manifest(root, support_radius=10, quest_radius=20)[
+                "candidates"
+            ][0]
+            self.assertEqual(first["candidate_id"], second["candidate_id"])
+            self.assertNotEqual(first["source"]["sha256"], second["source"]["sha256"])
+
+    def test_nonfinite_or_boolean_positions_never_reach_teleport_export(self) -> None:
+        self.assertEqual(
+            vector({"X": {"$value": 1}, "Y": 2, "Z": 3}), {"x": 1.0, "y": 2.0, "z": 3.0}
+        )
+        for value in (float("nan"), float("inf"), True, "1", None):
+            with self.subTest(value=value):
+                self.assertIsNone(vector({"X": value, "Y": 2, "Z": 3}))
+                manifest = {
+                    "candidates": [
+                        {"position": {"x": value, "y": 2, "z": 3}, "review_score": 70}
+                    ]
+                }
+                self.assertEqual(cet_manifest(manifest)["count"], 0)
+
+    def test_invalid_radii_fail_before_sector_discovery(self) -> None:
+        for field in ("support_radius", "quest_radius"):
+            for value in (-1, float("nan"), float("inf"), True, None, {}):
+                arguments = {"support_radius": 10, "quest_radius": 20, field: value}
+                with (
+                    self.subTest(field=field, value=value),
+                    self.assertRaisesRegex(ValueError, field),
+                ):
+                    build_manifest(Path("missing-fixture-root"), **arguments)
 
 
 if __name__ == "__main__":

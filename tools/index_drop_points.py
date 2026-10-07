@@ -10,13 +10,13 @@ random-selection pool.
 
 from __future__ import annotations
 
+from artifact_io import atomic_write_json as write_json
+
 import argparse
 import hashlib
 import json
 import math
 import random
-import sys
-import tempfile
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -33,25 +33,6 @@ def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            newline="\n",
-            dir=path.parent,
-            prefix=f".{path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as stream:
-            stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
-            temporary = Path(stream.name)
-        temporary.replace(path)
-    finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
 
 
 def scalar(value: Any) -> Any:

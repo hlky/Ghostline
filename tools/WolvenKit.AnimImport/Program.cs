@@ -64,54 +64,70 @@ await using var provider = services.BuildServiceProvider();
 var archiveManager = provider.GetRequiredService<IArchiveManager>();
 archiveManager.LoadGameArchives(executable);
 
-if (!string.IsNullOrWhiteSpace(targetRig))
+// Import mutates its template in place. Keep all intermediate writes in a sibling
+// staging directory, then publish only the successfully parsed animset.
+var redFileName = Path.GetFileNameWithoutExtension(glb.Name);
+var destination = Path.Combine(output.FullName, redFileName);
+var published = await AnimationImportTransaction.RunAsync(destination, async (staging, stagedFile) =>
 {
-    var redFilePath = Path.Combine(
-        output.FullName,
-        Path.GetFileNameWithoutExtension(glb.Name)
-    );
-    if (!File.Exists(redFilePath))
-    {
-        Console.Error.WriteLine($"No existing redfile found to retarget: {redFilePath}");
-        return 1;
-    }
-
     var parser = provider.GetRequiredService<Red4ParserService>();
-    CR2WFile? animsArchive;
-    using (var input = File.OpenRead(redFilePath))
+    if (!string.IsNullOrWhiteSpace(targetRig))
     {
-        animsArchive = parser.ReadRed4File(input);
-    }
-    if (animsArchive is not { RootChunk: animAnimSet anims })
-    {
-        Console.Error.WriteLine($"Existing redfile is not an animAnimSet: {redFilePath}");
-        return 1;
+        if (!File.Exists(stagedFile))
+        {
+            Console.Error.WriteLine($"No existing redfile found to retarget: {destination}");
+            return false;
+        }
+        CR2WFile? animsArchive;
+        using (var input = File.OpenRead(stagedFile))
+        {
+            animsArchive = parser.ReadRed4File(input);
+        }
+        if (animsArchive is not { RootChunk: animAnimSet anims })
+        {
+            Console.Error.WriteLine($"Existing redfile is not an animAnimSet: {destination}");
+            return false;
+        }
+        anims.Rig = new CResourceReference<animRig>((ResourcePath)targetRig);
+        using var rewritten = new MemoryStream();
+        using (var writer = new CR2WWriter(rewritten, Encoding.UTF8, true)
+        {
+            LoggerService = provider.GetRequiredService<ILoggerService>(),
+        })
+        {
+            writer.WriteFile(animsArchive);
+        }
+        File.WriteAllBytes(stagedFile, rewritten.ToArray());
     }
 
-    anims.Rig = new CResourceReference<animRig>((ResourcePath)targetRig);
-    using var rewritten = new MemoryStream();
-    using (var writer = new CR2WWriter(rewritten, Encoding.UTF8, true)
+    var importArgs = new GltfImportArgs
     {
-        LoggerService = provider.GetRequiredService<ILoggerService>(),
-    })
+        AdditiveStripLocalTransform = true,
+        Keep = true,
+        ImportFormat = GltfImportAsFormat.Anims,
+    };
+    var settings = new GlobalImportArgs().Register(
+        new CommonImportArgs { Keep = true },
+        importArgs
+    );
+    var raw = new RedRelativePath(glb.Directory!, glb.Name);
+    var modTools = provider.GetRequiredService<IModTools>();
+    if (!await modTools.Import(raw, settings, staging, true))
     {
-        writer.WriteFile(animsArchive);
+        return false;
     }
-    File.WriteAllBytes(redFilePath, rewritten.ToArray());
-    Console.WriteLine($"Retargeted animset rig to {targetRig}");
-}
-
-var importArgs = new GltfImportArgs
+    using (var imported = File.OpenRead(stagedFile))
+    {
+        if (parser.ReadRed4File(imported) is not { RootChunk: animAnimSet })
+        {
+            Console.Error.WriteLine("Animation import did not produce a readable animAnimSet");
+            return false;
+        }
+    }
+    return true;
+});
+if (published)
 {
-    AdditiveStripLocalTransform = true,
-    Keep = true,
-    ImportFormat = GltfImportAsFormat.Anims,
-};
-var settings = new GlobalImportArgs().Register(
-    new CommonImportArgs { Keep = true },
-    importArgs
-);
-var raw = new RedRelativePath(glb.Directory!, glb.Name);
-var modTools = provider.GetRequiredService<IModTools>();
-var ok = await modTools.Import(raw, settings, output, true);
-return ok ? 0 : 1;
+    Console.WriteLine($"Published imported animset: {destination}");
+}
+return published ? 0 : 1;

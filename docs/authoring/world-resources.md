@@ -68,12 +68,12 @@ Ghostline world binding:
 
 Generated raw and packed resources:
 
-- `source/raw/mod/gq000/world/gq000_patch_meet.streamingsector.json`
-- `source/archive/mod/gq000/world/gq000_patch_meet.streamingsector`
-- `source/raw/mod/gq000/world/gq000_always_loaded.streamingsector.json`
-- `source/archive/mod/gq000/world/gq000_always_loaded.streamingsector`
-- `source/raw/mod/gq000/world/gq000_patch_meet.streamingblock.json`
-- `source/archive/mod/gq000/world/gq000_patch_meet.streamingblock`
+- `projects/shared/ghostline-runtime/source/raw/mod/gq000/world/gq000_patch_meet.streamingsector.json`
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000/world/gq000_patch_meet.streamingsector`
+- `projects/shared/ghostline-runtime/source/raw/mod/gq000/world/gq000_always_loaded.streamingsector.json`
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000/world/gq000_always_loaded.streamingsector`
+- `projects/shared/ghostline-runtime/source/raw/mod/gq000/world/gq000_patch_meet.streamingblock.json`
+- `projects/shared/ghostline-runtime/source/archive/mod/gq000/world/gq000_patch_meet.streamingblock`
 
 The production world spec uses origin `(-795.7447, 390.34177, 17.272781)`.
 Yaw remains provisional because the captured `ToVector4` did not include actor
@@ -331,7 +331,7 @@ reservation target paired with the corresponding Ghostline marker.
   quest sector references.
 - Added the production `gq000_patch_meet` world spec, quest sector,
   always-loaded registry sector, and streaming block.
-- Registered the block in `source/resources/Ghostline.archive.xl`.
+- Registered the block in `projects/ghostline/source/resources/Ghostline.archive.xl`.
 - Generated packed CR2W resources for the world files.
 - Extended the generator to support native access-point devices, multiple
   communities, multiple entries, and multiple spots per entry.

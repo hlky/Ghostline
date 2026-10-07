@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "id": "gqt003_extract_and_hold-structural-build",
+      "level": "build",
+      "passed": true,
+      "recorded_at": "2026-09-05T10:32:00.563943+00:00",
+      "stage_types": [
+        "defend_target",
+        "escort_npc",
+        "reach_area",
+        "release_or_rescue_npc"
+      ],
+      "summary": "Compiled raw phase graphs in memory and passed compiler graph/socket checks. No native serialization, resource/world audit, packaging, or game execution.",
+      "resources": {
+        "quests/templates/journal/catalog.json": "66fe29c1532a963a19056c32df7b61edebb30df763fd9ed5ae8f2ea7a6a26812",
+        "projects/test-quests/gqt003/gqt003_extract_and_hold.quest.json": "cfa2e0673284844cdc4abb30ae5b23fe1b2264147f051b2c1bb2595961ba07df",
+        "quests/templates/source/raw/mod/ghostline/journal_templates/gq001_shapes.journal.json": "6f3649d4afa72cbd20c785776906b929d224b24343c71c12c955e02c2e542de2",
+        "quests/templates/source/raw/mod/ghostline/journal_templates/gqt004_shapes.journal.json": "1bf6283370a084f8608f740239a1c02700eaadf500ebb6305af7a342b2a2c1fe",
+        "quests/templates/source/raw/mod/ghostline/journal_templates/onscreen_container.json.json": "3d544386683168cd59d599a549d4a8a93f9210724f57ad23f009f2264e5f3491",
+        "quests/templates/source/raw/mod/ghostline/quest_blocks/templates/release_or_rescue_npc.questphase.json": "08f516519e69960598f54e4eedf63f4e2fe0aa1aefd2eb69de127b0f4cea9265",
+        "tools/artifact_io.py": "4eccfbe5c2543b5ec9e3bd022ccfe0de75d98d3eab440b4d5ee0f507fc6c1554",
+        "tools/generate_advanced_quest_block_templates.py": "5d5032fdf0a0c43ee1129f18a3e31bf21436ad51e723cf89122fe27f80692de2",
+        "tools/phase_graph.py": "98ae3964a63bce5d4949728db73c26dcc4e7db851e2375be6ce6cac98f8e6961",
+        "tools/quest-schema-v1.json": "cbdb7104e016257473ad2e1545c0c251f7f50fd48504e1db9db686627e4d7b30",
+        "tools/quest_authoring.py": "68a399669ae5458498f3eae4e4d22ea7916a7cf088291b295eea2b4455023a73",
+        "tools/quest_block_builders.py": "d084bfa8c52a6c65bafe17c769ab9e586e482ce5a4128fb7d1c1de4351289e39",
+        "tools/quest_compiler.py": "995d17508449e92f3ece0284d58a2814e0e03b9097f4b142f0c1cf517282e0a0",
+        "tools/quest_content.py": "15b6df372c3a027bca56c441df2d2de2d07ab0ef3e422e1d7d40b5590cd0a0f2",
+        "tools/quest_encounter.py": "e8ff3a22b6bb56fda1af4e6438b1489f6ac390dfb44adb917d818830871c39a2",
+        "tools/quest_flow.py": "4c198c438915b5058d53f37befcbd12ce20b9d7dd5ec29e8ae80286df55b0de9",
+        "tools/quest_journal.py": "f6608028f2b4fc3579b23dde49145bbbe85a3cb2c7933f27c5f97308dfb43974",
+        "tools/quest_lifecycle.py": "e2e1c4548c06649dbbbf11b309c7b1a69dd4b163791fa51eba7062b730efd9c8",
+        "tools/quest_orchestration.py": "ae2239fb7ded8c1788e04c39183d650d33beb04fb4d019d7118417ed4850214f",
+        "tools/quest_stage_validation.py": "cfd1ed07f66403a6d75986742cf8437c57fc9e420eede3128c02e7b70749e597",
+        "tools/quest_stages.py": "24c315fd179583230effe71f270ad1912a95bef5aace324a0b0afc9b0c9bca5d",
+        "tools/quest_types.py": "d7b686357871bd40e84835be2169a63bda65a3d0426a7226a1777d944dde7456"
+      },
+      "outputs": {
+        "$root": "c5b2c3ec8166505c24371159bb972b43582806c26ac477c3227898f6898964c5",
+        "generated/quest-build-evidence/gqt003_extract_and_hold/children/mod/gqt003/phases/gqt003_reach_extraction_relay.questphase.json": "e55889fe24b4c5ba9f7aca0339a5628740ab37ee8f73c7edcb055188515cb1ac",
+        "generated/quest-build-evidence/gqt003_extract_and_hold/children/mod/gqt003/phases/gqt003_release_patch.questphase.json": "24edb7b62eb662c029a6f94513968657de221676d06a6a9029c636a8eaf5c920",
+        "generated/quest-build-evidence/gqt003_extract_and_hold/children/mod/gqt003/phases/gqt003_escort_patch.questphase.json": "4d0bd19518257457d64b2929b404fc8b8a28b73bad1c4680f5df930934cd3255",
+        "generated/quest-build-evidence/gqt003_extract_and_hold/children/mod/gqt003/phases/gqt003_defend_patch.questphase.json": "c9163a7e85ae0357aef13853f4ae39919667ee9b08a9f29ab95cd064ba1e60c7",
+        "generated/quest-build-evidence/gqt003_extract_and_hold/children/mod/gqt003/journal/gqt003.journal.json": "848eddd7727519bd6453034790f7f9706ca435828b6d8eeea0918df771808bf4",
+        "generated/quest-build-evidence/gqt003_extract_and_hold/children/mod/gqt003/localization/en-us/onscreens/gqt003.json.json": "e470cbb7988d46ee16350279f7fa6edb2400a186ade0b55a515215708ea414ba"
+      }
+    }
+  ]
+}

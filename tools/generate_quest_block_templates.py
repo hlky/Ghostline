@@ -12,22 +12,31 @@ generated resources.
 
 from __future__ import annotations
 
-import json
+from phase_graph import (
+    device_manager_node as device_manager,
+    device_condition_node as device_condition,
+    character_spawned_node as character_spawned,
+    community_defeated_node as community_defeated,
+)
+
 from pathlib import Path
 from typing import Any
 
-from generate_cache_phase import (
-    GraphNode,
-    PhaseGraphBuilder,
-    cname,
-    entity_reference,
-    input_node,
-    journal_entry_node,
-    node_ref,
-    objective_node,
-    output_node,
+from phase_graph import (
+    GraphNode as GraphNode,
+    PhaseGraphBuilder as PhaseGraphBuilder,
+    cname as cname,
+    entity_reference as entity_reference,
+    input_node as input_node,
+    journal_entry_node as journal_entry_node,
+    node_ref as node_ref,
+    objective_node as objective_node,
+    output_node as output_node,
 )
-from generate_delivery_phase import fact_condition_node, logical_xor_node
+from phase_graph import (
+    fact_condition_node as fact_condition_node,
+    logical_xor_node as logical_xor_node,
+)
 from quest_compiler import (
     community_action_node,
     fact_node,
@@ -38,7 +47,7 @@ from quest_compiler import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEPOT_ROOT = r"mod\ghostline\quest_blocks\templates"
-RAW_ROOT = ROOT / "source/raw/mod/ghostline/quest_blocks/templates"
+RAW_ROOT = ROOT / "quests/templates/source/raw/mod/ghostline/quest_blocks/templates"
 
 DEVICE = "{{device}}"
 CONTROLLER = "{{controller_class}}"
@@ -60,128 +69,8 @@ JsonObject = dict[str, Any]
 
 
 def template_target(name: str) -> Path:
-    return ROOT / "source/archive/mod/ghostline/quest_blocks/templates" / (
+    return ROOT / "quests/templates/source/archive/mod/ghostline/quest_blocks/templates" / (
         f"{name}.questphase"
-    )
-
-
-def device_manager(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    *,
-    device: str,
-    controller: str,
-    action: str,
-) -> GraphNode:
-    params = builder.handles.wrap(
-        {
-            "$type": "questDeviceManager_NodeTypeParams",
-            "actionProperties": [],
-            "deviceAction": cname(action),
-            "deviceControllerClass": cname(controller),
-            "entityRef": entity_reference(),
-            "objectRef": node_ref(device),
-            "slotName": cname("None"),
-        }
-    )
-    node_type = builder.handles.wrap(
-        {"$type": "questDeviceManager_NodeType", "params": [params]}
-    )
-    return builder.node(
-        quest_id,
-        "questInteractiveObjectManagerNodeDefinition",
-        input_names=("In",),
-        properties={"type": node_type},
-    )
-
-
-def device_condition(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    *,
-    device: str,
-    controller: str,
-    function: str,
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questDevice_ConditionType",
-            "deviceConditionFunction": cname(function),
-            "deviceControllerClass": cname(controller),
-            "functionParameters": [],
-            "objectRef": node_ref(device),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questObjectCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def character_spawned(
-    builder: PhaseGraphBuilder, quest_id: int, community: str
-) -> GraphNode:
-    comparison = builder.handles.wrap(
-        {
-            "$type": "questComparisonParam",
-            "comparisonType": "Greater",
-            "count": 0,
-            "entireCommunity": 1,
-        }
-    )
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterSpawned_ConditionType",
-            "comparisonParams": comparison,
-            "objectRef": entity_reference(community),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questCharacterCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def community_defeated(
-    builder: PhaseGraphBuilder, quest_id: int, community: str
-) -> GraphNode:
-    comparison = builder.handles.wrap(
-        {
-            "$type": "questComparisonParam",
-            "comparisonType": "GreaterOrEqual",
-            "count": 0,
-            "entireCommunity": 1,
-        }
-    )
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterKilled_ConditionType",
-            "comparisonParams": comparison,
-            "defeated": 1,
-            "killed": 1,
-            "objectRef": entity_reference(community),
-            "source": None,
-            "unconscious": 1,
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questCharacterCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
     )
 
 

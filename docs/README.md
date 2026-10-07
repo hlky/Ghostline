@@ -2,7 +2,7 @@
 
 This directory contains cross-cutting engineering documentation. Story design,
 dialogue, quest state, and quest-specific build commands belong with the quest
-under [`quests/story/ghostline`](../quests/story/ghostline/README.md).
+under [`projects/ghostline/quests`](../projects/ghostline/quests/README.md).
 
 ## First Steps
 
@@ -22,13 +22,18 @@ under [`quests/story/ghostline`](../quests/story/ghostline/README.md).
   commands.
 - [Build, package, and install](workflows/build-and-package.md) — source
   boundaries, archive verification, loose-resource staging, and runtime logs.
-- [Runtime testing and evidence](workflows/runtime-testing.md) — current
-  candidate followed by dated historical baselines.
+- [Runtime testing and evidence](workflows/runtime-testing.md) — latest
+  installation, current authoring checks and links to dated evidence.
 - [Test quests](workflows/test-quests.md) — isolated `gqt###` building-block
   conventions.
 
 ## Authoring Guides
 
+- [Quest composition and complete builds](authoring/quest-composition.md) —
+  shared declarations, recipes, preserved journal metadata, and scratch builds
+  used by all ten active story/test quests.
+- [Quest block catalog, evidence, and scenarios](authoring/quest-blocks.md) —
+  current adoption and the distinction between compilation and runtime proof.
 - [Scenes](authoring/scenes.md)
 - [World resources and NodeRefs](authoring/world-resources.md)
 - [World asset discovery](authoring/world-assets.md)
@@ -54,6 +59,9 @@ build instructions.
 
 ## History
 
+- [Earlier runtime evidence](history/runtime-testing-through-2026-08-12.md)
+- [Retired world pipeline](history/retired-world-pipeline.md)
+- [Native archive experiments](history/native-archive-experiments.md)
 - [Crash investigation](history/crash-investigation.md)
 - [`ghostline-red` topology-write handoff](history/ghostline-red-topology-handoff.md)
 

@@ -10,7 +10,7 @@ manifest and a vanilla template to build a real REDengine `.scenerid`.
 
 The checked tooling fixture is:
 
-`braindance/tests/gqt005_braindance_analysis.json`
+`projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json`
 
 Generated files default to `.tmp/braindance` and are not packed game resources.
 
@@ -18,33 +18,59 @@ Generated files default to `.tmp/braindance` and are not packed game resources.
 
 ```powershell
 py -B .\tools\braindance_scene.py validate `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
 
 py -B .\tools\braindance_scene.py plan `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
 
 py -B .\tools\braindance_scene.py build `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
 
 # After making intentional animation edits in the generated .blend:
 py -B .\tools\braindance_scene.py bake `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
+
+# Rebuild gqt005, retarget a Kimodo SOMA BVH onto Patch, then rebake the
+# existing scene handoff. The generated root trajectory is discarded so the
+# authored ACTOR_patch path, cameras, clues, and entry point remain unchanged.
+py -B .\tools\kimodo_braindance.py `
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json `
+  --bvh .\braindance\motions\kimodo\gqt005_patch_cautious_walk.bvh `
+  --actor patch `
+  --build-before `
+  --bake-after
 
 py -B .\tools\braindance_rid.py validate `
-  .\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json
+  .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json
 
 py -B .\tools\braindance_rid.py compile `
-  --handoff .\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json `
+  --handoff .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json `
   --template C:\path\to\sq012_braindance__part_a.scenerid `
   --actor-template Holt `
   --actor-template Holt `
-  --output .\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid
+  --output .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid
 ```
 
 The builder discovers Blender from `--blender`, `GHOSTLINE_BLENDER`, `PATH`,
 the standard Blender Foundation installation directory, or Steam. Use
 `--dry-run` to inspect the exact Blender command and normalized plan. Use
 `--no-glb` when only the authoring `.blend` and handoff manifest are needed.
+
+## Kimodo Motion Retargeting
+
+`tools/kimodo_braindance.py` accepts the standard T-pose SOMA BVH exported by
+NVIDIA Kimodo and retargets it onto one existing `man_base` performer. The
+default destination is frames `0..149`, with smooth eight-frame entry and
+15-frame exit blends into the scene's original procedural body animation.
+The retarget maps the compatible torso, head, limb, eye, and finger joints;
+SOMA end joints, its extra finger-tip joints, jaw, and BVH root are ignored.
+
+This is intentionally a body-motion replacement rather than a scene-layout
+replacement. The actor root animation from the checked performance spec still
+owns world position and facing. That keeps a generated single-actor clip from
+drifting away from braindance clue volumes or recorded-camera framing. Run with
+`--dry-run` to inspect the exact Blender command. The adjacent generated
+`.kimodo.json` records the mapping and discarded channels used for the bake.
 
 ## Generated Blender Contract
 
@@ -162,6 +188,13 @@ in the consuming `.scene` must differ from the authoring object name.
 
 ## RID Compiler
 
+The existing CLI scripts remain the public entry points. Their implementation
+is divided under `tools/braindance_support`: `rid_types` and `rid_codec` own
+pure metadata/animation operations; `rid_compile` assembles authored samples;
+`rid_validation` independently checks handoffs and compiled output; `rid_io`
+owns WolvenKit conversion and binary verification. SIMD preview decoding stays
+in its existing preview tool because it describes a different representation.
+
 The compiler accepts either a binary `.scenerid` or WolvenKit's serialized
 `.scenerid.json`. A suitable test template is the vanilla resource:
 
@@ -219,6 +252,13 @@ counts with `template_pose_fallback_used: false` for both actors.
 
 ## Scene, Quest, And Depot Integration
 
+Scene linkage stays in `tools/braindance_pipeline.py`. The support package keeps
+clue construction and independent clue auditing together in `clues`, uses the
+read-only `SceneGraphIndex` for graph queries, and audits actor/camera/lifecycle
+contracts in `scene_audit`. `publication` owns CR2W conversion, depot staging,
+and hash-bound runtime evidence. The validators inspect emitted structures;
+they do not regenerate expected output with the production builder.
+
 `tools/braindance_pipeline.py` links the compiled RID to an authored
 rewindable scene template. It rebuilds all RID resource/reference tables,
 binds body events by performer, binds facial and cyberware events by performer
@@ -228,13 +268,13 @@ markers, and fills clue layer/fact/time data from the handoff.
 ```powershell
 py -B .\tools\braindance_pipeline.py link-scene `
   --scene-template C:\path\to\authored_bd.scene.json `
-  --rid-json .\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid.json `
-  --handoff .\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json `
+  --rid-json .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid.json `
+  --handoff .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json `
   --rid-depot-path mod\gqt005\braindance\gqt005_braindance_analysis.scenerid `
   --scene-origin '#gqt005_bd_origin' `
   --camera-ref '#gqt005_bd_camera' `
-  --output .\source\raw\mod\gqt005\scenes\gqt005_braindance_analysis.scene.json `
-  --binary-output .\source\archive\mod\gqt005\scenes\gqt005_braindance_analysis.scene
+  --output .\projects\test-quests\gqt005\source\raw\mod\gqt005\scenes\gqt005_braindance_analysis.scene.json `
+  --binary-output .\projects\test-quests\gqt005\source\archive\mod\gqt005\scenes\gqt005_braindance_analysis.scene
 ```
 
 The template must already define its actors, camera prop, functional
@@ -270,8 +310,8 @@ py -B .\tools\braindance_pipeline.py link-quest `
   --quest-template C:\path\to\authored_bd.questphase.json `
   --scene-depot-path mod\gqt005\scenes\gqt005_braindance_analysis.scene `
   --scene-origin '#gqt005_bd_origin' `
-  --output .\source\raw\mod\gqt005\phases\gqt005_review_braindance.questphase.json `
-  --binary-output .\source\archive\mod\gqt005\phases\gqt005_review_braindance.questphase
+  --output .\projects\test-quests\gqt005\source\raw\mod\gqt005\phases\gqt005_review_braindance.questphase.json `
+  --binary-output .\projects\test-quests\gqt005\source\archive\mod\gqt005\phases\gqt005_review_braindance.questphase
 ```
 
 Both commands can invoke the pinned WolvenKit CLI directly. Production assets
@@ -279,17 +319,17 @@ can then be copied to validated depot paths with a hash manifest:
 
 ```powershell
 py -B .\tools\braindance_pipeline.py package `
-  --asset '.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid=mod\gqt005\braindance\gqt005_braindance_analysis.scenerid' `
-  --asset 'source\archive\mod\gqt005\scenes\gqt005_braindance_analysis.scene=mod\gqt005\scenes\gqt005_braindance_analysis.scene' `
-  --asset 'source\archive\mod\gqt005\phases\gqt005_review_braindance.questphase=mod\gqt005\phases\gqt005_review_braindance.questphase' `
-  --depot-root .\source\archive `
-  --manifest .\.tmp\braindance\gqt005\package.json
+  --asset 'projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid=mod\gqt005\braindance\gqt005_braindance_analysis.scenerid' `
+  --asset 'projects\test-quests\gqt005\source\archive\mod\gqt005\scenes\gqt005_braindance_analysis.scene=mod\gqt005\scenes\gqt005_braindance_analysis.scene' `
+  --asset 'projects\test-quests\gqt005\source\archive\mod\gqt005\phases\gqt005_review_braindance.questphase=mod\gqt005\phases\gqt005_review_braindance.questphase' `
+  --depot-root .\projects\test-quests\gqt005\source\archive `
+  --manifest .\projects\test-quests\gqt005\.tmp\braindance\gqt005\package.json
 ```
 
 Only `mod\...` and deliberate `base\...` depot paths are accepted. Escapes,
 duplicates, missing inputs, and copy hash mismatches fail closed.
 
-For the checked test quest, `quests/tests/gqt005/implementation/build.py` performs the
+For the checked test quest, `projects/test-quests/gqt005/implementation/build.py` performs the
 complete promotion. It authors a lightweight Patch-only launcher with a
 `Play braindance` choice using the vanilla
 `ChoiceCaptionParts.BraindanceIcon`, a short actor-acquisition section, and
@@ -315,16 +355,16 @@ interrupted cleanup, and replay after cleanup.
 ```powershell
 py -B .\tools\braindance_pipeline.py runtime-init `
   --name gqt005_braindance_analysis `
-  --package-manifest .\.tmp\braindance\gqt005\package.json `
-  --output .\.tmp\braindance\gqt005\runtime-evidence.json
+  --package-manifest .\projects\test-quests\gqt005\.tmp\braindance\gqt005\package.json `
+  --output .\projects\test-quests\gqt005\.tmp\braindance\gqt005\runtime-evidence.json
 
 py -B .\tools\braindance_pipeline.py runtime-record `
-  --evidence .\.tmp\braindance\gqt005\runtime-evidence.json `
+  --evidence .\projects\test-quests\gqt005\.tmp\braindance\gqt005\runtime-evidence.json `
   --case seek_forward --passed --notes 'Clean-save test at 8.0 seconds'
 
 py -B .\tools\braindance_pipeline.py runtime-verify `
-  --evidence .\.tmp\braindance\gqt005\runtime-evidence.json `
-  --depot-root .\source\archive
+  --evidence .\projects\test-quests\gqt005\.tmp\braindance\gqt005\runtime-evidence.json `
+  --depot-root .\projects\test-quests\gqt005\source\archive
 ```
 
 `runtime-verify` fails until every case is recorded as passed and every

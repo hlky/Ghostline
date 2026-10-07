@@ -42,25 +42,25 @@ and Patch migration order.
 
 Patch resources:
 
-- packed root entity: `source/archive/mod/ghostline/characters/patch/patch.ent`
-- packed appearance: `source/archive/mod/ghostline/characters/patch/patch.app`
-- raw root entity: `source/raw/mod/ghostline/characters/patch/patch.ent.json`
-- raw appearance: `source/raw/mod/ghostline/characters/patch/patch.app.json`
+- packed root entity: `projects/shared/ghostline-runtime/source/archive/mod/ghostline/characters/patch/patch.ent`
+- packed appearance: `projects/shared/ghostline-runtime/source/archive/mod/ghostline/characters/patch/patch.app`
+- raw root entity: `projects/shared/ghostline-runtime/source/raw/mod/ghostline/characters/patch/patch.ent.json`
+- raw appearance: `projects/shared/ghostline-runtime/source/raw/mod/ghostline/characters/patch/patch.app.json`
 - supporting body/head files live under
-  `source/archive/mod/ghostline/characters/patch/body` and
-  `source/archive/mod/ghostline/characters/patch/head`.
+  `projects/shared/ghostline-runtime/source/archive/mod/ghostline/characters/patch/body` and
+  `projects/shared/ghostline-runtime/source/archive/mod/ghostline/characters/patch/head`.
 - Patch still references some `ep1\...` resources, so Phantom Liberty may be a
   runtime dependency unless those references are replaced. The downloaded male
   NPV template has the same 17 `ep1\...` string occurrences in its root entity,
   so address this in the reusable root template rather than Patch's appearance.
-- `source/archive/base` contains copied player-head support resources. They are
+- `projects/shared/ghostline-runtime/source/archive/base` contains copied player-head support resources. They are
   global overrides and remain a shipping risk; do not infer that they are safe
   merely because the Judy isolation route works.
 
 Generic Ghostline onscreen localization:
 
-- packed: `source/archive/mod/ghostline/localization/en-us/onscreens/ghostline.json`
-- raw: `source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
+- packed: `projects/shared/ghostline-runtime/source/archive/mod/ghostline/localization/en-us/onscreens/ghostline.json`
+- raw: `projects/shared/ghostline-runtime/source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json`
 - includes Patch's display name and the Ghostline faction name.
 
 Use `tools/explore_ent_app.py` as documented in
@@ -73,7 +73,7 @@ serialized documents are identical. Clone a pinned and validated root template;
 do not reconstruct that component graph per character.
 
 The downloaded female NPV root is independently pinned as the neutral
-`characters/templates/npv-female.ent-shell.json`; its empty appearance shell is
+`quests/templates/characters/templates/npv-female.ent-shell.json`; its empty appearance shell is
 `npv-female.app-shell.json`. The female root has 116 components and its
 component donor declares `WomanAverage`, so never derive a female character by
 relabeling the male root. `tools/character_builder.py` owns the
@@ -96,17 +96,17 @@ characters or treat the warning as resolved without runtime validation.
 
 Character authoring inputs:
 
-- `characters/patch.character.json`
-- `characters/catalog.json`
-- `characters/female-example.character.json`
-- `characters/female-catalog.json`
-- `characters/templates/npv-male.ent-shell.json`
-- `characters/templates/npv-female.ent-shell.json`
-- `characters/templates/npv-male.app-shell.json`
-- `characters/templates/npv-female.app-shell.json`
-- `characters/components/*.components.json`
-- `characters/components/donors/*.app.json`
-- `characters/local-paths.example.json`
+- `projects/shared/ghostline-runtime/characters/patch.character.json`
+- `quests/templates/characters/catalog.json`
+- `projects/shared/ghostline-runtime/characters/female-example.character.json`
+- `quests/templates/characters/female-catalog.json`
+- `quests/templates/characters/templates/npv-male.ent-shell.json`
+- `quests/templates/characters/templates/npv-female.ent-shell.json`
+- `quests/templates/characters/templates/npv-male.app-shell.json`
+- `quests/templates/characters/templates/npv-female.app-shell.json`
+- `quests/templates/characters/components/*.components.json`
+- `quests/templates/characters/components/donors/*.app.json`
+- `projects/shared/ghostline-runtime/characters/local-paths.example.json`
 - `tools/character_builder.py`
 - `tools/character_asset_index.py`
 - `tools/character_ui.py` and `tools/character_ui/*`
@@ -114,7 +114,7 @@ Character authoring inputs:
 The current generator produces `.ent`, `.app`, TweakXL, and localization in an
 isolated output tree. Appearance shells contain no authored appearances.
 External authoring-kit paths use aliases such as `@npv/...`; resolve them
-through the ignored `characters/local-paths.json`, copied from the checked
+through the ignored `projects/shared/ghostline-runtime/characters/local-paths.json`, copied from the checked
 example, rather than putting workstation paths in manifests.
 Frame-specific component-library descriptors point to private donor documents,
 and the builder automatically chooses the smallest donor prototype that covers
@@ -128,7 +128,7 @@ applied.
 The female donor contains only its selectable `casual` and `business`
 prototypes. The former `naked` appearance was redundant except for
 `t0_pubic_hair`; both copies of that component are preserved separately in
-`characters/components/npv-female-naked-only.components.json`.
+`quests/templates/characters/components/npv-female-naked-only.components.json`.
 
 The empty `.app` shell is a CR2W-JSON authoring boundary, not a usable binary
 layout donor for a non-empty array. A packed character `.app` is a valid native
@@ -201,9 +201,9 @@ successful GLB export do not prove in-game deformation or clipping.
 ## TweakXL Resources
 
 - `source/resources/r6/tweaks` is part of the mod.
-- `source/resources/r6/tweaks/ghostline/character_patch.yaml` defines the
+- `projects/shared/ghostline-runtime/source/resources/r6/tweaks/ghostline/character_patch.yaml` defines the
   custom NPC.
-- `source/resources/r6/tweaks/ghostline/faction_ghostline.yaml` defines the
+- `projects/shared/ghostline-runtime/source/resources/r6/tweaks/ghostline/faction_ghostline.yaml` defines the
   custom Ghostline faction.
 - TweakXL loads `.yaml` or `.tweak` files from Cyberpunk's `r6/tweaks`; in this
   WolvenKit project, author them under `source/resources/r6/tweaks`.

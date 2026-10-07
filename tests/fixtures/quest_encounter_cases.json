@@ -1,0 +1,214 @@
+{
+  "source_manifest": "projects/test-quests/gqt006/gqt006_goth_baddie_cyberpsycho.quest.json",
+  "source_manifest_sha256": "62c2893bba86e8ee61c3640866b70ab8373bda721c9825aadec4de89aefdf8e1",
+  "cases": {
+    "gqt006": {
+      "data": {
+        "id": "neutralize_goth_baddie",
+        "type": "cyberpsycho_encounter",
+        "status": "ready",
+        "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+        "community": "#gqt006_com_goth_baddie",
+        "boss_entry": "goth_baddie",
+        "boss_character": "Character.GhostlineGothBaddie",
+        "activation_trigger": "#gqt006_tr_outer",
+        "activation_mode": "IsInside",
+        "activate": true,
+        "reveal": {
+          "trigger": "#gqt006_tr_reveal",
+          "scan": true,
+          "attacked_by_boss": true,
+          "boss_hit_by_player": true,
+          "boss_sees_player": true
+        },
+        "arena_trigger": "#gqt006_tr_arena",
+        "arena_mode": "IsInside",
+        "alerted_path": "#gqt006_spl_goth_baddie_alerted",
+        "alerted_spots": [
+          "#gqt006_ws_goth_baddie_alerted_001",
+          "#gqt006_ws_goth_baddie_alerted_002"
+        ],
+        "resolution": {
+          "allow_nonlethal": true,
+          "spared_fact": "gqt006_goth_baddie_spared",
+          "killed_fact": "gqt006_goth_baddie_killed"
+        },
+        "postfight_scene": {
+          "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+          "origin": "#gqt006_sm_intimacy",
+          "entry": "v_wins",
+          "exit": "v_wins_done"
+        },
+        "player_defeat_scene": {
+          "debug_fact": "gqt006_debug_goth_wins",
+          "defeat_fact": "gqt006_v_defeated",
+          "health_percent": 5,
+          "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+          "origin": "#gqt006_sm_intimacy",
+          "entry": "goth_wins_debug",
+          "exit": "goth_intimacy_requested",
+          "completion_branches": [
+            {
+              "exit": "goth_truce_done",
+              "set_fact": "gqt006_goth_baddie_truce"
+            }
+          ],
+          "continuation_scene": {
+            "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie_intimacy.scene",
+            "origin": "#gqt006_sm_intimacy",
+            "entry": "start",
+            "exit": "done"
+          },
+          "aftermath_scene": {
+            "scene": "mod\\gqt006\\scenes\\gqt006_goth_baddie.scene",
+            "origin": "#gqt006_sm_intimacy",
+            "entry": "goth_after",
+            "exit": "goth_wins_done"
+          }
+        },
+        "objective": "quests/minor_quest/gqt006/gqt006_01/gqt006_01_obj_neutralize_goth_baddie",
+        "description_entry": "quests/minor_quest/gqt006/gqt006_01/gqt006_01_obj_neutralize_goth_baddie/gqt006_01_desc_neutralize_goth_baddie",
+        "mappin": "quests/minor_quest/gqt006/gqt006_01/gqt006_01_obj_neutralize_goth_baddie/gqt006_01_qmp_goth_baddie",
+        "completion_fact": "gqt006_goth_baddie_resolved",
+        "authoring": {
+          "world_spec": "projects/test-quests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json",
+          "tweak_file": "projects/test-quests/gqt006/source/resources/r6/tweaks/ghostline/character_goth_baddie.yaml"
+        },
+        "required_assets": [
+          "mod\\ghostline\\characters\\goth_baddie\\goth_baddie.ent"
+        ],
+        "notes": "Cleanup is intentionally deferred until after the shard is read and V exits the arena."
+      },
+      "sha256": "81e137b31cef213aa79818ff0f90f469c3105b42469655c6769c6494e0180384"
+    },
+    "minimal_no_scenes": {
+      "data": {
+        "id": "neutralize_goth_baddie",
+        "type": "cyberpsycho_encounter",
+        "status": "ready",
+        "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+        "activation_trigger": "#gqt006_tr_outer",
+        "community": "#gqt006_com_goth_baddie",
+        "boss_entry": "goth_baddie",
+        "resolution": {
+          "allow_nonlethal": true,
+          "spared_fact": "gqt006_goth_baddie_spared",
+          "killed_fact": "gqt006_goth_baddie_killed"
+        },
+        "reveal": {
+          "scan": true
+        }
+      },
+      "sha256": "5714051bc3b7ccf75d658064fd4d3019937bd4b876103a60c8511b232b58723c"
+    },
+    "all_reveals_no_player": {
+      "data": {
+        "id": "neutralize_goth_baddie",
+        "type": "cyberpsycho_encounter",
+        "status": "ready",
+        "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+        "activation_trigger": "#gqt006_tr_outer",
+        "community": "#gqt006_com_goth_baddie",
+        "boss_entry": "goth_baddie",
+        "resolution": {
+          "allow_nonlethal": true,
+          "spared_fact": "gqt006_goth_baddie_spared",
+          "killed_fact": "gqt006_goth_baddie_killed"
+        },
+        "reveal": {
+          "trigger": "#reveal",
+          "scan": true,
+          "attacked_by_boss": true,
+          "boss_hit_by_player": true,
+          "boss_sees_player": true
+        },
+        "activate": false,
+        "arena_trigger": "#arena",
+        "arena_mode": "Entered",
+        "cleanup": {
+          "trigger": "#exit",
+          "deactivate_community": false
+        }
+      },
+      "sha256": "cc0ecc50b7caf51cbbba88f5d4f2d0b86255334d30da9b8e3024c31eac0d4ce2"
+    },
+    "postfight_without_player_protection": {
+      "data": {
+        "id": "neutralize_goth_baddie",
+        "type": "cyberpsycho_encounter",
+        "status": "ready",
+        "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+        "activation_trigger": "#gqt006_tr_outer",
+        "community": "#gqt006_com_goth_baddie",
+        "boss_entry": "goth_baddie",
+        "resolution": {
+          "allow_nonlethal": true,
+          "spared_fact": "gqt006_goth_baddie_spared",
+          "killed_fact": "gqt006_goth_baddie_killed"
+        },
+        "reveal": {
+          "scan": true
+        },
+        "postfight_scene": {
+          "scene": "mod\\fixture\\post.scene",
+          "origin": "#post",
+          "entry": "Start",
+          "exit": "End"
+        },
+        "objective": "quests/fixture/objective",
+        "mappin": "quests/fixture/pin",
+        "completion_fact": "fixture_done"
+      },
+      "sha256": "b338132becf5557b9d317204e4fcb92a303ac561e3bf7e459a5e92707cfdc072"
+    },
+    "defeat_scene_completion_routes": {
+      "data": {
+        "id": "neutralize_goth_baddie",
+        "type": "cyberpsycho_encounter",
+        "status": "ready",
+        "phase_resource": "mod\\gqt006\\phases\\gqt006_neutralize_goth_baddie.questphase",
+        "activation_trigger": "#gqt006_tr_outer",
+        "community": "#gqt006_com_goth_baddie",
+        "boss_entry": "goth_baddie",
+        "resolution": {
+          "allow_nonlethal": true,
+          "spared_fact": "gqt006_goth_baddie_spared",
+          "killed_fact": "gqt006_goth_baddie_killed"
+        },
+        "reveal": {
+          "scan": true
+        },
+        "player_defeat_scene": {
+          "scene": "mod\\fixture\\loss.scene",
+          "origin": "#loss",
+          "entry": "Start",
+          "exit": "End",
+          "debug_fact": "fixture_debug",
+          "defeat_fact": "fixture_lost",
+          "completion_exits": [
+            "Done"
+          ],
+          "completion_branches": [
+            {
+              "exit": "WalkAway",
+              "set_fact": "fixture_walked"
+            }
+          ],
+          "continuation_scene": {
+            "scene": "mod\\fixture\\continue.scene",
+            "origin": "#continue",
+            "entry": "Start",
+            "exit": "End"
+          },
+          "aftermath_scene": {
+            "scene": "mod\\fixture\\after.scene",
+            "origin": "#after",
+            "entry": "Start",
+            "exit": "End"
+          }
+        }
+      },
+      "sha256": "a1d8512941fcaeca9ece27d3caaf7523cf72dd4e2f1c7fdce554076363aa6cdd"
+    }
+  }
+}

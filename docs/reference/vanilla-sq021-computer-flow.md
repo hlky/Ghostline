@@ -206,12 +206,12 @@ $/mod/gqt001/#gqt001_pr_signal_delay/#gqt001_terminal_laptop_r2
 
 Authoring and generated resources:
 
-- `quests/tests/gqt001/implementation/build.py`
-- `quests/tests/gqt001_signal_delay.quest.json`
-- `quests/tests/gqt001_signal_delay.location.json`
-- `source/raw/mod/gqt001/world/gqt001_laptop_instance.streamingsector.json`
-- `source/raw/mod/gqt001/journal/gqt001.journal.json`
-- `source/raw/mod/gqt001/localization/en-us/onscreens/gqt001.json.json`
+- `projects/test-quests/gqt001/implementation/build.py`
+- `projects/test-quests/gqt001/gqt001_signal_delay.quest.json`
+- `projects/test-quests/gqt001_signal_delay.location.json`
+- `projects/test-quests/gqt001/source/raw/mod/gqt001/world/gqt001_laptop_instance.streamingsector.json`
+- `projects/test-quests/gqt001/source/raw/mod/gqt001/journal/gqt001.journal.json`
+- `projects/test-quests/gqt001/source/raw/mod/gqt001/localization/en-us/onscreens/gqt001.json.json`
 
 The installed Files-only runtime candidate is retained at:
 

@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "id": "gq_recipe_rescue",
+  "title": "Rescue and extract",
+  "description": "Authoring example; world and scene resources must be built and validated before readiness.",
+  "composition": {
+    "contacts": {
+      "fixer": {
+        "name": "Relay contact",
+        "community": "#gq_recipe_rescue_com_contact",
+        "entry": "contact",
+        "scene": "mod\\gq_recipe_rescue\\scenes\\meeting.scene"
+      }
+    },
+    "locations": {
+      "relay": {
+        "ref": "#gq_recipe_rescue_mp_relay",
+        "trigger": "#gq_recipe_rescue_tr_relay"
+      }
+    },
+    "objectives": {
+      "rescue": {
+        "text": "Release the contact."
+      },
+      "escort": {
+        "text": "Escort the contact.",
+        "mappins": {
+          "relay": {
+            "ref": "@locations.relay.ref",
+            "text": "Relay"
+          }
+        }
+      },
+      "defense": {
+        "text": "Defend the contact for twenty seconds."
+      },
+      "extraction": {
+        "text": "Leave the extraction site."
+      }
+    },
+    "clues": {
+      "relay": {
+        "object_ref": "#gq_recipe_rescue_clue_relay"
+      }
+    },
+    "facts": {
+      "offer_sent": null,
+      "accepted": null,
+      "cooperate": null,
+      "refuse": null
+    },
+    "recipes": [
+      {
+        "name": "rescue_escort_defense_extraction",
+        "steps": {
+          "rescue": {
+            "objective": "@objectives.rescue.path",
+            "description_entry": "@objectives.rescue.description_entry",
+            "community": "@contacts.fixer.community",
+            "entry": "@contacts.fixer.entry",
+            "device": "#gq_recipe_rescue_device",
+            "controller_class": "AccessPointControllerPS",
+            "action": "ForceEnabled",
+            "completion_function": "WasHackingMinigameSucceeded",
+            "completion_fact": "@objectives.rescue.completion_fact",
+            "status": "planned"
+          },
+          "escort": {
+            "objective": "@objectives.escort.path",
+            "community": "@contacts.fixer.community",
+            "entry": "@contacts.fixer.entry",
+            "destinations": [
+              "#gq_recipe_rescue_gate_01",
+              "#gq_recipe_rescue_gate_02",
+              "#gq_recipe_rescue_gate_03"
+            ],
+            "mappin": "@objectives.escort.mappin",
+            "completion_fact": "@objectives.escort.completion_fact",
+            "actor_lifecycle": {
+              "on_enter": "assign_follower",
+              "on_success": "retain",
+              "on_failure": "release",
+              "on_cancelled": "release"
+            },
+            "outcomes": {
+              "success": "Out1",
+              "failure": "Failure",
+              "cancelled": "Cancelled"
+            },
+            "on": {
+              "success": "defense",
+              "failure": "$end",
+              "cancelled": "$end"
+            },
+            "status": "planned"
+          },
+          "defense": {
+            "objective": "@objectives.defense.path",
+            "description_entry": "@objectives.defense.description_entry",
+            "community": "@contacts.fixer.community",
+            "entry": "@contacts.fixer.entry",
+            "duration_seconds": 20,
+            "completion_fact": "@objectives.defense.completion_fact",
+            "failure_fact": "gq_recipe_rescue_contact_lost",
+            "actor_lifecycle": {
+              "on_enter": "retain",
+              "on_success": "release",
+              "on_failure": "release",
+              "on_cancelled": "release"
+            },
+            "outcomes": {
+              "success": "Out1",
+              "failure": "Failure",
+              "cancelled": "Cancelled"
+            },
+            "on": {
+              "success": "extraction",
+              "failure": "$end",
+              "cancelled": "$end"
+            },
+            "status": "planned"
+          },
+          "extraction": {
+            "objective": "@objectives.extraction.path",
+            "description_entry": "@objectives.extraction.description_entry",
+            "trigger": "@locations.relay.trigger",
+            "completion_fact": "@objectives.extraction.completion_fact",
+            "status": "planned"
+          }
+        }
+      }
+    ]
+  }
+}

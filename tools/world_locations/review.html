@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Ghostline · World capture review</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111519; --panel:#1b2127; --line:#343f49; --text:#eef2f5; --muted:#a4b0bc; --accent:#b9df81; --warning:#f0c580; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    button,input,select,textarea { font:inherit; }
+    button,a,input,select,textarea { outline-offset:4px; }
+    a { color:var(--accent); text-underline-offset:3px; }
+    button { border:1px solid var(--line); border-radius:7px; padding:8px 13px; color:var(--text); background:#242e36; cursor:pointer; }
+    button:hover { border-color:#81929f; }
+    button:disabled { opacity:.45; cursor:default; }
+    .primary { color:#162012; border-color:var(--accent); background:var(--accent); font-weight:650; }
+    .shell { max-width:1580px; margin:auto; padding:30px clamp(18px,3vw,48px) 48px; }
+    header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; }
+    .eyebrow { margin:0 0 8px; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.16em; }
+    h1 { font-size:clamp(27px,3.6vw,42px); line-height:1.12; letter-spacing:-.035em; margin:0 0 13px; }
+    h2,h3,p { margin-top:0; }
+    .intro { color:var(--muted); max-width:770px; margin-bottom:0; }
+    .stamp { color:var(--muted); text-align:right; font-size:12px; white-space:nowrap; }
+    .counts { display:flex; gap:28px; flex-wrap:wrap; margin:26px 0 22px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+    .count strong { display:block; font-size:28px; font-weight:550; letter-spacing:-.04em; }
+    .count span { color:var(--muted); font-size:12px; }
+    .notice { padding:12px 15px; background:#253023; border:1px solid #3b5031; border-radius:8px; color:#c8dbb7; margin:0 0 20px; font-size:13px; }
+    .filters { display:grid; grid-template-columns:minmax(220px,2fr) repeat(4,minmax(135px,1fr)); gap:12px; }
+    label.filter { display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:12px; }
+    input[type=search],select { width:100%; border:1px solid var(--line); border-radius:7px; padding:10px; background:var(--panel); color:var(--text); min-height:43px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; margin:19px 0 15px; color:var(--muted); font-size:13px; }
+    .toolbar .actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .toolbar select { width:auto; min-height:36px; padding:6px; }
+    #result-count { margin:0; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(325px,1fr)); gap:20px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; min-width:0; }
+    .card.selected { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+    .image-link { display:block; background:#080b0e; text-decoration:none; aspect-ratio:16/9; }
+    .image-link img { width:100%; height:100%; display:block; object-fit:contain; }
+    .no-image { aspect-ratio:16/9; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:25px; color:var(--muted); background:repeating-linear-gradient(135deg,#161c22,#161c22 12px,#192129 12px,#192129 13px); text-align:center; }
+    .no-image strong { color:#d0d7df; font-size:17px; margin-bottom:8px; }
+    .body { padding:16px; }
+    .card-top { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
+    .badges { display:flex; flex-wrap:wrap; gap:5px; }
+    .badge { font-size:11px; padding:3px 7px; border-radius:4px; border:1px solid #43515d; background:#29353e; color:#d5e0e9; }
+    .badge.warn { border-color:#705938; background:#3a3022; color:var(--warning); }
+    .badge.pass { border-color:#48603b; background:#293a24; color:#c2e69c; }
+    .pick { display:flex; align-items:center; gap:6px; font-size:12px; white-space:nowrap; }
+    input[type=checkbox] { accent-color:var(--accent); width:16px; height:16px; }
+    .card h2 { font-size:19px; margin-bottom:2px; letter-spacing:-.015em; }
+    .card .location { font:11px/1.4 ui-monospace,Consolas,monospace; color:var(--muted); overflow-wrap:anywhere; }
+    .meta { font-size:12px; color:var(--muted); margin:10px 0; overflow-wrap:anywhere; }
+    .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px 0; margin:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .metrics dt { font-size:10px; color:var(--muted); }
+    .metrics dd { font-size:14px; margin:1px 0 0; }
+    details { font-size:12px; margin-top:13px; }
+    summary { cursor:pointer; color:var(--warning); }
+    summary.clear { color:var(--accent); }
+    ul { margin:8px 0 0; padding-left:19px; color:#c2cbd3; }
+    li { margin:4px 0; overflow-wrap:anywhere; }
+    .file-links { display:flex; flex-wrap:wrap; gap:16px; font-size:12px; margin-top:13px; }
+    .failure { background:#382923; border-left:2px solid #ba8667; padding:9px 11px; margin:12px 0; font-size:12px; overflow-wrap:anywhere; }
+    .empty { grid-column:1/-1; text-align:center; border:1px dashed var(--line); border-radius:10px; padding:55px 20px; color:var(--muted); }
+    .pagination { display:flex; justify-content:center; align-items:center; gap:20px; margin-top:25px; }
+    .pagination span { color:var(--muted); font-size:13px; }
+    .selection { margin-top:27px; border:1px solid #536b3e; background:#1b2519; border-radius:10px; padding:18px; }
+    .selection h2 { font-size:19px; margin-bottom:4px; }
+    .selection p { color:#b9c8ae; font-size:13px; }
+    textarea { display:block; width:100%; min-height:105px; max-height:280px; resize:vertical; margin:12px 0; padding:12px; border:1px solid #46503e; background:#11170f; color:#d7eac8; border-radius:7px; font:12px/1.55 ui-monospace,Consolas,monospace; }
+    .selection .buttons { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    #copy-status { font-size:12px; color:#bdd0ad; }
+    footer { margin-top:28px; font-size:12px; color:var(--muted); }
+    [hidden] { display:none !important; }
+    @media(max-width:950px) { .filters { grid-template-columns:repeat(2,minmax(0,1fr)); } .filters label:first-child { grid-column:1/-1; } }
+    @media(max-width:620px) { header { display:block; } .stamp { text-align:left; margin-top:15px; } .grid { grid-template-columns:minmax(0,1fr); } .counts { gap:22px; } }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div><p class="eyebrow">Ghostline · location review</p><h1>World captures</h1><p class="intro">Inspect the latest image for each location, understand evidence gaps, and select specific places to capture again. Image checks describe technical quality; you decide whether a place suits the quest.</p></div>
+    <div class="stamp"><div id="generated-at"></div><a id="report-link">Report data</a></div>
+  </header>
+  <section class="counts" aria-label="Report overview">
+    <div class="count"><strong id="count-locations"></strong><span>locations in this report</span></div>
+    <div class="count"><strong id="count-images"></strong><span>latest images</span></div>
+    <div class="count"><strong id="count-failed"></strong><span>failed locations</span></div>
+    <div class="count"><strong id="count-selected">0</strong><span>selected for retry</span></div>
+  </section>
+  <p class="notice" id="evidence-note"></p>
+  <section class="filters" aria-label="Filter captures">
+    <label class="filter">Search<input id="search" type="search" placeholder="Location ID, resource, street, failure…" autocomplete="off"></label>
+    <label class="filter">Category<select id="category"><option value="">All categories</option></select></label>
+    <label class="filter">Area<select id="area"><option value="">All areas</option></select></label>
+    <label class="filter">Image quality<select id="quality"><option value="">All image checks</option></select></label>
+    <label class="filter">Queue status<select id="status"><option value="">All statuses</option></select></label>
+  </section>
+  <div class="toolbar">
+    <p id="result-count" aria-live="polite"></p>
+    <div class="actions"><label for="sort">Order</label><select id="sort"><option value="images">Images first</option><option value="recent">Recent activity</option><option value="attention">Publication blockers first</option></select><button id="select-page">Select this page</button><button id="clear-filters">Clear filters</button></div>
+  </div>
+  <section id="grid" class="grid" aria-label="Location captures"></section>
+  <nav class="pagination" aria-label="Gallery pages"><button id="previous">Previous</button><span id="page-label" aria-live="polite"></span><button id="next">Next</button></nav>
+  <section id="selection" class="selection" hidden>
+    <h2 id="selection-title">Selected locations</h2>
+    <p>Review these IDs, then run the commands from the repository root. This page does not change the database or approve captures.</p>
+    <textarea id="commands" aria-label="Explicit retry commands" readonly spellcheck="false"></textarea>
+    <div class="buttons"><button id="copy" class="primary">Copy retry commands</button><button id="download">Download selected IDs</button><button id="clear-selection">Clear selection</button><span id="copy-status" role="status"></span></div>
+  </section>
+  <footer>Preview paths are local. Full-size images retain their original framing. Missing measurements are shown as “Not measured”; no creative suitability score is inferred.</footer>
+  <noscript><p class="notice">Enable JavaScript to filter this self-contained report. The adjacent JSON report remains readable without JavaScript.</p></noscript>
+</main>
+<script id="review-data" type="application/json">__REVIEW_DATA__</script>
+<script>
+"use strict";
+const data = JSON.parse(document.getElementById("review-data").textContent);
+const rows = data.rows.map((row, index) => ({...row, index}));
+const byId = new Map(rows.map(row => [row.id, row]));
+const chosen = new Set();
+const PAGE_SIZE = 48;
+let page = 0, visible = [], currentPage = [];
+const el = id => document.getElementById(id);
+function node(tag, text, className) {
+  const result = document.createElement(tag);
+  if (text !== undefined && text !== null) result.textContent = String(text);
+  if (className) result.className = className;
+  return result;
+}
+function options(id, field) {
+  [...new Set(rows.map(row => row[field]))].filter(Boolean).sort().forEach(value => {
+    const option = node("option", value); option.value = value; el(id).append(option);
+  });
+}
+function measured(value, digits=1, suffix="") {
+  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) + suffix : "Not measured";
+}
+function metric(list, label, value) {
+  const item = node("div"); item.append(node("dt", label), node("dd", value)); list.append(item);
+}
+function link(label, href) {
+  const result = node("a", label); result.href = href; result.target = "_blank"; result.rel = "noopener noreferrer"; return result;
+}
+function imageFallback(row, title="No captured image") {
+  const fallback = node("div", null, "no-image");
+  fallback.append(node("strong", title), node("span", row.failure_code || "Inspect the evidence below before retrying."));
+  return fallback;
+}
+function card(row) {
+  const item = node("article", null, "card" + (chosen.has(row.id) ? " selected" : ""));
+  const rejected = row.links.rejected_preview;
+  if (rejected || row.links.image || row.links.thumbnail) {
+    const anchor = link("", rejected || row.links.image || row.links.thumbnail); anchor.className = "image-link";
+    const img = document.createElement("img"); img.loading = "lazy"; img.decoding = "async";
+    img.src = rejected || row.links.thumbnail || row.links.image; img.alt = `${rejected ? "Rejected preview: " : ""}${row.category} in ${row.area} — ${row.id}`;
+    img.addEventListener("error", () => anchor.replaceWith(imageFallback(row, "Image could not be loaded")), {once:true});
+    anchor.append(img); item.append(anchor);
+  } else item.append(imageFallback(row, row.has_capture ? "Image unavailable" : "No captured image"));
+  const body = node("div", null, "body"), top = node("div", null, "card-top"), badges = node("div", null, "badges");
+  badges.append(node("span", row.status, "badge"), node("span", row.quality, "badge " + (row.quality === "Checks passed" ? "pass" : "warn")));
+  if (rejected) badges.append(node("span", "Rejected preview", "badge warn"));
+  const pick = node("label", null, "pick"), check = document.createElement("input");
+  check.type = "checkbox"; check.checked = chosen.has(row.id); check.disabled = !row.retry_command;
+  check.setAttribute("aria-label", "Select " + row.id + " for retry");
+  if (!row.retry_command) pick.title = "Retry selection requires a captured or failed location in scope that has not been rejected.";
+  check.addEventListener("change", () => { if (check.checked) chosen.add(row.id); else chosen.delete(row.id); item.classList.toggle("selected", check.checked); selection(); });
+  pick.append(check, node("span", "Retry")); top.append(badges, pick);
+  body.append(top, node("h2", row.area), node("div", row.id, "location"));
+  body.append(node("p", [row.category, row.direction, row.interior].filter(Boolean).join(" · "), "meta"));
+  if (row.fast_travel || row.street) body.append(node("p", [row.fast_travel, row.street].filter(Boolean).join(" / "), "meta"));
+  const metrics = node("dl", null, "metrics"), quality = row.validation || {};
+  if (row.validation_source === "rejected_attempt") body.append(node("p", "Measurements describe the latest rejected attempt.", "meta"));
+  metric(metrics, "Sharpness · Laplacian", measured(quality.sharpness_laplacian_variance));
+  metric(metrics, "Mean luminance · 0–255", measured(quality.luminance_mean));
+  metric(metrics, "Black pixels", typeof quality.black_fraction === "number" ? measured(100 * quality.black_fraction, 1, "%") : "Not measured");
+  body.append(metrics);
+  const dimensions = row.dimensions.width && row.dimensions.height ? `${row.dimensions.width} × ${row.dimensions.height}` : "No image dimensions";
+  body.append(node("p", [dimensions, row.captured_at || "No capture time"].join(" · "), "meta"));
+  if (row.failure_code || row.failure_detail) body.append(node("p", [row.failure_code, row.failure_detail].filter(Boolean).join(": "), "failure"));
+  const details = node("details"), title = node("summary", row.publication + (row.blockers.length ? ` · ${row.blockers.length}` : ""), row.blockers.length ? "" : "clear");
+  const reasons = node("ul");
+  const messages = [...row.blockers, ...row.link_warnings];
+  if (row.has_capture && !row.hashes_verified) messages.push("Capture file hashes not verified in this report.");
+  if (row.hashes_verified) messages.push("Recorded capture file hashes verified.");
+  if (rejected) messages.push("Rejected preview is diagnostic evidence; it is not an accepted capture.");
+  for (const warning of Array.isArray(quality.warnings) ? quality.warnings : []) messages.push(String(warning));
+  for (const error of Array.isArray(quality.errors) ? quality.errors : []) messages.push(String(error));
+  [...new Set(messages)].forEach(message => reasons.append(node("li", message)));
+  details.append(title, reasons); body.append(details);
+  const source = node("details"), sourceTitle = node("summary", "Location and source details"), sourceText = node("ul");
+  [row.resource, row.sector, `Position: ${["x","y","z"].map(axis => measured(row.position[axis],2)).join(", ")} · yaw ${measured(row.position.yaw,1)}`, `Capture: ${row.capture_id || "none"}`].filter(Boolean).forEach(value => sourceText.append(node("li", value)));
+  source.append(sourceTitle, sourceText); body.append(source);
+  const links = node("div", null, "file-links");
+  if (rejected) links.append(link("Rejected preview ↗", rejected));
+  if (row.links.image) links.append(link(rejected ? "Previous capture ↗" : "Full-size image ↗", row.links.image));
+  if (row.links.sidecar) links.append(link("Capture sidecar ↗", row.links.sidecar));
+  body.append(links); item.append(body); return item;
+}
+function selection() {
+  const selected = [...chosen].map(id => byId.get(id)).filter(row => row && row.retry_command);
+  el("count-selected").textContent = selected.length;
+  el("selection").hidden = !selected.length;
+  el("selection-title").textContent = `${selected.length} location${selected.length === 1 ? "" : "s"} selected for retry`;
+  el("commands").value = selected.map(row => row.retry_command).join("\n");
+  el("copy-status").textContent = "";
+}
+function render(reset=false) {
+  if (reset) page = 0;
+  const search = el("search").value.trim().toLocaleLowerCase();
+  visible = rows.filter(row => ["category","area","quality","status"].every(field => !el(field).value || row[field] === el(field).value) && (!search || [row.id,row.category,row.area,row.district,row.subdistrict,row.resource,row.sector,row.fast_travel,row.street,row.failure_code,row.failure_detail,...row.blockers].filter(Boolean).join(" ").toLocaleLowerCase().includes(search)));
+  const sort = el("sort").value;
+  visible.sort((a,b) => sort === "images" ? Number(b.has_capture)-Number(a.has_capture) || a.index-b.index : sort === "attention" ? Number(Boolean(b.blockers.length))-Number(Boolean(a.blockers.length)) || a.index-b.index : a.index-b.index);
+  const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE)); page = Math.min(page, pages-1);
+  currentPage = visible.slice(page*PAGE_SIZE, (page+1)*PAGE_SIZE);
+  el("grid").replaceChildren(...(currentPage.length ? currentPage.map(card) : [node("div", "No locations match these filters.", "empty")]));
+  el("result-count").textContent = `${visible.length.toLocaleString()} matching · ${rows.length.toLocaleString()} loaded` + (data.summary.omitted ? ` · ${data.summary.omitted.toLocaleString()} omitted by report limit` : "");
+  el("page-label").textContent = `Page ${page+1} of ${pages}`;
+  el("previous").disabled = page === 0; el("next").disabled = page === pages-1;
+  el("select-page").disabled = !currentPage.some(row => row.retry_command);
+}
+el("generated-at").textContent = "Snapshot · " + data.generated_at;
+el("report-link").href = encodeURIComponent(data.summary.data.split(/[\\/]/).pop());
+el("count-locations").textContent = data.summary.locations.toLocaleString();
+el("count-images").textContent = data.summary.captures.toLocaleString();
+el("count-failed").textContent = data.summary.failed.toLocaleString();
+el("evidence-note").textContent = data.summary.verify_files ? "Successful capture file hashes were checked while generating this snapshot. Rejected previews remain diagnostic evidence. Publication blockers are evaluated independently for each capture." : "Fast review: file paths and sidecars were checked; image hashes were not recalculated. This report does not grant publication approval.";
+["category","area","quality","status"].forEach(field => { options(field, field); el(field).addEventListener("change", () => render(true)); });
+el("search").addEventListener("input", () => render(true)); el("sort").addEventListener("change", () => render(true));
+el("clear-filters").addEventListener("click", () => { ["search","category","area","quality","status"].forEach(id => el(id).value=""); render(true); });
+el("previous").addEventListener("click", () => { page--; render(); el("result-count").scrollIntoView({block:"start"}); });
+el("next").addEventListener("click", () => { page++; render(); el("result-count").scrollIntoView({block:"start"}); });
+el("select-page").addEventListener("click", () => { currentPage.filter(row => row.retry_command).forEach(row => chosen.add(row.id)); selection(); render(); });
+el("clear-selection").addEventListener("click", () => { chosen.clear(); selection(); render(); });
+el("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(el("commands").value); el("copy-status").textContent="Commands copied."; }
+  catch { el("commands").focus(); el("commands").select(); el("copy-status").textContent="Commands selected — copy them with Ctrl+C."; }
+});
+el("download").addEventListener("click", () => {
+  const blob = new Blob([[...chosen].join("\n") + "\n"], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob), anchor = link("", url); anchor.download="selected-location-ids.txt";
+  document.body.append(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+});
+render();
+</script>
+</body>
+</html>

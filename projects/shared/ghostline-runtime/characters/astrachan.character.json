@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "astrachan",
+  "display_name": "Astrachan",
+  "namespace": "mod\\ghostline\\characters\\astrachan",
+  "frame": "female_average",
+  "catalog": "quests/templates/characters/female-catalog.json",
+  "templates": {
+    "entity": "quests/templates/characters/templates/npv-female.ent-shell.json",
+    "appearance_shell": "quests/templates/characters/templates/npv-female.app-shell.json",
+    "component_library": "quests/templates/characters/components/npv-female.components.json",
+    "localization": "projects/shared/ghostline-runtime/source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
+  },
+  "template_identity": {
+    "frame": "female_average",
+    "namespace": "tutorial\\npv\\your_female_character"
+  },
+  "template_assets": {
+    "source_root": "@npv/source/archive/tutorial/npv/your_female_character",
+    "source_depot_root": "tutorial\\npv\\your_female_character",
+    "dependency_globs": [
+      "body/textures/*.xbm",
+      "head/textures/*.xbm"
+    ]
+  },
+  "outputs": {
+    "entity_raw": "projects/shared/ghostline-runtime/source/raw/mod/ghostline/characters/astrachan/astrachan.ent.json",
+    "appearance_raw": "projects/shared/ghostline-runtime/source/raw/mod/ghostline/characters/astrachan/astrachan.app.json",
+    "localization_raw": "projects/shared/ghostline-runtime/source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json",
+    "tweak": "source/resources/r6/tweaks/ghostline/character_astrachan.yaml"
+  },
+  "entity": {
+    "file_name": "astrachan.ent",
+    "root_appearance": "ghostline_astrachan_default",
+    "appearance_name": "default",
+    "appearance_file": "astrachan.app"
+  },
+  "appearance": {
+    "name": "default",
+    "selections": {
+      "hair": "goth_baddie_long_bangs_black",
+      "inner_torso": "tutorial_casual_tank",
+      "legs": "tutorial_casual_pants",
+      "feet": "tutorial_casual_boots",
+      "outer_torso": "tutorial_business_outer",
+      "business_extras": "none"
+    },
+    "indexed_overrides": {
+      "inner_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t1_094_shirt__scientist\\t1_094_pwa_shirt__scientist.mesh",
+        "mesh_appearance": "black_leather"
+      },
+      "outer_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t2_098_jacket__bomber_jacket\\t2_098_pwa_jacket__bomber_jacket.mesh",
+        "mesh_appearance": "black_pink"
+      },
+      "legs": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\legs\\l1_011_skirt__tight\\l1_011_pwa_skirt__tight.mesh",
+        "mesh_appearance": "black_leather"
+      },
+      "feet": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\feet\\s1_066_boot__bovver\\s1_066_pwa_boot__bovver.mesh",
+        "mesh_appearance": "maelstrom_red"
+      }
+    }
+  },
+  "head": {
+    "blend_template": "@npv/source/raw/tutorial/npv/your_female_character/head/head_import.blend",
+    "morphtarget_source": "@npv/source/archive/tutorial/npv/your_female_character/head/morphtargets",
+    "mesh_source": "@npv/source/archive/tutorial/npv/your_female_character/head",
+    "preview_morphtargets": [
+      "h0_000_pwa__morphs.morphtarget"
+    ],
+    "morphtargets": [
+      "h0_000_pwa__morphs.morphtarget",
+      "he_000_pwa__morphs.morphtarget",
+      "heb_000_pwa__morphs.morphtarget",
+      "ht_000_pwa__morphs.morphtarget"
+    ],
+    "shapes": {
+      "eyes": 1,
+      "nose": 1,
+      "mouth": 1,
+      "jaw": 1,
+      "ears": 1
+    }
+  },
+  "tweak": {
+    "record": "Character.GhostlineAstrachan",
+    "base": "Character.Quest_NPC_Base",
+    "display_name": "gq_npc_astrachan",
+    "affiliation": "Factions.Ghostline",
+    "voice_tag": "gq_astrachan"
+  },
+  "localization": {
+    "secondary_key": "gq_npc_astrachan",
+    "female_variant": "Astrachan",
+    "male_variant": "Astrachan"
+  },
+  "requirements": {
+    "phantom_liberty": true
+  }
+}

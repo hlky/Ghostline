@@ -32,9 +32,11 @@ pub enum Error {
     Embedding(String),
     /// `DinoML` rejected a model, prompt, asset, or generation operation.
     #[error("DinoML operation failed: {0}")]
+    #[cfg(feature = "render-local")]
     DinoMl(#[from] dinoml_qwen3_tts::Error),
     /// A `SafeTensors` asset could not be decoded.
     #[error("SafeTensors operation failed: {0}")]
+    #[cfg(feature = "render-local")]
     SafeTensors(#[from] safetensors::SafeTensorError),
     /// RED reflection metadata could not be loaded.
     #[error("RED schema operation failed: {0}")]

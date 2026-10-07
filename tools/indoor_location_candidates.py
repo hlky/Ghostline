@@ -22,7 +22,9 @@ from typing import Any, Iterable, Mapping
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SECTORS = ROOT / "converted/world-location-database/full-world/serialized-sectors"
+DEFAULT_SECTORS = (
+    ROOT / "converted/world-location-database/full-world/serialized-sectors"
+)
 DEFAULT_OUTPUT = ROOT / "generated/world-locations/indoor-candidates.json"
 DEFAULT_CET_OUTPUT = ROOT / "generated/world-locations/indoor-candidates-cet.json"
 CET_SOURCE = ROOT / "tools/indoor_location_browser_cet"
@@ -32,7 +34,9 @@ INTERIOR_NODE_TYPE = "worldInteriorAreaNode"
 
 QUEST_PATTERNS = (
     re.compile(r"(?<![a-z0-9])((?:sq|mq|q)\d{3})(?![a-z0-9])", re.IGNORECASE),
-    re.compile(r"(?<![a-z0-9])(sts_[a-z]{3}_[a-z]{3}_\d{2}[a-z]?)(?![a-z0-9])", re.IGNORECASE),
+    re.compile(
+        r"(?<![a-z0-9])(sts_[a-z]{3}_[a-z]{3}_\d{2}[a-z]?)(?![a-z0-9])", re.IGNORECASE
+    ),
     re.compile(r"(?<![a-z0-9])(ncpd_[a-z0-9_]+)", re.IGNORECASE),
     re.compile(
         r"(?<![a-z0-9])((?:ma|ce)_[a-z]{3}_[a-z]{3}_\d{2})(?![a-z0-9])",
@@ -54,7 +58,12 @@ SIGNAL_RULES: dict[str, frozenset[str]] = {
 }
 
 SITE_TYPE_RULES: tuple[tuple[str, tuple[str, ...], bool, bool], ...] = (
-    ("story_landmark", ("arasaka_tower", "peralez", "lizzies", "kashuu_hanten", "tygerclaw_garage"), False, True),
+    (
+        "story_landmark",
+        ("arasaka_tower", "peralez", "lizzies", "kashuu_hanten", "tygerclaw_garage"),
+        False,
+        True,
+    ),
     ("clothing_shop", ("_cloth_", "clothing", "sex_shop"), True, False),
     ("weapon_shop", ("_guns_", "gunsmith", "_melee_", "weapon_shop"), True, False),
     ("ripperdoc", ("ripdoc", "ripperdoc", "_medic_"), True, False),
@@ -63,7 +72,12 @@ SITE_TYPE_RULES: tuple[tuple[str, tuple[str, ...], bool, bool], ...] = (
     ("tech_shop", ("_tech_", "tech_shop"), True, False),
     ("lodging", ("motel", "hotel"), False, False),
     ("apartment", ("apart", "apartment"), False, False),
-    ("industrial", ("factory", "warehouse", "garage", "workshop", "junk"), False, False),
+    (
+        "industrial",
+        ("factory", "warehouse", "garage", "workshop", "junk"),
+        False,
+        False,
+    ),
     ("club_or_bar", ("club", "bar", "casino"), False, False),
 )
 
@@ -74,12 +88,37 @@ def scalar(value: Any) -> Any:
     return value
 
 
+def finite_number(value: Any) -> float | None:
+    value = scalar(value)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        number = float(value)
+    except OverflowError:
+        return None
+    return number if math.isfinite(number) else None
+
+
+def validate_radii(support_radius: float, quest_radius: float) -> None:
+    for name, radius in (
+        ("support_radius", support_radius),
+        ("quest_radius", quest_radius),
+    ):
+        if (
+            not isinstance(radius, (int, float))
+            or finite_number(radius) is None
+            or radius < 0
+        ):
+            raise ValueError(f"{name} must be finite and nonnegative")
+
+
 def vector(value: Any) -> dict[str, float] | None:
     if not isinstance(value, Mapping):
         return None
-    if not all(isinstance(value.get(key), (int, float)) for key in ("X", "Y", "Z")):
+    values = [finite_number(value.get(key)) for key in ("X", "Y", "Z")]
+    if any(number is None for number in values):
         return None
-    return {"x": float(value["X"]), "y": float(value["Y"]), "z": float(value["Z"])}
+    return dict(zip(("x", "y", "z"), values, strict=True))
 
 
 def payload(handle: Any) -> dict[str, Any]:
@@ -138,7 +177,9 @@ def distance(left: Mapping[str, float], right: Mapping[str, float]) -> float:
     )
 
 
-def outline_info(data: Mapping[str, Any], placement: Mapping[str, Any]) -> dict[str, Any]:
+def outline_info(
+    data: Mapping[str, Any], placement: Mapping[str, Any]
+) -> dict[str, Any]:
     outline = payload(data.get("outline"))
     points = outline.get("points", [])
     scale = vector(placement.get("Scale")) or {"x": 1.0, "y": 1.0, "z": 1.0}
@@ -151,8 +192,8 @@ def outline_info(data: Mapping[str, Any], placement: Mapping[str, Any]) -> dict[
             ys.append(parsed["y"] * scale["y"])
     width = max(xs) - min(xs) if xs else None
     depth = max(ys) - min(ys) if ys else None
-    height = outline.get("height")
-    scaled_height = float(height) * scale["z"] if isinstance(height, (int, float)) else None
+    height = finite_number(outline.get("height"))
+    scaled_height = abs(height * scale["z"]) if height is not None else None
     return {
         "points": len(xs),
         "width": round(width, 3) if width is not None else None,
@@ -188,7 +229,10 @@ def inspect_sector(
     support_radius: float,
     quest_radius: float,
 ) -> list[dict[str, Any]]:
-    document = json.loads(path.read_text(encoding="utf-8"))
+    validate_radii(support_radius, quest_radius)
+    source_bytes = path.read_bytes()
+    source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+    document = json.loads(source_bytes.decode("utf-8-sig"))
     root = document.get("Data", {}).get("RootChunk", {})
     if not isinstance(root, Mapping):
         return []
@@ -239,16 +283,27 @@ def inspect_sector(
             if separation <= support_radius:
                 for signal in other["signals"]:
                     nearby_counts[signal] += 1
-                    label = other["debug_name"] or other["resource"] or other["node_type"]
-                    if label and label not in nearby_examples[signal] and len(nearby_examples[signal]) < 3:
+                    label = (
+                        other["debug_name"] or other["resource"] or other["node_type"]
+                    )
+                    if (
+                        label
+                        and label not in nearby_examples[signal]
+                        and len(nearby_examples[signal]) < 3
+                    ):
                         nearby_examples[signal].append(label)
             if other["quest_ids"] and separation <= quest_radius:
                 nearby_quest_ids.update(other["quest_ids"])
-                if nearest_quest_distance is None or separation < nearest_quest_distance:
+                if (
+                    nearest_quest_distance is None
+                    or separation < nearest_quest_distance
+                ):
                     nearest_quest_distance = separation
 
         site_type, retail, known_content = classify_site(interior["debug_name"])
-        direct_quest = bool(interior["quest_ids"]) or sector_quest_owned or known_content
+        direct_quest = (
+            bool(interior["quest_ids"]) or sector_quest_owned or known_content
+        )
         quest_linked = direct_quest or bool(nearby_quest_ids)
         ownership = "quest_linked" if quest_linked else "likely_unowned"
         score = 50
@@ -275,17 +330,28 @@ def inspect_sector(
         if nearby_quest_ids and not interior["quest_ids"]:
             evidence.append(f"quest id within {quest_radius:g}m")
         if not evidence:
-            evidence.append("no quest identifier found on or near interior area")
+            evidence.append(
+                "no quest identifier found on or near the area within this source sector"
+            )
 
         results.append(
             {
-                "candidate_id": candidate_id(relative_sector, interior["node_index"], interior["placement_index"]),
+                "candidate_id": candidate_id(
+                    relative_sector, interior["node_index"], interior["placement_index"]
+                ),
                 "ownership": ownership,
-                "ownership_confidence": "high" if direct_quest else ("medium" if quest_linked else "provisional"),
+                "ownership_confidence": "high"
+                if direct_quest
+                else ("medium" if quest_linked else "provisional"),
                 "review_score": score,
                 "site_type": site_type,
                 "retail": retail,
                 "position": interior["position"],
+                "position_evidence": {
+                    "method": "interior_area_placement",
+                    "walkability": "unverified",
+                    "visibility": "unverified",
+                },
                 "outline": interior["outline"],
                 "debug_name": interior["debug_name"],
                 "source": {
@@ -293,10 +359,15 @@ def inspect_sector(
                     "node_index": interior["node_index"],
                     "placement_index": interior["placement_index"],
                     "quest_prefab_ref": interior["quest_ref"],
+                    "size_bytes": len(source_bytes),
+                    "sha256": source_sha256,
                 },
                 "quest_evidence": {
+                    "scope": "source_sector_only",
                     "quest_ids": sorted(nearby_quest_ids),
-                    "nearest_distance": round(nearest_quest_distance, 3) if nearest_quest_distance is not None else None,
+                    "nearest_distance": round(nearest_quest_distance, 3)
+                    if nearest_quest_distance is not None
+                    else None,
                     "reasons": evidence,
                 },
                 "nearby_signals": dict(sorted(nearby_counts.items())),
@@ -312,7 +383,15 @@ def discover_sector_paths(source_root: Path) -> list[Path]:
     rg = shutil.which("rg")
     if rg:
         result = subprocess.run(
-            [rg, "-l", "-F", INTERIOR_NODE_TYPE, str(source_root), "-g", f"*{SECTOR_SUFFIX}"],
+            [
+                rg,
+                "-l",
+                "-F",
+                INTERIOR_NODE_TYPE,
+                str(source_root),
+                "-g",
+                f"*{SECTOR_SUFFIX}",
+            ],
             check=False,
             text=True,
             capture_output=True,
@@ -335,8 +414,13 @@ def write_json(path: Path, value: Any) -> None:
     temporary: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", newline="\n", dir=path.parent,
-            prefix=f".{path.name}.", suffix=".tmp", delete=False,
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
         ) as stream:
             json.dump(value, stream, indent=2, ensure_ascii=False)
             stream.write("\n")
@@ -354,6 +438,7 @@ def build_manifest(
     quest_radius: float,
     limit_sectors: int | None = None,
 ) -> dict[str, Any]:
+    validate_radii(support_radius, quest_radius)
     paths = discover_sector_paths(source_root)
     if limit_sectors is not None:
         paths = paths[:limit_sectors]
@@ -362,13 +447,31 @@ def build_manifest(
     for ordinal, path in enumerate(paths, 1):
         try:
             candidates.extend(
-                inspect_sector(path, source_root, support_radius=support_radius, quest_radius=quest_radius)
+                inspect_sector(
+                    path,
+                    source_root,
+                    support_radius=support_radius,
+                    quest_radius=quest_radius,
+                )
             )
         except Exception as error:
-            errors.append({"sector": path.relative_to(source_root).as_posix(), "error": f"{type(error).__name__}: {error}"})
+            errors.append(
+                {
+                    "sector": path.relative_to(source_root).as_posix(),
+                    "error": f"{type(error).__name__}: {error}",
+                }
+            )
         if ordinal % 25 == 0 or ordinal == len(paths):
-            print(f"[{ordinal}/{len(paths)}] {len(candidates)} candidates, {len(errors)} errors")
-    candidates.sort(key=lambda row: (row["ownership"] != "likely_unowned", -row["review_score"], row["candidate_id"]))
+            print(
+                f"[{ordinal}/{len(paths)}] {len(candidates)} candidates, {len(errors)} errors"
+            )
+    candidates.sort(
+        key=lambda row: (
+            row["ownership"] != "likely_unowned",
+            -row["review_score"],
+            row["candidate_id"],
+        )
+    )
     ownership_counts = Counter(row["ownership"] for row in candidates)
     return {
         "schema_version": 1,
@@ -378,7 +481,10 @@ def build_manifest(
             "seed_node_type": INTERIOR_NODE_TYPE,
             "support_radius": support_radius,
             "quest_radius": quest_radius,
-            "ownership_warning": "likely_unowned means no serialized quest identifier was found on or near the area; runtime validation is still required",
+            "evidence_scope": "source_sector_only",
+            "position_method": "interior_area_placement",
+            "outline_dimensions_frame": "scaled_local",
+            "ownership_warning": "likely_unowned means no serialized quest identifier was found on or near the area within its source sector; adjacent sectors, standing-point access, and visibility require separate review",
         },
         "summary": {
             "matched_sectors": len(paths),
@@ -408,7 +514,12 @@ def command_list(args: argparse.Namespace) -> None:
     if args.ownership:
         rows = (row for row in rows if row.get("ownership") == args.ownership)
     rows = list(rows)
-    rows.sort(key=lambda row: (-int(row.get("review_score", 0)), str(row.get("candidate_id", ""))))
+    rows.sort(
+        key=lambda row: (
+            -int(row.get("review_score", 0)),
+            str(row.get("candidate_id", "")),
+        )
+    )
     if args.limit is not None:
         rows = rows[: args.limit]
     print(json.dumps(rows, indent=2))
@@ -432,26 +543,55 @@ def cet_manifest(
         position = candidate.get("position")
         if not isinstance(position, Mapping):
             continue
+        coordinates = [finite_number(position.get(axis)) for axis in ("x", "y", "z")]
+        if any(value is None for value in coordinates):
+            continue
         source = candidate.get("source", {})
         evidence = candidate.get("quest_evidence", {})
         signals = candidate.get("nearby_signals", {})
         rows.append(
             {
                 "id": str(candidate.get("candidate_id", "")),
-                "name": str(candidate.get("debug_name") or candidate.get("candidate_id") or "indoor location"),
+                "name": str(
+                    candidate.get("debug_name")
+                    or candidate.get("candidate_id")
+                    or "indoor location"
+                ),
                 "ownership": str(candidate.get("ownership", "unknown")),
                 "score": score,
-                "x": float(position["x"]),
-                "y": float(position["y"]),
-                "z": float(position["z"]),
-                "sector": str(source.get("sector", "")) if isinstance(source, Mapping) else "",
-                "quest_ids": list(evidence.get("quest_ids", [])) if isinstance(evidence, Mapping) else [],
+                "x": coordinates[0],
+                "y": coordinates[1],
+                "z": coordinates[2],
+                "sector": str(source.get("sector", ""))
+                if isinstance(source, Mapping)
+                else "",
+                "source_sha256": str(source.get("sha256", ""))
+                if isinstance(source, Mapping)
+                else "",
+                "evidence_scope": str(evidence.get("scope", "unknown"))
+                if isinstance(evidence, Mapping)
+                else "unknown",
+                "position_evidence": dict(candidate.get("position_evidence", {}))
+                if isinstance(candidate.get("position_evidence"), Mapping)
+                else {},
+                "quest_ids": list(evidence.get("quest_ids", []))
+                if isinstance(evidence, Mapping)
+                else [],
                 "signals": dict(signals) if isinstance(signals, Mapping) else {},
-                "site_type": str(candidate.get("site_type") or classify_site(str(candidate.get("debug_name", "")))[0]),
-                "retail": bool(candidate.get("retail", classify_site(str(candidate.get("debug_name", "")))[1])),
+                "site_type": str(
+                    candidate.get("site_type")
+                    or classify_site(str(candidate.get("debug_name", "")))[0]
+                ),
+                "retail": bool(
+                    candidate.get(
+                        "retail", classify_site(str(candidate.get("debug_name", "")))[1]
+                    )
+                ),
             }
         )
-    rows.sort(key=lambda row: (row["ownership"] != "likely_unowned", -row["score"], row["id"]))
+    rows.sort(
+        key=lambda row: (row["ownership"] != "likely_unowned", -row["score"], row["id"])
+    )
     return {
         "schema_version": 1,
         "generated_by": "tools/indoor_location_candidates.py export-cet",
@@ -464,9 +604,13 @@ def cet_manifest(
 
 def command_export_cet(args: argparse.Namespace) -> None:
     source = json.loads(args.manifest.read_text(encoding="utf-8"))
-    result = cet_manifest(source, ownership=args.ownership, minimum_score=args.minimum_score)
+    result = cet_manifest(
+        source, ownership=args.ownership, minimum_score=args.minimum_score
+    )
     write_json(args.output, result)
-    print(json.dumps({"output": str(args.output), "locations": result["count"]}, indent=2))
+    print(
+        json.dumps({"output": str(args.output), "locations": result["count"]}, indent=2)
+    )
 
 
 def command_install_cet(args: argparse.Namespace) -> None:
@@ -478,39 +622,64 @@ def command_install_cet(args: argparse.Namespace) -> None:
     if not source_init.is_file():
         raise SystemExit(f"CET source missing: {source_init}")
     source = json.loads(args.manifest.read_text(encoding="utf-8"))
-    locations = cet_manifest(source, ownership=args.ownership, minimum_score=args.minimum_score)
+    locations = cet_manifest(
+        source, ownership=args.ownership, minimum_score=args.minimum_score
+    )
     destination = cet_root / "mods" / CET_MOD_NAME
     destination.mkdir(parents=True, exist_ok=True)
     target_init = destination / "init.lua"
-    if target_init.exists() and not args.force and target_init.read_bytes() != source_init.read_bytes():
-        raise SystemExit(f"refusing to overwrite modified CET file without --force: {target_init}")
+    if (
+        target_init.exists()
+        and not args.force
+        and target_init.read_bytes() != source_init.read_bytes()
+    ):
+        raise SystemExit(
+            f"refusing to overwrite modified CET file without --force: {target_init}"
+        )
     shutil.copyfile(source_init, target_init)
     write_json(destination / "locations.json", locations)
-    print(json.dumps({"cet_mod": str(destination), "locations": locations["count"]}, indent=2))
+    print(
+        json.dumps(
+            {"cet_mod": str(destination), "locations": locations["count"]}, indent=2
+        )
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
-    build = subparsers.add_parser("build", help="Build an offline indoor candidate manifest.")
+    build = subparsers.add_parser(
+        "build", help="Build an offline indoor candidate manifest."
+    )
     build.add_argument("--sectors", type=Path, default=DEFAULT_SECTORS)
     build.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     build.add_argument("--support-radius", type=float, default=35.0)
     build.add_argument("--quest-radius", type=float, default=75.0)
-    build.add_argument("--limit-sectors", type=int, help="Development/testing limit after prefiltering.")
+    build.add_argument(
+        "--limit-sectors",
+        type=int,
+        help="Development/testing limit after prefiltering.",
+    )
     build.set_defaults(func=command_build)
-    listing = subparsers.add_parser("list", help="Print ranked candidates from a manifest.")
+    listing = subparsers.add_parser(
+        "list", help="Print ranked candidates from a manifest."
+    )
     listing.add_argument("--manifest", type=Path, default=DEFAULT_OUTPUT)
     listing.add_argument("--ownership", choices=("likely_unowned", "quest_linked"))
     listing.add_argument("--limit", type=int, default=25)
     listing.set_defaults(func=command_list)
-    export_cet = subparsers.add_parser("export-cet", help="Write a compact JSON catalog for the CET browser.")
+    export_cet = subparsers.add_parser(
+        "export-cet", help="Write a compact JSON catalog for the CET browser."
+    )
     export_cet.add_argument("--manifest", type=Path, default=DEFAULT_OUTPUT)
     export_cet.add_argument("--output", type=Path, default=DEFAULT_CET_OUTPUT)
     export_cet.add_argument("--ownership", choices=("likely_unowned", "quest_linked"))
     export_cet.add_argument("--minimum-score", type=int, default=0)
     export_cet.set_defaults(func=command_export_cet)
-    install = subparsers.add_parser("install-cet", help="Install the standalone browser and current catalog into CET.")
+    install = subparsers.add_parser(
+        "install-cet",
+        help="Install the standalone browser and current catalog into CET.",
+    )
     install.add_argument("--game-root", type=Path, required=True)
     install.add_argument("--manifest", type=Path, default=DEFAULT_OUTPUT)
     install.add_argument("--ownership", choices=("likely_unowned", "quest_linked"))

@@ -44,7 +44,7 @@ the correct-output oracle.
 Input:
 
 ```text
-source\raw\mod\gqt004_vehicle_lab\phases\gqt004_vehicle_lab.questphase.json
+projects\test-quests\gqt004\source\raw\mod\gqt004_vehicle_lab\phases\gqt004_vehicle_lab.questphase.json
 ```
 
 The authored root contains:
@@ -58,7 +58,7 @@ Expected total: nine graph nodes, including seven phase nodes.
 The template originally used by generation was copied from:
 
 ```text
-source\archive\mod\gqt001_signal_delay\phases\gqt001_signal_delay.questphase
+projects\test-quests\gqt001\source\archive\mod\gqt001_signal_delay\phases\gqt001_signal_delay.questphase
 ```
 
 After a successful native write and serialize-back, the result contained only
@@ -70,13 +70,13 @@ missing.
 Input:
 
 ```text
-source\raw\mod\gqt004\phases\gqt004_ride_with_patch.questphase.json
+projects\test-quests\gqt004\source\raw\mod\gqt004\phases\gqt004_ride_with_patch.questphase.json
 ```
 
 Template:
 
 ```text
-source\archive\mod\ghostline\quest_blocks\templates\ride_with_contact.questphase
+quests\templates\source\archive\mod\ghostline\quest_blocks\templates\ride_with_contact.questphase
 ```
 
 Expected graph: eight nodes, including the added vehicle-character assignment
@@ -91,7 +91,7 @@ nodes and omitted that assignment node.
 Input:
 
 ```text
-source\raw\mod\gqt004\world\gqt004_always_loaded.streamingsector.json
+projects\test-quests\gqt004\source\raw\mod\gqt004\world\gqt004_always_loaded.streamingsector.json
 ```
 
 The authored sector contains three community registries and two
@@ -187,10 +187,10 @@ $repro = 'H:\Ghostline-audits\ghostline-red-topology-repro'
 New-Item -ItemType Directory -Force $repro | Out-Null
 
 & $red cr2w-deserialize `
-  '.\source\raw\mod\gqt004_vehicle_lab\phases\gqt004_vehicle_lab.questphase.json' `
+  '.\projects\test-quests\gqt004\source\raw\mod\gqt004_vehicle_lab\phases\gqt004_vehicle_lab.questphase.json' `
   (Join-Path $repro 'root.questphase') `
   --template `
-  '.\source\archive\mod\gqt001_signal_delay\phases\gqt001_signal_delay.questphase' `
+  '.\projects\test-quests\gqt001\source\archive\mod\gqt001_signal_delay\phases\gqt001_signal_delay.questphase' `
   --schema '.\red-schema.json'
 
 & $red cr2w-serialize `
@@ -203,10 +203,10 @@ Repeat for the ride phase:
 
 ```powershell
 & $red cr2w-deserialize `
-  '.\source\raw\mod\gqt004\phases\gqt004_ride_with_patch.questphase.json' `
+  '.\projects\test-quests\gqt004\source\raw\mod\gqt004\phases\gqt004_ride_with_patch.questphase.json' `
   (Join-Path $repro 'ride.questphase') `
   --template `
-  '.\source\archive\mod\ghostline\quest_blocks\templates\ride_with_contact.questphase' `
+  '.\quests\templates\source\archive\mod\ghostline\quest_blocks\templates\ride_with_contact.questphase' `
   --schema '.\.red-schema.json'
 
 & $red cr2w-serialize `
@@ -230,7 +230,7 @@ template. For the always-loaded sector:
 
 ```powershell
 & $red cr2w-deserialize `
-  '.\source\raw\mod\gqt004\world\gqt004_always_loaded.streamingsector.json' `
+  '.\projects\test-quests\gqt004\source\raw\mod\gqt004\world\gqt004_always_loaded.streamingsector.json' `
   (Join-Path $repro 'always_loaded.streamingsector') `
   --template `
   (Join-Path $repro 'bad-extracted\mod\gqt004\world\gqt004_always_loaded.streamingsector') `

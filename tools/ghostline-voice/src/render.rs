@@ -10,6 +10,8 @@ use dinoml_qwen3_tts::{
     write_generation_record,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::json;
+use sha2::{Digest, Sha256};
 
 use crate::backend::{SynthesisRequest, VoiceBackend};
 use crate::embedding::load_embedding;
@@ -37,7 +39,7 @@ pub struct RenderOptions {
     pub max_frames: usize,
     /// Sampling configuration.
     pub sampling: GenerationSamplingConfig,
-    /// Replace invalid or stale existing candidates.
+    /// Rerender selected candidates, including valid existing candidates.
     pub force: bool,
 }
 
@@ -73,6 +75,9 @@ pub struct CandidateReport {
     pub sha256: String,
     /// Whether a valid existing candidate was reused.
     pub reused: bool,
+    /// Voice-conditioning identity used to group audition takes.
+    #[serde(default)]
+    pub design: String,
 }
 
 /// Renders every selected manifest line through one persistent backend.
@@ -118,7 +123,7 @@ pub fn render_plan(
                 ))
             })?;
             for version in 0..options.versions {
-                candidates.push(render_candidate(
+                let mut candidate = render_candidate(
                     backend,
                     options,
                     &dialogue.index.id,
@@ -126,7 +131,11 @@ pub fn render_plan(
                     embedding,
                     version,
                     &dialogue_root,
-                )?);
+                )?;
+                let bytes = serde_json::to_vec(embedding.values())
+                    .map_err(|source| Error::json("speaker embedding", source))?;
+                candidate.design = format!("{:x}", Sha256::digest(bytes));
+                candidates.push(candidate);
             }
         }
     }
@@ -156,18 +165,17 @@ fn render_candidate(
         .wrapping_add(u64::from(version));
     let filename = format!("{}-version{version:02}.wav", line.key);
     let output = dialogue_root.join(&filename);
-    if output.exists() {
-        if let Some(hash) = reusable_output(&output, seed)? {
+    let fingerprint = request_fingerprint(backend.identity(), options, line, embedding, seed)?;
+    if output.exists() && !options.force {
+        if let Some(hash) = reusable_output(&output, seed, &fingerprint)? {
             return Ok(candidate_report(
                 options, dialogue, line, version, seed, &output, hash, true,
             ));
         }
-        if !options.force {
-            return Err(Error::manifest(format!(
-                "{} exists without a matching reproducibility record; pass --force to replace it",
-                output.display()
-            )));
-        }
+        return Err(Error::manifest(format!(
+            "{} exists without a matching reproducibility record; pass --force to replace it",
+            output.display()
+        )));
     }
 
     let generated = backend.synthesize(SynthesisRequest {
@@ -180,11 +188,12 @@ fn render_candidate(
     })?;
     let temporary = output.with_extension("wav.partial");
     fs::write(&temporary, generated.wav).map_err(|source| Error::io(&temporary, source))?;
-    if output.exists() {
-        fs::remove_file(&output).map_err(|source| Error::io(&output, source))?;
-    }
     fs::rename(&temporary, &output).map_err(|source| Error::io(&output, source))?;
     let publication = write_generation_record(&output, seed)?;
+    write_json(
+        &request_record_path(&output),
+        &json!({"schema_version": 1, "fingerprint": fingerprint}),
+    )?;
     Ok(candidate_report(
         options,
         dialogue,
@@ -225,17 +234,31 @@ fn candidate_report(
         wav: relative,
         sha256,
         reused,
+        design: String::new(),
     }
 }
 
-fn reusable_output(path: &Path, seed: u64) -> Result<Option<String>> {
+fn reusable_output(path: &Path, seed: u64, fingerprint: &str) -> Result<Option<String>> {
+    let request_path = request_record_path(path);
+    let Ok(bytes) = fs::read(&request_path) else {
+        return Ok(None);
+    };
+    let Ok(request) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+        return Ok(None);
+    };
+    if request.get("schema_version") != Some(&json!(1))
+        || request.get("fingerprint").and_then(|value| value.as_str()) != Some(fingerprint)
+    {
+        return Ok(None);
+    }
     let record_path = generation_record_path(path);
     if !record_path.is_file() {
         return Ok(None);
     }
     let bytes = fs::read(&record_path).map_err(|source| Error::io(&record_path, source))?;
-    let record: GenerationRecord =
-        serde_json::from_slice(&bytes).map_err(|source| Error::json(&record_path, source))?;
+    let Ok(record) = serde_json::from_slice::<GenerationRecord>(&bytes) else {
+        return Ok(None);
+    };
     if record.seed != seed {
         return Ok(None);
     }
@@ -248,6 +271,31 @@ fn reusable_output(path: &Path, seed: u64) -> Result<Option<String>> {
         return Ok(None);
     }
     Ok(Some(actual))
+}
+
+fn request_record_path(path: &Path) -> PathBuf {
+    path.with_extension("request.json")
+}
+
+fn request_fingerprint(
+    backend: &str,
+    options: &RenderOptions,
+    line: &SpokenLine,
+    embedding: &SpeakerEmbedding,
+    seed: u64,
+) -> Result<String> {
+    let sampling = [options.sampling.outer(), options.sampling.code_predictor()].map(|value| {
+        json!({
+            "sample": value.do_sample(), "temperature": value.temperature(), "top_k": value.top_k(),
+            "top_p": value.top_p(), "repetition_penalty": value.repetition_penalty(),
+        })
+    });
+    let request = json!({"schema_version": 1, "backend": backend, "text": line.text,
+        "speaker": line.speaker, "embedding": embedding.values(), "seed": seed,
+        "language": options.language, "max_frames": options.max_frames, "sampling": sampling});
+    let bytes =
+        serde_json::to_vec(&request).map_err(|source| Error::json("synthesis request", source))?;
+    Ok(format!("{:x}", Sha256::digest(bytes)))
 }
 
 fn selected_dialogues<'a>(
@@ -343,12 +391,137 @@ fn write_json(path: &Path, value: &impl Serialize) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::backend::GeneratedAudio;
+    use dinoml_qwen3_tts::{SamplingConfig, write_speaker_embedding};
+
+    struct FakeBackend {
+        calls: usize,
+        identity: String,
+    }
+    impl VoiceBackend for FakeBackend {
+        fn identity(&self) -> &str {
+            &self.identity
+        }
+        fn synthesize(&mut self, request: SynthesisRequest<'_>) -> Result<GeneratedAudio> {
+            self.calls += 1;
+            Ok(GeneratedAudio {
+                wav: format!("fake PCM {} {}", request.text, self.calls).into_bytes(),
+            })
+        }
+    }
+
+    fn fixture() -> (tempfile::TempDir, VoicePlan, RenderOptions, FakeBackend) {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path();
+        let embedding = root.join("voice.json");
+        write_speaker_embedding(
+            &embedding,
+            &SpeakerEmbedding::try_from_values(vec![0.25, -0.5]).unwrap(),
+        )
+        .unwrap();
+        let mut entries = Vec::new();
+        for dialogue in ["q_01", "q_02"] {
+            let key = format!("{dialogue}_hello");
+            let file = format!("{dialogue}.json");
+            fs::write(root.join(&file), serde_json::to_vec(&json!({"spoken_lines": [{
+                "key": key, "string_id": fnv1a64(&key).to_string(), "speaker": "Iris", "addressee": "V",
+                "text": "Hello", "audio_path": format!("mod\\q\\localization\\en-us\\vo\\{key}.wem"), "duration_ms": 500,
+            }]})).unwrap()).unwrap();
+            entries.push(json!({"id": dialogue, "file": file, "delivery": "scene", "runtime_status": "test", "line_count": 1, "speakers": ["Iris"]}));
+        }
+        let index = root.join("voice-production.json");
+        fs::write(&index, serde_json::to_vec(&json!({"schema_version": 1, "quest": "q", "spoken_line_count": 2,
+            "manifests": entries, "voice_sources": {"Iris": {"mode": "speaker_embedding", "source": "voice.json"}}})).unwrap()).unwrap();
+        let plan = VoicePlan::load(root, &index).unwrap();
+        let sampling = SamplingConfig::new(true, 0.95, 50, 0.98, 1.0).unwrap();
+        let options = RenderOptions {
+            output_root: root.join("output"),
+            dialogues: BTreeSet::new(),
+            speakers: BTreeSet::new(),
+            speaker_embeddings: BTreeMap::new(),
+            versions: 1,
+            seed_base: 3000,
+            language: "English".to_owned(),
+            max_frames: 24,
+            sampling: GenerationSamplingConfig::new(sampling, sampling),
+            force: false,
+        };
+        (
+            directory,
+            plan,
+            options,
+            FakeBackend {
+                calls: 0,
+                identity: "fake-v1".to_owned(),
+            },
+        )
+    }
 
     #[test]
-    fn candidate_seed_is_stable_across_subsets() {
-        let key = "gq003_20_iris_intro_01";
-        let first = 3_000_u64.wrapping_add(fnv1a64(key));
-        let second = 3_000_u64.wrapping_add(fnv1a64(key));
-        assert_eq!(first, second);
+    fn full_and_subset_renders_keep_candidate_identity_and_reuse() {
+        let (_directory, plan, mut options, mut backend) = fixture();
+        let full = render_plan(&plan, &mut backend, &options).unwrap();
+        options.dialogues.insert("q_02".to_owned());
+        let subset = render_plan(&plan, &mut backend, &options).unwrap();
+        assert_eq!(backend.calls, 2);
+        assert!(subset.candidates[0].reused);
+        assert_eq!(subset.candidates[0].seed, full.candidates[1].seed);
+        assert_eq!(subset.candidates[0].sha256, full.candidates[1].sha256);
+    }
+
+    #[test]
+    fn changed_request_requires_force_and_force_always_rerenders() {
+        let (_directory, mut plan, mut options, mut backend) = fixture();
+        render_plan(&plan, &mut backend, &options).unwrap();
+        plan.dialogues[0].manifest.spoken_lines[0].text = "Changed".to_owned();
+        assert!(render_plan(&plan, &mut backend, &options).is_err());
+        options.force = true;
+        render_plan(&plan, &mut backend, &options).unwrap();
+        render_plan(&plan, &mut backend, &options).unwrap();
+        assert_eq!(backend.calls, 6);
+    }
+
+    #[test]
+    fn all_request_inputs_and_artifacts_invalidate_reuse() {
+        let (_directory, plan, options, mut backend) = fixture();
+        render_plan(&plan, &mut backend, &options).unwrap();
+        let mut changed = options.clone();
+        changed.language = "French".to_owned();
+        assert!(render_plan(&plan, &mut backend, &changed).is_err());
+        changed = options.clone();
+        changed.max_frames += 1;
+        assert!(render_plan(&plan, &mut backend, &changed).is_err());
+        let sampling = SamplingConfig::new(true, 0.5, 20, 0.7, 1.1).unwrap();
+        changed = options.clone();
+        changed.sampling = GenerationSamplingConfig::new(sampling, sampling);
+        assert!(render_plan(&plan, &mut backend, &changed).is_err());
+        backend.identity = "fake-v2".to_owned();
+        assert!(render_plan(&plan, &mut backend, &options).is_err());
+        backend.identity = "fake-v1".to_owned();
+        write_speaker_embedding(
+            plan.repo_root.join("voice.json"),
+            &SpeakerEmbedding::try_from_values(vec![0.2, -0.5]).unwrap(),
+        )
+        .unwrap();
+        assert!(render_plan(&plan, &mut backend, &options).is_err());
+        assert_eq!(backend.calls, 2);
+    }
+
+    #[test]
+    fn corrupt_audio_and_receipts_are_recoverable_with_force() {
+        let (_directory, plan, mut options, mut backend) = fixture();
+        let report = render_plan(&plan, &mut backend, &options).unwrap();
+        let output = options.output_root.join(&report.candidates[0].wav);
+        for path in [
+            &output,
+            &generation_record_path(&output),
+            &request_record_path(&output),
+        ] {
+            fs::write(path, b"corrupt").unwrap();
+            options.force = false;
+            assert!(render_plan(&plan, &mut backend, &options).is_err());
+            options.force = true;
+            render_plan(&plan, &mut backend, &options).unwrap();
+        }
     }
 }

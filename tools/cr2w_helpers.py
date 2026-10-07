@@ -48,6 +48,22 @@ def path_to_string(path: tuple[Any, ...]) -> str:
     return result
 
 
+def search_scalars(data: Any, terms: list[str], limit: int = 0) -> list[tuple[str, str]]:
+    """Search scalar paths and values with case-insensitive AND matching."""
+    normalized = [term.casefold() for term in terms if term]
+    matches: list[tuple[str, str]] = []
+    for path, value in walk(data):
+        if isinstance(value, (dict, list)):
+            continue
+        path_text, value_text = path_to_string(path), str(value)
+        haystack = f"{path_text} {value_text}".casefold()
+        if all(term in haystack for term in normalized):
+            matches.append((path_text, value_text))
+            if limit > 0 and len(matches) >= limit:
+                break
+    return matches
+
+
 def typed_value(value: Any, default: Any = None) -> Any:
     if isinstance(value, dict) and "$value" in value:
         return value["$value"]

@@ -1,5 +1,8 @@
 # Development Workflow
 
+Run tools from the repository root. `source`, `generated`, and `packed` refer
+to the owning project under `projects/`; see [project layout](../reference/project-layout.md).
+
 Ghostline has several authoring pipelines rather than one global regeneration
 command. Start from the owning quest README or authoring guide and run only the
 generators for the resources you changed.
@@ -8,7 +11,7 @@ generators for the resources you changed.
 
 | Change | Edit |
 | --- | --- |
-| Quest structure or story | `quests/story/ghostline/gq###` |
+| Quest structure or story | `projects/ghostline/quests/gq###` |
 | Character design | `characters` |
 | Braindance performance | `braindance` |
 | Existing packed CR2W resource | Matching JSON under `source/raw` |
@@ -22,16 +25,17 @@ Use the command in the owning quest README or authoring guide. Before opening a
 large CR2W-JSON document, use the focused explorers listed in the
 [tool catalog](../reference/tool-catalog.md).
 
-Generators should write authored CR2W-JSON to `source/raw` or isolated output
-to `converted`/`.tmp`. Do not promote isolated output into shipping source
-without review.
+Generators write authored CR2W-JSON to `source/raw`. Use `generated` for new
+isolated outputs; existing `converted` and `.tmp` workflows remain ignored
+staging. Review isolated output before promoting it into shipping source.
 
 ## 3. Test
 
 Run the focused tests named by the owning guide, then the repository gate:
 
 ```powershell
-py -B -m unittest discover -s tests -v
+uv sync --locked --extra dev
+uv run python -B tools/check_project.py
 ```
 
 See [automated testing](automated-testing.md) for narrower commands and test
@@ -46,7 +50,7 @@ layouts, or oracle comparison.
 Build the native tool and schema when needed:
 
 ```powershell
-git submodule update --init --recursive .\tools\ghostline-red
+git submodule update --init --recursive .\tools\ghostline-red .\WolvenKit
 cargo build --release --manifest-path .\tools\ghostline-red\Cargo.toml
 $red = '.\tools\ghostline-red\target\release\ghostline-red.exe'
 & $red schema-generate .\WolvenKit .\red-schema.json
@@ -60,9 +64,9 @@ does not validate graph topology, NodeRefs, handles, or localization.
 
 Follow [build, package, and install](build-and-package.md). In particular:
 
-- pack only `source/archive`;
-- verify the resulting archive by listing and extracting it;
-- stage `source/resources` separately;
+- build a named profile from selected `source/archive` payloads;
+- let the shared packager list, extract and hash-check the archive and ZIP;
+- stage the profile's matching `source/resources` files;
 - do not treat `packed` as authored source.
 
 ## 6. Record Runtime Evidence

@@ -2,6 +2,7 @@ import { CharacterViewer } from "/viewer.js";
 
 const state = {
   manifest: null,
+  editableAppearance: null,
   catalog: null,
   frameProfile: null,
   headPreviewUrl: null,
@@ -91,7 +92,7 @@ function renderAssets(data) {
           appearance.append(option);
         }
         const manifestCategory = preview.assignment?.manifest_category;
-        const selected = state.manifest.appearance.indexed_overrides?.[manifestCategory];
+        const selected = state.editableAppearance.indexed_overrides?.[manifestCategory];
         if (selected?.depot_path === asset.depot_path && available.includes(selected.mesh_appearance)) {
           appearance.value = selected.mesh_appearance;
         } else if (available.includes(preview.selectedAppearance)) {
@@ -111,7 +112,7 @@ function renderAssets(data) {
             destination.append(option);
           }
           const assignedCategory = destinations.find((categoryId) => (
-            state.manifest.appearance.indexed_overrides?.[categoryId]?.depot_path === asset.depot_path
+            state.editableAppearance.indexed_overrides?.[categoryId]?.depot_path === asset.depot_path
           ));
           if (assignedCategory) destination.value = assignedCategory;
           actions.append(destination);
@@ -188,8 +189,8 @@ async function assignAsset(depotPath, meshAppearance, manifestCategory, button) 
       curated.value = result.anchor_option;
       curated.dispatchEvent(new Event("change"));
     }
-    state.manifest.appearance.selections[category] = result.anchor_option;
-    state.manifest.appearance.indexed_overrides[category] = result.override;
+    state.editableAppearance.selections[category] = result.anchor_option;
+    state.editableAppearance.indexed_overrides[category] = result.override;
     state.fullPreviewUrl = null;
     renderSelectedOverrides();
     renderAssets({ summary: state.assetSummary, assets: state.assetResults });
@@ -203,7 +204,7 @@ async function assignAsset(depotPath, meshAppearance, manifestCategory, button) 
 
 function renderSelectedOverrides() {
   const container = byId("selected-overrides");
-  const overrides = state.manifest.appearance.indexed_overrides || {};
+  const overrides = state.editableAppearance.indexed_overrides || {};
   const entries = Object.entries(overrides);
   if (!entries.length) {
     container.replaceChildren(Object.assign(document.createElement("p"), {
@@ -224,7 +225,7 @@ function renderSelectedOverrides() {
     remove.type = "button";
     remove.textContent = "Remove";
     remove.addEventListener("click", () => {
-      delete state.manifest.appearance.indexed_overrides[categoryId];
+      delete state.editableAppearance.indexed_overrides[categoryId];
       state.fullPreviewUrl = null;
       renderSelectedOverrides();
       renderAssets({ summary: state.assetSummary, assets: state.assetResults });
@@ -236,16 +237,17 @@ function renderSelectedOverrides() {
 
 function collectManifest() {
   const manifest = structuredClone(state.manifest);
-  manifest.id = fieldValue("character-id");
   manifest.display_name = fieldValue("display-name");
-  manifest.namespace = fieldValue("namespace");
   manifest.tweak.record = fieldValue("tweak-record");
   manifest.tweak.voice_tag = fieldValue("voice-tag");
   manifest.tweak.affiliation = fieldValue("affiliation");
   manifest.localization.female_variant = manifest.display_name;
   manifest.head.shapes = currentShapes();
+  const editableAppearance = manifest.schema_version === 2
+    ? manifest.appearances[0]
+    : manifest.appearance;
   for (const category of Object.keys(state.catalog.categories)) {
-    manifest.appearance.selections[category] = byId(`catalog-${category}`).value;
+    editableAppearance.selections[category] = byId(`catalog-${category}`).value;
   }
   return manifest;
 }
@@ -265,12 +267,18 @@ function requireFrameProfile(data) {
 function render(data) {
   const frameProfile = requireFrameProfile(data);
   state.manifest = data.manifest;
+  state.editableAppearance = state.manifest.schema_version === 2
+    ? state.manifest.appearances?.[0]
+    : state.manifest.appearance;
+  if (!state.editableAppearance) {
+    throw new Error("Manifest has no editable appearance");
+  }
   state.catalog = data.catalog;
   state.frameProfile = frameProfile;
   state.assetIndex = data.asset_index;
   state.headPreviewUrl = data.preview_url;
   state.fullPreviewUrl = data.full_preview_url;
-  state.manifest.appearance.indexed_overrides ||= {};
+  state.editableAppearance.indexed_overrides ||= {};
   byId("character-id").value = state.manifest.id;
   byId("display-name").value = state.manifest.display_name;
   byId("character-frame").value = state.manifest.frame;
@@ -316,19 +324,19 @@ function render(data) {
       select.append(node);
     }
     const optionIds = Object.keys(category.options);
-    const selectedOption = state.manifest.appearance.selections[categoryId];
+    const selectedOption = state.editableAppearance.selections[categoryId];
     select.value = category.options[selectedOption] ? selectedOption : optionIds[0];
     if (!category.options[selectedOption] && select.value) {
-      state.manifest.appearance.selections[categoryId] = select.value;
+      state.editableAppearance.selections[categoryId] = select.value;
     }
     const updateDescription = () => {
       description.textContent = category.options[select.value]?.description || "";
     };
     select.addEventListener("change", () => {
-      state.manifest.appearance.selections[categoryId] = select.value;
+      state.editableAppearance.selections[categoryId] = select.value;
       state.fullPreviewUrl = null;
-      if (state.manifest.appearance.indexed_overrides[categoryId]) {
-        delete state.manifest.appearance.indexed_overrides[categoryId];
+      if (state.editableAppearance.indexed_overrides[categoryId]) {
+        delete state.editableAppearance.indexed_overrides[categoryId];
         renderSelectedOverrides();
         renderAssets({ summary: state.assetSummary, assets: state.assetResults });
       }

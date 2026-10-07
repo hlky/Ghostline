@@ -1,21 +1,29 @@
 //! Ghostline voice authoring command-line interface.
 
+#[cfg(feature = "render-local")]
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-use clap::{Args, Parser, Subcommand, ValueEnum};
+#[cfg(feature = "render-local")]
+use clap::ValueEnum;
+use clap::{Args, Parser, Subcommand};
+#[cfg(feature = "render-local")]
 use dinoml_qwen3_tts::{GenerationSamplingConfig, SamplingConfig};
+#[cfg(feature = "render-local")]
 use dinoml_runtime::Device;
 use ghostline_voice::cr2w::{LocalizationTemplates, serialize_all};
+#[cfg(feature = "render-local")]
 use ghostline_voice::embedding::convert_embedding;
+#[cfg(feature = "render-local")]
 use ghostline_voice::local::{LocalDinoMlBackend, LocalDinoMlConfig};
 use ghostline_voice::localization::generate_all;
 use ghostline_voice::manifest::VoicePlan;
+#[cfg(feature = "render-local")]
 use ghostline_voice::render::{RenderOptions, render_plan};
 use ghostline_voice::{Error, Result};
 use serde_json::json;
 
-const DEFAULT_INDEX: &str = "quests/story/ghostline/gq003/script/voice-production.json";
+const DEFAULT_INDEX: &str = "projects/ghostline/quests/gq003/script/voice-production.json";
 
 #[derive(Debug, Parser)]
 #[command(about = "Ghostline voice and localization authoring pipeline")]
@@ -29,6 +37,7 @@ enum Command {
     /// Validate the production index and every dialogue manifest.
     Validate(PlanArgs),
     /// Convert a canonical or `DinoML` speaker embedding to `DinoML` JSON.
+    #[cfg(feature = "render-local")]
     ConvertEmbedding {
         /// Source `.safetensors` or `DinoML` `.json` embedding.
         input: PathBuf,
@@ -37,9 +46,12 @@ enum Command {
     },
     /// Regenerate subtitle, subtitle-map, and VO-map CR2W-JSON.
     Localize(PlanArgs),
+    /// Generate localization for one manifest, including historical audio names.
+    LocalizeManifest(LocalizeManifestArgs),
     /// Serialize and round-trip verify every localization CR2W resource.
     Serialize(SerializeArgs),
     /// Render deterministic audition candidates through a persistent local model.
+    #[cfg(feature = "render-local")]
     RenderLocal(RenderLocalArgs),
 }
 
@@ -54,6 +66,18 @@ struct PlanArgs {
 }
 
 #[derive(Debug, Args)]
+struct LocalizeManifestArgs {
+    #[arg(long, default_value = ".")]
+    repo_root: PathBuf,
+    #[arg(long)]
+    manifest: PathBuf,
+    #[arg(long)]
+    quest: String,
+    #[arg(long)]
+    dialogue: String,
+}
+
+#[derive(Debug, Args)]
 struct SerializeArgs {
     #[command(flatten)]
     plan: PlanArgs,
@@ -63,23 +87,24 @@ struct SerializeArgs {
     /// Compatible subtitle-entry CR2W template.
     #[arg(
         long,
-        default_value = "source/archive/mod/gq003/localization/en-us/subtitles/gq003_17.json"
+        default_value = "projects/ghostline/source/archive/mod/gq003/localization/en-us/subtitles/gq003_17.json"
     )]
     subtitles_template: PathBuf,
     /// Compatible subtitle-map CR2W template.
     #[arg(
         long,
-        default_value = "source/archive/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json"
+        default_value = "projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json"
     )]
     subtitle_map_template: PathBuf,
     /// Compatible VO-map CR2W template.
     #[arg(
         long,
-        default_value = "source/archive/mod/gq003/localization/en-us/vo/gq003_17.json"
+        default_value = "projects/ghostline/source/archive/mod/gq003/localization/en-us/vo/gq003_17.json"
     )]
     voiceover_map_template: PathBuf,
 }
 
+#[cfg(feature = "render-local")]
 #[derive(Debug, Args)]
 struct RenderLocalArgs {
     #[command(flatten)]
@@ -147,11 +172,12 @@ struct RenderLocalArgs {
     /// Enable artifact graph replay.
     #[arg(long)]
     graph_replay: bool,
-    /// Replace stale existing candidates.
+    /// Rerender selected candidates, including valid existing outputs.
     #[arg(long)]
     force: bool,
 }
 
+#[cfg(feature = "render-local")]
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum ExecutionDevice {
     Cpu,
@@ -159,6 +185,7 @@ enum ExecutionDevice {
     Cuda,
 }
 
+#[cfg(feature = "render-local")]
 impl ExecutionDevice {
     const fn resolve(self, index: u32) -> Device {
         match self {
@@ -180,6 +207,7 @@ fn main() -> Result<()> {
                 "spoken_lines": plan.production.spoken_line_count,
             }))?;
         }
+        #[cfg(feature = "render-local")]
         Command::ConvertEmbedding { input, output } => {
             convert_embedding(&input, &output)?;
             print_json(&json!({"input": input, "output": output}))?;
@@ -192,6 +220,17 @@ fn main() -> Result<()> {
                 "dialogues": outputs.len(),
                 "resources": outputs.len() * 3,
             }))?;
+        }
+        Command::LocalizeManifest(args) => {
+            let paths = ghostline_voice::localization::generate_manifest(
+                &args.repo_root,
+                &args.manifest,
+                &args.quest,
+                &args.dialogue,
+            )?;
+            print_json(
+                &json!({"subtitles": paths.subtitle_raw, "voiceover_map": paths.voiceover_raw, "subtitle_map": paths.subtitle_map_raw}),
+            )?;
         }
         Command::Serialize(args) => {
             let plan = load_plan(&args.plan)?;
@@ -207,11 +246,13 @@ fn main() -> Result<()> {
                 "resources": outputs,
             }))?;
         }
+        #[cfg(feature = "render-local")]
         Command::RenderLocal(args) => render_local(&args)?,
     }
     Ok(())
 }
 
+#[cfg(feature = "render-local")]
 fn render_local(args: &RenderLocalArgs) -> Result<()> {
     let plan = load_plan(&args.plan)?;
     let outer = SamplingConfig::new(
@@ -278,6 +319,7 @@ fn resolve(root: &Path, path: &Path) -> PathBuf {
     }
 }
 
+#[cfg(feature = "render-local")]
 fn parse_embedding_override(value: &str) -> std::result::Result<(String, PathBuf), String> {
     let (speaker, path) = value
         .split_once('=')

@@ -36,9 +36,9 @@ UI_SPEC.loader.exec_module(character_ui)
 
 
 class CharacterBuilderTests(unittest.TestCase):
-    manifest_path = ROOT / "characters/patch.character.json"
-    female_manifest_path = ROOT / "characters/female-example.character.json"
-    goth_baddie_manifest_path = ROOT / "characters/goth_baddie.character.json"
+    manifest_path = ROOT / "projects/shared/ghostline-runtime/characters/patch.character.json"
+    female_manifest_path = ROOT / "projects/shared/ghostline-runtime/characters/female-example.character.json"
+    goth_baddie_manifest_path = ROOT / "projects/test-quests/gqt006/characters/goth_baddie.character.json"
 
     def setUp(self) -> None:
         self.manifest = character_builder.load_manifest(self.manifest_path)
@@ -68,7 +68,7 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertEqual(report.details["template_assets"], 44)
 
     def test_external_npv_paths_are_machine_local_aliases(self) -> None:
-        for manifest_path in ROOT.glob("characters/*.character.json"):
+        for manifest_path in ROOT.glob("projects/shared/ghostline-runtime/characters/*.character.json"):
             encoded = manifest_path.read_text(encoding="utf-8")
             self.assertNotIn("H:/projects/", encoded, manifest_path)
             manifest = character_builder.load_manifest(manifest_path)
@@ -92,7 +92,7 @@ class CharacterBuilderTests(unittest.TestCase):
         self,
     ) -> None:
         donor = character_builder.read_json(
-            ROOT / "characters/components/donors/npv-female.app.json"
+            ROOT / "quests/templates/characters/components/donors/npv-female.app.json"
         )
         appearances = character_builder.appearance_data(donor)
         self.assertEqual(
@@ -105,7 +105,7 @@ class CharacterBuilderTests(unittest.TestCase):
 
         fragment = character_builder.read_json(
             ROOT
-            / "characters/components/npv-female-naked-only.components.json"
+            / "quests/templates/characters/components/npv-female-naked-only.components.json"
         )
         self.assertEqual(
             ["t0_pubic_hair"],
@@ -192,18 +192,21 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertIn("    - Cyberpsycho", tweak)
         for expected in (
             "Ability.HasDodge",
+            "Ability.HasMemoryWipeImmunity",
+            "Character.AllowTechWeaponDodgeEffector",
+        ):
+            self.assertIn(expected, tweak)
+        for removed in (
             "Ability.CanParry",
             "Ability.HasKerenzikov",
             "Ability.IsTier3Archetype",
-            "Ability.HasMemoryWipeImmunity",
-            "Character.AllowTechWeaponDodgeEffector",
             "Character.MaxTac_Mantis_ModGroup",
             "Character.Maxtac_miniboss_ModGroup",
         ):
-            self.assertIn(expected, tweak)
+            self.assertNotIn(removed, tweak)
         self.assertNotIn("Character.AllowAnyDirectionDodgeEffector", tweak)
         self.assertIn("value: 60", tweak)
-        self.assertIn("value: 10.0", tweak)
+        self.assertIn("value: 3.0", tweak)
         self.assertIn("item: Items.Preset_Katana_E3", tweak)
         self.assertIn(
             "equipCondition:\n"
@@ -211,6 +214,22 @@ class CharacterBuilderTests(unittest.TestCase):
             tweak,
         )
         self.assertNotIn("inline", tweak)
+
+    def test_multi_appearance_character_has_globally_unique_handles(self) -> None:
+        _, app, _, _, _ = character_builder.generate_documents(
+            self.goth_baddie_manifest,
+            self.goth_baddie_catalog,
+        )
+
+        ids = character_builder.handle_ids(app)
+        buffer_ids = [
+            item["BufferId"]
+            for item in character_builder.walk_values(app)
+            if isinstance(item, dict) and "BufferId" in item
+        ]
+
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertEqual(buffer_ids, [str(index) for index in range(len(buffer_ids))])
 
     def test_combat_profile_rejects_level_above_declared_game_cap(self) -> None:
         manifest = copy.deepcopy(self.goth_baddie_manifest)
@@ -260,7 +279,7 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertTrue(any("Unsupported character frame" in error for error in report.errors))
 
         mismatched = copy.deepcopy(self.female_manifest)
-        mismatched["catalog"] = "characters/catalog.json"
+        mismatched["catalog"] = "quests/templates/characters/catalog.json"
         report = character_builder.validate_manifest(mismatched, self.catalog)
         self.assertTrue(any("does not support character frame" in error for error in report.errors))
 
@@ -294,7 +313,7 @@ class CharacterBuilderTests(unittest.TestCase):
             )
 
     def test_goth_baddie_long_bangs_apply_the_native_ep1_hair_bundle(self) -> None:
-        manifest_path = ROOT / "characters/goth_baddie.character.json"
+        manifest_path = ROOT / "projects/test-quests/gqt006/characters/goth_baddie.character.json"
         manifest = character_builder.load_manifest(manifest_path)
         catalog = character_builder.load_catalog(manifest)
         _, app, _, _, warnings = character_builder.generate_documents(manifest, catalog)
@@ -314,6 +333,7 @@ class CharacterBuilderTests(unittest.TestCase):
             r"\hh_225_wa__long_bangs_dangle_skeleton.rig"
         )
         self.assertEqual(len(mappings), 2)
+
         for mapping in mappings:
             hair = mapping["hh_hair"]
             dangle = mapping["Animated1507"]
@@ -326,8 +346,16 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertTrue(manifest["requirements"]["phantom_liberty"])
         self.assertTrue(any("changes resources" in item for item in warnings))
 
+    def test_goth_baddie_custom_paths_template_dependencies(self) -> None:
+        spec = self.goth_baddie_manifest["template_assets"]
+        self.assertTrue(spec["custom_path_dependencies"])
+        self.assertNotEqual(
+            spec["source_depot_root"].casefold(),
+            self.goth_baddie_manifest["namespace"].casefold(),
+        )
+
     def test_goth_baddie_gothic_outfit_updates_both_component_copies(self) -> None:
-        manifest_path = ROOT / "characters/goth_baddie.character.json"
+        manifest_path = ROOT / "projects/test-quests/gqt006/characters/goth_baddie.character.json"
         manifest = character_builder.load_manifest(manifest_path)
         catalog = character_builder.load_catalog(manifest)
         _, app, _, _, _ = character_builder.generate_documents(manifest, catalog)
@@ -376,7 +404,7 @@ class CharacterBuilderTests(unittest.TestCase):
             )
 
     def test_full_character_preview_selects_silhouette_layers(self) -> None:
-        manifest_path = ROOT / "characters/goth_baddie.character.json"
+        manifest_path = ROOT / "projects/test-quests/gqt006/characters/goth_baddie.character.json"
         manifest = character_builder.load_manifest(manifest_path)
         catalog = character_builder.load_catalog(manifest)
         _, app, _, _, _ = character_builder.generate_documents(manifest, catalog)
@@ -1043,7 +1071,7 @@ class CharacterBuilderTests(unittest.TestCase):
     def test_ui_female_profile_keeps_server_owned_frame_and_templates(self) -> None:
         posted = copy.deepcopy(self.female_manifest)
         posted["frame"] = "male_average"
-        posted["catalog"] = "characters/catalog.json"
+        posted["catalog"] = "quests/templates/characters/catalog.json"
         posted["templates"] = self.manifest["templates"]
         with mock.patch.object(
             character_ui, "DEFAULT_MANIFEST", self.female_manifest_path
@@ -1053,6 +1081,22 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertEqual(merged["frame"], "female_average")
         self.assertEqual(merged["catalog"], self.female_manifest["catalog"])
         self.assertEqual(merged["templates"], self.female_manifest["templates"])
+
+    def test_ui_schema_v2_edits_primary_appearance_and_preserves_variants(self) -> None:
+        posted = copy.deepcopy(self.goth_baddie_manifest)
+        posted["appearances"][0]["selections"]["hair"] = "tutorial_judy_variant"
+        posted["appearances"][1]["selections"]["hair"] = "none"
+        with mock.patch.object(
+            character_ui, "DEFAULT_MANIFEST", self.goth_baddie_manifest_path
+        ):
+            merged = character_ui.editable_manifest(posted)
+
+        self.assertEqual(
+            merged["appearances"][0]["selections"]["hair"], "tutorial_judy_variant"
+        )
+        self.assertEqual(
+            merged["appearances"][1], self.goth_baddie_manifest["appearances"][1]
+        )
 
     def test_ui_female_catalog_supports_both_indexed_torso_layers(self) -> None:
         asset = character_ui.character_asset_index.classify_asset(

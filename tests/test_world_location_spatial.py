@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from dataclasses import dataclass
@@ -260,6 +261,49 @@ class WorldLocationSpatialTests(unittest.TestCase):
                 build_sector_spatial_index(root / "missing")
             with self.assertRaises(SpatialIndexError):
                 Bounds3D(2, 0, 0, 1, 1, 1)
+
+    def test_cache_invalidates_same_size_change_below_maximum_mtime(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            root = workspace / "serialized"
+            older = root / "older.streamingsector.json"
+            newest = root / "newest.streamingsector.json"
+            cache = workspace / "cache.json"
+            write_sector(older, sector_document([position(1, 2, 3)]))
+            write_sector(newest, sector_document([position(4, 5, 6)]))
+            os.utime(older, ns=(1_000_000_000, 1_000_000_000))
+            os.utime(newest, ns=(9_000_000_000, 9_000_000_000))
+            before = build_sector_spatial_index(root, cache_path=cache)
+            write_sector(older, sector_document([position(7, 2, 3)]))
+            os.utime(older, ns=(2_000_000_000, 2_000_000_000))
+            after = build_sector_spatial_index(root, cache_path=cache)
+            self.assertEqual(before.snapshot.total_size, after.snapshot.total_size)
+            self.assertEqual(before.snapshot.max_mtime_ns, after.snapshot.max_mtime_ns)
+            self.assertFalse(after.cache_hit)
+            self.assertNotEqual(
+                before.snapshot.file_metadata_sha256,
+                after.snapshot.file_metadata_sha256,
+            )
+            record = next(
+                item for item in after.records if item.source_json == older.resolve()
+            )
+            self.assertEqual(record.placement_positions, ((7.0, 2.0, 3.0),))
+
+    def test_cache_invalidates_rename_with_unchanged_file_metadata_totals(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            root = workspace / "serialized"
+            old_path = root / "before.streamingsector.json"
+            new_path = root / "after.streamingsector.json"
+            cache = workspace / "cache.json"
+            write_sector(old_path, sector_document([position(1, 2, 3)]))
+            before = build_sector_spatial_index(root, cache_path=cache)
+            old_path.rename(new_path)
+            after = build_sector_spatial_index(root, cache_path=cache)
+            self.assertEqual(before.snapshot.total_size, after.snapshot.total_size)
+            self.assertEqual(before.snapshot.max_mtime_ns, after.snapshot.max_mtime_ns)
+            self.assertFalse(after.cache_hit)
+            self.assertEqual(after.records[0].source_json, new_path.resolve())
 
 
 if __name__ == "__main__":

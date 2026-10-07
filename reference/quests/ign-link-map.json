@@ -1,5 +1,19 @@
 {
   "source_quest_json": "H:\\projects\\quest.json",
+  "inputs": {
+    "journal": {
+      "path": "H:\\projects\\quest.json",
+      "sha256": "b39930c6cdee37f985fd489a511f34dfe0865a00b69ff37a441da307dc41fb28"
+    },
+    "index_snapshot": {
+      "path": "reference\\quests\\ign-index-snapshot.json",
+      "sha256": "500ad8a203aa23f4626c742b6079c37f0cc42431cbdce829165fd378d225466f"
+    },
+    "generator": {
+      "path": "H:\\projects\\Ghostline\\tools\\build_quest_reference.py",
+      "sha256": "45aecd821678d1556248343ff612ab8bb48f14b68988292ed4223b005879c20a"
+    }
+  },
   "indexes": {
     "main-jobs": {
       "title": "Main Jobs",
@@ -1077,30 +1091,6 @@
       ],
       "unmatched_index_links": [
         {
-          "title": "Walkthrough",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Walkthrough"
-        },
-        {
-          "title": "life path",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Life_Path_Guide_and_Differences"
-        },
-        {
-          "title": "Cyberpunk 2.0 update",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Cyberpunk_2077_2.0_Updates_and_Changes"
-        },
-        {
-          "title": "Unlocking All 5 Endings in Cyberpunk 2077",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Unlock_All_5_Endings_in_Cyberpunk_2077"
-        },
-        {
-          "title": "Prologue",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Prologue"
-        },
-        {
-          "title": "The Gig (Side Gig)",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/The_Gig_(Side_Gig)"
-        },
-        {
           "title": "Act 1",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Act_1"
         },
@@ -1117,48 +1107,72 @@
           "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Ending_Rewards_For_Completing_Cyberpunk_2077"
         },
         {
-          "title": "How Many Endings Are There In Cyberpunk 2077",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_Many_Endings_Are_There_In_Cyberpunk_2077"
-        },
-        {
-          "title": "How to Start Phantom Liberty",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Start_Phantom_Liberty"
-        },
-        {
-          "title": "How to Get to Dogtown",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Get_to_Dogtown"
-        },
-        {
-          "title": "Phantom Liberty expansion",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Cyberpunk_2077_Phantom_Liberty"
-        },
-        {
-          "title": "Phantom Liberty Endings Explained - How to Get All Endings",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Phantom_Liberty_Endings_Explained_-_How_to_Get_All_Endings"
-        },
-        {
-          "title": "How Phantom Liberty Changes the Base Game Ending",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_Phantom_Liberty_Changes_the_Base_Game_Ending"
+          "title": "All Permanent Buffs and Locations",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Permanent_Buffs_and_Locations"
         },
         {
           "title": "All Romance Options and Sexual Encounters Guide",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Romance_Options_and_Sexual_Encounters_Guide"
         },
         {
-          "title": "How to Make Money",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Make_Money"
+          "title": "Cyberpunk 2.0 update",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Cyberpunk_2077_2.0_Updates_and_Changes"
         },
         {
           "title": "Cyberpunk Hacking Explained and Breach Protocol Tips",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Cyberpunk_Hacking_Explained_and_Breach_Protocol_Tips"
         },
         {
-          "title": "All Permanent Buffs and Locations",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Permanent_Buffs_and_Locations"
-        },
-        {
           "title": "Easter Eggs and References",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Easter_Eggs_and_References"
+        },
+        {
+          "title": "How Many Endings Are There In Cyberpunk 2077",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_Many_Endings_Are_There_In_Cyberpunk_2077"
+        },
+        {
+          "title": "How Phantom Liberty Changes the Base Game Ending",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_Phantom_Liberty_Changes_the_Base_Game_Ending"
+        },
+        {
+          "title": "How to Get to Dogtown",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Get_to_Dogtown"
+        },
+        {
+          "title": "How to Make Money",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Make_Money"
+        },
+        {
+          "title": "How to Start Phantom Liberty",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Start_Phantom_Liberty"
+        },
+        {
+          "title": "Phantom Liberty Endings Explained - How to Get All Endings",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Phantom_Liberty_Endings_Explained_-_How_to_Get_All_Endings"
+        },
+        {
+          "title": "Phantom Liberty expansion",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Cyberpunk_2077_Phantom_Liberty"
+        },
+        {
+          "title": "Prologue",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Prologue"
+        },
+        {
+          "title": "The Gig (Side Gig)",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/The_Gig_(Side_Gig)"
+        },
+        {
+          "title": "Unlocking All 5 Endings in Cyberpunk 2077",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/How_to_Unlock_All_5_Endings_in_Cyberpunk_2077"
+        },
+        {
+          "title": "Walkthrough",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Walkthrough"
+        },
+        {
+          "title": "life path",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Life_Path_Guide_and_Differences"
         },
         {
           "title": "our About IGN's Cyberpunk 2077 Guide Writers page",
@@ -2447,40 +2461,40 @@
       ],
       "unmatched_index_links": [
         {
-          "title": "Walkthrough",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Walkthrough"
+          "title": "Badlands Side Jobs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Badlands_Side_Jobs"
         },
         {
           "title": "Cyberpunk 2.0",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Cyberpunk_2077_2.0_Updates_and_Changes"
         },
         {
-          "title": "Watson Side Jobs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Watson_Side_Jobs"
-        },
-        {
           "title": "Heywood Side Jobs",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Heywood_Side_Jobs"
         },
         {
-          "title": "Westbrook Side Jobs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Westbrook_Side_Jobs"
-        },
-        {
-          "title": "Santo Domingo Side Jobs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Santo_Domingo_Side_Jobs"
+          "title": "Main Job and Major Consequence",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Walkthrough_-_Main_Jobs"
         },
         {
           "title": "Pacifica Side Jobs",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Pacifica_Side_Jobs"
         },
         {
-          "title": "Badlands Side Jobs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Badlands_Side_Jobs"
+          "title": "Santo Domingo Side Jobs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Santo_Domingo_Side_Jobs"
         },
         {
-          "title": "Main Job and Major Consequence",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Walkthrough_-_Main_Jobs"
+          "title": "Walkthrough",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Walkthrough"
+        },
+        {
+          "title": "Watson Side Jobs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Watson_Side_Jobs"
+        },
+        {
+          "title": "Westbrook Side Jobs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Westbrook_Side_Jobs"
         }
       ]
     },
@@ -3804,8 +3818,28 @@
       ],
       "unmatched_index_links": [
         {
+          "title": "Badlands Gigs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Badlands_Gigs"
+        },
+        {
+          "title": "City Center Gigs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/City_Center_Gigs"
+        },
+        {
           "title": "Cyberpunk 2.0",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/All_Cyberpunk_2077_2.0_Updates_and_Changes"
+        },
+        {
+          "title": "Heywood Gigs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Heywood_Gigs"
+        },
+        {
+          "title": "Pacifica Gigs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Pacifica_Gigs"
+        },
+        {
+          "title": "Santo Domingo Gigs",
+          "url": "https://www.ign.com/wikis/cyberpunk-2077/Santo_Domingo_Gigs"
         },
         {
           "title": "Side Jobs",
@@ -3820,28 +3854,8 @@
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Watson_Gigs"
         },
         {
-          "title": "City Center Gigs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/City_Center_Gigs"
-        },
-        {
           "title": "Westbrook Gigs",
           "url": "https://www.ign.com/wikis/cyberpunk-2077/Westbrook_Gigs"
-        },
-        {
-          "title": "Heywood Gigs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Heywood_Gigs"
-        },
-        {
-          "title": "Santo Domingo Gigs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Santo_Domingo_Gigs"
-        },
-        {
-          "title": "Pacifica Gigs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Pacifica_Gigs"
-        },
-        {
-          "title": "Badlands Gigs",
-          "url": "https://www.ign.com/wikis/cyberpunk-2077/Badlands_Gigs"
         }
       ]
     }

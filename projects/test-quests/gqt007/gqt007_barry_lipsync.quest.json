@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "id": "gqt007_barry_lipsync",
+  "title": "Barry Lipsync A/B",
+  "description": "Runtime A/B fixture for comparing vanilla and modified lipsync curves on Barry.",
+  "phase_prefabs": [
+    "@locations.pr_barry_lipsync.ref"
+  ],
+  "debug_fact": "@facts.debug_step",
+  "stages": [
+    {
+      "id": "compare_barry_lipsync",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gqt007\\phases\\gqt007_compare_barry_lipsync.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.com_barry.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.sm_barry.ref",
+        "#gq000_01_tr_setup": "@locations.tr_setup.ref",
+        "#gq000_pr_patch_meet": "@locations.pr_barry_lipsync.ref",
+        "gq000_job_accepted": "@facts.comparison_finished",
+        "gq000_patch_meet": "gqt007_barry_lipsync",
+        "job_accept": "end",
+        "patch": "barry",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gqt007\\scenes\\gqt007_barry_lipsync.scene",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.compare_lipsync.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.compare_lipsync.mappins.barry.path"
+      },
+      "contact": "barry",
+      "scene": "mod\\gqt007\\scenes\\gqt007_barry_lipsync.scene",
+      "community": "@locations.com_barry.ref",
+      "appearance": "default",
+      "objective": "@objectives.compare_lipsync.path",
+      "description_entry": "@objectives.compare_lipsync.description_entry",
+      "mappin": "@objectives.compare_lipsync.mappins.barry.path"
+    }
+  ],
+  "composition": {
+    "namespace": "gqt007",
+    "journal_template": "gqt001_shapes",
+    "quest": {
+      "title": "Barry Lipsync A/B",
+      "localization_key": "gl_gqt007_title"
+    },
+    "objectives": {
+      "compare_lipsync": {
+        "id": "gqt007_01_obj_compare_lipsync",
+        "phase_id": "gqt007_01",
+        "text": "Compare Barry's vanilla and modified lipsync.",
+        "localization_key": "gl_gqt007_objective",
+        "description_id": "gqt007_01_desc_compare_lipsync",
+        "description": "Choose either playback repeatedly while watching Barry's mouth.",
+        "description_key": "gl_gqt007_description",
+        "counter": 0,
+        "mappins": {
+          "barry": {
+            "id": "gqt007_01_qmp_barry",
+            "ref": "@locations.sm_barry.ref",
+            "text": "Barry lipsync test",
+            "localization_key": "gl_gqt007_mappin",
+            "debug_caption": "gl_gqt007_mappin"
+          }
+        }
+      }
+    },
+    "points_of_interest": {
+      "barry": {
+        "id": "gqt007_01_poi_barry",
+        "ref": "@locations.sm_barry.ref"
+      }
+    },
+    "locations": {
+      "pr_barry_lipsync": "#gqt007_pr_barry_lipsync",
+      "com_barry": "#gqt007_com_barry",
+      "sm_barry": "#gqt007_sm_barry",
+      "tr_setup": "#gqt007_tr_setup"
+    },
+    "facts": {
+      "debug_step": "gqt007_debug_step",
+      "comparison_finished": "gqt007_comparison_finished"
+    }
+  }
+}

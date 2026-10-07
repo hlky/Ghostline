@@ -26,7 +26,7 @@ import character_full_preview
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_ROOT = Path(__file__).with_name("character_ui")
-DEFAULT_MANIFEST = ROOT / "characters/patch.character.json"
+DEFAULT_MANIFEST = ROOT / "projects/shared/ghostline-runtime/characters/patch.character.json"
 PREVIEW_ROOT = ROOT / "converted/characters"
 ASSET_INDEX_PATH = ROOT / "converted/character-index/assets.json"
 BUILD_LOCK = threading.Lock()
@@ -81,7 +81,8 @@ def catalog_assignment_support(
 def editable_manifest(value: dict[str, Any]) -> dict[str, Any]:
     """Copy UI-editable values onto server-owned templates and build paths."""
     trusted = clean_manifest(character_builder.load_manifest(DEFAULT_MANIFEST))
-    for key in ("id", "display_name", "namespace"):
+    # This editor changes one server-selected character, not its resource identity.
+    for key in ("display_name",):
         if key in value:
             trusted[key] = value[key]
     for section, keys in (
@@ -98,10 +99,11 @@ def editable_manifest(value: dict[str, Any]) -> dict[str, Any]:
         trusted["head"]["shapes"] = {
             name: head["shapes"].get(name) for name in character_builder.SHAPE_NAMES
         }
-    appearance = value.get("appearance")
+    appearance = ui_appearance(value)
+    trusted_appearance = ui_appearance(trusted)
     if isinstance(appearance, dict) and isinstance(appearance.get("selections"), dict):
-        trusted["appearance"]["selections"] = dict(appearance["selections"])
-    trusted["appearance"]["indexed_overrides"] = {}
+        trusted_appearance["selections"] = dict(appearance["selections"])
+    trusted_appearance["indexed_overrides"] = {}
     if isinstance(appearance, dict) and isinstance(appearance.get("indexed_overrides"), dict):
         catalog = character_builder.load_catalog(trusted)
         categories = catalog.get("categories", {})
@@ -114,15 +116,29 @@ def editable_manifest(value: dict[str, Any]) -> dict[str, Any]:
             depot_path = override.get("depot_path")
             mesh_appearance = override.get("mesh_appearance")
             if isinstance(depot_path, str) and isinstance(mesh_appearance, str):
-                trusted["appearance"]["indexed_overrides"][category_id] = {
+                trusted_appearance["indexed_overrides"][category_id] = {
                     "depot_path": depot_path,
                     "mesh_appearance": mesh_appearance,
                 }
     return trusted
 
 
+def ui_appearance(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Return the primary appearance edited by the single-outfit UI."""
+    if manifest.get("schema_version") == 2:
+        appearances = manifest.get("appearances")
+        if isinstance(appearances, list) and appearances and isinstance(appearances[0], dict):
+            return appearances[0]
+        raise character_builder.CharacterBuildError("Manifest has no editable appearance")
+    appearance = manifest.get("appearance")
+    if isinstance(appearance, dict):
+        return appearance
+    raise character_builder.CharacterBuildError("Manifest has no editable appearance")
+
+
 def validate_installed_overrides(manifest: dict[str, Any], character_id: str) -> None:
-    overrides = manifest.get("appearance", {}).get("indexed_overrides", {})
+    appearance = ui_appearance(manifest)
+    overrides = appearance.get("indexed_overrides", {})
     if not overrides:
         return
     if not ASSET_INDEX_PATH.is_file():
@@ -160,7 +176,7 @@ def validate_installed_overrides(manifest: dict[str, Any], character_id: str) ->
                 f"Indexed mesh {depot_path} belongs to {assignment['manifest_category']!r}, not {category_id!r}"
             )
         canonical[category_id] = assignment["override"]
-    manifest["appearance"]["indexed_overrides"] = canonical
+    appearance["indexed_overrides"] = canonical
 
 
 def is_loopback_host(host: str) -> bool:
@@ -234,6 +250,7 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
             raise character_builder.CharacterBuildError("Expected a JSON object")
         return value
 
+    @character_builder.build_scoped
     def do_GET(self) -> None:
         route = urlsplit(self.path).path
         if route == "/api/bootstrap":
@@ -328,6 +345,7 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
             self.path = "/index.html"
         super().do_GET()
 
+    @character_builder.build_scoped
     def do_POST(self) -> None:
         try:
             request = self.read_json()

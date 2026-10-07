@@ -21,7 +21,7 @@ class TestQuestManifestTests(unittest.TestCase):
     def test_signal_delay_has_the_expected_linear_contract(self) -> None:
         path = (
             ROOT
-            / "quests/tests/gqt001_signal_delay.quest.json"
+            / "projects/test-quests/gqt001/gqt001_signal_delay.quest.json"
         )
         spec, diagnostics = quest_compiler.load_spec(path)
         self.assertIsNotNone(spec)
@@ -51,7 +51,7 @@ class TestQuestManifestTests(unittest.TestCase):
     def test_signal_delay_is_ready_for_runtime_validation(self) -> None:
         path = (
             ROOT
-            / "quests/tests/gqt001_signal_delay.quest.json"
+            / "projects/test-quests/gqt001/gqt001_signal_delay.quest.json"
         )
         spec, _ = quest_compiler.load_spec(path)
         assert spec is not None
@@ -63,7 +63,7 @@ class TestQuestManifestTests(unittest.TestCase):
     def test_signal_delay_uses_a_minimal_laptop_instance_patch(self) -> None:
         path = (
             ROOT
-            / "source/raw/mod/gqt001/world"
+            / "projects/test-quests/gqt001/source/raw/mod/gqt001/world"
             / "gqt001_laptop_instance.streamingsector.json"
         )
         resource = json.loads(path.read_text(encoding="utf-8"))
@@ -115,7 +115,7 @@ class TestQuestManifestTests(unittest.TestCase):
 
     def test_signal_delay_registers_owned_laptop_sector(self) -> None:
         config = (
-            ROOT / "source/resources/Ghostline.archive.xl"
+            ROOT / "projects/ghostline/source/resources/Ghostline.archive.xl"
         ).read_text(encoding="utf-8")
         self.assertNotIn(
             r"mod\gqt001\world\gqt001_laptop_instance.streamingsector:",
@@ -125,7 +125,7 @@ class TestQuestManifestTests(unittest.TestCase):
         block = json.loads(
             (
                 ROOT
-                / "source/raw/mod/gqt001/world"
+                / "projects/test-quests/gqt001/source/raw/mod/gqt001/world"
                 / "gqt001_signal_delay.streamingblock.json"
             ).read_text(encoding="utf-8")
         )
@@ -141,7 +141,7 @@ class TestQuestManifestTests(unittest.TestCase):
         sector = json.loads(
             (
                 ROOT
-                / "source/raw/mod/gqt001/world"
+                / "projects/test-quests/gqt001/source/raw/mod/gqt001/world"
                 / "gqt001_laptop_instance.streamingsector.json"
             ).read_text(encoding="utf-8")
         )

@@ -6,6 +6,7 @@ from collections.abc import Iterator, Mapping
 import base64
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import sqlite3
@@ -364,12 +365,31 @@ def extract_sector(
         instance_counters[node_index] = instance_index + 1
         position_value = instance.get("Position")
         if not isinstance(position_value, Mapping):
-            continue
+            raise ValueError(
+                f"node {node_index} instance {instance_index} has no position"
+            )
+        for axis in ("X", "Y", "Z"):
+            value = unwrap(position_value.get(axis, position_value.get(axis.lower())))
+            try:
+                valid = not isinstance(value, bool) and math.isfinite(float(value))
+            except (TypeError, ValueError):
+                valid = False
+            if not valid:
+                raise ValueError(
+                    f"node {node_index} instance {instance_index} has invalid position {axis}: {value!r}"
+                )
         position = Vec3.from_mapping(position_value)
         rotation_value = instance.get("Orientation")
         rotation = Quaternion.from_mapping(
             rotation_value if isinstance(rotation_value, Mapping) else None
         )
+        if not all(
+            math.isfinite(value)
+            for value in (rotation.i, rotation.j, rotation.k, rotation.r)
+        ):
+            raise ValueError(
+                f"node {node_index} instance {instance_index} has nonfinite orientation"
+            )
         bounds_value = instance.get("Bounds")
         bounds = Bounds.from_mapping(
             bounds_value if isinstance(bounds_value, Mapping) else None

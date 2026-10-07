@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$SourceDir = 'quests\story\ghostline\gq000\voice\source',
-    [string]$DestinationDir = 'source\archive\mod\gq000\localization\en-us\vo',
-    [string]$Manifest = 'quests\story\ghostline\gq000\script\gq000_01_manifest.json',
+    [string]$SourceDir = 'projects\ghostline\quests\gq000\voice\source',
+    [string]$DestinationDir = 'projects\shared\ghostline-runtime\source\archive\mod\gq000\localization\en-us\vo',
+    [string]$Manifest = 'projects\ghostline\quests\gq000\script\gq000_01_manifest.json',
     [string]$WwiseProject = 'wwise_conversion\wwise_conversion.wproj',
     [string]$WwiseConsole = $(if ($env:WWISE_CONSOLE) { $env:WWISE_CONSOLE } else { 'C:\Audiokinetic\Wwise2025.1.7.9143\Authoring\x64\Release\bin\WwiseConsole.exe' }),
     [string]$OutputDir = 'converted',
@@ -17,6 +17,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+. (Join-Path $PSScriptRoot 'wwise_publish.ps1')
 
 function Resolve-RepoPath {
     param([Parameter(Mandatory)][string]$Path)
@@ -44,6 +45,9 @@ $wwiseConsoleFull = Resolve-RepoPath $WwiseConsole
 $outputDirFull = Resolve-RepoPath $OutputDir
 $stagingDirFull = Resolve-RepoPath $StagingDir
 $sourceListFull = Resolve-RepoPath $SourceList
+if ([IO.Path]::GetFileName($Platform) -ne $Platform -or $Platform -in @('.', '..')) {
+    throw 'Platform must be one directory name.'
+}
 
 if (-not (Test-Path -LiteralPath $wwiseConsoleFull -PathType Leaf)) {
     throw "WwiseConsole.exe not found: $wwiseConsoleFull"
@@ -66,9 +70,11 @@ $manifestData = Get-Content -LiteralPath $manifestFull -Raw | ConvertFrom-Json
 $referencedNames = @(
     $manifestData.spoken_lines |
         ForEach-Object {
-            if ($_.audio_path) {
+            $paths = @($_.audio_path, $_.male_audio_path) |
+                Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }
+            foreach ($audioPath in $paths) {
                 [System.IO.Path]::ChangeExtension(
-                    [System.IO.Path]::GetFileName([string]$_.audio_path),
+                    [System.IO.Path]::GetFileName([string]$audioPath),
                     '.wav'
                 )
             }
@@ -96,6 +102,11 @@ if ($wavFiles.Count -eq 0) {
 }
 
 New-Item -ItemType Directory -Force -Path $outputDirFull | Out-Null
+$runOutput = Join-Path $outputDirFull ('wwise-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $runOutput | Out-Null
+# Keep every converter input and output in this run, including normalization.
+$stagingDirFull = Join-Path $stagingDirFull ([IO.Path]::GetFileName($runOutput))
+$sourceListFull = Join-Path $runOutput ([IO.Path]::GetFileName($sourceListFull))
 
 if ($SkipNormalize) {
     $sourceRoot = $sourceDirFull
@@ -133,37 +144,18 @@ $xmlLines += '</ExternalSourcesList>'
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [System.IO.File]::WriteAllText($sourceListFull, (($xmlLines -join [Environment]::NewLine) + [Environment]::NewLine), $utf8NoBom)
 
-& $wwiseConsoleFull convert-external-source $projectFull --platform $Platform --source-file $sourceListFull --output $outputDirFull
+& $wwiseConsoleFull convert-external-source $projectFull --platform $Platform --source-file $sourceListFull --output $runOutput
 if ($LASTEXITCODE -ne 0) {
     throw "Wwise external source conversion failed with exit code $LASTEXITCODE"
 }
 
+$wemNames = @($wavFiles | ForEach-Object { [IO.Path]::ChangeExtension($_.Name, '.wem') })
+$results = Resolve-WemOutputs -OutputRoot $runOutput -Platform $Platform -Names $wemNames
 if ($NoCopy) {
-    Write-Host "Converted $($wavFiles.Count) WAV file(s). WEM outputs are under $outputDirFull."
+    Write-Host "Converted and verified $($wavFiles.Count) WAV file(s). WEM outputs are under $runOutput."
     exit 0
 }
 
-New-Item -ItemType Directory -Force -Path $destinationDirFull | Out-Null
-
-$copied = 0
-$missing = @()
-
-foreach ($wav in $wavFiles) {
-    $wemName = [System.IO.Path]::ChangeExtension($wav.Name, '.wem')
-    $converted = Get-ChildItem -LiteralPath $outputDirFull -Recurse -Filter $wemName -File | Sort-Object FullName | Select-Object -First 1
-
-    if (-not $converted) {
-        $missing += $wemName
-        continue
-    }
-
-    Copy-Item -LiteralPath $converted.FullName -Destination (Join-Path $destinationDirFull $wemName) -Force
-    $copied++
-}
-
-if ($missing.Count -gt 0) {
-    throw "Missing converted WEM file(s): $($missing -join ', ')"
-}
-
-Write-Host "Converted and copied $copied WEM file(s) to $destinationDirFull."
+Publish-WemSet -Sources $results -DestinationDir $destinationDirFull
+Write-Host "Converted and copied $($results.Count) WEM file(s) to $destinationDirFull."
 Write-Host "Original WAV files were left in $sourceDirFull."

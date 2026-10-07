@@ -6,6 +6,7 @@ local state = {
     active = false,
     snapshot = nil,
     command = nil,
+    captureSessionId = nil,
     lastCommandId = nil,
     stage = 'idle',
     loadingScreen = false,
@@ -27,6 +28,8 @@ local state = {
     hiddenControllers = {},
     popupControllers = {},
     hiddenWeapon = nil,
+    restorationVerified = true,
+    lastRestoration = {},
 }
 
 local function log(level, message)
@@ -206,14 +209,18 @@ end
 
 local function restoreControllers()
     local restored = true
-    for _, saved in pairs(state.hiddenControllers) do
+    local remaining = {}
+    for key, saved in pairs(state.hiddenControllers) do
         local ok, matches = pcall(function()
             saved.widget:SetVisible(saved.visible)
             return saved.widget:IsVisible() == saved.visible
         end)
-        if not ok or not matches then restored = false end
+        if not ok or not matches then
+            restored = false
+            remaining[key] = saved
+        end
     end
-    state.hiddenControllers = {}
+    state.hiddenControllers = remaining
     return restored
 end
 
@@ -464,14 +471,17 @@ end
 local function restoreWeapon()
     if not state.hiddenWeapon then return true end
     local saved = state.hiddenWeapon
-    state.hiddenWeapon = nil
-    return pcall(function()
+    local restored = pcall(function()
         saved.equipment:EquipItem(saved.itemID, false, true)
     end)
+    if restored then state.hiddenWeapon = nil end
+    return restored
 end
 
 local function restoreCaptureMode(reason)
-    if not state.active and not state.snapshot then return true end
+    if not state.active and not state.snapshot then
+        return state.restorationVerified, state.lastRestoration
+    end
     local player = Game.GetPlayer()
     local effectsRestored = restoreEffects(player)
     local weaponRestored = restoreWeapon()
@@ -505,7 +515,6 @@ local function restoreCaptureMode(reason)
         end
     end
     state.active = false
-    state.snapshot = nil
     state.phonePresentationActive = false
     state.notificationSuppressionActive = false
     log('info', 'capture mode restored: ' .. tostring(reason))
@@ -513,11 +522,20 @@ local function restoreCaptureMode(reason)
     for _, value in pairs(verification) do
         if value ~= true then restored = false end
     end
+    state.restorationVerified = restored
+    state.lastRestoration = verification
+    if restored then
+        state.snapshot = nil
+        state.captureSessionId = nil
+    end
     return restored, verification
 end
 
 local function enterCaptureMode(profile)
     if state.active then return setProfile(profile) end
+    if state.snapshot or not state.restorationVerified then
+        return false, 'previous capture restoration is not verified'
+    end
     local player = Game.GetPlayer()
     if not player or not player:IsAttached() then return false, 'player is not attached' end
     state.snapshot = {}
@@ -746,7 +764,7 @@ local function buildReadiness(delta)
     }
     state.lastReadiness = evidence
     local ready = streamingComplete and not state.loadingScreen and not state.menuOpen and not paused
-        and attached and cameraAttached and positionValid and stable and groundReady and weaponHidden
+        and attached and cameraAttached and positionValid and stable and groundReady and weaponHidden and uiSuppressed
     return evidence, ready, actual
 end
 
@@ -804,6 +822,7 @@ local function acceptCommand(command)
     end
     state.command = command
     state.lastCommandId = command.command_id
+    state.lastControllerHeartbeatUnix = nil
     if command.kind == 'restore' then
         local restored, verification = restoreCaptureMode('controller request')
         writeEvent('restored', {
@@ -818,6 +837,7 @@ local function acceptCommand(command)
         failCommand('malformed_command', 'capture command requires pose and profile')
         return
     end
+    state.captureSessionId = command.session_id
     command.effective_pose = copyTable(command.pose)
     command.ground_snap_complete = false
     command.effective_pose.z = command.pose.z
@@ -891,12 +911,17 @@ end
 local function pollAck()
     if not state.command or state.stage == 'idle' then return end
     local ack = readJson(runtimePath('ack.json'))
-    if not ack or ack.command_id ~= state.command.command_id then return end
+    if not ack or ack.schema_version ~= 1 or ack.session_id ~= state.command.session_id
+        or ack.command_id ~= state.command.command_id or type(ack.success) ~= 'boolean' then return end
     if ack.success ~= false and state.stage ~= 'ready' and state.stage ~= 'error' then return end
-    if ack.success == false and state.active then
-        restoreCaptureMode('controller rejected capture')
+    local restored, verification = nil, nil
+    if ack.success == false then
+        restored, verification = restoreCaptureMode('controller rejected capture')
     end
-    writeEvent('completed', { success = ack.success == true, detail = ack.detail or {} })
+    writeEvent('completed', {
+        success = ack.success == true, detail = ack.detail or {},
+        restoration_verified = restored, restoration = verification,
+    })
     state.stage = 'idle'
     state.command = nil
     state.readyEvidence = nil
@@ -904,7 +929,10 @@ end
 
 local function controllerHeartbeatIsAlive()
     local heartbeat = readJson(runtimePath('controller-heartbeat.json'))
-    if heartbeat and type(heartbeat.unix_seconds) == 'number' then
+    local sessionId = state.command and state.command.session_id or state.captureSessionId
+    if heartbeat and heartbeat.schema_version == 1 and sessionId
+        and heartbeat.session_id == sessionId
+        and type(heartbeat.unix_seconds) == 'number' then
         state.lastControllerHeartbeatUnix = heartbeat.unix_seconds
     end
     if type(state.lastControllerHeartbeatUnix) ~= 'number' then return false end
@@ -913,15 +941,29 @@ local function controllerHeartbeatIsAlive()
 end
 
 local function writeHeartbeat()
+    local actualFov = nil
+    if state.readyEvidence then
+        pcall(function()
+            local player = Game.GetPlayer()
+            local camera = player and player:GetFPPCameraComponent()
+            if camera then actualFov = camera:GetFOV() end
+        end)
+    end
     writeJsonAtomic(runtimePath('cet-heartbeat.json'), {
         schema_version = 1,
         timestamp = now(),
         unix_seconds = os.time(),
         capture_mode_active = state.active,
+        session_id = state.command and state.command.session_id or nil,
+        command_id = state.command and state.command.command_id or nil,
         stage = state.stage,
         frame = state.frame,
         preflight = state.preflightEvidence,
         readiness = state.lastReadiness,
+        actual_pose = state.readyEvidence and state.readyEvidence.actual or nil,
+        effective_pose = state.command and state.command.effective_pose or nil,
+        actual_fov = actualFov,
+        runtime_location = state.runtimeLocation,
     })
 end
 
@@ -1049,9 +1091,9 @@ registerForEvent('onUpdate', function(delta)
         state.heartbeatElapsed = 0.0
         writeHeartbeat()
     end
-    if state.command and state.stage ~= 'idle' and not controllerHeartbeatIsAlive() then
+    if (state.active or state.snapshot or (state.command and state.stage ~= 'idle')) and not controllerHeartbeatIsAlive() then
         if state.command then failCommand('controller_heartbeat_lost', 'controller heartbeat expired') end
-        if state.active then restoreCaptureMode('controller heartbeat lost') end
+        if state.active or state.snapshot then restoreCaptureMode('controller heartbeat lost') end
         state.stage = 'idle'
         state.command = nil
         return
@@ -1060,6 +1102,12 @@ registerForEvent('onUpdate', function(delta)
     pollAck()
     pollCommand()
     beginCaptureWhenGameplayIsReady()
+    if state.stage == 'ready' and state.command then
+        local evidence, ready, actual = buildReadiness(delta)
+        evidence.presented_frame = state.frame
+        state.readyEvidence = { evidence = evidence, actual = actual }
+        if not ready then failCommand('readiness_lost', json.encode(evidence)) end
+    end
     if state.stage == 'waiting' and state.command then
         state.elapsed = state.elapsed + delta
         if prepareGroundPose() then
@@ -1083,11 +1131,20 @@ registerForEvent('onDraw', function()
     if not config then return end
     state.frame = state.frame + 1
     if state.stage == 'armed' and state.command and state.readyEvidence then
-        local evidence = state.readyEvidence.evidence
+        -- Recheck after onUpdate: overlay/loading/attachment can change before draw.
+        local evidence, ready, actual = buildReadiness(0)
+        if not ready then
+            state.readyEvidence = nil
+            state.stage = 'waiting'
+            return
+        end
+        state.readyEvidence = { evidence = evidence, actual = actual }
         evidence.presented_frame = state.frame
         local camera = Game.GetPlayer():GetFPPCameraComponent()
         local actualFov = nil
         pcall(function() actualFov = camera:GetFOV() end)
+        state.stage = 'ready'
+        writeHeartbeat()
         writeEvent('ready', {
             readiness = evidence,
             actual_pose = state.readyEvidence.actual,
@@ -1096,7 +1153,6 @@ registerForEvent('onDraw', function()
             runtime_location = state.runtimeLocation,
             teleport_to_ready_ms = state.elapsed * 1000.0,
         })
-        state.stage = 'ready'
     end
 end)
 

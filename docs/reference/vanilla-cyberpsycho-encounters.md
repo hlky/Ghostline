@@ -329,7 +329,7 @@ is `quests/examples/cyberpsycho_encounter.quest.json`; it uses
 
 ## Ghostline Goth Baddie implementation
 
-`quests/tests/gqt006_goth_baddie_cyberpsycho.quest.json` is the complete
+`projects/test-quests/gqt006/gqt006_goth_baddie_cyberpsycho.quest.json` is the complete
 placed implementation. Its five generated stages:
 
 1. activate, reveal, fight, and resolve Goth Baddie while retaining distinct killed
@@ -341,12 +341,12 @@ placed implementation. Its five generated stages:
    responses, pay the reward, and complete the quest.
 
 All physical placement lives in
-`quests/tests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json`. The marker, four concentric
+`projects/test-quests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json`. The marker, four concentric
 volumes, community, and Goth Baddie's workspot derive from one `origin`. The selected
 site is `(-1026.8678, 1279.5898, 5.1301804)` with yaw
 `2.931411456` degrees. Four supplied nearby positions define the alerted patrol
 loop and its two workspots. The package is registered in
-`source/resources/Ghostline.archive.xl`; ground contact, approach direction,
+`projects/ghostline/source/resources/Ghostline.archive.xl`; ground contact, approach direction,
 trigger coverage, and nearby world interactions remain runtime acceptance
 checks.
 

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "story": {
+      "archive_name": "Ghostline",
+      "active_quests": [
+        "gq001",
+        "gq002"
+      ],
+      "support_quests": [
+        "gq000"
+      ],
+      "characters": [
+        "patch",
+        "iris",
+        "cinder"
+      ],
+      "tweaks": [
+        "character_patch",
+        "character_iris",
+        "character_cinder",
+        "faction_ghostline",
+        "gq000_shards"
+      ],
+      "deduplicate_meshes": true
+    },
+    "development": {
+      "archive_name": "Ghostline",
+      "active_quests": [
+        "gq001",
+        "gq002"
+      ],
+      "support_quests": [
+        "gq000"
+      ],
+      "exclude_prefixes": [
+        "mod/gq003/"
+      ],
+      "exclude_loose": [
+        "r6/tweaks/ghostline/gq003_black_lantern.yaml"
+      ],
+      "include_all": true,
+      "deduplicate_meshes": false
+    }
+  }
+}

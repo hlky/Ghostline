@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "id": "gqt003_extract_and_hold",
+  "title": "Extract and Hold",
+  "description": "Runtime fixture for releasing a contact, escorting them through ordered gates, and defending them through a timed hold.",
+  "phase_prefabs": [
+    "#gqt003_pr_extract_and_hold"
+  ],
+  "debug_fact": "gqt003_debug_step",
+  "stages": [
+    {
+      "id": "reach_extraction_relay",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_reach_extraction_relay.questphase",
+      "inherit_phase_prefabs": false,
+      "trigger": "#gqt003_01_tr_relay",
+      "objective": "@objectives.reach_relay.path",
+      "description_entry": "@objectives.reach_relay.description_entry",
+      "mappin": "@objectives.reach_relay.mappin"
+    },
+    {
+      "id": "release_patch",
+      "type": "release_or_rescue_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_release_patch.questphase",
+      "inherit_phase_prefabs": false,
+      "community": "#gqt003_com_patch",
+      "entry": "patch",
+      "device": "#gqt003_01_ap_relay",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ForceEnabled",
+      "completion_function": "WasHackingMinigameSucceeded",
+      "completion_fact": "gqt003_release_complete",
+      "objective": "@objectives.release_patch.path"
+    },
+    {
+      "id": "escort_patch",
+      "type": "escort_npc",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_escort_patch.questphase",
+      "inherit_phase_prefabs": false,
+      "community": "#gqt003_com_patch",
+      "entry": "patch",
+      "destinations": [
+        "#gqt003_03_tr_escort_gate_01",
+        "#gqt003_03_tr_escort_gate_02",
+        "#gqt003_03_tr_escort_gate_03"
+      ],
+      "objective": "@objectives.escort_patch.path",
+      "mappin": "@objectives.escort_patch.mappin",
+      "route_mappins": "@objectives.escort_patch.route_mappins",
+      "completion_fact": "gqt003_escort_complete",
+      "outcomes": {
+        "success": "Out1",
+        "failure": "Failure"
+      },
+      "actor_lifecycle": {
+        "on_enter": "assign_follower",
+        "on_success": "retain",
+        "on_failure": "release"
+      },
+      "on": {
+        "success": "defend_patch",
+        "failure": "$end"
+      },
+      "failure_fact": "gqt003_patch_lost"
+    },
+    {
+      "id": "defend_patch",
+      "type": "defend_target",
+      "status": "ready",
+      "phase_resource": "mod\\gqt003\\phases\\gqt003_defend_patch.questphase",
+      "inherit_phase_prefabs": false,
+      "community": "#gqt003_com_patch",
+      "entry": "patch",
+      "completion_fact": "gqt003_hold_complete",
+      "failure_fact": "gqt003_patch_lost",
+      "objective": "@objectives.defend_patch.path",
+      "outcomes": {
+        "success": "Out1",
+        "failure": "Failure"
+      },
+      "actor_lifecycle": {
+        "on_enter": "retain",
+        "on_success": "release",
+        "on_failure": "release"
+      },
+      "on": {
+        "success": "$end",
+        "failure": "$end"
+      },
+      "duration_seconds": 20,
+      "attackers": {
+        "community": "#gqt003_04_com_attackers",
+        "entries": [
+          {
+            "entry": "attacker_ranged_m",
+            "target": "protected"
+          },
+          {
+            "entry": "attacker_ranged_f",
+            "target": "protected"
+          },
+          {
+            "entry": "attacker_melee",
+            "target": "player"
+          }
+        ],
+        "cleanup": true
+      }
+    }
+  ],
+  "composition": {
+    "namespace": "gqt003",
+    "journal_template": "gqt004_shapes",
+    "locations": {
+      "reach_relay": {
+        "ref": "#gqt003_01_mp_relay"
+      },
+      "escort_gate_01": {
+        "ref": "#gqt003_03_mp_gate_01"
+      },
+      "escort_gate_02": {
+        "ref": "#gqt003_03_mp_gate_02"
+      },
+      "escort_gate_03": {
+        "ref": "#gqt003_03_mp_gate_03"
+      }
+    },
+    "objectives": {
+      "reach_relay": {
+        "text": "Reach the extraction relay.",
+        "description": "Exercise the Ghostline rescue, follower escort, and defend-target fixtures.",
+        "phase_id": "gqt003_01",
+        "id": "gqt003_01_obj_reach_relay",
+        "localization_key": "gl_gqt003_01_objective_reach_relay",
+        "description_id": "gqt003_01_desc_reach_relay",
+        "description_key": "gl_gqt003_description",
+        "mappins": {
+          "reach_relay": {
+            "id": "gqt003_01_qmp_reach_relay",
+            "ref": "@locations.reach_relay.ref",
+            "text": "Extraction relay",
+            "localization_key": "gl_gqt003_mappin"
+          }
+        }
+      },
+      "release_patch": {
+        "text": "Hack the relay to release Patch.",
+        "description": "Exercise the Ghostline rescue, follower escort, and defend-target fixtures.",
+        "phase_id": "gqt003_02",
+        "id": "gqt003_02_obj_release_patch",
+        "localization_key": "gl_gqt003_02_objective_release_patch",
+        "description_id": "gqt003_02_desc_release_patch",
+        "description_key": "gl_gqt003_description",
+        "mappins": {}
+      },
+      "escort_patch": {
+        "text": "Escort Patch through the extraction route.",
+        "description": "Exercise the Ghostline rescue, follower escort, and defend-target fixtures.",
+        "phase_id": "gqt003_03",
+        "id": "gqt003_03_obj_escort_patch",
+        "localization_key": "gl_gqt003_03_objective_escort_patch",
+        "description_id": "gqt003_03_desc_escort_patch",
+        "description_key": "gl_gqt003_description",
+        "mappins": {
+          "escort_gate_01": {
+            "id": "gqt003_03_qmp_escort_gate_01",
+            "ref": "@locations.escort_gate_01.ref",
+            "text": "Extraction relay",
+            "localization_key": "gl_gqt003_mappin"
+          },
+          "escort_gate_02": {
+            "id": "gqt003_03_qmp_escort_gate_02",
+            "ref": "@locations.escort_gate_02.ref",
+            "text": "Extraction relay",
+            "localization_key": "gl_gqt003_mappin"
+          },
+          "escort_gate_03": {
+            "id": "gqt003_03_qmp_escort_gate_03",
+            "ref": "@locations.escort_gate_03.ref",
+            "text": "Extraction relay",
+            "localization_key": "gl_gqt003_mappin"
+          }
+        }
+      },
+      "defend_patch": {
+        "text": "Hold the position for 20 seconds.",
+        "description": "Exercise the Ghostline rescue, follower escort, and defend-target fixtures.",
+        "phase_id": "gqt003_04",
+        "id": "gqt003_04_obj_defend_patch",
+        "localization_key": "gl_gqt003_04_objective_defend_patch",
+        "description_id": "gqt003_04_desc_defend_patch",
+        "description_key": "gl_gqt003_description",
+        "mappins": {}
+      }
+    },
+    "points_of_interest": {
+      "relay": {
+        "id": "gqt003_01_poi_relay",
+        "ref": "#gqt003_01_mp_relay"
+      }
+    }
+  },
+  "completion": {
+    "quest_path": "quests/minor_quest/gqt003",
+    "outcomes": {
+      "success": {
+        "state": "Succeeded",
+        "fact": "gqt003_completed"
+      },
+      "failure": {
+        "state": "Failed"
+      }
+    }
+  }
+}

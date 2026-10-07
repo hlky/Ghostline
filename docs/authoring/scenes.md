@@ -5,7 +5,7 @@ based on local vanilla extracts under `reference/vanilla_extract_json` and
 world/journal references under `reference/world` and `reference/journal`.
 
 For the concrete Ghostline root phase, meeting phase, scene, trigger, exit, and
-localization handoff, read `quests/story/ghostline/gq000/implementation/runtime-flow.md` first.
+localization handoff, read `projects/ghostline/quests/gq000/implementation/runtime-flow.md` first.
 
 If a vanilla pattern crashes in a Ghostline probe, assume the Ghostline
 implementation was incomplete or malformed. Do not replace a vanilla pattern
@@ -63,7 +63,7 @@ CR2W-JSON file deserialize.
 Current implementation:
 
 - `tools/generate_scene.py` is the fresh scene generator.
-- `quests/story/ghostline/gq000/implementation/scenes/patch-meet.scene-spec.json` is the first production fixture.
+- `projects/ghostline/quests/gq000/implementation/scenes/patch-meet.scene-spec.json` is the first production fixture.
 - `tools/scene_spec.md` documents the supported v1 spec fields.
 - V1 covers dialogue scenes, actor acquisition, choice locStore coverage,
   scene-local journal/mappin/trigger/AI quest nodes, validation, and optional
@@ -217,7 +217,7 @@ generator fixture so stale unsorted CR2W-JSON cannot pass the build tests.
 `scnChoiceNodeOption.caption` is an authoring/debug label, not the authoritative
 display text. The full option-to-payload lookup chain, descriptor/payload
 relationship, ID domains, and current sorted Ghostline IDs are documented in
-`quests/story/ghostline/gq000/implementation/runtime-flow.md`.
+`projects/ghostline/quests/gq000/implementation/runtime-flow.md`.
 
 Do not truncate generated scene event RUIDs or locStore variant IDs to the
 signed 63-bit range. Runtime testing showed `INT63_MASK`-generated scenes crash

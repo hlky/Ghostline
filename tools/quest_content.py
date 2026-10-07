@@ -34,8 +34,8 @@ def find_entry(value: Any, type_name: str, entry_id: str) -> dict[str, Any]:
 class Handles:
     """Allocate an isolated handle namespace while cloning RedPackage chunks."""
 
-    def __init__(self, document: dict[str, Any]):
-        self.next = max(int(item["HandleId"]) for item in wrappers(document)) + 1
+    def __init__(self, document: dict[str, Any], *, minimum_next: int = 0):
+        self.next = max(minimum_next, max(int(item["HandleId"]) for item in wrappers(document)) + 1)
 
     def clone(self, value: dict[str, Any]) -> dict[str, Any]:
         result = copy.deepcopy(value)
@@ -81,6 +81,7 @@ def make_phase(
     description_loc: str,
     mappins: list[tuple[str, str, str]],
     gps_disabled_mappins: frozenset[str] = frozenset(),
+    mappin_captions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     phase = handles.clone(phase_template)
     phase["Data"]["id"] = phase_id
@@ -106,7 +107,7 @@ def make_phase(
         pin = handles.clone(map_template)
         pin_data = pin["Data"]
         pin_data["id"] = mappin_id
-        pin_data["mappinData"]["debugCaption"] = mappin_loc
+        pin_data["mappinData"]["debugCaption"] = (mappin_captions or {}).get(mappin_id, mappin_loc)
         set_loc(pin_data["mappinData"], "localizedCaption", mappin_loc)
         pin_data["reference"]["reference"]["$storage"] = "string"
         pin_data["reference"]["reference"]["$value"] = node_ref
@@ -169,4 +170,37 @@ def make_conversation(
     result["Data"]["id"] = conversation_id
     set_loc(result["Data"], "title", title_key)
     result["Data"]["entries"] = entries
+    return result
+
+
+_TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
+_TEMPLATE_CATALOG = load(_TEMPLATE_ROOT / "quests/templates/journal/catalog.json")["templates"]
+
+
+def journal_template_path(name: str) -> Path:
+    """Resolve a reviewed donor shape independently of generated quest resources."""
+    return _TEMPLATE_ROOT / _TEMPLATE_CATALOG[name]["path"]
+
+
+def journal_handles(document: dict[str, Any], template: Path) -> Handles:
+    """Keep allocation stable when unused donor branches have been removed."""
+    relative = template.resolve().relative_to(_TEMPLATE_ROOT).as_posix()
+    entry = next(value for value in _TEMPLATE_CATALOG.values() if value["path"] == relative)
+    return Handles(document, minimum_next=entry.get("minimum_next_handle", 0))
+
+
+def make_onscreens(template: Path, text: dict[str, str], archive: Path) -> dict[str, Any]:
+    result = load(template)
+    result["Data"]["RootChunk"]["root"]["Data"]["entries"] = [
+        {
+            "$type": "localizationPersistenceOnScreenEntry",
+            "femaleVariant": value,
+            "maleVariant": "",
+            "primaryKey": "0",
+            "secondaryKey": key,
+        }
+        for key, value in text.items()
+    ]
+    result["Header"]["ArchiveFileName"] = str(archive.resolve())
+    result["Header"]["ExportedDateTime"] = "1970-01-01T00:00:00Z"
     return result

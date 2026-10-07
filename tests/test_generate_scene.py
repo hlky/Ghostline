@@ -28,7 +28,7 @@ class GenerateSceneTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.spec = generate_scene.load_json(
-            ROOT / "quests/story/ghostline/gq000/implementation/scenes/"
+            ROOT / "projects/ghostline/quests/gq000/implementation/scenes/"
             "patch-meet.scene-spec.json"
         )
         cls.scene = generate_scene.build_scene(cls.spec)
@@ -252,6 +252,515 @@ class GenerateSceneTests(unittest.TestCase):
                 event_ids.append(event["Data"]["id"]["id"])
         self.assertEqual(len(event_ids), len(set(event_ids)))
         self.assertNotIn(generate_scene.MAX_INT64, event_ids)
+
+    def test_rid_resources_use_synchronous_default_references(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["rid_resources"] = [
+            {
+                "resource_id": 123,
+                "path": (
+                    "base\\animations\\quest\\lore\\generic_sex\\intercourse\\"
+                    "sex_06_5s_m.scenerid"
+                ),
+            }
+        ]
+        scene = generate_scene.build_scene(spec)
+        rid_resource = scene["Data"]["RootChunk"]["ridResources"][0][
+            "ridResource"
+        ]
+
+        self.assertEqual(rid_resource["Flags"], "Default")
+        self.assertEqual(generate_scene.validate_scene(scene, spec), [])
+
+        rid_resource["Flags"] = "Soft"
+        errors = generate_scene.validate_scene(scene, spec)
+        self.assertTrue(
+            any("synchronous Default reference" in error for error in errors),
+            errors,
+        )
+
+    def test_scene_can_acquire_a_world_camera_prop(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["props"] = [
+            {
+                "id": 0,
+                "name": "test_camera",
+                "node_ref": "#test_scene_camera",
+            }
+        ]
+
+        scene = generate_scene.build_scene(spec)
+        root = scene["Data"]["RootChunk"]
+        prop = root["props"][0]
+        performer = root["debugSymbols"]["performersDebugSymbols"][-1]
+
+        self.assertEqual(prop["$type"], "scnPropDef")
+        self.assertEqual(prop["entityAcquisitionPlan"], "findInNode")
+        self.assertEqual(
+            prop["findEntityInNodeParams"]["nodeRef"]["$value"],
+            "#test_scene_camera",
+        )
+        self.assertEqual(performer["performerId"]["id"], 2)
+        self.assertEqual(
+            performer["entityRef"]["reference"]["$value"],
+            "#test_scene_camera",
+        )
+        self.assertEqual(generate_scene.validate_scene(scene, spec), [])
+
+    def test_fpp_rid_event_supports_gender_specific_transition_angles(self) -> None:
+        event = generate_scene.rid_anim_event(
+            "test_scene",
+            "test_section",
+            0,
+            {
+                "actor": "v",
+                "component": "body",
+                "anim_ref_id": 0,
+                "origin": "#test_origin",
+                "duration_ms": 5000,
+                "fpp": True,
+                "fpp_gender_params": {
+                    "gender_masks": [2, 1],
+                    "transition_blend_in_trajectory_space_angles": [
+                        {"pitch": 1, "roll": 2, "yaw": 3}
+                    ],
+                    "transition_end_input_angles": [
+                        {"pitch": 4, "roll": 5, "yaw": 6}
+                    ],
+                },
+            },
+            generate_scene.actor_lookup(self.spec),
+            generate_scene.HandleAllocator(),
+        )["Data"]
+
+        self.assertEqual(
+            [value["genderMask"]["mask"] for value in event["genderSpecificParams"]],
+            [2, 1],
+        )
+        self.assertEqual(
+            event["genderSpecificParams"][0][
+                "transitionBlendInTrajectorySpaceAngles"
+            ][0]["Yaw"],
+            3.0,
+        )
+
+    def test_section_supports_a_regular_world_camera_event(self) -> None:
+        event = generate_scene.camera_event(
+            "test_scene",
+            "test_section",
+            {
+                "camera_ref": "#test_side_camera",
+                "duration_ms": 2000,
+                "start_time_ms": 100,
+                "blend_time_seconds": 0.25,
+            },
+            generate_scene.HandleAllocator(),
+        )["Data"]
+
+        self.assertEqual(event["$type"], "scneventsCameraEvent")
+        self.assertEqual(event["cameraRef"]["$value"], "#test_side_camera")
+        self.assertEqual(event["duration"], 2000)
+        self.assertEqual(event["startTime"], 100)
+        self.assertEqual(event["isBlendIn"], 1)
+        self.assertEqual(event["blendTime"], 0.25)
+
+    def test_world_camera_hard_cut_uses_vanilla_blend_in_event(self) -> None:
+        event = generate_scene.camera_event(
+            "test_scene",
+            "test_section",
+            {
+                "camera_ref": "#test_side_camera",
+                "duration_ms": 2000,
+            },
+            generate_scene.HandleAllocator(),
+        )["Data"]
+
+        self.assertEqual(event["isBlendIn"], 1)
+        self.assertEqual(event["blendTime"], 0.0)
+
+    def test_world_camera_can_be_explicitly_released(self) -> None:
+        event = generate_scene.camera_event(
+            "test_scene",
+            "test_section",
+            {
+                "camera_ref": "#test_side_camera",
+                "duration_ms": 50,
+                "blend_in": False,
+            },
+            generate_scene.HandleAllocator(),
+        )["Data"]
+
+        self.assertEqual(event["isBlendIn"], 0)
+        self.assertEqual(event["blendTime"], 0.0)
+
+    def test_world_camera_rejects_invalid_timing(self) -> None:
+        for timing, message in (
+            ({"duration_ms": 0}, "duration_ms must be positive"),
+            (
+                {"duration_ms": 2000, "blend_time_seconds": -0.1},
+                "blend_time_seconds cannot be negative",
+            ),
+        ):
+            with self.subTest(timing=timing):
+                with self.assertRaisesRegex(generate_scene.SceneBuildError, message):
+                    generate_scene.camera_event(
+                        "test_scene",
+                        "test_section",
+                        {"camera_ref": "#test_side_camera", **timing},
+                        generate_scene.HandleAllocator(),
+                    )
+
+    def test_section_rejects_competing_rid_and_world_cameras(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        section = spec["sections"][0]
+        section["rid_camera"] = {
+            "camera_ref_id": 0,
+            "origin": "#test_origin",
+            "camera_ref": "#test_camera",
+            "duration_ms": 2000,
+        }
+        section["camera_event"] = {
+            "camera_ref": "#test_side_camera",
+            "duration_ms": 2000,
+        }
+
+        with self.assertRaisesRegex(
+            generate_scene.SceneBuildError,
+            "cannot declare both rid_camera and camera_event",
+        ):
+            generate_scene.build_scene(spec)
+
+    def test_character_gender_node_matches_vanilla_condition_branch(self) -> None:
+        node = generate_scene.build_quest_node(
+            {
+                "kind": "character_gender",
+                "node_id": 62,
+                "gender": "Male",
+                "on_true": [{"node_id": 64}],
+                "on_false": [{"node_id": 63}],
+            },
+            generate_scene.HandleAllocator(),
+        )["Data"]
+        quest = node["questNode"]["Data"]
+        condition = quest["condition"]["Data"]
+        gender = condition["type"]["Data"]
+
+        self.assertEqual(node["$type"], "scnQuestNode")
+        self.assertEqual(
+            [mapping["$value"] for mapping in node["osockMappings"]],
+            ["True", "False"],
+        )
+        self.assertEqual(
+            [
+                socket["destinations"][0]["nodeId"]["id"]
+                for socket in node["outputSockets"]
+            ],
+            [64, 63],
+        )
+        self.assertEqual(
+            [
+                (
+                    socket["destinations"][0]["isockStamp"]["name"],
+                    socket["destinations"][0]["isockStamp"]["ordinal"],
+                )
+                for socket in node["outputSockets"]
+            ],
+            [(0, 0), (0, 0)],
+        )
+        self.assertEqual(quest["$type"], "questConditionNodeDefinition")
+        self.assertEqual(condition["$type"], "questCharacterCondition")
+        self.assertEqual(gender["$type"], "questCharacterGender_CondtionType")
+        self.assertEqual(gender["gender"]["$value"], "Male")
+        self.assertEqual(gender["isPlayer"], 1)
+        self.assertEqual(gender["objectRef"]["reference"]["$value"], "0")
+        self.assertEqual(
+            [socket["Data"]["name"]["$value"] for socket in quest["sockets"]],
+            ["CutDestination", "In", "True", "False"],
+        )
+
+    def test_scene_quest_nodes_support_vanilla_sex_handoff_controls(self) -> None:
+        alloc = generate_scene.HandleAllocator()
+        tier = generate_scene.build_quest_node(
+            {
+                "kind": "scene_tier",
+                "node_id": 100,
+                "tier": "Tier4_FPPCinematic",
+                "force_empty_hands": True,
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        unequip = generate_scene.build_quest_node(
+            {"kind": "unequip_player", "node_id": 101},
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        actor_unequip = generate_scene.build_quest_node(
+            {
+                "kind": "unequip_actor",
+                "node_id": 103,
+                "entity_ref": "#test_community",
+                "entry": "test_actor",
+                "by_item": True,
+                "item_id": "Items.Preset_Katana_E3",
+                "slot_id": "AttachmentSlots.WeaponRight",
+                "unequip_types": "AllItems",
+                "instant": True,
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        delay = generate_scene.build_quest_node(
+            {
+                "kind": "realtime_delay",
+                "node_id": 104,
+                "milliseconds": 100,
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        fade = generate_scene.build_quest_node(
+            {
+                "kind": "render_fade",
+                "node_id": 105,
+                "fade_in": False,
+                "duration_seconds": 0.25,
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        knockdown = generate_scene.build_quest_node(
+            {
+                "kind": "player_status_effect",
+                "node_id": 102,
+                "status_effect": "BaseStatusEffect.Knockdown",
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+
+        self.assertEqual(tier["type"]["Data"]["tier"], "Tier4_FPPCinematic")
+        self.assertEqual(tier["type"]["Data"]["forceEmptyHands"], 1)
+        self.assertEqual(unequip["params"]["Data"]["unequipTypes"], "AllWeapons")
+        self.assertEqual(unequip["params"]["Data"]["isPlayer"], 1)
+        actor_ref = actor_unequip["entityReference"]["Data"]
+        actor_params = actor_unequip["params"]["Data"]
+        self.assertEqual(actor_ref["refLocalPlayer"], 0)
+        self.assertEqual(
+            actor_ref["entityReference"]["reference"]["$value"],
+            "#test_community",
+        )
+        self.assertEqual(
+            [value["$value"] for value in actor_ref["entityReference"]["names"]],
+            ["test_actor"],
+        )
+        self.assertEqual(actor_params["isPlayer"], 0)
+        self.assertEqual(actor_params["byItem"], 1)
+        self.assertEqual(actor_params["itemId"]["$value"], "Items.Preset_Katana_E3")
+        self.assertEqual(
+            actor_params["slotId"]["$value"], "AttachmentSlots.WeaponRight"
+        )
+        self.assertEqual(actor_params["unequipTypes"], "AllItems")
+        self.assertEqual(actor_params["instant"], 1)
+        delay_type = delay["condition"]["Data"]["type"]["Data"]
+        self.assertEqual(delay_type["$type"], "questRealtimeDelay_ConditionType")
+        self.assertEqual(delay_type["miliseconds"], 100)
+        fade_type = fade["type"]["Data"]
+        self.assertEqual(fade["$type"], "questRenderFxManagerNodeDefinition")
+        self.assertEqual(fade_type["$type"], "questSetFadeInOut_NodeType")
+        self.assertEqual(fade_type["fadeIn"], 0)
+        self.assertEqual(fade_type["duration"], 0.25)
+        self.assertEqual(
+            fade_type["fadeColor"],
+            {"$type": "Color", "Alpha": 0, "Blue": 0, "Green": 0, "Red": 0},
+        )
+        self.assertEqual(
+            knockdown["type"]["Data"]["subtype"]["Data"]["statusEffectID"][
+                "$value"
+            ],
+            "BaseStatusEffect.Knockdown",
+        )
+
+    def test_spawn_actor_uses_vanilla_cutscene_replica_shape(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["actors"].append(
+            {
+                "key": "v_tpp_female",
+                "name": "V TPP Female",
+                "kind": "spawn",
+                "id": 2,
+                "record": "Character.TPP_Player_Cutscene_Female",
+                "dynamic_name": "a_test_v_tpp_female",
+                "spawn_marker": "#test_scene_marker",
+                "rid_anim_sets": [0],
+                "rid_facial_anim_sets": [0],
+            }
+        )
+        spec["rid_anim_sets"] = [{"animations": [0, 2]}]
+        spec["rid_facial_anim_sets"] = [{"animations": [1]}]
+
+        scene = generate_scene.build_scene(spec)
+        root = scene["Data"]["RootChunk"]
+        actor = root["actors"][-1]
+        performer = root["debugSymbols"]["performersDebugSymbols"][2]
+
+        self.assertEqual(actor["acquisitionPlan"], "spawnDespawn")
+        self.assertEqual(
+            actor["spawnDespawnParams"]["specRecordId"]["$value"],
+            "Character.TPP_Player_Cutscene_Female",
+        )
+        self.assertEqual(actor["spawnDespawnParams"]["spawnOnStart"], 1)
+        self.assertEqual(actor["spawnDespawnParams"]["alwaysSpawned"], 0)
+        self.assertEqual(actor["spawnDespawnParams"]["forceMaxVisibility"], 0)
+        self.assertEqual(
+            actor["communityParams"],
+            {
+                "$type": "scnCommunityParams",
+                "entryName": {"$type": "CName", "$storage": "string", "$value": "None"},
+                "forceMaxVisibility": 0,
+                "reference": {"$type": "NodeRef", "$storage": "uint64", "$value": "0"},
+            },
+        )
+        self.assertEqual(
+            actor["spawnDespawnParams"]["dynamicEntityUniqueName"]["$value"],
+            "a_test_v_tpp_female",
+        )
+        self.assertEqual(actor["animSets"], [{"$type": "scnSRRefId", "id": 0}])
+        self.assertEqual(
+            actor["facialAnimSets"],
+            [{"$type": "scnRidFacialAnimSetSRRefId", "id": 0}],
+        )
+        self.assertEqual(
+            performer["entityRef"]["dynamicEntityUniqueName"]["$value"],
+            "a_test_v_tpp_female",
+        )
+        self.assertEqual(
+            root["resouresReferences"]["ridAnimSets"][0]["animations"],
+            [
+                {"$type": "scnSRRefId", "id": 0},
+                {"$type": "scnSRRefId", "id": 2},
+            ],
+        )
+        self.assertEqual(
+            root["resouresReferences"]["ridFacialAnimSets"][0]["animations"],
+            [{"$type": "scnSRRefId", "id": 1}],
+        )
+        self.assertEqual(generate_scene.validate_scene(scene, spec), [])
+
+    def test_spawn_wait_and_player_visibility_nodes_match_vanilla(self) -> None:
+        alloc = generate_scene.HandleAllocator()
+        activate = generate_scene.build_quest_node(
+            {
+                "kind": "spawn_actor",
+                "node_id": 103,
+                "dynamic_name": "a_test_v_tpp_female",
+                "action": "Activate",
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        wait = generate_scene.build_quest_node(
+            {
+                "kind": "wait_actor_spawned",
+                "node_id": 104,
+                "dynamic_name": "a_test_v_tpp_female",
+            },
+            alloc,
+        )["Data"]["questNode"]["Data"]
+        hide = generate_scene.build_quest_node(
+            {"kind": "show_player", "node_id": 105, "show": False},
+            alloc,
+        )["Data"]["questNode"]["Data"]
+
+        action = activate["actions"][0]["type"]["Data"]
+        self.assertEqual(activate["$type"], "questSpawnManagerNodeDefinition")
+        self.assertEqual(action["$type"], "questScene_NodeType")
+        self.assertEqual(action["action"], "Activate")
+        self.assertEqual(
+            action["entityReference"]["dynamicEntityUniqueName"]["$value"],
+            "a_test_v_tpp_female",
+        )
+
+        condition = wait["condition"]["Data"]["type"]["Data"]
+        self.assertEqual(condition["$type"], "questCharacterSpawned_ConditionType")
+        self.assertEqual(
+            condition["comparisonParams"]["Data"]["comparisonType"], "Greater"
+        )
+        self.assertEqual(condition["comparisonParams"]["Data"]["count"], 0)
+
+        visibility = hide["type"]["Data"]
+        self.assertEqual(hide["$type"], "questWorldDataManagerNodeDefinition")
+        self.assertEqual(visibility["$type"], "questShowWorldNode_NodeType")
+        self.assertEqual(visibility["isPlayer"], 1)
+        self.assertEqual(visibility["show"], 0)
+        self.assertEqual(visibility["objectRef"]["$value"], "0")
+
+    def test_multiple_entry_points_each_target_a_start_node(self) -> None:
+        spec = copy.deepcopy(self.spec)
+        spec["entry_points"] = [
+            {"name": "start", "node_id": 1},
+            {"name": "alternate", "node_id": 99},
+        ]
+        spec["start_nodes"] = [
+            spec["start_node"],
+            {"node_id": 99, "on_start": [{"node_id": 18}]},
+        ]
+        spec.pop("graph_order", None)
+
+        scene = generate_scene.build_scene(spec)
+        graph = {
+            node["Data"]["nodeId"]["id"]: node["Data"]
+            for node in scene["Data"]["RootChunk"]["sceneGraph"]["Data"]["graph"]
+        }
+
+        self.assertEqual(graph[1]["$type"], "scnStartNode")
+        self.assertEqual(graph[99]["$type"], "scnStartNode")
+        self.assertEqual(
+            {
+                entry["name"]["$value"]: entry["nodeId"]["id"]
+                for entry in scene["Data"]["RootChunk"]["entryPoints"]
+            },
+            {"start": 1, "alternate": 99},
+        )
+        self.assertEqual(generate_scene.validate_scene(scene, spec), [])
+
+    def test_validation_rejects_entry_point_that_bypasses_start_node(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        scene["Data"]["RootChunk"]["entryPoints"][0]["nodeId"]["id"] = 2
+
+        errors = generate_scene.validate_scene(scene, self.spec)
+
+        self.assertTrue(
+            any("must target a scnStartNode" in error for error in errors),
+            errors,
+        )
+
+    def test_validation_rejects_regular_flow_into_quest_cut_destination(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        start = next(
+            node["Data"]
+            for node in scene["Data"]["RootChunk"]["sceneGraph"]["Data"]["graph"]
+            if node["Data"]["nodeId"]["id"] == 1
+        )
+        start["outputSockets"][0]["destinations"][0]["isockStamp"]["ordinal"] = 0
+
+        errors = generate_scene.validate_scene(scene, self.spec)
+
+        self.assertTrue(
+            any("targets CutDestination on quest node 10" in error for error in errors),
+            errors,
+        )
+
+    def test_validation_rejects_non_executable_section_destination(self) -> None:
+        scene = copy.deepcopy(self.scene)
+        transition = next(
+            node["Data"]
+            for node in scene["Data"]["RootChunk"]["sceneGraph"]["Data"]["graph"]
+            if node["Data"]["nodeId"]["id"] == 13
+        )
+        destination = transition["outputSockets"][0]["destinations"][0]
+        self.assertEqual(destination["nodeId"]["id"], 2)
+        destination["isockStamp"]["ordinal"] = 1
+
+        errors = generate_scene.validate_scene(scene, self.spec)
+
+        self.assertTrue(
+            any("section flow must use socket 0:0" in error for error in errors),
+            errors,
+        )
 
     def test_spoken_only_scene_does_not_require_choice_lines(self) -> None:
         spec = copy.deepcopy(self.spec)

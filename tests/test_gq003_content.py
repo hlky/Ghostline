@@ -9,22 +9,24 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BUILD_PATH = ROOT / "quests/story/ghostline/gq003/implementation/build.py"
-BUILD_SPEC = importlib.util.spec_from_file_location("generate_gq003_content", BUILD_PATH)
+BUILD_PATH = ROOT / "projects/ghostline/quests/gq003/implementation/build.py"
+BUILD_SPEC = importlib.util.spec_from_file_location(
+    "generate_gq003_content", BUILD_PATH
+)
 assert BUILD_SPEC and BUILD_SPEC.loader
 generate_gq003_content = importlib.util.module_from_spec(BUILD_SPEC)
 sys.modules["generate_gq003_content"] = generate_gq003_content
 BUILD_SPEC.loader.exec_module(generate_gq003_content)
 
-MANIFEST = ROOT / "quests/story/ghostline/gq003/implementation/quest.json"
-JOURNAL = ROOT / "source/raw/mod/gq003/journal/gq003.journal.json"
-ONSCREENS = ROOT / "source/raw/mod/gq003/localization/en-us/onscreens/gq003.json.json"
-TWEAK = ROOT / "source/resources/r6/tweaks/ghostline/gq003_black_lantern.yaml"
-MARA = ROOT / "characters/mara.character.json"
-SCRIPT = ROOT / "quests/story/ghostline/gq003/script"
-LOCALIZATION = ROOT / "source/raw/mod/gq003/localization/en-us"
+MANIFEST = ROOT / "projects/ghostline/quests/gq003/implementation/quest.json"
+JOURNAL = ROOT / "projects/ghostline/source/raw/mod/gq003/journal/gq003.journal.json"
+ONSCREENS = ROOT / "projects/ghostline/source/raw/mod/gq003/localization/en-us/onscreens/gq003.json.json"
+TWEAK = ROOT / "projects/ghostline/source/resources/r6/tweaks/ghostline/gq003_black_lantern.yaml"
+MARA = ROOT / "projects/shared/ghostline-runtime/characters/mara.character.json"
+SCRIPT = ROOT / "projects/ghostline/quests/gq003/script"
+LOCALIZATION = ROOT / "projects/ghostline/source/raw/mod/gq003/localization/en-us"
 VOICE_PRODUCTION = SCRIPT / "voice-production.json"
-ARCHIVE_XL = ROOT / "source/resources/Ghostline.archive.xl"
+ARCHIVE_XL = ROOT / "projects/ghostline/source/resources/Ghostline.archive.xl"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -66,15 +68,16 @@ class Gq003ContentTests(unittest.TestCase):
         self.assertEqual(generate_gq003_content.generate_onscreens(), load(ONSCREENS))
 
     def test_manifest_objectives_and_mappins_exist_in_journal(self) -> None:
-        manifest = load(MANIFEST)
+        from quest_authoring import normalize_spec
+
+        manifest = normalize_spec(load(MANIFEST))
         journal = load(JOURNAL)
         ids = {
             entry["id"]
             for entry in journal_entries(journal, "gameJournalQuestObjective")
         }
         mappin_ids = {
-            entry["id"]
-            for entry in journal_entries(journal, "gameJournalQuestMapPin")
+            entry["id"] for entry in journal_entries(journal, "gameJournalQuestMapPin")
         }
         for stage in manifest["stages"]:
             if stage.get("objective"):
@@ -106,7 +109,12 @@ class Gq003ContentTests(unittest.TestCase):
                 "courier_ledger",
             },
         )
-        for key in generate_gq003_content.ITEM_COPY:
+        for key in (
+            "gl_gq003_item_route_auth_name",
+            "gl_gq003_item_route_beacon_name",
+            "gl_gq003_item_cipher_name",
+            "gl_gq003_item_receipt_name",
+        ):
             self.assertIn(key, keys)
 
     def test_dialogue_assets_cover_every_spoken_line(self) -> None:
@@ -124,12 +132,8 @@ class Gq003ContentTests(unittest.TestCase):
             with self.subTest(dialogue=dialogue_id):
                 manifest = load(SCRIPT / entry["file"])
                 spoken = manifest["spoken_lines"]
-                subtitle = load(
-                    LOCALIZATION / f"subtitles/{dialogue_id}.json.json"
-                )
-                voice = load(
-                    LOCALIZATION / f"vo/{dialogue_id}.json.json"
-                )
+                subtitle = load(LOCALIZATION / f"subtitles/{dialogue_id}.json.json")
+                voice = load(LOCALIZATION / f"vo/{dialogue_id}.json.json")
                 subtitle_map = load(
                     LOCALIZATION / f"subtitles/{dialogue_id}_subtitles_map.json.json"
                 )
@@ -146,7 +150,9 @@ class Gq003ContentTests(unittest.TestCase):
                     len(subtitle_map["Data"]["RootChunk"]["root"]["Data"]["entries"]),
                     1,
                 )
-                subtitle_entries = subtitle["Data"]["RootChunk"]["root"]["Data"]["entries"]
+                subtitle_entries = subtitle["Data"]["RootChunk"]["root"]["Data"][
+                    "entries"
+                ]
                 voice_entries = voice["Data"]["RootChunk"]["root"]["Data"]["entries"]
                 self.assertEqual(
                     [item["stringId"] for item in subtitle_entries],

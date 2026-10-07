@@ -22,8 +22,8 @@ from cr2w_helpers import (
 )
 
 
-DEFAULT_SUBTITLES = Path("source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json")
-DEFAULT_VO = Path("source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json")
+DEFAULT_SUBTITLES = Path("projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json")
+DEFAULT_VO = Path("projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json")
 
 
 @dataclass(frozen=True)

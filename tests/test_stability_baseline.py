@@ -24,7 +24,7 @@ class StabilityBaselineTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.explorer = explore_questphase.QuestphaseExplorer(
-            ROOT / "source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json"
+            ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json"
         )
         cls.nodes_by_id = {node.quest_id: node for node in cls.explorer.nodes_by_handle.values()}
 
@@ -85,7 +85,7 @@ class StabilityBaselineTests(unittest.TestCase):
         self.assertEqual(spawned_condition["objectRef"]["reference"]["$value"], "#gq000_01_com_patch_bridge")
 
     def test_meeting_phase_handle_refs_are_backward_resolvable(self) -> None:
-        path = ROOT / "source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json"
+        path = ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json"
         document = json.loads(path.read_text(encoding="utf-8"))
         seen: set[str] = set()
         unresolved: list[str] = []

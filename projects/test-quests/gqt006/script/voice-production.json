@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "quest": "gqt006",
+  "spoken_line_count": 28,
+  "manifests": [
+    {
+      "id": "gqt006_10",
+      "file": "gqt006_10_manifest.json",
+      "delivery": "formal_scene",
+      "runtime_status": "vertical_slice",
+      "line_count": 28,
+      "speakers": ["Goth Baddie", "V"]
+    }
+  ],
+  "voice_sources": {
+    "V": {
+      "mode": "speaker_embedding",
+      "source": "projects/ghostline/quests/shared/voice/embeddings/v.safetensors"
+    },
+    "V Male": {
+      "mode": "speaker_embedding",
+      "source": "generated-voices/gqt006/embeddings/v-male-multiline.json",
+      "reference": "generated-voices/gqt006/references/v-male-multiline.wav",
+      "status": "approved"
+    },
+    "Goth Baddie": {
+      "mode": "designed_reference",
+      "source": "generated-voices/gqt006/embeddings/goth-baddie-burned-netrunner.json",
+      "reference": "generated-voices/gqt006/voice-design/burned-netrunner.wav",
+      "status": "approved"
+    }
+  },
+  "notes": [
+    "The authored scene uses one V screenplay performer; production renders must be selected by player brain gender before WEM promotion.",
+    "Female V uses the existing shared embedding. Male V uses an approved 20.95-second reference assembled from five vanilla q003/q110 lines.",
+    "Goth Baddie's three authored design prompts live in projects/test-quests/gqt006/voice/design/goth-baddie-variants.json.",
+    "Goth Baddie's burned-netrunner design was selected from three reviewed VoiceDesign variants.",
+    "The original single-line Male V embedding remains under generated-voices/gqt006/embeddings/v-male.json for audit comparison only.",
+    "WEM paths and duration estimates are production contracts until rendered audio is promoted."
+  ]
+}

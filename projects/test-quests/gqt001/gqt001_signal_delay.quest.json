@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "id": "gqt001_signal_delay",
+  "title": "Signal Delay",
+  "description": "Runtime test harness for reaching a terminal, reading a quest-owned computer document, waiting on elapsed game time, and completing a phone conversation.",
+  "phase_prefabs": [
+    "@locations.prefab.ref"
+  ],
+  "stages": [
+    {
+      "id": "reach_terminal",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gqt001\\phases\\gqt001_reach_terminal.questphase",
+      "trigger": "@locations.terminal.trigger",
+      "objective": "@objectives.reach_terminal.path",
+      "description_entry": "@objectives.reach_terminal.description_entry",
+      "mappin": "@objectives.reach_terminal.mappin",
+      "notes": "Uses a five-metre Ghostline trigger and marker at the selected native Kabuki laptop.",
+      "phase_prefabs": []
+    },
+    {
+      "id": "read_diagnostic",
+      "type": "read_terminal_document",
+      "status": "ready",
+      "phase_resource": "mod\\gqt001\\phases\\gqt001_read_diagnostic.questphase",
+      "computer": "@locations.terminal.computer",
+      "document_entry": "@readables.diagnostic.path",
+      "completion_fact": "@facts.document_read",
+      "objective": "@objectives.read_diagnostic.path",
+      "notes": "The laptop's gamedeviceDataElement sets gqt001_document_read through vanilla questInfo.factName when the file is opened.",
+      "phase_prefabs": []
+    },
+    {
+      "id": "wait_for_reply",
+      "type": "time_gate",
+      "status": "ready",
+      "phase_resource": "mod\\gqt001\\phases\\gqt001_wait_for_reply.questphase",
+      "seconds": 10,
+      "completion_fact": "@facts.delay_complete",
+      "notes": "Short elapsed-game-time delay for repeatable runtime testing.",
+      "phase_prefabs": []
+    },
+    {
+      "id": "confirm_result",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gqt001\\phases\\gqt001_confirm_result.questphase",
+      "contact": "@contacts.patch.contact",
+      "thread": "@contacts.patch.threads.confirmation.path",
+      "messages": [
+        "@contacts.patch.threads.confirmation.entries.received.path"
+      ],
+      "choice_group": "@contacts.patch.threads.confirmation.entries.response.path",
+      "choices": [
+        {
+          "choice": "@contacts.patch.threads.confirmation.entries.response.entries.clean.path",
+          "reply": "@contacts.patch.threads.confirmation.entries.clean_reply.path"
+        },
+        {
+          "choice": "@contacts.patch.threads.confirmation.entries.response.entries.slow.path",
+          "reply": "@contacts.patch.threads.confirmation.entries.slow_reply.path"
+        }
+      ],
+      "final_message": "@contacts.patch.threads.confirmation.entries.complete.path",
+      "completion_fact": "@facts.completed",
+      "complete_quest": "@quest.path",
+      "notes": "Patch confirms the delayed pulse; either response converges on gqt001_completed.",
+      "phase_prefabs": []
+    }
+  ],
+  "composition": {
+    "namespace": "gqt001",
+    "journal_template": "gq001_shapes",
+    "locations": {
+      "prefab": {
+        "ref": "#gqt001_pr_signal_delay"
+      },
+      "terminal": {
+        "ref": "#gqt001_01_mp_terminal",
+        "trigger": "#gqt001_01_tr_terminal",
+        "computer": "$/03_night_city/c_watson/kabuki/kab_ce_prefabKAROLKA/ce_wat_kab_09_prefabOUZTR6I/ce_wat_kab_09_gameplay_prefabB2VJYCQ/ce_wat_kab_09_devices_prefabRBDKYEY/laptop_1_prefabELI4PBY",
+        "owned_device": "$/mod/gqt001/#gqt001_pr_signal_delay/#gqt001_terminal_laptop_r2"
+      }
+    },
+    "facts": {
+      "document_read": "gqt001_document_read",
+      "delay_complete": "gqt001_delay_complete",
+      "completed": "gqt001_completed"
+    },
+    "objectives": {
+      "reach_terminal": {
+        "phase_id": "gqt001_01",
+        "id": "gqt001_01_obj_reach_terminal",
+        "text": "Go to the Kabuki terminal.",
+        "localization_key": "gl_gqt001_01_objective_reach_terminal",
+        "description_id": "gqt001_01_desc_reach_terminal",
+        "description": "Patch wants a diagnostic file pulled from an unattended laptop.",
+        "description_key": "gl_gqt001_01_description_reach_terminal",
+        "mappins": {
+          "target": {
+            "id": "gqt001_01_qmp_terminal",
+            "ref": "@locations.terminal.ref",
+            "text": "Kabuki terminal",
+            "localization_key": "gl_gqt001_01_mappin_terminal",
+            "debug_caption": "gl_gqt001_01_mappin_terminal"
+          }
+        }
+      },
+      "read_diagnostic": {
+        "phase_id": "gqt001_02",
+        "id": "gqt001_02_obj_read_diagnostic",
+        "text": "Read the diagnostic file.",
+        "localization_key": "gl_gqt001_02_objective_read_diagnostic",
+        "description_id": "gqt001_02_desc_read_diagnostic",
+        "description": "Open Files on the laptop and read SIGNAL DELAY.",
+        "description_key": "gl_gqt001_02_description_read_diagnostic"
+      }
+    },
+    "points_of_interest": {
+      "start": {
+        "id": "gqt001_01_poi_terminal",
+        "ref": "@locations.terminal.ref"
+      }
+    },
+    "contacts": {
+      "patch": {
+        "id": "patch",
+        "template": "patch",
+        "localization_key": "gl_gq001_phone_patch_name",
+        "threads": {
+          "confirmation": {
+            "id": "gqt001_03_confirmation",
+            "title": "Signal Delay",
+            "title_key": "gl_gqt001_phone_title",
+            "entries": {
+              "received": {
+                "type": "message",
+                "id": "01_msg_signal_received",
+                "text": "Got the relay pulse. Ten seconds late, exactly like the diagnostic said.",
+                "localization_key": "gl_gqt001_phone_signal_received",
+                "delay": 1
+              },
+              "response": {
+                "type": "choice_group",
+                "id": "02_ch_response",
+                "entries": {
+                  "clean": {
+                    "id": "02a_ch_clean",
+                    "text": "Clean enough.",
+                    "localization_key": "gl_gqt001_phone_choice_clean"
+                  },
+                  "slow": {
+                    "id": "02b_ch_slow",
+                    "text": "Slow enough.",
+                    "localization_key": "gl_gqt001_phone_choice_slow"
+                  }
+                }
+              },
+              "clean_reply": {
+                "type": "message",
+                "id": "03a_msg_clean",
+                "text": "Clean is what matters. Delay gives us a window.",
+                "localization_key": "gl_gqt001_phone_reply_clean",
+                "delay": 1
+              },
+              "slow_reply": {
+                "type": "message",
+                "id": "03b_msg_slow",
+                "text": "Slow on purpose. Makes the watchdog look away.",
+                "localization_key": "gl_gqt001_phone_reply_slow",
+                "delay": 1
+              },
+              "complete": {
+                "type": "message",
+                "id": "04_msg_complete",
+                "text": "Test complete. I'll scrub the route.",
+                "localization_key": "gl_gqt001_phone_complete",
+                "delay": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "readables": {
+      "diagnostic": {
+        "kind": "file",
+        "group": "files",
+        "id": "diagnostic",
+        "title": "SIGNAL DELAY",
+        "text": "ROUTE: KAB-09 / AUXILIARY\n\nObserved forwarding delay: 10 seconds.\nCause: stale maintenance mirror.\nRecommendation: preserve the delay. The blind interval is useful.",
+        "title_key": "gl_gqt001_document_title",
+        "text_key": "gl_gqt001_document_body"
+      }
+    }
+  }
+}

@@ -6,10 +6,10 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-JOURNAL = ROOT / "source/raw/mod/gq000/journal/gq000.journal.json"
-ONSCREENS = ROOT / "source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json"
-SHARD_TWEAKS = ROOT / "source/resources/r6/tweaks/ghostline/gq000_shards.yaml"
-ROOT_PHASE = ROOT / "source/raw/mod/gq000/phases/gq000.questphase.json"
+JOURNAL = ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/journal/gq000.journal.json"
+ONSCREENS = ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/onscreens/gq000.json.json"
+SHARD_TWEAKS = ROOT / "projects/shared/ghostline-runtime/source/resources/r6/tweaks/ghostline/gq000_shards.yaml"
+ROOT_PHASE = ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000.questphase.json"
 
 
 def walk_handles(value):

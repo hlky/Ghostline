@@ -1,12 +1,15 @@
 //! Persistent in-process `DinoML` synthesis backend.
 
+use std::fs;
 use std::path::{Path, PathBuf};
 
+use dinoml_qwen3_tts::sha256_file;
 use dinoml_qwen3_tts::{BaseSynthesisController, PromptBuilder};
 use dinoml_runtime::Device;
+use sha2::{Digest, Sha256};
 
-use crate::Result;
 use crate::backend::{GeneratedAudio, SynthesisRequest, VoiceBackend};
+use crate::{Error, Result};
 
 /// Trusted local Base-model artifact configuration.
 #[derive(Debug, Clone)]
@@ -46,6 +49,7 @@ impl LocalDinoMlConfig {
 pub struct LocalDinoMlBackend {
     builder: PromptBuilder,
     controller: BaseSynthesisController,
+    identity: String,
 }
 
 impl LocalDinoMlBackend {
@@ -61,6 +65,19 @@ impl LocalDinoMlBackend {
     /// Returns an error for checkpoint, tokenizer, artifact, device, or graph
     /// replay initialization failure.
     pub unsafe fn load(config: &LocalDinoMlConfig) -> Result<Self> {
+        let mut digest = Sha256::new();
+        digest.update(format!(
+            "ghostline-local-v1|{:?}|{}",
+            config.device, config.graph_replay
+        ));
+        for directory in [
+            &config.checkpoint,
+            &config.generation_artifact,
+            &config.decoder_artifact,
+        ] {
+            fingerprint_tree(directory, directory, &mut digest)?;
+        }
+        let identity = format!("{:x}", digest.finalize());
         let builder = PromptBuilder::load(&config.checkpoint)?;
         // SAFETY: The caller accepted the documented trust contract for both
         // native artifact directories and their dependencies.
@@ -76,6 +93,7 @@ impl LocalDinoMlBackend {
         Ok(Self {
             builder,
             controller,
+            identity,
         })
     }
 
@@ -86,6 +104,10 @@ impl LocalDinoMlBackend {
 }
 
 impl VoiceBackend for LocalDinoMlBackend {
+    fn identity(&self) -> &str {
+        &self.identity
+    }
+
     fn synthesize(&mut self, request: SynthesisRequest<'_>) -> Result<GeneratedAudio> {
         let prompt = self.builder.base_xvector(request.text, request.language)?;
         let aligned = self.builder.align(&prompt)?;
@@ -101,4 +123,35 @@ impl VoiceBackend for LocalDinoMlBackend {
             wav: waveform.to_pcm16_wav()?,
         })
     }
+}
+
+fn fingerprint_tree(root: &Path, directory: &Path, digest: &mut Sha256) -> Result<()> {
+    let mut entries = fs::read_dir(directory)
+        .map_err(|source| Error::io(directory, source))?
+        .map(|entry| entry.map(|entry| entry.path()))
+        .collect::<std::io::Result<Vec<_>>>()
+        .map_err(|source| Error::io(directory, source))?;
+    entries.sort();
+    for path in entries {
+        // Download metadata is not consumed by the model and may change on inspection.
+        if path
+            .file_name()
+            .is_some_and(|name| name == ".cache" || name == ".git")
+        {
+            continue;
+        }
+        if path.is_dir() {
+            fingerprint_tree(root, &path, digest)?;
+        } else {
+            digest.update(
+                path.strip_prefix(root)
+                    .unwrap_or(&path)
+                    .to_string_lossy()
+                    .as_bytes(),
+            );
+            digest.update([0]);
+            digest.update(sha256_file(&path)?.as_bytes());
+        }
+    }
+    Ok(())
 }

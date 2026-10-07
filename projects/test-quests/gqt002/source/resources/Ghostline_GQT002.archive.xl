@@ -1,0 +1,23 @@
+quest:
+  phases:
+  - path: mod\gqt002\phases\gqt002_quiet_install.questphase
+    parent: base\quest\cyberpunk2077.quest
+journal:
+- mod\gqt002\journal\gqt002.journal
+localization:
+  onscreens:
+    en-us:
+    - mod\gqt002\localization\en-us\onscreens\gqt002.json
+  subtitles:
+    en-us: []
+  lipmaps:
+    en-us: []
+  vomaps:
+    en-us: []
+streaming:
+  blocks:
+  - mod\gqt002\world\gqt002_quiet_install.streamingblock
+resource:
+  patch:
+    mod\gqt002\world\gqt002_custom_devices.devices:
+    - base\worlds\03_night_city\_compiled\default\03_night_city.devices

@@ -10,21 +10,22 @@ from __future__ import annotations
 
 import argparse
 import base64
-import json
 import math
 import struct
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from cr2w_helpers import load_json, print_json, print_table
+from artifact_io import publish_json_artifacts
 from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, deserialize as deserialize_cr2w
+from project_layout import resource_project, project_config, project_root
 
 
+DEFAULT_EXPORTED_DATETIME = "1970-01-01T00:00:00Z"
 DEFAULT_RAW_ROOT = Path("source/raw")
 DEFAULT_ARCHIVE_ROOT = Path("source/archive")
-DEFAULT_ARCHIVE_XL = Path("source/resources/Ghostline.archive.xl")
+DEFAULT_ARCHIVE_XL = Path("projects/ghostline/source/resources/Ghostline.archive.xl")
 
 WORLD_FLOAT = 3.40282347e38
 FNV64_OFFSET = 0xCBF29CE484222325
@@ -123,10 +124,6 @@ def node_ref_hash(value: str) -> int:
     return hash_value
 
 
-def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
 def normalize_depot_path(value: str) -> str:
     return str(value).replace("/", "\\")
 
@@ -176,6 +173,32 @@ def vector4(value: Vec3, w: float = 0) -> dict[str, Any]:
 def quaternion_from_yaw(yaw: float) -> dict[str, Any]:
     radians = math.radians(yaw) / 2
     return {"$type": "Quaternion", "i": 0, "j": 0, "k": math.sin(radians), "r": math.cos(radians)}
+
+
+def quaternion_from_node_data(value: Any) -> dict[str, Any]:
+    label = "node_data.orientation"
+    components = ("i", "j", "k", "r")
+    if not isinstance(value, dict) or not all(component in value for component in components):
+        raise SystemExit(f"{label} must be an object with i/j/k/r")
+
+    parsed: dict[str, float] = {}
+    for component in components:
+        raw = value[component]
+        if isinstance(raw, bool):
+            raise SystemExit(f"{label}.{component} must be a finite number")
+        try:
+            parsed[component] = float(raw)
+        except (TypeError, ValueError) as exc:
+            raise SystemExit(
+                f"{label}.{component} must be a finite number"
+            ) from exc
+        if not math.isfinite(parsed[component]):
+            raise SystemExit(f"{label}.{component} must be a finite number")
+
+    norm_squared = sum(component * component for component in parsed.values())
+    if not math.isfinite(norm_squared) or norm_squared <= 0:
+        raise SystemExit(f"{label} must have a finite, non-zero norm")
+    return {"$type": "Quaternion", **parsed}
 
 
 def node_ref(value: str) -> dict[str, Any]:
@@ -296,11 +319,16 @@ def node_data(
 ) -> dict[str, Any]:
     overrides = overrides or {}
     quest_ref = node_ref(ref) if isinstance(ref, str) else node_ref_u64(ref)
+    orientation = (
+        quaternion_from_node_data(overrides["orientation"])
+        if "orientation" in overrides
+        else quaternion_from_yaw(yaw)
+    )
     return {
         "Id": "0",
         "NodeIndex": node_index,
         "Position": vector4(position),
-        "Orientation": quaternion_from_yaw(yaw),
+        "Orientation": orientation,
         "Scale": {
             "$type": "Vector3",
             "X": float(overrides.get("scale_x", 1)),
@@ -598,7 +626,7 @@ def entity_node(
     }
 
 
-def device_registry(archive_path: Path, entries: list[DeviceRegistryEntry]) -> dict[str, Any]:
+def device_registry(archive_path: Path, entries: list[DeviceRegistryEntry], *, exported_datetime: str = DEFAULT_EXPORTED_DATETIME) -> dict[str, Any]:
     """Build the sparse device registry emitted by WolvenKit World Builder.
 
     ArchiveXL merges this mod-owned resource into Night City's global device
@@ -612,7 +640,7 @@ def device_registry(archive_path: Path, entries: list[DeviceRegistryEntry]) -> d
             "WolvenKitVersion": "8.17.4",
             "WKitJsonVersion": "0.0.9",
             "GameVersion": 2310,
-            "ExportedDateTime": now_utc(),
+            "ExportedDateTime": exported_datetime,
             "DataType": "CR2W",
             "ArchiveFileName": str(archive_path.resolve()),
         },
@@ -662,7 +690,11 @@ def ai_spot_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> di
             "isVisibleInGame": 1,
             "isWorkspotInfinite": int(spec.get("is_workspot_infinite", 1)),
             "isWorkspotStatic": int(spec.get("is_workspot_static", 0)),
-            "lookAtTarget": node_ref_u64(0),
+            "lookAtTarget": (
+                node_ref(str(spec["look_at_target"]))
+                if spec.get("look_at_target")
+                else node_ref_u64(0)
+            ),
             "markings": [cname(marking) for marking in spec.get("markings", [])],
             "proxyScale": None,
             "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
@@ -1031,13 +1063,13 @@ def community_registry_node(
     }
 
 
-def streaming_sector(category: str, level: int, archive_path: Path, node_datas: list[dict[str, Any]], refs: list[str], nodes: list[dict[str, Any]]) -> dict[str, Any]:
+def streaming_sector(category: str, level: int, archive_path: Path, node_datas: list[dict[str, Any]], refs: list[str], nodes: list[dict[str, Any]], *, exported_datetime: str = DEFAULT_EXPORTED_DATETIME) -> dict[str, Any]:
     return {
         "Header": {
             "WolvenKitVersion": "8.17.4",
             "WKitJsonVersion": "0.0.9",
             "GameVersion": 2310,
-            "ExportedDateTime": now_utc(),
+            "ExportedDateTime": exported_datetime,
             "DataType": "CR2W",
             "ArchiveFileName": str(archive_path.resolve()),
         },
@@ -1112,6 +1144,8 @@ def streaming_block(
     prefab_root: str,
     quest_bounds: tuple[Vec3, Vec3],
     always_loaded_path: str | None,
+    *,
+    exported_datetime: str = DEFAULT_EXPORTED_DATETIME,
 ) -> dict[str, Any]:
     descriptors = [
         descriptor("Quest", quest_sector_path, 0, prefab_root, quest_bounds[0], quest_bounds[1]),
@@ -1132,7 +1166,7 @@ def streaming_block(
             "WolvenKitVersion": "8.17.4",
             "WKitJsonVersion": "0.0.9",
             "GameVersion": 2310,
-            "ExportedDateTime": now_utc(),
+            "ExportedDateTime": exported_datetime,
             "DataType": "CR2W",
             "ArchiveFileName": str(archive_path.resolve()),
         },
@@ -1150,14 +1184,8 @@ def streaming_block(
     }
 
 
-def write_json(path: Path, data: dict[str, Any], dry_run: bool) -> None:
-    if dry_run:
-        return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-
-
-def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_run: bool = False) -> list[GeneratedFile]:
+def build_world_documents(spec: dict[str, Any], raw_root: Path, archive_root: Path) -> tuple[list[GeneratedFile], dict[Path, dict[str, Any]]]:
+    exported_datetime = str(spec.get("exported_datetime", DEFAULT_EXPORTED_DATETIME))
     prefab_root = str(spec["prefab_root"])
     quest_sector_path = normalize_depot_path(spec.get("quest_sector_path", rf"mod\{spec.get('name', 'ghostline')}\world\quest.streamingsector"))
     block_path = normalize_depot_path(spec.get("block_path", rf"mod\{spec.get('name', 'ghostline')}\world\all.streamingblock"))
@@ -1238,31 +1266,33 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
     registry_node_ids: list[int] = []
     device_registry_entries: list[DeviceRegistryEntry] = []
 
-    def add_node(ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float, overrides: dict[str, Any] | None = None) -> None:
+    identities: dict[str, str] = {}
+
+    def add_world_node(
+        ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float,
+        overrides: dict[str, Any] | None, *, always_loaded: bool = False,
+    ) -> None:
         full_ref = full_node_ref(prefab_root, ref_value)
-        index = len(nodes)
-        nodes.append(node)
-        node_datas.append(node_data(index, full_ref, pos, yaw, overrides))
-        refs.append(full_ref)
+        target_nodes = always_loaded_nodes if always_loaded else nodes
+        target_data = always_loaded_node_datas if always_loaded else node_datas
+        target_refs = always_loaded_refs if always_loaded else refs
+        source = f"{'AlwaysLoaded' if always_loaded else 'Quest'} node {len(target_nodes)} ({node['Data']['$type']})"
+        if full_ref in identities:
+            raise SystemExit(f"Duplicate world NodeRef {full_ref}: {identities[full_ref]} and {source}")
+        identities[full_ref] = source
+        index = len(target_nodes)
+        target_nodes.append(node)
+        target_data.append(node_data(index, full_ref, pos, yaw, overrides))
+        target_refs.append(full_ref)
         positions.append(pos)
         register_anchor(anchors, ref_value, Anchor(pos, yaw, index))
         register_anchor(anchors, full_ref, Anchor(pos, yaw, index))
 
-    def add_always_loaded_node(
-        ref_value: str,
-        node: dict[str, Any],
-        pos: Vec3,
-        yaw: float,
-        overrides: dict[str, Any] | None = None,
-    ) -> None:
-        full_ref = full_node_ref(prefab_root, ref_value)
-        index = len(always_loaded_nodes)
-        always_loaded_nodes.append(node)
-        always_loaded_node_datas.append(node_data(index, full_ref, pos, yaw, overrides))
-        always_loaded_refs.append(full_ref)
-        positions.append(pos)
-        register_anchor(anchors, ref_value, Anchor(pos, yaw, index))
-        register_anchor(anchors, full_ref, Anchor(pos, yaw, index))
+    def add_node(ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float, overrides: dict[str, Any] | None = None) -> None:
+        add_world_node(ref_value, node, pos, yaw, overrides)
+
+    def add_always_loaded_node(ref_value: str, node: dict[str, Any], pos: Vec3, yaw: float, overrides: dict[str, Any] | None = None) -> None:
+        add_world_node(ref_value, node, pos, yaw, overrides, always_loaded=True)
 
     for item in marker_specs:
         ref_value = item["ref"]
@@ -1453,6 +1483,7 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
             item.get("node_data"),
         )
 
+    alias_refs: set[str] = set()
     for ref_spec in always_loaded_ref_specs:
         if isinstance(ref_spec, str):
             ref_value = ref_spec
@@ -1464,6 +1495,9 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
             raise SystemExit("always_loaded_node_refs entries must be strings or objects")
 
         full_ref = full_node_ref(prefab_root, ref_value)
+        if full_ref in alias_refs or full_ref in always_loaded_refs:
+            raise SystemExit(f"Duplicate AlwaysLoaded alias NodeRef {full_ref}")
+        alias_refs.add(full_ref)
         position_spec = ref_data.get("position")
         if position_spec is None:
             anchor = lookup_anchor(anchors, full_ref)
@@ -1504,6 +1538,7 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
             always_loaded_node_datas,
             always_loaded_refs,
             always_loaded_nodes,
+            exported_datetime=exported_datetime,
         )
 
     quest_archive = depot_to_archive_path(archive_root, quest_sector_path)
@@ -1514,6 +1549,7 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         node_datas,
         refs,
         nodes,
+        exported_datetime=exported_datetime,
     )
 
     block_archive = depot_to_archive_path(archive_root, block_path)
@@ -1523,25 +1559,25 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
         prefab_root,
         block_bounds(spec, positions),
         always_loaded_path,
+        exported_datetime=exported_datetime,
     )
 
     generated: list[GeneratedFile] = []
+    documents: dict[Path, dict[str, Any]] = {}
     quest_raw = depot_to_raw_path(raw_root, quest_sector_path)
     block_raw = depot_to_raw_path(raw_root, block_path)
-    write_json(quest_raw, quest_sector, dry_run)
+    documents[quest_raw] = quest_sector
     generated.append(GeneratedFile("quest_sector", quest_sector_path, quest_raw, quest_archive))
     if always_loaded_sector and always_loaded_path:
         always_raw = depot_to_raw_path(raw_root, always_loaded_path)
         always_archive = depot_to_archive_path(archive_root, always_loaded_path)
-        write_json(always_raw, always_loaded_sector, dry_run)
+        documents[always_raw] = always_loaded_sector
         generated.append(GeneratedFile("always_loaded_sector", always_loaded_path, always_raw, always_archive))
     if device_registry_path:
         device_registry_raw = depot_to_raw_path(raw_root, device_registry_path)
         device_registry_archive = depot_to_archive_path(archive_root, device_registry_path)
-        write_json(
-            device_registry_raw,
-            device_registry(device_registry_archive, device_registry_entries),
-            dry_run,
+        documents[device_registry_raw] = device_registry(
+            device_registry_archive, device_registry_entries, exported_datetime=exported_datetime,
         )
         generated.append(
             GeneratedFile(
@@ -1551,8 +1587,14 @@ def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_ru
                 device_registry_archive,
             )
         )
-    write_json(block_raw, block, dry_run)
+    documents[block_raw] = block
     generated.append(GeneratedFile("streaming_block", block_path, block_raw, block_archive))
+    return generated, documents
+
+def build_world(spec: dict[str, Any], raw_root: Path, archive_root: Path, dry_run: bool = False) -> list[GeneratedFile]:
+    generated, documents = build_world_documents(spec, raw_root, archive_root)
+    if not dry_run:
+        publish_json_artifacts(documents)
     return generated
 
 
@@ -1613,12 +1655,15 @@ def deserialize(generated: list[GeneratedFile], red_cli: Path, schema: Path) -> 
 
 def command_generate(args: argparse.Namespace) -> None:
     spec = load_json(args.spec)
-    generated = build_world(spec, args.raw_root, args.archive_root, dry_run=args.dry_run)
+    project = project_root(args.project) if getattr(args, "project", None) else resource_project(spec["block_path"])
+    raw_root = args.raw_root or project / "source/raw"
+    archive_root = args.archive_root or project / "source/archive"
+    generated = build_world(spec, raw_root, archive_root, dry_run=args.dry_run)
     if args.register:
         block = next(item for item in generated if item.kind == "streaming_block")
         registry = next((item for item in generated if item.kind == "device_registry"), None)
         register_archive_xl(
-            args.archive_xl,
+            args.archive_xl or project / "source/resources" / project_config(project).get("registration", "Ghostline.archive.xl"),
             block.depot_path,
             args.dry_run,
             registry.depot_path if registry else None,
@@ -1702,7 +1747,7 @@ def command_measure(args: argparse.Namespace) -> None:
 
 def command_example(args: argparse.Namespace) -> None:
     path = Path(
-        "quests/story/ghostline/_quest-template/implementation/world/"
+        "projects/ghostline/quests/_quest-template/implementation/world/"
         "example.world.json"
     )
     print(path.read_text(encoding="utf-8"))
@@ -1714,10 +1759,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     generate = subparsers.add_parser("generate", help="Generate raw .streamingsector.json and .streamingblock.json files.")
     generate.add_argument("--spec", type=Path, required=True, help="World generation spec JSON.")
-    generate.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT, help=f"Raw output root. Default: {DEFAULT_RAW_ROOT}")
-    generate.add_argument("--archive-root", type=Path, default=DEFAULT_ARCHIVE_ROOT, help=f"Archive target root. Default: {DEFAULT_ARCHIVE_ROOT}")
+    generate.add_argument("--project", help="Target project ID or directory; defaults to the spec's owner")
+    generate.add_argument("--raw-root", type=Path, help="Override the project's raw output root")
+    generate.add_argument("--archive-root", type=Path, help="Override the project's archive target root")
     generate.add_argument("--register", action="store_true", help="Add the generated streaming block to Ghostline.archive.xl.")
-    generate.add_argument("--archive-xl", type=Path, default=DEFAULT_ARCHIVE_XL, help=f"ArchiveXL YAML path. Default: {DEFAULT_ARCHIVE_XL}")
+    generate.add_argument("--archive-xl", type=Path, help="Override the project's ArchiveXL registration file")
     generate.add_argument("--deserialize", action="store_true", help="Run ghostline-red to convert generated raw JSON into CR2W binaries.")
     generate.add_argument("--red-cli", type=Path, default=DEFAULT_RED_CLI, help=f"ghostline-red CLI path. Default: {DEFAULT_RED_CLI}")
     generate.add_argument("--schema", type=Path, default=DEFAULT_RED_SCHEMA, help=f"RED schema path. Default: {DEFAULT_RED_SCHEMA}")

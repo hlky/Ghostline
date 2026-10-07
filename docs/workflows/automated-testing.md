@@ -1,5 +1,24 @@
 # Automated Testing
 
+Use Python 3.12 and the checked-in environment lock from the repository root:
+
+```powershell
+uv sync --locked --extra dev
+uv run python -B tools/check_project.py
+```
+
+This gate runs the Python suite and model-free Rust voice tests. Use
+`--python-only` for the Python layer. Install `--extra capture` for Windows
+runtime capture, or `--extra research` for live reference regeneration.
+Without uv, `py -m pip install -e ".[dev]"` installs declared version ranges;
+the uv lock is the reproducible option. Game, Blender, Wwise and native CR2W
+runtime checks are separate from this pure authoring gate.
+
+Tool paths resolve explicit arguments, `GHOSTLINE_*` environment variables,
+then `toolchain.local.json`, then discovery. Copy `toolchain.example.json` for
+local configuration; never commit workstation-specific overrides.
+
+
 Run tests from the repository root. The full Python gate is:
 
 ```powershell
@@ -9,10 +28,10 @@ py -B -m unittest discover -s tests -v
 Quest READMEs list the focused test modules for their generators and runtime
 resources:
 
-- [`gq000`](../../quests/story/ghostline/gq000/README.md)
-- [`gq001`](../../quests/story/ghostline/gq001/README.md)
-- [`gq002`](../../quests/story/ghostline/gq002/README.md)
-- [`gq003`](../../quests/story/ghostline/gq003/README.md)
+- [`gq000`](../../projects/ghostline/quests/gq000/README.md)
+- [`gq001`](../../projects/ghostline/quests/gq001/README.md)
+- [`gq002`](../../projects/ghostline/quests/gq002/README.md)
+- [`gq003`](../../projects/ghostline/quests/gq003/README.md)
 
 ## Native Tool
 

@@ -13,4 +13,4 @@ These guides own reusable construction rules:
 - [ArchiveXL resource patching](archivexl-resource-patching.md)
 
 Quest-specific intent, dialogue, state, and commands remain under
-[`quests/story/ghostline`](../../quests/story/ghostline/README.md).
+[`projects/ghostline/quests`](../../projects/ghostline/quests/README.md).

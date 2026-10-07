@@ -3,19 +3,27 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import os
 from pathlib import Path
+import re
 import shutil
 import sqlite3
 import sys
 from typing import Any, Iterable, Mapping
-import uuid
+
+from artifact_io import publish_json_artifacts
 
 from .capture import CaptureController
+from .capture_evidence import assess_capture, capture_rows, check_report_destinations
 from .config import DEFAULT_CONFIG, load_config, output_paths, resolve_project_path
-from .database import connect, status_counts, transaction, utc_now
+from .database import (
+    connect,
+    connect_readonly,
+    requeue_places,
+    require_idle,
+    status_counts,
+    utc_now,
+)
 from .extract import index_sectors
 from .planning import plan_locations
 from .protocol import atomic_write_json
@@ -23,16 +31,6 @@ from .protocol import atomic_write_json
 
 class CliError(RuntimeError):
     pass
-
-
-def _write_text_atomic(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
-    with temporary.open("w", encoding="utf-8", newline="\n") as stream:
-        stream.write(text)
-        stream.flush()
-        os.fsync(stream.fileno())
-    os.replace(temporary, path)
 
 
 def _print(value: Any) -> None:
@@ -72,7 +70,6 @@ def _connection(
 def command_index(
     args: argparse.Namespace, config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
-    _materialize(paths, config)
     source_root = (
         Path(args.source_root).resolve()
         if args.source_root
@@ -91,6 +88,8 @@ def command_index(
             )
 
     try:
+        require_idle(connection)
+        _materialize(paths, config)
         return index_sectors(
             connection,
             source_root,
@@ -107,9 +106,10 @@ def command_index(
 def command_plan(
     args: argparse.Namespace, config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
-    _materialize(paths, config)
     connection = _connection(args, paths)
     try:
+        require_idle(connection)
+        _materialize(paths, config)
         return plan_locations(connection, config)
     finally:
         connection.close()
@@ -144,7 +144,12 @@ def command_capture(
             config_root=Path(config["_config_path"]).parent,
             game_profile=args.game_profile,
         )
-        return controller.run(limit=args.limit)
+        selection = {}
+        if args.location_id:
+            selection["location_ids"] = args.location_id
+        if args.category:
+            selection["categories"] = args.category
+        return controller.run(limit=args.limit, **selection)
     finally:
         connection.close()
 
@@ -152,12 +157,7 @@ def command_capture(
 def command_status(
     args: argparse.Namespace, _config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
-    if not paths["database"].is_file():
-        raise CliError(f"location database does not exist: {paths['database']}")
-    connection = sqlite3.connect(
-        f"file:{paths['database'].as_posix()}?mode=ro", uri=True
-    )
-    connection.row_factory = sqlite3.Row
+    connection = connect_readonly(paths["database"])
     try:
         result = status_counts(connection)
         result["database"] = str(paths["database"])
@@ -177,81 +177,39 @@ def command_status(
 def command_retry(
     args: argparse.Namespace, _config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
-    _materialize(paths, _config)
+    if not paths["database"].is_file():
+        raise CliError(f"World location database does not exist: {paths['database']}")
     connection = _connection(args, paths)
-    clauses: list[str] = []
-    parameters: list[Any] = []
-    if args.location_id:
-        clauses.append(
-            "location_id IN ({})".format(",".join("?" for _ in args.location_id))
-        )
-        parameters.extend(args.location_id)
-    if args.failure_code:
-        clauses.append(
-            "failure_code IN ({})".format(",".join("?" for _ in args.failure_code))
-        )
-        parameters.extend(args.failure_code)
-    if args.category:
-        clauses.append("category IN ({})".format(",".join("?" for _ in args.category)))
-        parameters.extend(args.category)
-    where = " AND ".join(clauses) if clauses else "queue_status='failed'"
     try:
-        with transaction(connection):
-            cursor = connection.execute(
-                f"""UPDATE places SET queue_status='pending',failure_code=NULL,failure_detail=NULL,
-                       publishable=0,updated_at=? WHERE ({where}) AND queue_status!='captured'
-                       AND scope_status='in_scope'""",
-                (utc_now(), *parameters),
-            )
-        return {"requeued": cursor.rowcount, "selection": where}
+        count = requeue_places(
+            connection,
+            location_ids=args.location_id,
+            failure_codes=args.failure_code,
+            categories=args.category,
+            recapture=args.recapture,
+        )
+        return {"requeued": count}
     finally:
         connection.close()
-
-
-def _hash_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def _capture_integrity(row: Mapping[str, Any]) -> tuple[bool, list[str]]:
-    errors: list[str] = []
-    for column, hash_column in (
-        ("png_path", "image_sha256"),
-        ("sidecar_path", "metadata_sha256"),
-        ("thumbnail_path", "thumbnail_sha256"),
-    ):
-        path = Path(row[column])
-        if not path.is_file():
-            errors.append(f"missing {column}: {path}")
-        elif _hash_file(path) != row[hash_column]:
-            errors.append(f"hash mismatch for {column}: {path}")
-    return not errors, errors
 
 
 def command_export(
     args: argparse.Namespace, _config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
-    _materialize(paths, _config)
-    connection = _connection(args, paths)
+    name = _report_name(args.name)
+    connection = connect_readonly(paths["database"])
     try:
-        where = "1=1" if args.include_unpublishable else "p.publishable=1"
-        rows = connection.execute(
-            f"""SELECT p.*,c.capture_id,c.png_path,c.sidecar_path,c.thumbnail_path,c.width,c.height,
-                       c.image_sha256,c.metadata_sha256,c.thumbnail_sha256,c.perceptual_hash,
-                       c.captured_at,c.validation_status,f.tags AS anchor_tags,
-                       f.metadata_json AS anchor_metadata_json
-                FROM places p JOIN captures c ON c.location_id=p.location_id
-                LEFT JOIN features f ON f.feature_id=p.anchor_feature_id
-                WHERE {where} ORDER BY p.queue_order,p.location_id,c.captured_at"""
-        ).fetchall()
+        rows = capture_rows(connection)
         exported: list[dict[str, Any]] = []
         rejected: list[dict[str, Any]] = []
         for row in rows:
-            valid, errors = _capture_integrity(row)
-            if not valid:
+            assessment = assess_capture(row)
+            errors = (
+                assessment["integrity_errors"]
+                if args.include_unpublishable
+                else assessment["blockers"]
+            )
+            if errors:
                 rejected.append(
                     {
                         "location_id": row["location_id"],
@@ -261,6 +219,25 @@ def command_export(
                 )
                 continue
             value = dict(row)
+            sidecar = assessment["sidecar"]
+            actual = sidecar.get("actual_pose", {})
+            for axis in ("x", "y", "z", "yaw", "pitch", "roll"):
+                value[f"actual_{axis}"] = (
+                    actual.get(axis) if isinstance(actual, dict) else None
+                )
+            value["actual_fov"] = sidecar.get("actual_fov")
+            value["capture_planned_pose"] = sidecar.get(
+                "planned_pose", sidecar.get("requested_pose")
+            )
+            value["effective_pose"] = sidecar.get("effective_pose")
+            value["capture_profile"] = sidecar.get("capture_profile")
+            value["game_profile"] = sidecar.get("game_profile", row.get("game_profile"))
+            value["capture_location_metadata"] = sidecar.get("location_metadata", {})
+            value["publishable"] = int(assessment["publishable"])
+            value["publication_blockers"] = assessment["blockers"]
+            value["current_capture"] = assessment["current"]
+            value["validation"] = assessment["validation"]
+            value.pop("validation_json", None)
             value["provenance"] = json.loads(value.pop("provenance_json"))
             anchor_metadata = json.loads(value.pop("anchor_metadata_json") or "{}")
             value["anchor_tags"] = str(value.get("anchor_tags") or "").split()
@@ -268,32 +245,30 @@ def command_export(
                 str(role) for role in anchor_metadata.get("anchor_roles", [])
             ]
             exported.append(value)
-        json_path = paths["exports"] / (args.name + ".json")
-        jsonl_path = paths["exports"] / (args.name + ".jsonl")
-        atomic_write_json(
-            json_path,
+        json_path = paths["exports"] / (name + ".json")
+        jsonl_path = paths["exports"] / (name + ".jsonl")
+        report_path = paths["reports"] / (name + "-export-report.json")
+        check_report_destinations(connection, (json_path, jsonl_path, report_path))
+        publish_json_artifacts(
             {
-                "schema_version": 1,
-                "generated_at": utc_now(),
-                "count": len(exported),
-                "places": exported,
+                json_path: {
+                    "schema_version": 1,
+                    "generated_at": utc_now(),
+                    "count": len(exported),
+                    "places": exported,
+                },
+                report_path: {
+                    "exported": len(exported),
+                    "rejected": rejected,
+                    "json": str(json_path),
+                    "jsonl": str(jsonl_path),
+                },
             },
-        )
-        _write_text_atomic(
-            jsonl_path,
-            "".join(
-                json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n"
-                for value in exported
-            ),
-        )
-        report_path = paths["reports"] / (args.name + "-export-report.json")
-        atomic_write_json(
-            report_path,
-            {
-                "exported": len(exported),
-                "rejected": rejected,
-                "json": str(json_path),
-                "jsonl": str(jsonl_path),
+            binary_artifacts={
+                jsonl_path: "".join(
+                    json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n"
+                    for value in exported
+                ).encode("utf-8")
             },
         )
         return {
@@ -305,6 +280,47 @@ def command_export(
         }
     finally:
         connection.close()
+
+
+def command_review(
+    args: argparse.Namespace, _config: dict[str, Any], paths: Mapping[str, Path]
+) -> dict[str, Any]:
+    from .review import build_review
+
+    connection = connect_readonly(paths["database"])
+    try:
+        return build_review(
+            connection,
+            args.output or paths["reports"] / "capture-review.html",
+            limit=args.limit,
+            categories=args.category,
+            location_ids=args.location_id,
+            verify_files=args.verify_files,
+        )
+    finally:
+        connection.close()
+
+
+def _positive_int(value: str) -> int:
+    number = int(value)
+    if number <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return number
+
+
+def _nonnegative_int(value: str) -> int:
+    number = int(value)
+    if number < 0:
+        raise argparse.ArgumentTypeError("must be zero or a positive integer")
+    return number
+
+
+def _report_name(value: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", value):
+        raise ValueError(
+            "Report name must contain only letters, digits, hyphens or underscores"
+        )
+    return value
 
 
 def command_install_cet(
@@ -389,7 +405,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--runtime", type=Path, help="Installed CET mod runtime directory"
     )
     capture.add_argument("--game-profile", default="capture-free-roam")
-    capture.add_argument("--limit", type=int)
+    capture.add_argument("--limit", type=_positive_int)
+    capture.add_argument(
+        "--location-id", action="append", help="Capture only these pending location IDs"
+    )
+    capture.add_argument(
+        "--category", action="append", help="Capture only these anchor categories"
+    )
     capture.set_defaults(handler=command_capture)
 
     status = commands.add_parser(
@@ -403,6 +425,11 @@ def create_parser() -> argparse.ArgumentParser:
     retry.add_argument("--location-id", action="append")
     retry.add_argument("--failure-code", action="append")
     retry.add_argument("--category", action="append")
+    retry.add_argument(
+        "--recapture",
+        action="store_true",
+        help="Requeue captured views selected by explicit location IDs",
+    )
     retry.set_defaults(handler=command_retry)
 
     export = commands.add_parser(
@@ -411,6 +438,26 @@ def create_parser() -> argparse.ArgumentParser:
     export.add_argument("--name", default="world-locations")
     export.add_argument("--include-unpublishable", action="store_true")
     export.set_defaults(handler=command_export)
+
+    review = commands.add_parser(
+        "review",
+        help="Build a visual capture and failure review page without changing the database",
+    )
+    review.add_argument("--output", type=Path)
+    review.add_argument(
+        "--limit",
+        type=_nonnegative_int,
+        default=300,
+        help="Maximum locations to review; 0 includes all",
+    )
+    review.add_argument("--category", action="append")
+    review.add_argument("--location-id", action="append")
+    review.add_argument(
+        "--verify-files",
+        action="store_true",
+        help="Also verify full image hashes; may read many gigabytes",
+    )
+    review.set_defaults(handler=command_review)
 
     install = commands.add_parser(
         "install-cet", help="Install the controller bridge into an existing CET install"

@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sys
 import unittest
 from pathlib import Path
 
@@ -25,15 +26,20 @@ def strings(value):
 class Gq002ContentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.quest = load("quests/story/ghostline/gq002/implementation/quest.json")
+        sys.path.insert(0, str(ROOT / "tools"))
+        from quest_authoring import normalize_spec
+
+        cls.quest = normalize_spec(
+            load("projects/ghostline/quests/gq002/implementation/quest.json")
+        )
         cls.dialogue = load(
-            "quests/story/ghostline/gq002/script/gq002_01_manifest.json"
+            "projects/ghostline/quests/gq002/script/gq002_01_manifest.json"
         )
         cls.selection = load(
-            "quests/story/ghostline/gq002/script/gq002_01_voice_selection.json"
+            "projects/ghostline/quests/gq002/script/gq002_01_voice_selection.json"
         )
         cls.world = load(
-            "quests/story/ghostline/gq002/implementation/world/machine-stops.world.json"
+            "projects/ghostline/quests/gq002/implementation/world/machine-stops.world.json"
         )
 
     def test_typed_stage_sequence_is_shipping_ready(self):
@@ -79,7 +85,7 @@ class Gq002ContentTests(unittest.TestCase):
             stage for stage in self.quest["stages"] if stage["id"] == "operate_relay"
         )
         self.assertFalse(operate["send_action"])
-        phase = load("source/raw/mod/gq002/phases/gq002_operate_relay.questphase.json")
+        phase = load("projects/ghostline/source/raw/mod/gq002/phases/gq002_operate_relay.questphase.json")
         encoded = json.dumps(phase)
         self.assertIn("WasHackingMinigameSucceeded", encoded)
         self.assertNotIn("questDeviceManagerNodeDefinition", encoded)
@@ -94,12 +100,12 @@ class Gq002ContentTests(unittest.TestCase):
             debrief["objective"],
         )
         self.assertEqual("QuestRewards.gq002_completion", debrief["reward"])
-        phase = load("source/raw/mod/gq002/phases/gq002_cinder_debrief.questphase.json")
+        phase = load("projects/ghostline/source/raw/mod/gq002/phases/gq002_cinder_debrief.questphase.json")
         encoded = json.dumps(phase)
         self.assertIn("questRewardManagerNodeDefinition", encoded)
         self.assertIn("QuestRewards.gq002_completion", encoded)
         tweaks = (
-            ROOT / "source/resources/r6/tweaks/ghostline/gq000_shards.yaml"
+            ROOT / "projects/shared/ghostline-runtime/source/resources/r6/tweaks/ghostline/gq000_shards.yaml"
         ).read_text(encoding="utf-8")
         self.assertIn("QuestRewards.gq002_completion:", tweaks)
 
@@ -145,7 +151,7 @@ class Gq002ContentTests(unittest.TestCase):
         self.assertEqual("quests/minor_quest/gq002", debrief["complete_quest"])
 
         read_phase = load(
-            "source/raw/mod/gq002/phases/gq002_read_hostage_circuit.questphase.json"
+            "projects/ghostline/source/raw/mod/gq002/phases/gq002_read_hostage_circuit.questphase.json"
         )
         encoded = json.dumps(read_phase)
         self.assertIn("questFactsDBCondition", encoded)
@@ -155,7 +161,7 @@ class Gq002ContentTests(unittest.TestCase):
         self.assertNotIn("questJournalEntryVisited_ConditionType", encoded)
 
     def test_medical_relay_pin_uses_the_native_device_reference(self):
-        journal = load("source/raw/mod/gq002/journal/gq002.journal.json")
+        journal = load("projects/ghostline/source/raw/mod/gq002/journal/gq002.journal.json")
         encoded = json.dumps(journal)
         self.assertIn(
             "$/03_night_city/c_watson/kabuki/"
@@ -226,14 +232,14 @@ class Gq002ContentTests(unittest.TestCase):
     def test_every_spoken_line_has_nonempty_wem(self):
         for line in self.dialogue["spoken_lines"]:
             relative = line["audio_path"].replace("\\", "/")
-            wem = ROOT / "source/archive" / relative
+            wem = ROOT / "projects/ghostline/source/archive" / relative
             self.assertTrue(wem.is_file(), line["key"])
             self.assertGreater(wem.stat().st_size, 0, line["key"])
 
     def test_journal_gq002_loc_keys_are_covered(self):
-        journal = load("source/raw/mod/gq002/journal/gq002.journal.json")
+        journal = load("projects/ghostline/source/raw/mod/gq002/journal/gq002.journal.json")
         onscreen = load(
-            "source/raw/mod/gq002/localization/en-us/onscreens/gq002.json.json"
+            "projects/ghostline/source/raw/mod/gq002/localization/en-us/onscreens/gq002.json.json"
         )
         required = {
             value for value in strings(journal) if value.startswith("gl_gq002_")
@@ -246,7 +252,7 @@ class Gq002ContentTests(unittest.TestCase):
         self.assertEqual(set(), required - available)
 
     def test_archive_xl_registers_every_gq002_root_resource(self):
-        archive_xl = (ROOT / "source/resources/Ghostline.archive.xl").read_text(
+        archive_xl = (ROOT / "projects/ghostline/source/resources/Ghostline.archive.xl").read_text(
             encoding="utf-8"
         )
         for depot_path in (
@@ -258,13 +264,13 @@ class Gq002ContentTests(unittest.TestCase):
             r"mod\gq002\world\gq002_machine_stops.streamingblock",
         ):
             self.assertIn(depot_path, archive_xl)
-            self.assertTrue((ROOT / "source/archive" / depot_path).exists())
+            self.assertTrue((ROOT / "projects/ghostline/source/archive" / depot_path).exists())
 
     def test_cinder_resources_and_trigger_radius_are_authored(self):
         for relative in (
-            "characters/cinder.character.json",
-            "source/archive/mod/ghostline/characters/cinder/cinder.ent",
-            "source/resources/r6/tweaks/ghostline/character_cinder.yaml",
+            "projects/ghostline/characters/cinder.character.json",
+            "projects/ghostline/source/archive/mod/ghostline/characters/cinder/cinder.ent",
+            "projects/ghostline/source/resources/r6/tweaks/ghostline/character_cinder.yaml",
         ):
             self.assertTrue((ROOT / relative).is_file(), relative)
         engage = next(

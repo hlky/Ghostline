@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "contract_version": 1,
+  "quest": {"id": "contract_routing_model", "title": "Synthetic routing fixture; no compiled or runtime claim"},
+  "entry_stage": "approach",
+  "parallel_groups": [],
+  "stages": [
+    {"id": "approach", "type": "reach_area", "outcomes": {"success": "Out1"}},
+    {"id": "encounter", "type": "defend_target", "outcomes": {"success": "Out1", "failure": "Out2", "interrupted": "Out3"}},
+    {"id": "cleanup", "type": "leave_area", "outcomes": {"success": "Out1"}}
+  ],
+  "transitions": {
+    "approach": {"success": "encounter"},
+    "encounter": {"success": "cleanup", "failure": "$end", "interrupted": "$end"},
+    "cleanup": {"success": "$end"}
+  },
+  "contracts": {},
+  "runtime_verified": false
+}

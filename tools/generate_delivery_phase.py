@@ -9,32 +9,46 @@ delivery objective, and runs Morrow's authored two-choice phone exchange.
 
 from __future__ import annotations
 
+from phase_graph import phase_document
+from phase_graph import (
+    inventory_condition_node as inventory_condition_node,
+    fact_condition_node as fact_condition_node,
+    _empty_action_widget_package as _empty_action_widget_package,
+    _empty_interaction_choice as _empty_interaction_choice,
+    reserve_drop_point_node as reserve_drop_point_node,
+    journal_entry_visited_node as journal_entry_visited_node,
+    journal_choice_succeeded_node as journal_choice_succeeded_node,
+    logical_xor_node as logical_xor_node,
+    quest_completion_node as quest_completion_node,
+    reward_node as reward_node,
+)
+
 import argparse
 import json
 from pathlib import Path
 from typing import Any, Iterable
 
-from generate_cache_phase import (
-    GraphNode,
-    PhaseGraphBuilder,
-    cname,
-    entity_reference,
-    fact_node,
-    input_node,
-    journal_entry_node,
-    journal_path,
-    mappin_node,
-    node_ref,
-    objective_node,
-    output_node,
-    realtime_delay_node,
-    tweakdbid,
+from phase_graph import (
+    GraphNode as GraphNode,
+    PhaseGraphBuilder as PhaseGraphBuilder,
+    cname as cname,
+    entity_reference as entity_reference,
+    fact_node as fact_node,
+    input_node as input_node,
+    journal_entry_node as journal_entry_node,
+    journal_path as journal_path,
+    mappin_node as mappin_node,
+    node_ref as node_ref,
+    objective_node as objective_node,
+    output_node as output_node,
+    realtime_delay_node as realtime_delay_node,
+    tweakdbid as tweakdbid,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = ROOT / "source/raw/mod/gq000/phases/gq000_delivery.questphase.json"
-ARCHIVE_TARGET = str(ROOT / "source/archive/mod/gq000/phases/gq000_delivery.questphase")
+DEFAULT_OUTPUT = ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000_delivery.questphase.json"
+ARCHIVE_TARGET = str(ROOT / "projects/shared/ghostline-runtime/source/archive/mod/gq000/phases/gq000_delivery.questphase")
 
 DELIVERY_OBJECTIVE = "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache"
 DELIVERY_DESCRIPTION = f"{DELIVERY_OBJECTIVE}/gq000_03_desc_deliver_cache"
@@ -64,360 +78,6 @@ EXPECTED_GRAPH_EDGES = 25
 
 
 JsonObject = dict[str, Any]
-
-
-def inventory_condition_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    item_id: str,
-    *,
-    quantity: int = 1,
-) -> GraphNode:
-    """Wait until the local player owns at least ``quantity`` of an item."""
-
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questInventory_ConditionType",
-            "comparisonType": "GreaterOrEqual",
-            "isPlayer": 1,
-            "itemID": tweakdbid(item_id),
-            "itemTag": cname("None"),
-            "objectRef": entity_reference(),
-            "quantity": quantity,
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questObjectCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def fact_condition_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    fact_name: str,
-    *,
-    comparison: str = "Greater",
-    value: int = 0,
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questVarComparison_ConditionType",
-            "comparisonType": comparison,
-            "factName": fact_name,
-            "value": value,
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questFactsDBCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def _empty_action_widget_package() -> JsonObject:
-    """Return the inherited action defaults serialized by vanilla drop points."""
-
-    return {
-        "$type": "SActionWidgetPackage",
-        "action": None,
-        "bckgroundTextureID": {
-            "$type": "TweakDBID",
-            "$storage": "uint64",
-            "$value": "0",
-        },
-        "customData": None,
-        "dependendActions": [],
-        "displayName": "",
-        "iconID": cname("None"),
-        "iconTextureID": {
-            "$type": "TweakDBID",
-            "$storage": "uint64",
-            "$value": "0",
-        },
-        "isValid": 1,
-        "isWidgetInactive": 0,
-        "libraryID": cname("None"),
-        "libraryPath": {
-            "$type": "redResourceReferenceScriptToken",
-            "resource": {
-                "DepotPath": {
-                    "$type": "ResourcePath",
-                    "$storage": "uint64",
-                    "$value": "0",
-                },
-                "Flags": "Soft",
-            },
-        },
-        "orientation": "Horizontal",
-        "ownerID": {
-            "$type": "gamePersistentID",
-            "componentName": cname("None"),
-            "entityHash": "0",
-        },
-        "ownerIDClassName": cname("None"),
-        "placement": "DOCKED",
-        "textData": None,
-        "wasInitalized": 0,
-        "widget": None,
-        "widgetName": "",
-        "widgetState": "DEFAULT",
-        "widgetTweakDBID": {
-            "$type": "TweakDBID",
-            "$storage": "uint64",
-            "$value": "0",
-        },
-    }
-
-
-def _empty_interaction_choice() -> JsonObject:
-    return {
-        "$type": "gameinteractionsChoice",
-        "caption": "",
-        "captionParts": {
-            "$type": "gameinteractionsChoiceCaption",
-            "parts": [],
-        },
-        "choiceMetaData": {
-            "$type": "gameinteractionsChoiceMetaData",
-            "tweakDBID": {
-                "$type": "TweakDBID",
-                "$storage": "uint64",
-                "$value": "0",
-            },
-            "tweakDBName": "",
-            "type": {
-                "$type": "gameinteractionsChoiceTypeWrapper",
-                "properties": 0,
-            },
-        },
-        "data": [],
-        "doNotTurnOffPreventionSystem": 0,
-        "lookAtDescriptor": {
-            "$type": "gameinteractionsChoiceLookAtDescriptor",
-            "offset": {"$type": "Vector3", "X": 0, "Y": 0, "Z": 0},
-            "orbId": {"$type": "gameinteractionsOrbID", "id": 0},
-            "slotName": cname("None"),
-            "type": "Root",
-        },
-    }
-
-
-def reserve_drop_point_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    item_id: str,
-    drop_point_ref: str,
-) -> GraphNode:
-    """Reserve one quest item to a live vanilla drop-point controller."""
-
-    event = builder.handles.wrap(
-        {
-            "$type": "ReserveItemToThisDropPoint",
-            "actionName": cname("None"),
-            "actionWidgetPackage": _empty_action_widget_package(),
-            "activationTimeReduction": 0,
-            "activeStatusEffect": {
-                "$type": "TweakDBID",
-                "$storage": "uint64",
-                "$value": "0",
-            },
-            "attachedProgram": {
-                "$type": "TweakDBID",
-                "$storage": "uint64",
-                "$value": "0",
-            },
-            "calculatedBaseCost": 0,
-            "canSkipPayCost": 0,
-            "canTriggerStim": 1,
-            "clearanceLevel": 0,
-            "costComponents": [],
-            "deviceActionQueue": None,
-            "disableSpread": 0,
-            "duration": 0,
-            "executor": None,
-            "hasInteraction": 0,
-            "inactiveReason": "",
-            "inkWidgetID": {
-                "$type": "TweakDBID",
-                "$storage": "uint64",
-                "$value": "0",
-            },
-            "interactionChoice": _empty_interaction_choice(),
-            "interactionIconType": {
-                "$type": "TweakDBID",
-                "$storage": "uint64",
-                "$value": "0",
-            },
-            "interactionLayer": cname("None"),
-            "isActionQueueingUsed": 0,
-            "isActionRPGCheckDissabled": 0,
-            "IsAppliedByMonowire": 0,
-            "isInactive": 0,
-            "isQueuedAction": 0,
-            "isQuickHack": 0,
-            "isSpiderbotAction": 0,
-            "isTargetDead": 0,
-            "item": tweakdbid(item_id),
-            "localizedObjectName": "",
-            "objectActionID": {
-                "$type": "TweakDBID",
-                "$storage": "uint64",
-                "$value": "0",
-            },
-            "objectActionRecord": None,
-            "paymentQuantity": 0,
-            "prop": None,
-            "proxyExecutor": None,
-            "requesterID": {"$type": "entEntityID", "hash": "0"},
-            "shouldActivateDevice": 0,
-            "spiderbotActionLocationOverride": node_ref("0", storage="uint64"),
-            "wasPerformedOnOwner": 0,
-            "widgetStyle": "DarkBlue",
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questEventManagerNodeDefinition",
-        input_names=("In",),
-        properties={
-            "componentName": cname("controller"),
-            "event": event,
-            "isObjectPlayer": 0,
-            "isUiEvent": 0,
-            "managerName": "DropPointManager",
-            "objectRef": entity_reference(drop_point_ref),
-            "PSClassName": cname("DropPointControllerPS"),
-        },
-    )
-
-
-def journal_entry_visited_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    path: str,
-    class_name: str,
-    *,
-    file_index: int = 1,
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questJournalEntryVisited_ConditionType",
-            "path": journal_path(
-                builder,
-                path,
-                class_name,
-                file_index,
-            ),
-            "visited": 1,
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questJournalCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def journal_choice_succeeded_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    path: str,
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questJournalEntryState_ConditionType",
-            "inverted": 0,
-            "path": journal_path(
-                builder,
-                path,
-                "gameJournalPhoneChoiceEntry",
-                1,
-            ),
-            "state": "Succeeded",
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questJournalCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def logical_xor_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    input_count: int,
-) -> GraphNode:
-    return builder.node(
-        quest_id,
-        "questLogicalXorNodeDefinition",
-        input_names=tuple(f"In{index}" for index in range(1, input_count + 1)),
-        output_names=("Out1",),
-        properties={
-            "inputSocketCount": input_count,
-            "outputSocketCount": 1,
-        },
-    )
-
-
-def quest_completion_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    path: str,
-) -> GraphNode:
-    node_type = builder.handles.wrap(
-        {
-            "$type": "questJournalQuestEntry_NodeType",
-            "optional": 0,
-            "path": journal_path(builder, path, "gameJournalQuest", 2),
-            "sendNotification": 1,
-            "trackQuest": 1,
-            "version": "Initial",
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questJournalNodeDefinition",
-        input_names=("Active", "Inactive", "Succeeded", "Failed"),
-        properties={"type": node_type},
-    )
-
-
-def reward_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    reward_id: str,
-) -> GraphNode:
-    node_type = builder.handles.wrap(
-        {
-            "$type": "questGiveReward_NodeType",
-            "rewards": [tweakdbid(reward_id)],
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questRewardManagerNodeDefinition",
-        input_names=("In",),
-        properties={"type": node_type},
-    )
 
 
 def build_phase() -> JsonObject:
@@ -555,28 +215,8 @@ def build_phase() -> JsonObject:
     builder.connect(quest_completed, quest_succeeded, destination_socket="Succeeded")
     builder.connect_to_earlier_output(quest_succeeded, phase_output)
 
-    phase = {
-        "Header": {
-            "WolvenKitVersion": "8.17.4",
-            "WKitJsonVersion": "0.0.9",
-            "GameVersion": 2310,
-            "ExportedDateTime": "2026-07-22T00:00:00Z",
-            "DataType": "CR2W",
-            "ArchiveFileName": ARCHIVE_TARGET,
-        },
-        "Data": {
-            "Version": 195,
-            "BuildVersion": 0,
-            "RootChunk": {
-                "$type": "questQuestPhaseResource",
-                "cookingPlatform": "PLATFORM_PC",
-                "graph": builder.graph,
-                "inplacePhases": [],
-                "phasePrefabs": [],
-            },
-            "EmbeddedFiles": [],
-        },
-    }
+    phase = phase_document(builder, Path(ARCHIVE_TARGET),
+        exported_datetime="2026-07-22T00:00:00Z")
     validate_phase(phase)
     return phase
 

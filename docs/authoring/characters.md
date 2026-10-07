@@ -35,8 +35,8 @@ do not contain an embedded version marker. Treat the directory name as
 provenance, not as a machine-verifiable resource version.
 
 Character manifests use `@npv/...` instead of embedding a workstation path.
-Copy `characters/local-paths.example.json` to the ignored
-`characters/local-paths.json`, then set its `npv` value to the local template
+Copy `projects/shared/ghostline-runtime/characters/local-paths.example.json` to the ignored
+`projects/shared/ghostline-runtime/characters/local-paths.json`, then set its `npv` value to the local template
 root. Relative values are resolved from the Ghostline repository root.
 
 Local tool versions checked on 2026-07-22:
@@ -156,12 +156,12 @@ proven. An abridged representative shape is:
   "id": "patch",
   "namespace": "mod\\ghostline\\characters\\patch",
   "frame": "male_average",
-  "catalog": "characters/catalog.json",
+  "catalog": "quests/templates/characters/catalog.json",
   "templates": {
-    "entity": "characters/templates/npv-male.ent-shell.json",
-    "appearance_shell": "characters/templates/npv-male.app-shell.json",
-    "component_library": "characters/components/npv-male.components.json",
-    "localization": "source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
+    "entity": "quests/templates/characters/templates/npv-male.ent-shell.json",
+    "appearance_shell": "quests/templates/characters/templates/npv-male.app-shell.json",
+    "component_library": "quests/templates/characters/components/npv-male.components.json",
+    "localization": "projects/shared/ghostline-runtime/source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
   },
   "entity": {
     "root_appearance": "ghostline_patch_default",
@@ -219,7 +219,7 @@ does not select a donor appearance such as `casual` or `business`.
 The generator still needs valid examples of the nested CR2W component classes,
 bindings, handles, and compiled copies because the current catalog operations
 modify that typed graph rather than synthesizing every engine object from
-scratch. Those examples live under `characters/components/donors`, behind a
+scratch. Those examples live under `quests/templates/characters/components/donors`, behind a
 small frame-specific component-library descriptor. They are tooling inputs,
 not templates and not packed resources.
 
@@ -227,7 +227,7 @@ Donors contain only complete prototypes that the builder can select. The
 female donor's redundant `naked` appearance was removed; its sole component
 not already covered by `base` or `extended_garments`, `t0_pubic_hair`, is
 preserved with both normal and compiled copies in
-`characters/components/npv-female-naked-only.components.json`. Supplemental
+`quests/templates/characters/components/npv-female-naked-only.components.json`. Supplemental
 archives are listed by the frame's component-library descriptor. They are not
 appearances: the builder copies only the normal/compiled pairs required by the
 active catalog selections into the selected prototype.
@@ -242,7 +242,7 @@ copies. This keeps implementation topology out of manifests while preserving
 known-good CR2W structure.
 
 The female catalog's `genitals` category uses a second supplemental archive,
-`characters/components/npv-female-genitals.components.json`. It provides the
+`quests/templates/characters/components/npv-female-genitals.components.json`. It provides the
 vanilla PWA penis mesh component and its required `penis_dangles` animated
 component. The creator exposes small, average, and large static meshes in both
 circumcised and uncircumcised forms. These are the game's feminine-body assets,
@@ -340,7 +340,7 @@ standalone genital components in a fixed NPC appearance.
 
 Iris is the first fresh female-average character authored through the reusable
 pipeline rather than retained as a tutorial fixture. Her reviewed manifest is
-`characters/iris.character.json`. It selects creator shapes
+`projects/ghostline/characters/iris.character.json`. It selects creator shapes
 `eyes 8 / nose 5 / mouth 10 / jaw 3 / ears 2`, the tutorial's complete merlot
 asymmetrical hair bundle, a blue-pattern high-collar shirt, black/white ninja
 trousers, and the tutorial boots. The restrained technical silhouette supports
@@ -356,6 +356,13 @@ Treat Iris as a shipping candidate that still requires an in-game spawn,
 animation, garment-fit, material, LOD, and streaming test before quest use.
 
 ## Build Stages
+
+Character builds and HTTP requests open a `character_builder.build_session`.
+It parses each input document once and hands callers independent copies of
+that snapshot. Selection validation checks donor coverage without constructing
+appearances; generation copies only the selected prototype. The session ends
+after the build/request, so edits and different characters never share mutable
+template state.
 
 The command-line build engine comes before the UI. Both must invoke the same
 deterministic stages:
@@ -389,13 +396,13 @@ Current implementation:
 - `tools/character_head_blender.py` executes the template's embedded scripts in
   background Blender and injects manifest shape values without editing the
   `.blend` file;
-- `characters/patch.character.json` and
-  `characters/female-example.character.json` are the checked male and
+- `projects/shared/ghostline-runtime/characters/patch.character.json` and
+  `projects/shared/ghostline-runtime/characters/female-example.character.json` are the checked male and
   female schema-v1 manifests;
-- `characters/catalog.json` and `characters/female-catalog.json` are
+- `quests/templates/characters/catalog.json` and `quests/templates/characters/female-catalog.json` are
   frame-declared curated catalogs;
-- `characters/templates` contains only frame-specific entity shells and empty
-  appearance shells, while `characters/components` contains library
+- `quests/templates/characters/templates` contains only frame-specific entity shells and empty
+  appearance shells, while `quests/templates/characters/components` contains library
   descriptors and private donor documents;
 - `tools/character_asset_index.py` derives searchable installed-game assets,
   real mesh appearances, frame compatibility, and isolated mesh previews; and
@@ -525,6 +532,12 @@ applies the same named facial targets client-side as the final Blender script.
 Changing a head value is therefore immediate; Blender is needed only to bake
 the reviewed face into import-ready game meshes.
 
+The UI edits the manifest selected on the server command line. Character ID
+and depot namespace are read-only; creating another identity requires a
+complete authored manifest with matching entity/appearance output paths.
+Both input and generated-resource validation check that those paths match the
+namespace and filenames used by the entity and tweak references.
+
 The UI also searches the generated installed-game index and can uncook a
 selected `.mesh` into an isolated GLB preview cache. For supported PMA torso,
 legs, and feet or PWA torso and legs primary meshes it presents the appearances
@@ -559,6 +572,13 @@ primary-mesh role, depot path, and appearance membership are checked again
 before the manifest is accepted. Frame compatibility is taken from the final
 mesh filename rather than parent-directory tokens, and failed cache refreshes
 cannot promote old geometry or appearance metadata under a new fingerprint.
+
+`tools/character_cache.py` owns fresh export staging, complete output checks,
+and rollback if publication fails. Head preview, head morph export, indexed
+mesh preview, and full-character layers share it. Cache identities include the
+actual installed `content`/`ep1` archive files rather than a parent directory
+timestamp. A head build verifies the requested morph set and removes retired
+morph GLBs only after the replacement set has passed validation.
 
 In-engine validation remains mandatory for clipping, garment behavior, facial
 animation, materials, LODs, and streaming.

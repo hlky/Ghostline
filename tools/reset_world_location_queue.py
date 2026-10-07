@@ -1,20 +1,17 @@
-"""Reset interrupted and failed world-location captures for another run."""
+"""Requeue failed captures; interrupted work is recovered by the controller."""
 
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime
 from pathlib import Path
 import sqlite3
+
+from world_locations.database import connect, requeue_places
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATABASE = (
-    ROOT
-    / "converted"
-    / "world-location-database"
-    / "full-world"
-    / "locations.sqlite3"
+    ROOT / "converted" / "world-location-database" / "full-world" / "locations.sqlite3"
 )
 
 
@@ -34,18 +31,10 @@ def reset_queue(database: Path) -> tuple[dict[str, int], int, dict[str, int], in
     if not database.is_file():
         raise FileNotFoundError(f"world-location database not found: {database}")
 
-    connection = sqlite3.connect(database)
+    connection = connect(database)
     try:
         before = queue_counts(connection)
-        connection.execute("BEGIN IMMEDIATE")
-        cursor = connection.execute(
-            """UPDATE places
-               SET queue_status='pending',failure_code=NULL,failure_detail=NULL,updated_at=?
-               WHERE scope_status='in_scope'
-                 AND queue_status IN ('failed','in_progress')""",
-            (datetime.now(UTC).isoformat(timespec="milliseconds"),),
-        )
-        connection.commit()
+        reset = requeue_places(connection)
         after = queue_counts(connection)
         pending = int(
             connection.execute(
@@ -53,10 +42,7 @@ def reset_queue(database: Path) -> tuple[dict[str, int], int, dict[str, int], in
                    WHERE scope_status='in_scope' AND queue_status='pending'"""
             ).fetchone()[0]
         )
-        return before, cursor.rowcount, after, pending
-    except BaseException:
-        connection.rollback()
-        raise
+        return before, reset, after, pending
     finally:
         connection.close()
 
@@ -64,8 +50,8 @@ def reset_queue(database: Path) -> tuple[dict[str, int], int, dict[str, int], in
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Reset all in-scope failed and interrupted world-location captures "
-            "to pending."
+            "Reset eligible in-scope failed captures to pending. Refuses during "
+            "an active session; the capture controller recovers interrupted work."
         )
     )
     parser.add_argument(

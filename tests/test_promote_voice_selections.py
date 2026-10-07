@@ -57,7 +57,7 @@ class PromoteVoiceSelectionsTests(unittest.TestCase):
 
     def test_accepts_complete_consistent_selection(self) -> None:
         design, choices = validate(self.manifest, self.rows)
-        self.assertEqual("design-a", design)
+        self.assertEqual({"cinder": "design-a", "v": "v-original-embed"}, design)
         self.assertEqual({"cinder_line", "v_line"}, set(choices))
 
     def test_rejects_cinder_take_from_other_design(self) -> None:
@@ -73,7 +73,7 @@ class PromoteVoiceSelectionsTests(unittest.TestCase):
     def test_infers_design_when_reference_is_not_marked(self) -> None:
         self.rows[0]["selected"] = ""
         design, _ = validate(self.manifest, self.rows)
-        self.assertEqual("design-a", design)
+        self.assertEqual({"cinder": "design-a", "v": "v-original-embed"}, design)
 
 
 if __name__ == "__main__":

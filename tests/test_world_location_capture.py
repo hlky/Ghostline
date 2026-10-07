@@ -367,7 +367,7 @@ class IndexAndPlanTests(unittest.TestCase):
             "SELECT * FROM places WHERE location_id=?", (place["location_id"],)
         ).fetchone()
         self.assertIsNone(historical["anchor_feature_id"])
-        self.assertEqual("captured", historical["queue_status"])
+        self.assertEqual("disabled", historical["queue_status"])
         refreshed = self.connection.execute(
             """SELECT * FROM places
                WHERE category='vending_machine' AND location_id!=?""",
@@ -642,7 +642,7 @@ class IndexAndPlanTests(unittest.TestCase):
         vending = self.connection.execute(
             "SELECT * FROM places WHERE category='vending_machine'"
         ).fetchone()
-        # 0.5 m oriented half-bound plus 1.0 m clearance, facing outward.
+        # Reviewed 0.45 m family extent plus 1.0 m clearance, facing outward.
         self.assertAlmostEqual(0.0, vending["requested_x"], delta=0.1)
         self.assertAlmostEqual(1.5, vending["requested_y"], delta=0.1)
         self.assertAlmostEqual(0.0, vending["requested_yaw"], delta=2.0)
@@ -831,6 +831,8 @@ class ProtocolTests(unittest.TestCase):
             "ui_suppressed": True,
             "weapon_suppressed": True,
             "presented_frame": 1,
+            "display_width": 1920,
+            "display_height": 1080,
         }
         report = validate_ready_event(
             {
@@ -839,7 +841,7 @@ class ProtocolTests(unittest.TestCase):
                 "actual_fov": 75,
             },
             place,
-            {"profile": {"fov": 80}, "fov_tolerance_degrees": 0.25},
+            {"profile": {"fov": 80}},
         )
         self.assertTrue(report["valid"], report["errors"])
         self.assertEqual(5.0, report["fov_delta_degrees"])
@@ -868,12 +870,14 @@ class ProtocolTests(unittest.TestCase):
                     "ui_suppressed": True,
                     "weapon_suppressed": True,
                     "presented_frame": 1,
+                    "display_width": 1920,
+                    "display_height": 1080,
                 },
                 "actual_pose": {"x": 1, "y": 2, "z": 3, "yaw": 92.9},
                 "actual_fov": 80,
             },
             place,
-            {"profile": {"fov": 80}, "fov_tolerance_degrees": 0.25},
+            {"profile": {"fov": 80}},
         )
         self.assertTrue(report["valid"], report["errors"])
         self.assertAlmostEqual(2.9, report["heading_delta_degrees"])
@@ -885,7 +889,7 @@ class ProtocolTests(unittest.TestCase):
             command_id = "command-immediate"
             atomic_write_json(
                 protocol.event_paths["ready"],
-                {"schema_version": 1, "command_id": command_id, "event": "ready"},
+                {"schema_version": 1, "session_id": "session-test", "command_id": command_id, "event": "ready"},
             )
             started = time.monotonic()
             event = protocol.wait_for_event(
@@ -911,6 +915,7 @@ class ProtocolTests(unittest.TestCase):
                     protocol.event_paths["ready"],
                     {
                         "schema_version": 1,
+                        "session_id": "session-test",
                         "command_id": command_id,
                         "event": "ready",
                         "readiness": {"presented_frame": 77},
@@ -951,6 +956,7 @@ class ProtocolTests(unittest.TestCase):
                 protocol.event_paths["error"],
                 {
                     "schema_version": 1,
+                    "session_id": "session-test",
                     "command_id": command_id,
                     "event": "error",
                     "error_code": "streaming_timeout",
@@ -963,6 +969,7 @@ class ProtocolTests(unittest.TestCase):
                     protocol.event_paths["completed"],
                     {
                         "schema_version": 1,
+                        "session_id": "session-test",
                         "command_id": command_id,
                         "event": "completed",
                         "success": False,
@@ -1262,7 +1269,7 @@ class ResumeAndRetryTests(unittest.TestCase):
                 return None
 
             def wait_for_completion(self, **_kwargs: object) -> dict:
-                return {"event": "completed", "success": False}
+                return {"event": "completed", "success": False, "restoration_verified": True}
 
         controller = object.__new__(CaptureController)
         controller.connection = self.connection

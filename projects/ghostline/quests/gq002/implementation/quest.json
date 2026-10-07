@@ -1,0 +1,675 @@
+{
+  "schema_version": 1,
+  "id": "gq002",
+  "title": "The Machine Stops",
+  "description": "Common Ground hires V to expose and disable a Kabuki tenant-surveillance relay whose owners have made a neighborhood clinic dependent on it.",
+  "phase_prefabs": [
+    "@locations.gq002_pr_machine_stops.ref"
+  ],
+  "stages": [
+    {
+      "id": "patch_job_offer",
+      "type": "phone_job_offer",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_job_offer.questphase",
+      "contact": "@contacts.patch.contact",
+      "message": "@contacts.patch.threads.gq002_01_start.entries.entry_01_msg_cinder.path",
+      "choice_group": "@contacts.patch.threads.gq002_01_start.entries.entry_02_ch_meet_cinder.path",
+      "accept_choice": "@contacts.patch.threads.gq002_01_start.entries.entry_02_ch_meet_cinder.entries.entry_02a_ch_on_my_way.path",
+      "start_fact": "@facts.gq002_phone_start_sent",
+      "accepted_fact": "@facts.gq002_phone_reply_on_my_way",
+      "phase_prefabs": []
+    },
+    {
+      "id": "meet_cinder",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_cinder_meet.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.gq002_01_com_cinder.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.gq002_01_sm_cinder.ref",
+        "#gq000_01_tr_setup": "@locations.gq002_01_tr_setup.ref",
+        "#gq000_pr_patch_meet": "@locations.gq002_pr_machine_stops.ref",
+        "gq000_job_accepted": "gq002_cinder_briefed",
+        "gq000_patch_meet": "gq002_cinder_meet",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq002\\scenes\\gq002_cinder_meet.scene",
+        "patch": "@contacts.cinder.contact",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.gq002_01_obj_meet_cinder.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.gq002_01_obj_meet_cinder.mappins.gq002_01_qmp_cinder.path"
+      },
+      "contact": "@contacts.cinder.contact",
+      "scene": "mod\\gq002\\scenes\\gq002_cinder_meet.scene",
+      "community": "@locations.gq002_01_com_cinder.ref",
+      "appearance": "ghostline_cinder_default",
+      "objective": "@objectives.gq002_01_obj_meet_cinder.path",
+      "description_entry": "@objectives.gq002_01_obj_meet_cinder.description_entry",
+      "mappin": "@objectives.gq002_01_obj_meet_cinder.mappins.gq002_01_qmp_cinder.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\cinder\\cinder.ent",
+        "mod\\gq002\\scenes\\gq002_cinder_meet.scene"
+      ],
+      "phase_prefabs": [
+        "@locations.gq002_pr_machine_stops.ref"
+      ]
+    },
+    {
+      "id": "reach_relay",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_reach_relay.questphase",
+      "trigger": "@locations.gq002_02_tr_relay.ref",
+      "objective": "@objectives.gq002_02_obj_reach_relay.path",
+      "description_entry": "@objectives.gq002_02_obj_reach_relay.description_entry",
+      "mappin": "@objectives.gq002_02_obj_reach_relay.mappins.gq002_02_qmp_relay.path",
+      "phase_prefabs": []
+    },
+    {
+      "id": "investigate_relay",
+      "type": "investigate_clues",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_investigate_relay.questphase",
+      "objective": "@objectives.gq002_03_obj_investigate.path",
+      "description_entry": "@objectives.gq002_03_obj_investigate.description_entry",
+      "required_count": 3,
+      "completion_fact": "@facts.gq002_investigation_complete",
+      "clues": [
+        {
+          "id": "tenant_classifier",
+          "object_ref": "$/03_night_city/c_watson/kabuki/loc_sts_wat_kab_101_slums_prefabTADN6HA/loc_sts_wat_kab_101_slums_gameplay_prefabOPIWFHA/loc_sts_wat_kab_101_slums_devices_prefab3DMUFNQ/#kab_101_dvc_ap_001",
+          "completion_fact": "@facts.gq002_clue_tenant_scanned",
+          "mappin": "@objectives.gq002_03_obj_investigate.mappins.gq002_03_qmp_tenant.path"
+        },
+        {
+          "id": "trauma_bridge",
+          "object_ref": "$/03_night_city/c_watson/kabuki/loc_ma_wat_kab_15_prefab7XOZ7NY/loc_ma_wat_kab_15_gameplay_prefabLA72KZQ/loc_ma_wat_kab_15_devices_prefabLCOBNEQ/ma_wat_kab_15_access_point_001",
+          "completion_fact": "@facts.gq002_clue_medical_scanned",
+          "mappin": "@objectives.gq002_03_obj_investigate.mappins.gq002_03_qmp_medical.path"
+        },
+        {
+          "id": "failover_invoice",
+          "object_ref": "$/03_night_city/c_watson/kabuki/loc_sts_wat_kab_101_slums_prefabTADN6HA/loc_sts_wat_kab_101_slums_gameplay_prefabOPIWFHA/loc_sts_wat_kab_101_slums_devices_prefab3DMUFNQ/#kab_101_dvc_antenna",
+          "completion_fact": "@facts.gq002_clue_invoice_scanned",
+          "grant_item": "Items.GhostlineHostageCircuit",
+          "mappin": "@objectives.gq002_03_obj_investigate.mappins.gq002_03_qmp_invoice.path"
+        }
+      ],
+      "phase_prefabs": []
+    },
+    {
+      "id": "read_hostage_circuit",
+      "type": "read_shard",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_read_hostage_circuit.questphase",
+      "journal_entry": "@readables.hostage_circuit.path",
+      "file_entry_index": 1,
+      "item": "Items.GhostlineHostageCircuit",
+      "acquisition_fact": "@facts.gq002_clue_invoice_scanned",
+      "presentation_delay_seconds": 3,
+      "objective": "@objectives.gq002_04_obj_read_shard.path",
+      "completion_fact": "@facts.gq002_shard_read",
+      "phase_prefabs": []
+    },
+    {
+      "id": "return_to_relay",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_return_to_relay.questphase",
+      "trigger": "@locations.gq002_05_tr_security.ref",
+      "objective": "@objectives.gq002_04b_obj_return_relay.path",
+      "description_entry": "@objectives.gq002_04b_obj_return_relay.description_entry",
+      "mappin": "@objectives.gq002_04b_obj_return_relay.mappins.gq002_04b_qmp_relay.path",
+      "phase_prefabs": []
+    },
+    {
+      "id": "relay_security",
+      "type": "combat_encounter",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_relay_security.questphase",
+      "community": "@locations.gq002_05_com_security.ref",
+      "entries": [
+        "security_ranged_m",
+        "security_ranged_f",
+        "security_melee"
+      ],
+      "threat_function": "questCombatNodeParams_ShootAt",
+      "threat_duration_seconds": 0,
+      "hostility": "already_hostile",
+      "completion": "all_defeated",
+      "nonlethal_allowed": true,
+      "objective": "@objectives.gq002_05_obj_clear_security.path",
+      "description_entry": "@objectives.gq002_05_obj_clear_security.description_entry",
+      "completion_fact": "@facts.gq002_security_resolved",
+      "cleanup_on_exit": true,
+      "phase_prefabs": []
+    },
+    {
+      "id": "relay_decision",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_relay_decision.questphase",
+      "contact": "@contacts.cinder.contact",
+      "thread": "@contacts.cinder.threads.gq002_06_relay_decision.path",
+      "messages": [
+        "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_01_msg_hostage_circuit.path",
+        "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_02_msg_choose.path"
+      ],
+      "choice_group": "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_03_ch_response.path",
+      "choices": [
+        {
+          "choice": "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_03_ch_response.entries.entry_03a_ch_destroy.path",
+          "reply": "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_04a_msg_destroy.path",
+          "set_fact": "@facts.gq002_scene_choice_destroy"
+        },
+        {
+          "choice": "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_03_ch_response.entries.entry_03b_ch_spoof.path",
+          "reply": "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_04b_msg_spoof.path",
+          "set_fact": "@facts.gq002_scene_choice_spoof"
+        }
+      ],
+      "final_message": "@contacts.cinder.threads.gq002_06_relay_decision.entries.entry_05_msg_proceed.path",
+      "phase_prefabs": []
+    },
+    {
+      "id": "relay_choice",
+      "type": "choice_gate",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_relay_choice.questphase",
+      "gate_kind": "fact",
+      "branches": [
+        {
+          "id": "destroy",
+          "condition": "@facts.gq002_scene_choice_destroy",
+          "set_fact": "@facts.gq002_choice_destroy"
+        },
+        {
+          "id": "spoof",
+          "condition": "@facts.gq002_scene_choice_spoof",
+          "set_fact": "@facts.gq002_choice_spoof"
+        }
+      ],
+      "join": true,
+      "phase_prefabs": []
+    },
+    {
+      "id": "operate_relay",
+      "type": "interact_device",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_operate_relay.questphase",
+      "device": "$/03_night_city/c_watson/kabuki/loc_sts_wat_kab_101_slums_prefabTADN6HA/loc_sts_wat_kab_101_slums_gameplay_prefabOPIWFHA/loc_sts_wat_kab_101_slums_devices_prefab3DMUFNQ/#kab_101_dvc_ap_001",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ToggleON",
+      "send_action": false,
+      "completion_function": "WasHackingMinigameSucceeded",
+      "objective": "@objectives.gq002_06_obj_operate_relay.path",
+      "description_entry": "@objectives.gq002_06_obj_operate_relay.description_entry",
+      "mappin": "@objectives.gq002_06_obj_operate_relay.mappins.gq002_06_qmp_relay.path",
+      "success_fact": "@facts.gq002_relay_operated",
+      "phase_prefabs": []
+    },
+    {
+      "id": "leave_relay",
+      "type": "leave_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_leave_relay.questphase",
+      "trigger": "@locations.gq002_02_tr_relay_cleanup.ref",
+      "objective": "@objectives.gq002_07_obj_leave_relay.path",
+      "description_entry": "@objectives.gq002_07_obj_leave_relay.description_entry",
+      "completion_fact": "@facts.gq002_left_relay",
+      "cleanup_community": "@locations.gq002_05_com_security.ref",
+      "phase_prefabs": []
+    },
+    {
+      "id": "cinder_debrief",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gq002\\phases\\gq002_cinder_debrief.questphase",
+      "contact": "@contacts.cinder.contact",
+      "thread": "@contacts.cinder.threads.gq002_08_debrief.path",
+      "choice_group": "@contacts.cinder.threads.gq002_08_debrief.entries.entry_03_ch_response.path",
+      "messages": [
+        "@contacts.cinder.threads.gq002_08_debrief.entries.entry_01_msg_outcome.path",
+        "@contacts.cinder.threads.gq002_08_debrief.entries.entry_02_msg_context.path"
+      ],
+      "opening_branches": [
+        {
+          "condition": "@facts.gq002_choice_destroy",
+          "messages": [
+            "@contacts.cinder.threads.gq002_08_debrief.entries.entry_02a_msg_destroy_confirm.path"
+          ]
+        },
+        {
+          "condition": "@facts.gq002_choice_spoof",
+          "messages": [
+            "@contacts.cinder.threads.gq002_08_debrief.entries.entry_02b_msg_spoof_confirm.path"
+          ]
+        }
+      ],
+      "choices": [
+        {
+          "choice": "@contacts.cinder.threads.gq002_08_debrief.entries.entry_03_ch_response.entries.entry_03a_ch_hard.path",
+          "reply": "@contacts.cinder.threads.gq002_08_debrief.entries.entry_04a_msg_hard.path"
+        },
+        {
+          "choice": "@contacts.cinder.threads.gq002_08_debrief.entries.entry_03_ch_response.entries.entry_03b_ch_careful.path",
+          "reply": "@contacts.cinder.threads.gq002_08_debrief.entries.entry_04b_msg_careful.path"
+        }
+      ],
+      "final_message": "@contacts.cinder.threads.gq002_08_debrief.entries.entry_05_msg_more_work.path",
+      "objective": "@objectives.gq002_08_obj_respond_cinder.path",
+      "description_entry": "@objectives.gq002_08_obj_respond_cinder.description_entry",
+      "reward": "QuestRewards.gq002_completion",
+      "completion_fact": "@facts.gq002_completed",
+      "complete_quest": "quests/minor_quest/gq002",
+      "phase_prefabs": []
+    }
+  ],
+  "composition": {
+    "namespace": "gq002",
+    "journal_template": "gq001_shapes",
+    "quest": {
+      "title": "The Machine Stops",
+      "localization_key": "gl_gq002_title"
+    },
+    "objectives": {
+      "gq002_01_obj_meet_cinder": {
+        "phase_id": "gq002_01",
+        "id": "gq002_01_obj_meet_cinder",
+        "text": "Meet Cinder.",
+        "localization_key": "gl_gq002_01_objective_meet_cinder",
+        "description": "Patch's client is waiting in Kabuki. Find out what Common Ground wants.",
+        "description_id": "gq002_01_desc_meet_cinder",
+        "description_key": "gl_gq002_01_description_meet_cinder",
+        "mappins": {
+          "gq002_01_qmp_cinder": {
+            "id": "gq002_01_qmp_cinder",
+            "ref": "@locations.gq002_01_mp_cinder.ref",
+            "text": "Cinder",
+            "localization_key": "gl_gq002_01_mappin_cinder",
+            "debug_caption": "gl_gq002_01_mappin_cinder"
+          }
+        }
+      },
+      "gq002_02_obj_reach_relay": {
+        "phase_id": "gq002_02",
+        "id": "gq002_02_obj_reach_relay",
+        "text": "Go to the Kabuki relay.",
+        "localization_key": "gl_gq002_02_objective_reach_relay",
+        "description": "Common Ground traced the tenant-surveillance network to an old neighborhood relay.",
+        "description_id": "gq002_02_desc_reach_relay",
+        "description_key": "gl_gq002_02_description_reach_relay",
+        "mappins": {
+          "gq002_02_qmp_relay": {
+            "id": "gq002_02_qmp_relay",
+            "ref": "@locations.gq002_02_mp_relay.ref",
+            "text": "Surveillance relay",
+            "localization_key": "gl_gq002_02_mappin_relay",
+            "debug_caption": "gl_gq002_02_mappin_relay"
+          }
+        }
+      },
+      "gq002_03_obj_investigate": {
+        "phase_id": "gq002_03",
+        "id": "gq002_03_obj_investigate",
+        "text": "Inspect the relay network.",
+        "localization_key": "gl_gq002_03_objective_investigate",
+        "description": "Scan the linked antenna access points and determine what the relay controls.",
+        "description_id": "gq002_03_desc_investigate",
+        "description_key": "gl_gq002_03_description_investigate",
+        "mappins": {
+          "gq002_03_qmp_tenant": {
+            "id": "gq002_03_qmp_tenant",
+            "ref": "@locations.gq002_03_mp_tenant.ref",
+            "text": "Tenant classifier",
+            "localization_key": "gl_gq002_03_mappin_tenant",
+            "debug_caption": "gl_gq002_03_mappin_tenant"
+          },
+          "gq002_03_qmp_medical": {
+            "id": "gq002_03_qmp_medical",
+            "ref": "$/03_night_city/c_watson/kabuki/loc_ma_wat_kab_15_prefab7XOZ7NY/loc_ma_wat_kab_15_gameplay_prefabLA72KZQ/loc_ma_wat_kab_15_devices_prefabLCOBNEQ/ma_wat_kab_15_access_point_001",
+            "text": "Clinic telemetry bridge",
+            "localization_key": "gl_gq002_03_mappin_medical",
+            "debug_caption": "gl_gq002_03_mappin_medical",
+            "gps_disabled": true
+          },
+          "gq002_03_qmp_invoice": {
+            "id": "gq002_03_qmp_invoice",
+            "ref": "@locations.gq002_03_mp_invoice.ref",
+            "text": "Failover invoice",
+            "localization_key": "gl_gq002_03_mappin_invoice",
+            "debug_caption": "gl_gq002_03_mappin_invoice"
+          }
+        }
+      },
+      "gq002_04_obj_read_shard": {
+        "phase_id": "gq002_04",
+        "id": "gq002_04_obj_read_shard",
+        "text": "Read the archived conversation.",
+        "localization_key": "gl_gq002_04_objective_read_shard",
+        "description": "The recovered messages explain why the relay was designed to be difficult to remove.",
+        "description_id": "gq002_04_desc_read_shard",
+        "description_key": "gl_gq002_04_description_read_shard",
+        "mappins": {}
+      },
+      "gq002_04b_obj_return_relay": {
+        "phase_id": "gq002_04b",
+        "id": "gq002_04b_obj_return_relay",
+        "text": "Return to the target relay.",
+        "localization_key": "gl_gq002_4b_objective_return_relay",
+        "description": "Go back to the relay and deal with its security.",
+        "description_id": "gq002_04b_desc_return_relay",
+        "description_key": "gl_gq002_4b_description_return_relay",
+        "mappins": {
+          "gq002_04b_qmp_relay": {
+            "id": "gq002_04b_qmp_relay",
+            "ref": "@locations.gq002_02_mp_relay.ref",
+            "text": "Target relay",
+            "localization_key": "gl_gq002_4b_mappin_return_relay",
+            "debug_caption": "gl_gq002_4b_mappin_return_relay"
+          }
+        }
+      },
+      "gq002_05_obj_clear_security": {
+        "phase_id": "gq002_05",
+        "id": "gq002_05_obj_clear_security",
+        "text": "Neutralize the relay security.",
+        "localization_key": "gl_gq002_05_objective_clear_security",
+        "description": "The relay's owners sent Tyger Claw muscle to protect their investment.",
+        "description_id": "gq002_05_desc_clear_security",
+        "description_key": "gl_gq002_05_description_clear_security",
+        "mappins": {
+          "gq002_05_qmp_security": {
+            "id": "gq002_05_qmp_security",
+            "ref": "@locations.gq002_02_mp_relay.ref",
+            "text": "Relay security",
+            "localization_key": "gl_gq002_05_mappin_security",
+            "debug_caption": "gl_gq002_05_mappin_security"
+          }
+        }
+      },
+      "gq002_06_obj_operate_relay": {
+        "phase_id": "gq002_06",
+        "id": "gq002_06_obj_operate_relay",
+        "text": "Jack in to the relay.",
+        "localization_key": "gl_gq002_06_objective_operate_relay",
+        "description": "Carry out the shutdown plan you chose with Cinder.",
+        "description_id": "gq002_06_desc_operate_relay",
+        "description_key": "gl_gq002_06_description_operate_relay",
+        "mappins": {
+          "gq002_06_qmp_relay": {
+            "id": "gq002_06_qmp_relay",
+            "ref": "@locations.gq002_02_mp_relay.ref",
+            "text": "Relay access point",
+            "localization_key": "gl_gq002_06_mappin_operate",
+            "debug_caption": "gl_gq002_06_mappin_operate"
+          }
+        }
+      },
+      "gq002_07_obj_leave_relay": {
+        "phase_id": "gq002_07",
+        "id": "gq002_07_obj_leave_relay",
+        "text": "Leave the relay area.",
+        "localization_key": "gl_gq002_07_objective_leave_relay",
+        "description": "Put some distance between yourself and the relay while Cinder verifies the result.",
+        "description_id": "gq002_07_desc_leave_relay",
+        "description_key": "gl_gq002_07_description_leave_relay",
+        "mappins": {}
+      },
+      "gq002_08_obj_respond_cinder": {
+        "phase_id": "gq002_08",
+        "id": "gq002_08_obj_respond_cinder",
+        "text": "Respond to Cinder.",
+        "localization_key": "gl_gq002_08_objective_respond_cinder",
+        "description": "Read Cinder's message and let her know where you stand.",
+        "description_id": "gq002_08_desc_respond_cinder",
+        "description_key": "gl_gq002_08_description_respond_cinder",
+        "mappins": {}
+      }
+    },
+    "contacts": {
+      "patch": {
+        "id": "patch",
+        "localization_key": "gl_gq001_phone_patch_name",
+        "template": "patch",
+        "threads": {
+          "gq002_01_start": {
+            "id": "gq002_01_start",
+            "title": "The Machine Stops",
+            "title_key": "gl_gq002_phone_start_title",
+            "entries": {
+              "entry_01_msg_cinder": {
+                "type": "message",
+                "id": "01_msg_cinder",
+                "localization_key": "gl_gq002_phone_msg_cinder",
+                "text": "Got a client with a machine problem. Common Ground. Meet Cinder in Kabuki and hear her out.",
+                "delay": 1
+              },
+              "entry_02_ch_meet_cinder": {
+                "type": "choice_group",
+                "id": "02_ch_meet_cinder",
+                "entries": {
+                  "entry_02a_ch_on_my_way": {
+                    "id": "02a_ch_on_my_way",
+                    "text": "On my way.",
+                    "localization_key": "gl_gq002_phone_choice_on_my_way"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "cinder": {
+        "id": "cinder",
+        "localization_key": "gq_npc_cinder",
+        "template": "morrow",
+        "threads": {
+          "gq002_06_relay_decision": {
+            "id": "gq002_06_relay_decision",
+            "title": "Hostage Circuit",
+            "title_key": "gl_gq002_phone_relay_title",
+            "entries": {
+              "entry_01_msg_hostage_circuit": {
+                "type": "message",
+                "id": "01_msg_hostage_circuit",
+                "localization_key": "gl_gq002_phone_relay_hostage",
+                "text": "Saw the scan. Tenant classifier and clinic telemetry share one relay. Deliberate hostage circuit.",
+                "delay": 1
+              },
+              "entry_02_msg_choose": {
+                "type": "message",
+                "id": "02_msg_choose",
+                "localization_key": "gl_gq002_phone_relay_choose",
+                "text": "Two options: destroy it after I warn the clinic, or blind the classifier and spoof a failure.",
+                "delay": 1
+              },
+              "entry_03_ch_response": {
+                "type": "choice_group",
+                "id": "03_ch_response",
+                "entries": {
+                  "entry_03a_ch_destroy": {
+                    "id": "03a_ch_destroy",
+                    "text": "Destroy the relay.",
+                    "localization_key": "gl_gq002_phone_choice_destroy"
+                  },
+                  "entry_03b_ch_spoof": {
+                    "id": "03b_ch_spoof",
+                    "text": "Spoof the shutdown.",
+                    "localization_key": "gl_gq002_phone_choice_spoof"
+                  }
+                }
+              },
+              "entry_04a_msg_destroy": {
+                "type": "message",
+                "id": "04a_msg_destroy",
+                "localization_key": "gl_gq002_phone_relay_destroy_reply",
+                "text": "Hard stop. I'll warn the clinic and reroute what I can before you pull it.",
+                "delay": 1
+              },
+              "entry_04b_msg_spoof": {
+                "type": "message",
+                "id": "04b_msg_spoof",
+                "localization_key": "gl_gq002_phone_relay_spoof_reply",
+                "text": "Quiet cut. I'll feed the owners a clean failure report while you blind the classifier.",
+                "delay": 1
+              },
+              "entry_05_msg_proceed": {
+                "type": "message",
+                "id": "05_msg_proceed",
+                "localization_key": "gl_gq002_phone_relay_proceed",
+                "text": "Make the call real. Jack in.",
+                "delay": 1
+              }
+            }
+          },
+          "gq002_08_debrief": {
+            "id": "gq002_08_debrief",
+            "title": "Common Ground",
+            "title_key": "gl_gq002_phone_debrief_title",
+            "entries": {
+              "entry_01_msg_outcome": {
+                "type": "message",
+                "id": "01_msg_outcome",
+                "localization_key": "gl_gq002_phone_debrief_outcome",
+                "text": "The relay is off their board. Clinic traffic is stable and the tenant feed is dead.",
+                "delay": 1
+              },
+              "entry_02_msg_context": {
+                "type": "message",
+                "id": "02_msg_context",
+                "localization_key": "gl_gq002_phone_debrief_context",
+                "text": "Common Ground owes you. The owners will call it vandalism. The tenants get to call it privacy.",
+                "delay": 1
+              },
+              "entry_02a_msg_destroy_confirm": {
+                "type": "message",
+                "id": "02a_msg_destroy_confirm",
+                "localization_key": "gl_gq002_phone_debrief_destroy_confirm",
+                "text": "Hard shutdown confirmed. The clinic made the reroute; the surveillance relay stayed dead.",
+                "delay": 1
+              },
+              "entry_02b_msg_spoof_confirm": {
+                "type": "message",
+                "id": "02b_msg_spoof_confirm",
+                "localization_key": "gl_gq002_phone_debrief_spoof_confirm",
+                "text": "Spoof held. Their dashboard sees a dead relay while the clinic traffic keeps moving.",
+                "delay": 1
+              },
+              "entry_03_ch_response": {
+                "type": "choice_group",
+                "id": "03_ch_response",
+                "entries": {
+                  "entry_03a_ch_hard": {
+                    "id": "03a_ch_hard",
+                    "text": "Machines don't get a vote.",
+                    "localization_key": "gl_gq002_phone_choice_hard"
+                  },
+                  "entry_03b_ch_careful": {
+                    "id": "03b_ch_careful",
+                    "text": "Keep the clinic safe.",
+                    "localization_key": "gl_gq002_phone_choice_careful"
+                  }
+                }
+              },
+              "entry_04a_msg_hard": {
+                "type": "message",
+                "id": "04a_msg_hard",
+                "localization_key": "gl_gq002_phone_debrief_hard_reply",
+                "text": "Neither do landlords who wire medicine to surveillance.",
+                "delay": 1
+              },
+              "entry_04b_msg_careful": {
+                "type": "message",
+                "id": "04b_msg_careful",
+                "localization_key": "gl_gq002_phone_debrief_careful_reply",
+                "text": "Already watching the reroute. I don't spend lives to make a point.",
+                "delay": 1
+              },
+              "entry_05_msg_more_work": {
+                "type": "message",
+                "id": "05_msg_more_work",
+                "localization_key": "gl_gq002_phone_debrief_more_work",
+                "text": "There are more hostage circuits in this city. I'll call when we find the next one.",
+                "delay": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "readables": {
+      "hostage_circuit": {
+        "kind": "onscreen",
+        "group": "shards",
+        "id": "hostage_circuit",
+        "title": "Archived conversation: Sato and Keene",
+        "text": "[SATO] Tenant classifier is live. Missed payments, unauthorized occupants, behavioral flags. All routed through the Kabuki relay.\n\n[KEENE] And the clinic telemetry?\n\n[SATO] Same failover bus. If anyone cuts surveillance, the clinic loses remote diagnostics.\n\n[KEENE] Good. Make removal expensive enough that activists have to choose who gets hurt.\n\n[SATO] Tyger Claws are billing for on-site security.\n\n[KEENE] Approve it. Fear is cheaper than rebuilding.",
+        "title_key": "gl_gq002_shard_hostage_circuit_title",
+        "text_key": "gl_gq002_shard_hostage_circuit_body",
+        "tag": "technology"
+      }
+    },
+    "locations": {
+      "gq002_pr_machine_stops": {
+        "ref": "#gq002_pr_machine_stops"
+      },
+      "gq002_01_com_cinder": {
+        "ref": "#gq002_01_com_cinder"
+      },
+      "gq002_01_sm_cinder": {
+        "ref": "#gq002_01_sm_cinder"
+      },
+      "gq002_01_tr_setup": {
+        "ref": "#gq002_01_tr_setup"
+      },
+      "gq002_02_tr_relay": {
+        "ref": "#gq002_02_tr_relay"
+      },
+      "gq002_05_tr_security": {
+        "ref": "#gq002_05_tr_security"
+      },
+      "gq002_05_com_security": {
+        "ref": "#gq002_05_com_security"
+      },
+      "gq002_02_tr_relay_cleanup": {
+        "ref": "#gq002_02_tr_relay_cleanup"
+      },
+      "gq002_01_mp_cinder": {
+        "ref": "#gq002_01_mp_cinder"
+      },
+      "gq002_02_mp_relay": {
+        "ref": "#gq002_02_mp_relay"
+      },
+      "gq002_03_mp_tenant": {
+        "ref": "#gq002_03_mp_tenant"
+      },
+      "gq002_03_mp_invoice": {
+        "ref": "#gq002_03_mp_invoice"
+      }
+    },
+    "facts": {
+      "gq002_phone_start_sent": "gq002_phone_start_sent",
+      "gq002_phone_reply_on_my_way": "gq002_phone_reply_on_my_way",
+      "gq002_investigation_complete": "gq002_investigation_complete",
+      "gq002_clue_tenant_scanned": "gq002_clue_tenant_scanned",
+      "gq002_clue_medical_scanned": "gq002_clue_medical_scanned",
+      "gq002_clue_invoice_scanned": "gq002_clue_invoice_scanned",
+      "gq002_shard_read": "gq002_shard_read",
+      "gq002_security_resolved": "gq002_security_resolved",
+      "gq002_scene_choice_destroy": "gq002_scene_choice_destroy",
+      "gq002_scene_choice_spoof": "gq002_scene_choice_spoof",
+      "gq002_choice_destroy": "gq002_choice_destroy",
+      "gq002_choice_spoof": "gq002_choice_spoof",
+      "gq002_relay_operated": "gq002_relay_operated",
+      "gq002_left_relay": "gq002_left_relay",
+      "gq002_completed": "gq002_completed"
+    },
+    "points_of_interest": {
+      "gq002_01_poi_cinder": {
+        "id": "gq002_01_poi_cinder",
+        "ref": "@locations.gq002_01_mp_cinder.ref"
+      }
+    },
+    "text": {}
+  }
+}

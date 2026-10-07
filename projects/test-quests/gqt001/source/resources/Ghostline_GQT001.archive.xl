@@ -1,0 +1,23 @@
+quest:
+  phases:
+  - path: mod\gqt001\phases\gqt001_signal_delay.questphase
+    parent: base\quest\cyberpunk2077.quest
+journal:
+- mod\gqt001\journal\gqt001.journal
+localization:
+  onscreens:
+    en-us:
+    - mod\gqt001\localization\en-us\onscreens\gqt001.json
+  subtitles:
+    en-us: []
+  lipmaps:
+    en-us: []
+  vomaps:
+    en-us: []
+streaming:
+  blocks:
+  - mod\gqt001\world\gqt001_signal_delay.streamingblock
+resource:
+  patch:
+    mod\gqt001\world\gqt001_custom_devices.devices:
+    - base\worlds\03_night_city\_compiled\default\03_night_city.devices

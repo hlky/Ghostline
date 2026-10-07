@@ -7,7 +7,7 @@ description: Use for Ghostline subtitle and voiceover map alignment, voice desig
 
 ## Alignment Rules
 
-- Read `quests/story/ghostline/gq000/implementation/runtime-flow.md` for the three distinct journal/UI, spoken
+- Read `projects/ghostline/quests/gq000/implementation/runtime-flow.md` for the three distinct journal/UI, spoken
   dialogue, and embedded choice-label lookup paths.
 - Spoken scene-line `locstringIds`, subtitle entries, and voiceover map entries
   must stay aligned.
@@ -28,32 +28,32 @@ description: Use for Ghostline subtitle and voiceover map alignment, voice desig
 Current `gq000_01` dialogue localization files:
 
 - subtitles raw:
-  `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json`
+  `projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/subtitles/gq000_01.json.json`
 - subtitles packed:
-  `source/archive/mod/gq000/localization/en-us/subtitles/gq000_01.json`
+  `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/subtitles/gq000_01.json`
 - ArchiveXL subtitle map raw:
-  `source/raw/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json.json`
+  `projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json.json`
 - ArchiveXL subtitle map packed:
-  `source/archive/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json`
+  `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json`
 - VO raw:
-  `source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json`
+  `projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/vo/gq000_01.json.json`
 - VO packed:
-  `source/archive/mod/gq000/localization/en-us/vo/gq000_01.json`
+  `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/vo/gq000_01.json`
 
 Quest-specific onscreens should live under
-`source/archive/mod/gq000/localization/en-us/onscreens` and be registered in
-`source/resources/Ghostline.archive.xl`.
+`projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/onscreens` and be registered in
+`projects/ghostline/source/resources/Ghostline.archive.xl`.
 
 ## Scene And Localization Generation
 
 The removed root-level scene/localization generator and scene template are not
 part of the current workflow. Regenerate `gq000_patch_meet.scene` through
 `tools/generate_scene.py` and
-`quests/story/ghostline/gq000/implementation/scenes/patch-meet.scene-spec.json`, checked by its validator and
+`projects/ghostline/quests/gq000/implementation/scenes/patch-meet.scene-spec.json`, checked by its validator and
 `tests/test_generate_scene.py`.
 
 For spoken dialogue text or audio changes, keep subtitle entries, VO map
-entries, `quests/story/ghostline/gq000/script/gq000_01_manifest.json`, and spoken scene-line
+entries, `projects/ghostline/quests/gq000/script/gq000_01_manifest.json`, and spoken scene-line
 `locstringIds` aligned, regenerate the scene through the current spec, then
 convert changed raw CR2W-JSON with the WolvenKit workflow in
 `agent/skills/ghostline-wolvenkit-cr2w/SKILL.md`.
@@ -61,7 +61,7 @@ convert changed raw CR2W-JSON with the WolvenKit workflow in
 ## Voice Generation And WEM Conversion
 
 - Shared Patch and V speaker embeddings live under
-  `quests/story/ghostline/shared/voice/embeddings`. SafeTensors files are
+  `projects/ghostline/quests/shared/voice/embeddings`. SafeTensors files are
   canonical; do not reintroduce pickle-backed PyTorch copies.
 - Voice audition generation is an explicit external authoring step, not a
   repository build command. Audition candidates and record the selected file
@@ -70,20 +70,24 @@ convert changed raw CR2W-JSON with the WolvenKit workflow in
 - For custom characters, design a voice first, then clone it for repeated use.
 - Cyberpunk stores voiceovers as Wwise `.wem` resources in archives.
 - Voiceover `.json` resources map subtitle String IDs to voice files.
-- Generate localization CR2W-JSON from the quest-owned dialogue manifest, then
-  convert and validate it before use.
+- Generate localization CR2W-JSON through `ghostline-voice localize` or its
+  `localize-manifest` command. `tools/generate_dialogue_localization.py` is a
+  compatibility adapter to that same writer. Both shared and explicit
+  male/female audio paths are preserved. Pure localization supports Cargo's
+  `--no-default-features` option; convert and validate before use.
 
 Use `tools/convert_wavs_to_wem.ps1` to convert quest WAV voiceover files into
 Wwise `.wem` files. Authored selections live in each quest's `voice/source`
 directory; audition candidates and other generated outputs do not belong
 there. By default the script reads
-`quests/story/ghostline/gq000/voice/source` and
-`quests/story/ghostline/gq000/script/gq000_01_manifest.json`, selects only its
-13 referenced basenames, normalizes them into
-`wwise_conversion\ExternalSources`, writes
-`external_sources.wsources`, runs Wwise external-source conversion, and copies
-the results to `source/archive/mod/gq000/localization/en-us/vo` without deleting
-the source WAVs.
+`projects/ghostline/quests/gq000/voice/source` and
+`projects/ghostline/quests/gq000/script/gq000_01_manifest.json`, selects only its
+13 referenced basenames, normalizes them into a run directory below
+`wwise_conversion\ExternalSources`, writes a run-local
+`external_sources.wsources`, and runs Wwise external-source conversion into a
+fresh directory below `converted`. It checks every expected WEM before
+publishing the complete set to `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/vo`
+with rollback on replacement failure, without deleting the source WAVs.
 
 ```powershell
 .\tools\convert_wavs_to_wem.ps1 -NoCopy

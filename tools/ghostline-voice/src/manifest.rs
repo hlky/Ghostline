@@ -99,14 +99,25 @@ pub struct SpokenLine {
     pub addressee: String,
     /// Spoken and subtitled text.
     pub text: String,
-    /// Runtime WEM depot path.
+    /// Runtime WEM depot path, used for both genders unless overridden.
     pub audio_path: String,
+    /// Optional Male V WEM path for gender-specific player dialogue.
+    #[serde(default)]
+    pub male_audio_path: Option<String>,
     /// Estimated or reviewed performance duration.
     pub duration_ms: u64,
     /// Optional gameplay or scene beat.
     pub beat: Option<String>,
     /// Optional quest-fact delivery condition.
     pub condition: Option<String>,
+}
+
+impl SpokenLine {
+    /// Returns the male runtime WEM path, falling back to the default path.
+    #[must_use]
+    pub fn male_audio_path(&self) -> &str {
+        self.male_audio_path.as_deref().unwrap_or(&self.audio_path)
+    }
 }
 
 /// Validated dialogue plus its production-index metadata.
@@ -277,11 +288,17 @@ fn validate_dialogue(
                 line.key, line.duration_ms
             )));
         }
-        let expected_audio = format!("mod\\{quest}\\localization\\en-us\\vo\\{}.wem", line.key);
-        if line.audio_path != expected_audio {
+        let expected_audio = expected_audio_paths(quest, &line.key, line.male_audio_path.is_some());
+        if line.audio_path != expected_audio.0 {
             return Err(Error::manifest(format!(
                 "{} has audio path {:?}; expected {:?}",
-                line.key, line.audio_path, expected_audio
+                line.key, line.audio_path, expected_audio.0
+            )));
+        }
+        if line.male_audio_path != expected_audio.1 {
+            return Err(Error::manifest(format!(
+                "{} has male audio path {:?}; expected {:?}",
+                line.key, line.male_audio_path, expected_audio.1
             )));
         }
         if !keys.insert(line.key.clone()) {
@@ -302,8 +319,24 @@ fn validate_dialogue(
                 line.audio_path
             )));
         }
+        if let Some(male_audio_path) = &line.male_audio_path
+            && !audio_paths.insert(male_audio_path.clone())
+        {
+            return Err(Error::manifest(format!(
+                "spoken-line male audio path {male_audio_path:?} is duplicated"
+            )));
+        }
     }
     Ok(())
+}
+
+fn expected_audio_paths(quest: &str, line_key: &str, gendered: bool) -> (String, Option<String>) {
+    let root = format!("mod\\{quest}\\localization\\en-us\\vo\\{line_key}");
+    if gendered {
+        (format!("{root}_f.wem"), Some(format!("{root}_m.wem")))
+    } else {
+        (format!("{root}.wem"), None)
+    }
 }
 
 fn read_json<T: DeserializeOwned>(path: &Path) -> Result<T> {
@@ -378,5 +411,18 @@ mod tests {
         let error = validate_path_atom("dialogue ID", "../outside")
             .expect_err("parent traversal must be rejected");
         assert!(error.to_string().contains("safe path component"));
+    }
+
+    #[test]
+    fn gendered_audio_paths_use_explicit_female_and_male_wems() {
+        let paths = expected_audio_paths("gqt006", "gqt006_10_v_intro_01", true);
+
+        assert_eq!(
+            paths,
+            (
+                "mod\\gqt006\\localization\\en-us\\vo\\gqt006_10_v_intro_01_f.wem".to_owned(),
+                Some("mod\\gqt006\\localization\\en-us\\vo\\gqt006_10_v_intro_01_m.wem".to_owned())
+            )
+        );
     }
 }

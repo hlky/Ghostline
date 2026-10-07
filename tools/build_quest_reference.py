@@ -11,15 +11,16 @@ from __future__ import annotations
 
 import argparse
 import html
+import hashlib
 import json
 import re
 import unicodedata
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-import requests
-from bs4 import BeautifulSoup
+from artifact_io import atomic_write_json
 
 
 BASE_URL = "https://www.ign.com"
@@ -71,7 +72,9 @@ def clean_url(href: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
-def get_index_links(session: requests.Session, url: str) -> list[dict[str, str]]:
+def get_index_links(session, url: str) -> list[dict[str, str]]:
+    from bs4 import BeautifulSoup
+
     response = session.get(url, headers=HEADERS, timeout=30)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
@@ -254,9 +257,37 @@ def render_category(
     return "\n".join(lines)
 
 
-def main() -> int:
+def load_index_snapshot(path: Path) -> dict:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict) or value.get("schema_version") != 1:
+        raise ValueError(f"Unsupported quest index snapshot: {path}")
+    indexes = value.get("indexes", {})
+    if not isinstance(indexes, dict) or set(indexes) != set(INDEXES):
+        raise ValueError("Index snapshot must contain main-jobs, side-jobs and gigs")
+    for slug, links in indexes.items():
+        if not isinstance(links, list) or any(
+            not isinstance(link, dict) or not all(isinstance(link.get(key), str) and link[key] for key in ("title", "url"))
+            for link in links
+        ):
+            raise ValueError(f"Invalid links in index snapshot: {slug}")
+    return value
+
+
+def input_identity(quest_json: Path, index_snapshot: Path) -> dict:
+    return {
+        name: {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+        for name, path in (
+            ("journal", quest_json), ("index_snapshot", index_snapshot),
+            ("generator", Path(__file__).resolve()),
+        )
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--quest-json", type=Path, default=Path(r"H:\projects\quest.json"))
+    parser.add_argument("--index-snapshot", type=Path, default=Path("reference/quests/ign-index-snapshot.json"))
+    parser.add_argument("--refresh-indexes", action="store_true", help="Fetch current links and replace the reproducible input snapshot")
     parser.add_argument(
         "--output",
         type=Path,
@@ -267,18 +298,31 @@ def main() -> int:
         type=Path,
         default=Path("reference/quests/ign-link-map.json"),
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     quests = json.loads(args.quest_json.read_text(encoding="utf-8"))
     candidates = quest_index(quests)
-    session = requests.Session()
+    if args.refresh_indexes:
+        import requests
+
+        with requests.Session() as session:
+            snapshot = {"schema_version": 1, "provenance": {
+                "method": "Fetched IGN index titles and URLs with --refresh-indexes.",
+                "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                "source_indexes": {slug: url for slug, (_, url, _) in INDEXES.items()},
+            }, "indexes": {
+                slug: get_index_links(session, index_url)
+                for slug, (_, index_url, _) in INDEXES.items()
+            }}
+        atomic_write_json(args.index_snapshot, snapshot)
+    snapshot = load_index_snapshot(args.index_snapshot)
     all_records: dict[str, list[dict]] = {}
     unmatched: dict[str, list[dict[str, str]]] = {}
 
     for slug, (label, index_url, allowed_types) in INDEXES.items():
         records: list[dict] = []
         misses: list[dict[str, str]] = []
-        for link in get_index_links(session, index_url):
+        for link in snapshot["indexes"][slug]:
             quest = choose_match(link, candidates, allowed_types)
             if quest is None:
                 misses.append(link)
@@ -310,6 +354,7 @@ def main() -> int:
 
     mapping = {
         "source_quest_json": str(args.quest_json),
+        "inputs": input_identity(args.quest_json, args.index_snapshot),
         "indexes": {
             slug: {
                 "title": INDEXES[slug][0],
@@ -332,20 +377,16 @@ def main() -> int:
         },
     }
     args.link_map.parent.mkdir(parents=True, exist_ok=True)
-    args.link_map.write_text(
-        json.dumps(mapping, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-        newline="\n",
-    )
+    atomic_write_json(args.link_map, mapping)
 
     readme = [
         "# Vanilla Quest Reference",
         "",
-        "These files are generated research material. Regenerate them from their",
-        "source indexes; do not maintain individual quest entries by hand.",
+        "These files are generated research material. Regenerate them offline from",
+        "the checked index snapshot; do not maintain individual quest entries by hand.",
         "",
         "IGN's walkthrough indexes provide the curated quest lists and source URLs.",
-        "The local `H:\\projects\\quest.json` export provides the exact vanilla",
+        f"The local `{args.quest_json}` export provides the exact vanilla",
         "journal paths, hashes, descriptions, objectives, and map-pin references.",
         "",
         "Generated files:",
@@ -358,12 +399,17 @@ def main() -> int:
             "",
             "Machine-readable linkage:",
             "[`reference/quests/ign-link-map.json`](../../../reference/quests/ign-link-map.json).",
+            "The linkage records SHA-256 identities for the journal, index snapshot, and generator.",
+            "Snapshot provenance: [`reference/quests/README.md`](../../../reference/quests/README.md).",
             "",
             "Regenerate:",
             "",
             "```powershell",
-            "py -B .\\tools\\build_quest_reference.py",
+            "py -B .\\tools\\build_quest_reference.py --quest-json H:\\projects\\quest.json",
             "```",
+            "",
+            "The default command uses no network. `--refresh-indexes` explicitly fetches",
+            "new index links and replaces the snapshot; review that input change first.",
             "",
             "The generated pages summarize local journal data and link to IGN. They",
             "do not mirror or reproduce IGN walkthrough articles.",

@@ -13,17 +13,26 @@ import struct
 import subprocess
 import sys
 import tempfile
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
+from functools import wraps
 from pathlib import Path
+
+from artifact_io import atomic_write_json
+
+from toolchain import default_tool_path
 from typing import Any, Iterable
+
+import character_cache
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "characters/patch.character.json"
-LOCAL_PATHS = ROOT / "characters/local-paths.json"
-DEFAULT_WOLVENKIT = Path(r"H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe")
-DEFAULT_BLENDER = Path(r"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe")
-DEFAULT_GAME = Path(r"H:\Cyberpunk 2077")
+DEFAULT_MANIFEST = ROOT / "projects/shared/ghostline-runtime/characters/patch.character.json"
+LOCAL_PATHS = ROOT / "projects/shared/ghostline-runtime/characters/local-paths.json"
+DEFAULT_WOLVENKIT = default_tool_path("wolvenkit")
+DEFAULT_BLENDER = default_tool_path("blender")
+DEFAULT_GAME = default_tool_path("game")
 BLENDER_RUNNER = Path(__file__).with_name("character_head_blender.py")
 SHAPE_NAMES = ("eyes", "nose", "mouth", "jaw", "ears")
 SHAPE_PART_DIGITS = {"eyes": "1", "nose": "2", "mouth": "3", "jaw": "4", "ears": "5"}
@@ -61,6 +70,45 @@ class CharacterBuildError(RuntimeError):
 
 
 @dataclass
+class CharacterBuildInputs:
+    """One build's parsed input snapshots; callers only receive mutable copies."""
+
+    _documents: dict[Path, dict[str, Any]] = field(default_factory=dict)
+
+    def read(self, path: Path) -> dict[str, Any]:
+        path = path.resolve()
+        if path not in self._documents:
+            self._documents[path] = _read_json_document(path)
+        return copy.deepcopy(self._documents[path])
+
+
+_BUILD_INPUTS: ContextVar[CharacterBuildInputs | None] = ContextVar("character_build_inputs", default=None)
+
+
+@contextmanager
+def build_session():
+    """Share parsed inputs within a build/request, never between requests or threads."""
+    current = _BUILD_INPUTS.get()
+    if current is not None:
+        yield current
+        return
+    current = CharacterBuildInputs()
+    token = _BUILD_INPUTS.set(current)
+    try:
+        yield current
+    finally:
+        _BUILD_INPUTS.reset(token)
+
+
+def build_scoped(function):
+    @wraps(function)
+    def scoped(*args, **kwargs):
+        with build_session():
+            return function(*args, **kwargs)
+    return scoped
+
+
+@dataclass
 class ValidationReport:
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -83,7 +131,7 @@ class ValidationReport:
         }
 
 
-def read_json(path: Path) -> dict[str, Any]:
+def _read_json_document(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -93,25 +141,16 @@ def read_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def read_json(path: Path) -> dict[str, Any]:
+    inputs = _BUILD_INPUTS.get()
+    return inputs.read(path) if inputs is not None else _read_json_document(path)
+
+
 def write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            newline="\n",
-            dir=path.parent,
-            prefix=f".{path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as stream:
-            stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
-            temporary = Path(stream.name)
-        temporary.replace(path)
-    finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
+    atomic_write_json(path, value)
+    inputs = _BUILD_INPUTS.get()
+    if inputs is not None:
+        inputs._documents.pop(path.resolve(), None)
 
 
 def repo_path(value: str | Path) -> Path:
@@ -253,6 +292,7 @@ def head_preview_cache_key(source: Path, wolvenkit: Path, game_path: Path) -> st
         "source": {**stat_identity(source), "sha256": sha256_file(source)},
         "wolvenkit": stat_identity(wolvenkit),
         "game": stat_identity(game_executable) if game_executable.is_file() else str(game_path.resolve()),
+        "game_archives": character_cache.archive_identities(game_path),
     }
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -270,6 +310,23 @@ def load_catalog(manifest: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(value, str) or not value:
         raise CharacterBuildError("Manifest catalog must be a repository-relative path")
     return read_json(repo_path(value))
+
+
+def appearance_specs(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return authored appearances while preserving schema-v1 manifests."""
+    if manifest.get("schema_version") == 2:
+        value = manifest.get("appearances")
+        return value if isinstance(value, list) else []
+    value = manifest.get("appearance")
+    return [value] if isinstance(value, dict) else []
+
+
+def manifest_for_appearance(
+    manifest: dict[str, Any], appearance: dict[str, Any]
+) -> dict[str, Any]:
+    selected = copy.deepcopy(manifest)
+    selected["appearance"] = copy.deepcopy(appearance)
+    return selected
 
 
 def typed_value(value: Any) -> Any:
@@ -456,10 +513,12 @@ def select_component_prototype(
     catalog: dict[str, Any],
     library: dict[str, Any],
     donor: dict[str, Any],
+    *,
+    materialize: bool = True,
 ) -> tuple[str, dict[str, Any]]:
     required = required_component_names(manifest, catalog)
     archived = load_component_archives(library, str(manifest.get("frame", "")))
-    candidates: list[tuple[int, str, dict[str, Any]]] = []
+    candidates: list[tuple[int, str, dict[str, Any], set[str]]] = []
     prototypes = library.get("prototypes")
     if not isinstance(prototypes, list) or not prototypes:
         raise CharacterBuildError("Component library must define at least one prototype")
@@ -484,7 +543,7 @@ def select_component_prototype(
             )
         seen_ids.add(prototype_id)
         seen_appearances.add(appearance_name)
-        appearance = copy.deepcopy(find_appearance(donor, appearance_name))
+        appearance = find_appearance(donor, appearance_name)
         mappings = components_by_name(appearance)
         if len(mappings) != 2:
             raise CharacterBuildError(
@@ -503,25 +562,36 @@ def select_component_prototype(
                 raise CharacterBuildError(
                     f"Component prototype {prototype_id!r} has malformed component copies"
                 )
-            for name in sorted(required - native):
-                normal, compiled = archived[name]
-                normal_components.append(copy.deepcopy(normal))
-                compiled_components.append(copy.deepcopy(compiled))
-            candidates.append((len(normal_components), prototype_id, appearance))
+            candidates.append((len(normal_components) + len(required - native), prototype_id, appearance, native))
 
     if not candidates:
         missing = ", ".join(sorted(required)) or "<no named requirements>"
         raise CharacterBuildError(
             f"No component prototype covers the selected character components: {missing}"
         )
-    _, prototype_id, appearance = min(candidates, key=lambda item: (item[0], item[1]))
+    _, prototype_id, appearance, native = min(candidates, key=lambda item: (item[0], item[1]))
+    if materialize:
+        appearance = copy.deepcopy(appearance)
+        normal_components = appearance["components"]
+        compiled_components = appearance["compiledData"]["Data"]["Chunks"]
+        for name in sorted(required - native):
+            normal, compiled = archived[name]
+            normal_components.append(copy.deepcopy(normal))
+            compiled_components.append(copy.deepcopy(compiled))
     return prototype_id, appearance
 
 
 def assemble_appearance_document(
     manifest: dict[str, Any],
     catalog: dict[str, Any],
+    *,
+    materialize: bool = True,
 ) -> tuple[dict[str, Any], str, Path]:
+    if "appearance" not in manifest:
+        authored = appearance_specs(manifest)
+        if not authored:
+            raise CharacterBuildError("Manifest has no appearance to assemble")
+        manifest = manifest_for_appearance(manifest, authored[0])
     templates = manifest["templates"]
     shell_value = templates.get("appearance_shell")
     if not isinstance(shell_value, str):
@@ -547,9 +617,10 @@ def assemble_appearance_document(
             "Appearance shell and component donor baseEntityType values must match"
         )
     prototype_id, prototype = select_component_prototype(
-        manifest, catalog, library, donor
+        manifest, catalog, library, donor, materialize=materialize
     )
-    root["appearances"] = [{"HandleId": "0", "Data": copy.deepcopy(prototype)}]
+    if materialize:
+        root["appearances"] = [{"HandleId": "0", "Data": prototype}]
     return shell, prototype_id, donor_path
 
 
@@ -696,6 +767,30 @@ def renumber_handles(value: Any) -> dict[str, str]:
                 raise CharacterBuildError(f"Unresolved CR2W HandleRefId {old_ref!r}")
             item["HandleRefId"] = mapping[old_ref]
     return mapping
+
+
+def renumber_buffers(value: Any) -> None:
+    """Give every inline CR2W buffer a file-global reference identifier.
+
+    Appearance rows are assembled from independent donor documents, whose
+    deferred buffers commonly reuse the same ``BufferId``. WolvenKit resolves
+    those identifiers across the complete output document, so cloned rows
+    must not retain donor-local values.
+    """
+    wrappers = [
+        item
+        for item in walk_values(value)
+        if isinstance(item, dict) and "BufferId" in item
+    ]
+    if any(
+        isinstance(item, dict) and "BufferRefId" in item
+        for item in walk_values(value)
+    ):
+        raise CharacterBuildError(
+            "Cannot renumber cloned CR2W buffers that contain BufferRefId references"
+        )
+    for buffer_id, wrapper in enumerate(wrappers):
+        wrapper["BufferId"] = str(buffer_id)
 
 
 def apply_catalog_bindings(
@@ -852,21 +947,44 @@ def stage_template_assets(
         path.casefold() for path in resource_paths(entity) + resource_paths(appearance)
     }
     staged: list[str] = []
+    source_prefix = str(manifest["outputs"]["entity_raw"]).replace("\\", "/").split("source/raw/", 1)[0]
+    custom_path_dependencies = bool(spec.get("custom_path_dependencies", False))
+    custom_path_meshes_value = spec.get("custom_path_meshes", [])
+    if not isinstance(custom_path_meshes_value, list) or not all(
+        isinstance(value, str) and value for value in custom_path_meshes_value
+    ):
+        raise CharacterBuildError("template_assets.custom_path_meshes must be a list of paths")
+    custom_path_meshes = {
+        value.replace("\\", "/").casefold() for value in custom_path_meshes_value
+    }
+    source_depot_root = normalized_depot_root(
+        spec.get("source_depot_root"), "template_assets.source_depot_root"
+    )
+    target_depot_root = normalized_depot_root(
+        manifest.get("namespace"), "character namespace"
+    )
     for record in records:
         depot_path = str(record["target_depot_path"])
         if depot_path.casefold() not in referenced:
             continue
         normalized_depot_path = depot_path.replace("\\", "/")
-        relative = f"source/archive/{normalized_depot_path}"
+        relative = f"{source_prefix}source/archive/{normalized_depot_path}"
         target = output_path(output_root, relative)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(record["source"], target)
+        asset_source = Path(record["source"])
+        source_root = repo_path(str(spec.get("source_root", "")))
+        source_relative = asset_source.relative_to(source_root).as_posix().casefold()
+        if custom_path_dependencies and source_relative in custom_path_meshes:
+            custom_path_mesh_materials(
+                asset_source,
+                target,
+                source_depot_root,
+                target_depot_root,
+            )
         staged.append(relative)
 
     source_root = repo_path(str(spec.get("source_root", "")))
-    source_depot_root = normalized_depot_root(
-        spec.get("source_depot_root"), "template_assets.source_depot_root"
-    )
     dependency_globs = spec.get("dependency_globs", [])
     if not isinstance(dependency_globs, list):
         raise CharacterBuildError("template_assets.dependency_globs must be a list")
@@ -885,8 +1003,9 @@ def stage_template_assets(
             if not source.is_file():
                 continue
             child = source.relative_to(source_root).as_posix()
-            normalized_source_root = source_depot_root.replace("\\", "/")
-            relative = f"source/archive/{normalized_source_root}/{child}"
+            dependency_root = target_depot_root if custom_path_dependencies else source_depot_root
+            normalized_dependency_root = dependency_root.replace("\\", "/")
+            relative = f"{source_prefix}source/archive/{normalized_dependency_root}/{child}"
             target = output_path(output_root, relative)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
@@ -894,12 +1013,74 @@ def stage_template_assets(
     return sorted(set(staged), key=str.casefold)
 
 
+def custom_path_mesh_materials(
+    source: Path,
+    target: Path,
+    source_depot_root: str,
+    target_depot_root: str,
+) -> None:
+    if not DEFAULT_WOLVENKIT.is_file():
+        raise CharacterBuildError(f"WolvenKit was not found: {DEFAULT_WOLVENKIT}")
+    with tempfile.TemporaryDirectory() as directory:
+        workspace = Path(directory)
+        try:
+            subprocess.run(
+                [
+                    str(DEFAULT_WOLVENKIT),
+                    "convert",
+                    "serialize",
+                    str(source),
+                    "--outpath",
+                    str(workspace),
+                    "--verbosity",
+                    "Quiet",
+                ],
+                check=True,
+            )
+            json_path = workspace / f"{source.name}.json"
+            if not json_path.is_file():
+                raise CharacterBuildError(f"WolvenKit did not serialize {source}")
+            document = read_json(json_path)
+            rewritten = replace_strings(
+                document,
+                [(source_depot_root, target_depot_root)],
+            )
+            if rewritten == document:
+                return
+            write_json(json_path, rewritten)
+            rebuilt = workspace / source.name
+            rebuilt.unlink(missing_ok=True)
+            subprocess.run(
+                [
+                    str(DEFAULT_WOLVENKIT),
+                    "convert",
+                    "deserialize",
+                    str(json_path),
+                    "--outpath",
+                    str(workspace),
+                    "--verbosity",
+                    "Quiet",
+                ],
+                check=True,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            raise CharacterBuildError(
+                f"Unable to custom-path embedded materials in {source}: {exc}"
+            ) from exc
+        if not rebuilt.is_file() or rebuilt.read_bytes()[:4] != b"CR2W":
+            raise CharacterBuildError(f"WolvenKit did not rebuild {source}")
+        shutil.copy2(rebuilt, target)
+
+
 def archive_path_for_raw(raw_path: str) -> Path:
     normalized = raw_path.replace("\\", "/")
-    if not normalized.startswith("source/raw/") or not normalized.endswith(".json"):
+    prefix, separator, relative = normalized.partition("source/raw/")
+    if not separator or not normalized.endswith(".json") or ".." in normalized.split("/"):
         raise CharacterBuildError(f"CR2W raw output has unexpected path: {raw_path}")
-    relative = normalized.removeprefix("source/raw/").removesuffix(".json")
-    return ROOT / "source/archive" / relative
+    target = (ROOT / prefix / "source/archive" / relative.removesuffix(".json")).resolve()
+    if not target.is_relative_to(ROOT.resolve()):
+        raise CharacterBuildError(f"CR2W output escapes repository: {raw_path}")
+    return target
 
 
 def set_archive_header(document: dict[str, Any], raw_output: str) -> None:
@@ -1263,13 +1444,66 @@ def update_localization(document: dict[str, Any], manifest: dict[str, Any]) -> N
     entry["secondaryKey"] = spec["secondary_key"]
 
 
+def identity_errors(manifest: dict[str, Any]) -> list[str]:
+    """Keep declared resource filenames, output locations, and depot references aligned."""
+    errors: list[str] = []
+    entity = manifest.get("entity")
+    outputs = manifest.get("outputs")
+    if not isinstance(entity, dict) or not isinstance(outputs, dict):
+        return ["Character identity requires entity and outputs objects"]
+    namespace = str(manifest.get("namespace", "")).replace("\\", "/")
+    for output_key, filename_key, suffix in (
+        ("entity_raw", "file_name", ".ent"),
+        ("appearance_raw", "appearance_file", ".app"),
+    ):
+        filename = entity.get(filename_key)
+        if (
+            not isinstance(filename, str)
+            or not filename.endswith(suffix)
+            or "/" in filename
+            or "\\" in filename
+            or ":" in filename
+        ):
+            errors.append(f"entity.{filename_key} must be a {suffix} filename")
+            continue
+        from project_layout import resource_project
+        project = resource_project(namespace + "/", root=ROOT)
+        prefix = project.relative_to(ROOT).as_posix()
+        expected = (prefix + "/" if prefix != "." else "") + f"source/raw/{namespace}/{filename}.json"
+        if str(outputs.get(output_key, "")).replace("\\", "/") != expected:
+            errors.append(f"outputs.{output_key} must match character identity: {expected}")
+    return errors
+
+
+@build_scoped
 def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None = None) -> ValidationReport:
     report = ValidationReport()
-    if manifest.get("schema_version") != 1:
-        report.errors.append("Only character schema_version 1 is supported")
-    for key in ("id", "display_name", "namespace", "templates", "outputs", "entity", "appearance", "tweak"):
+    schema_version = manifest.get("schema_version")
+    if schema_version not in (1, 2):
+        report.errors.append("Only character schema_version 1 and 2 are supported")
+    required = ("id", "display_name", "namespace", "templates", "outputs", "entity", "tweak")
+    for key in required:
         if key not in manifest:
             report.errors.append(f"Manifest is missing {key}")
+    if schema_version == 1 and "appearance" not in manifest:
+        report.errors.append("Manifest is missing appearance")
+    if schema_version == 2 and "appearances" not in manifest:
+        report.errors.append("Manifest is missing appearances")
+
+    appearances = appearance_specs(manifest)
+    if not appearances:
+        report.errors.append("Manifest must define at least one appearance")
+    appearance_names = [str(value.get("name", "")) for value in appearances if isinstance(value, dict)]
+    if any(not name for name in appearance_names):
+        report.errors.append("Every appearance must have a non-empty name")
+    if len(set(appearance_names)) != len(appearance_names):
+        report.errors.append("Appearance names must be unique")
+    root_names = [str(value.get("root_name", "")) for value in appearances if isinstance(value, dict)]
+    if schema_version == 2:
+        if any(not name for name in root_names):
+            report.errors.append("Every schema-v2 appearance must have a non-empty root_name")
+        if len(set(root_names)) != len(root_names):
+            report.errors.append("Appearance root_name values must be unique")
 
     namespace = str(manifest.get("namespace", ""))
     if not namespace.startswith("mod\\") or ".." in namespace or namespace.endswith("\\"):
@@ -1412,10 +1646,16 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
                 report.errors.append(str(exc))
 
     outputs = manifest.get("outputs", {})
+    if not isinstance(outputs, dict):
+        report.errors.append("outputs must be an object")
+        outputs = {}
     for kind, value in outputs.items():
         normalized = str(value).replace("\\", "/")
-        if not normalized.startswith("source/") or ".." in normalized.split("/"):
-            report.errors.append(f"Output {kind} must stay under source/: {value}")
+        from project_layout import catalog as layout_catalog
+        prefixes = ["source/", *(path + "/source/" for path in layout_catalog(ROOT).get("projects", {}).values())]
+        if not any(normalized.startswith(prefix) for prefix in prefixes) or ".." in normalized.split("/"):
+            report.errors.append(f"Output {kind} must stay under a project source/: {value}")
+    report.errors.extend(identity_errors(manifest))
 
     if catalog is None:
         try:
@@ -1437,31 +1677,42 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
             f"Catalog {catalog.get('id', '')!r} does not support character frame {frame!r}"
         )
     categories = catalog.get("categories", {})
-    for category_id, option_id in manifest.get("appearance", {}).get("selections", {}).items():
-        category = categories.get(category_id)
-        options = category.get("options", {}) if isinstance(category, dict) else {}
-        if option_id not in options:
-            report.errors.append(f"Unknown catalog selection {category_id}={option_id}")
+    overrides_count = 0
+    component_prototypes: list[str] = []
+    for appearance in appearances:
+        if not isinstance(appearance, dict):
+            report.errors.append("appearances entries must be objects")
+            continue
+        selected_manifest = manifest_for_appearance(manifest, appearance)
+        for category_id, option_id in appearance.get("selections", {}).items():
+            category = categories.get(category_id)
+            options = category.get("options", {}) if isinstance(category, dict) else {}
+            if option_id not in options:
+                report.errors.append(f"Unknown catalog selection {category_id}={option_id}")
 
-    overrides = manifest.get("appearance", {}).get("indexed_overrides", {})
-    if not isinstance(overrides, dict):
-        report.errors.append("appearance.indexed_overrides must be an object")
-        overrides = {}
-    for category_id, override in overrides.items():
+        overrides = appearance.get("indexed_overrides", {})
+        if not isinstance(overrides, dict):
+            report.errors.append(f"appearance {appearance.get('name', '')}.indexed_overrides must be an object")
+            overrides = {}
+        overrides_count += len(overrides)
+        for category_id, override in overrides.items():
+            try:
+                normalized_indexed_override(selected_manifest, catalog, str(category_id), override)
+            except CharacterBuildError as exc:
+                report.errors.append(str(exc))
+            else:
+                report.warnings.append(
+                    f"Indexed {appearance.get('name', '')}/{category_id} mesh exists in the installed-game catalog only after UI/index validation"
+                )
+
         try:
-            normalized_indexed_override(manifest, catalog, str(category_id), override)
+            _, component_prototype, _ = assemble_appearance_document(
+                selected_manifest, catalog, materialize=False
+            )
         except CharacterBuildError as exc:
             report.errors.append(str(exc))
         else:
-            report.warnings.append(
-                f"Indexed {category_id} mesh exists in the installed-game catalog only after UI/index validation"
-            )
-
-    try:
-        _, component_prototype, _ = assemble_appearance_document(manifest, catalog)
-    except CharacterBuildError as exc:
-        report.errors.append(str(exc))
-        component_prototype = ""
+            component_prototypes.append(component_prototype)
 
     try:
         template_assets = template_asset_records(manifest)
@@ -1526,16 +1777,21 @@ def validate_manifest(manifest: dict[str, Any], catalog: dict[str, Any] | None =
     report.details["frame"] = frame
     report.details["player_frame_token"] = profile.get("player_token") if profile else ""
     report.details["template_assets"] = len(template_assets)
-    report.details["selections"] = len(manifest.get("appearance", {}).get("selections", {}))
-    report.details["indexed_overrides"] = len(overrides)
-    report.details["component_prototype"] = component_prototype
+    report.details["appearances"] = len(appearances)
+    report.details["selections"] = sum(len(value.get("selections", {})) for value in appearances if isinstance(value, dict))
+    report.details["indexed_overrides"] = overrides_count
+    report.details["component_prototypes"] = component_prototypes
+    if len(component_prototypes) == 1:
+        report.details["component_prototype"] = component_prototypes[0]
     return report
 
 
+@build_scoped
 def validate_generated(
     manifest: dict[str, Any], entity: dict[str, Any], appearance: dict[str, Any]
 ) -> ValidationReport:
     report = ValidationReport()
+    report.errors.extend(identity_errors(manifest))
     entity_apps = appearance_data(entity)
     app_apps = appearance_data(appearance)
     entity_spec = manifest["entity"]
@@ -1559,41 +1815,44 @@ def validate_generated(
             f"{profile['base_entity_type']!r} for {manifest['frame']}"
         )
 
-    if len(entity_apps) != 1:
-        report.errors.append(f"Schema v1 expects exactly one root appearance, found {len(entity_apps)}")
-    if len(app_apps) != 1:
-        report.errors.append(f"Schema v1 expects exactly one app appearance, found {len(app_apps)}")
+    authored_appearances = appearance_specs(manifest)
+    expected_count = len(authored_appearances)
+    if len(entity_apps) != expected_count:
+        report.errors.append(f"Expected {expected_count} root appearances, found {len(entity_apps)}")
+    if len(app_apps) != expected_count:
+        report.errors.append(f"Expected {expected_count} app appearances, found {len(app_apps)}")
 
-    if entity_apps:
-        row = entity_apps[0]
+    for index, appearance_spec in enumerate(authored_appearances):
+        if index >= len(entity_apps) or index >= len(app_apps):
+            continue
+        row = entity_apps[index]
         expected_resource = f"{namespace}\\{entity_spec['appearance_file']}"
         actual_resource = resource_paths(row.get("appearanceResource", {}))
-        if str(typed_value(row.get("name")) or "") != entity_spec["root_appearance"]:
-            report.errors.append("Root appearance name does not match the manifest")
-        if str(typed_value(row.get("appearanceName")) or "") != entity_spec["appearance_name"]:
-            report.errors.append("Root appearanceName does not match the manifest")
+        expected_root_name = str(appearance_spec.get("root_name") or (entity_spec["root_appearance"] if index == 0 else f"{manifest['id']}_{appearance_spec['name']}"))
+        if str(typed_value(row.get("name")) or "") != expected_root_name:
+            report.errors.append(f"Root appearance name does not match {appearance_spec['name']}")
+        if str(typed_value(row.get("appearanceName")) or "") != appearance_spec["name"]:
+            report.errors.append(f"Root appearanceName does not match {appearance_spec['name']}")
         if actual_resource != [expected_resource]:
             report.errors.append(f"Root appearance resource is {actual_resource}, expected {expected_resource}")
 
-    if app_apps:
-        row = app_apps[0]
-        if str(typed_value(row.get("name")) or "") != entity_spec["appearance_name"]:
-            report.errors.append("App appearance name does not match the root mapping")
+        row = app_apps[index]
+        if str(typed_value(row.get("name")) or "") != appearance_spec["name"]:
+            report.errors.append(f"App appearance name does not match {appearance_spec['name']}")
         names = [component_name(item) for item in row.get("components", []) if isinstance(item, dict)]
         duplicates = sorted({name for name in names if name and name != "Component" and names.count(name) > 1})
         if duplicates:
             report.errors.append(f"Duplicate appearance component names: {', '.join(duplicates)}")
         mappings = components_by_name(row)
-        if manifest.get("appearance", {}).get("indexed_overrides") and len(mappings) != 2:
+        selected_manifest = manifest_for_appearance(manifest, appearance_spec)
+        if appearance_spec.get("indexed_overrides") and len(mappings) != 2:
             report.errors.append(
                 "Generated indexed overrides require both components and compiledData component copies"
             )
-        for category_id, override in manifest.get("appearance", {}).get(
-            "indexed_overrides", {}
-        ).items():
+        for category_id, override in appearance_spec.get("indexed_overrides", {}).items():
             try:
                 config, depot_path, mesh_appearance = normalized_indexed_override(
-                    manifest, load_catalog(manifest), category_id, override
+                    selected_manifest, load_catalog(manifest), category_id, override
                 )
             except CharacterBuildError as exc:
                 report.errors.append(str(exc))
@@ -1685,11 +1944,14 @@ def validate_generated(
     return report
 
 
+@build_scoped
 def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], str, list[str]]:
     templates = manifest["templates"]
     entity = read_json(repo_path(templates["entity"]))
-    app, prototype_id, _ = assemble_appearance_document(manifest, catalog)
     localization = read_json(repo_path(templates["localization"]))
+    authored_appearances = appearance_specs(manifest)
+    if not authored_appearances:
+        raise CharacterBuildError("Manifest has no appearances")
 
     identity = manifest.get("template_identity", {})
     replacements = [
@@ -1697,10 +1959,43 @@ def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tup
         (str(identity.get("id", manifest["id"])), manifest["id"]),
     ]
     entity = replace_strings(entity, replacements)
-    app = replace_strings(app, replacements)
+    app: dict[str, Any] | None = None
+    app_rows: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    next_handle_id = 0
     template_assets = template_asset_records(manifest)
     resolved_template_resources = resolve_template_asset_paths(entity, template_assets)
-    resolved_template_resources += resolve_template_asset_paths(app, template_assets)
+    for appearance_spec in authored_appearances:
+        selected_manifest = manifest_for_appearance(manifest, appearance_spec)
+        selected_app, prototype_id, _ = assemble_appearance_document(selected_manifest, catalog)
+        selected_app = replace_strings(selected_app, replacements)
+        resolved_template_resources += resolve_template_asset_paths(selected_app, template_assets)
+        warnings.extend(apply_catalog_selections(selected_app, selected_manifest, catalog))
+        warnings.extend(apply_indexed_overrides(selected_app, selected_manifest, catalog))
+        warnings.append(f"Assembled appearance {appearance_spec['name']} from component prototype {prototype_id}")
+        renumber_handles(selected_app)
+        row = copy.deepcopy(selected_app["Data"]["RootChunk"]["appearances"][0])
+        row_ids = handle_ids(row)
+        first_appearance = app is None
+        if not first_appearance:
+            for item in walk_values(row):
+                if not isinstance(item, dict):
+                    continue
+                if "HandleId" in item:
+                    item["HandleId"] = str(int(item["HandleId"]) + next_handle_id)
+                if "HandleRefId" in item:
+                    item["HandleRefId"] = str(int(item["HandleRefId"]) + next_handle_id)
+        app_rows.append(row)
+        if first_appearance:
+            app = selected_app
+            next_handle_id = max(handle_ids(app), default=-1) + 1
+        else:
+            next_handle_id += (max(row_ids) + 1) if row_ids else 0
+    if app is None:
+        raise CharacterBuildError("Manifest has no buildable appearances")
+    app["Data"]["RootChunk"]["appearances"] = app_rows
+    renumber_handles(app)
+    renumber_buffers(app)
     if template_assets:
         unresolved_template_resources = sorted(
             {
@@ -1718,27 +2013,25 @@ def generate_documents(manifest: dict[str, Any], catalog: dict[str, Any]) -> tup
     entity_rows = appearance_data(entity)
     if not entity_rows:
         raise CharacterBuildError("Entity template has no appearance mapping")
-    entity["Data"]["RootChunk"]["appearances"] = entity["Data"]["RootChunk"]["appearances"][:1]
-    entity_row = appearance_data(entity)[0]
+    entity_row_template = copy.deepcopy(entity["Data"]["RootChunk"]["appearances"][0])
     spec = manifest["entity"]
-    set_typed_value(entity_row, "name", spec["root_appearance"])
-    set_typed_value(entity_row, "appearanceName", spec["appearance_name"])
-    resource = entity_row.get("appearanceResource", {}).get("DepotPath")
-    if not isinstance(resource, dict) or "$value" not in resource:
-        raise CharacterBuildError("Entity appearanceResource is malformed")
-    resource["$value"] = f"{manifest['namespace']}\\{spec['appearance_file']}"
+    entity_rows = []
+    for index, appearance_spec in enumerate(authored_appearances):
+        entity_row = copy.deepcopy(entity_row_template)
+        root_name = str(appearance_spec.get("root_name") or (spec["root_appearance"] if index == 0 else f"{manifest['id']}_{appearance_spec['name']}"))
+        set_typed_value(entity_row, "name", root_name)
+        set_typed_value(entity_row, "appearanceName", appearance_spec["name"])
+        resource = entity_row.get("appearanceResource", {}).get("DepotPath")
+        if not isinstance(resource, dict) or "$value" not in resource:
+            raise CharacterBuildError("Entity appearanceResource is malformed")
+        resource["$value"] = f"{manifest['namespace']}\\{spec['appearance_file']}"
+        entity_rows.append(entity_row)
+    entity["Data"]["RootChunk"]["appearances"] = entity_rows
     set_typed_value(entity["Data"]["RootChunk"], "defaultAppearance", spec["root_appearance"])
-
-    selected_app = appearance_data(app)[0]
-    set_typed_value(selected_app, "name", manifest["appearance"]["name"])
-    warnings = apply_catalog_selections(app, manifest, catalog)
-    warnings.extend(apply_indexed_overrides(app, manifest, catalog))
-    warnings.append(f"Assembled appearance from component prototype {prototype_id}")
     if resolved_template_resources:
         warnings.append(
             f"Resolved {resolved_template_resources} template mesh ResourcePaths into {manifest['namespace']}"
         )
-    renumber_handles(app)
     update_localization(localization, manifest)
 
     set_archive_header(entity, manifest["outputs"]["entity_raw"])
@@ -1756,6 +2049,7 @@ def output_path(output_root: Path, relative: str) -> Path:
     return target
 
 
+@build_scoped
 def generate(manifest_path: Path, output_root: Path) -> dict[str, Any]:
     manifest = load_manifest(manifest_path)
     catalog = load_catalog(manifest)
@@ -1927,6 +2221,7 @@ def build_preview_manifest(
     }
 
 
+@build_scoped
 def prepare_head_preview(
     manifest_path: Path,
     output_dir: Path,
@@ -1968,70 +2263,58 @@ def prepare_head_preview(
     if not sources:
         raise CharacterBuildError("No head morphtargets were selected for preview")
 
-    models_dir = output_dir / "models"
-    models_dir.mkdir(parents=True, exist_ok=True)
-    expected = [models_dir / f"{source.name}.glb" for source in sources]
-    cache_path = output_dir / "preview-cache.json"
-    try:
-        cache = read_json(cache_path) if cache_path.is_file() else {"schema_version": 1, "models": {}}
-    except CharacterBuildError:
-        cache = {"schema_version": 1, "models": {}}
-    cached_models = cache.get("models")
-    if not isinstance(cached_models, dict):
-        cached_models = {}
+    relative_models = [Path("models") / f"{source.name}.glb" for source in sources]
+    expected = [output_dir / path for path in relative_models]
     cache_keys = {
         source.name: head_preview_cache_key(source, wolvenkit, game_path) for source in sources
     }
-    reused = [
-        output
-        for source, output in zip(sources, expected)
-        if output.is_file() and cached_models.get(source.name) == cache_keys[source.name]
-    ]
-    export_sources = [
-        source
-        for source, output in zip(sources, expected)
-        if not output.is_file() or cached_models.get(source.name) != cache_keys[source.name]
-    ]
+    key = character_cache.fingerprint(cache_keys)
+    cache_path = output_dir / "preview-cache.json"
+    reused = character_cache.cache_matches(cache_path, key, expected)
     commands: list[list[str]] = []
-    if export_sources:
+    manifest_output = output_dir / "preview-manifest.json"
+
+    def export(staging: Path) -> None:
+        models_dir = staging / "models"
+        models_dir.mkdir(parents=True)
         command = [
-            str(wolvenkit),
-            "export",
-            *[str(source) for source in export_sources],
-            "-o",
-            str(models_dir),
-            "--gamepath",
-            str(game_path),
-            "-v",
-            "Minimal",
+            str(wolvenkit), "export", *[str(source) for source in sources],
+            "-o", str(models_dir), "--gamepath", str(game_path), "-v", "Minimal",
         ]
         commands.append(command)
         completed = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
-        if completed.returncode != 0 and not all(path.is_file() for path in expected):
+        if completed.returncode != 0:
             raise CharacterBuildError(
                 f"Preview export failed ({completed.returncode}): {' '.join(command)}\n"
                 f"{completed.stdout}\n{completed.stderr}"
             )
+        # Reading target names also verifies the fresh GLB metadata before promotion.
+        preview = build_preview_manifest(manifest, [staging / path for path in relative_models], staging)
+        preview["cache_keys"] = cache_keys
+        write_json(staging / "preview-manifest.json", preview)
+        write_json(staging / "preview-cache.json", {"schema_version": 2, "cache_key": key, "models": cache_keys})
 
-    missing_outputs = [str(path) for path in expected if not path.is_file()]
-    if missing_outputs:
-        raise CharacterBuildError(f"Preview export did not produce: {', '.join(missing_outputs)}")
-    cached_models.update(cache_keys)
-    write_json(cache_path, {"schema_version": 1, "models": cached_models})
-    preview = build_preview_manifest(manifest, expected, output_dir)
-    preview["cache_keys"] = cache_keys
-    manifest_output = output_dir / "preview-manifest.json"
-    write_json(manifest_output, preview)
+    if not reused:
+        character_cache.refresh_export(
+            output_dir,
+            [*relative_models, Path("preview-manifest.json"), Path("preview-cache.json")],
+            export,
+        )
+    else:
+        preview = build_preview_manifest(manifest, expected, output_dir)
+        preview["cache_keys"] = cache_keys
+        write_json(manifest_output, preview)
     return {
         "ok": True,
         "character_id": character_id,
         "manifest": str(manifest_output.resolve()),
         "models": [str(path.resolve()) for path in expected],
-        "reused": [str(path.resolve()) for path in reused],
+        "reused": [str(path.resolve()) for path in expected] if reused else [],
         "commands": commands,
     }
 
 
+@build_scoped
 def head_build(
     manifest_path: Path,
     workspace: Path,
@@ -2145,23 +2428,42 @@ def head_build(
         str(shape_file),
     ]
     plan["commands"] = [export_command, blender_command]
-    exported_morphs = list(morph_dir.glob("*.morphtarget.glb"))
-    if not exported_morphs:
-        completed = subprocess.run(export_command, cwd=ROOT, text=True, capture_output=True, check=False)
-        exported_morphs = list(morph_dir.glob("*.morphtarget.glb"))
-        if completed.returncode != 0 and not exported_morphs:
-            plan["errors"].append(
-                f"Command failed ({completed.returncode}): {' '.join(export_command)}\n{completed.stdout}\n{completed.stderr}"
+    relative_morphs = [Path(f"{source.name}.glb") for source in selected_morphs]
+    morph_key = character_cache.fingerprint({
+        source.name: head_preview_cache_key(source, wolvenkit, game_path)
+        for source in selected_morphs
+    })
+    if character_cache.cache_matches(
+        morph_dir / "export-cache.json", morph_key,
+        [morph_dir / relative for relative in relative_morphs],
+    ):
+        plan["warnings"].append(f"Reused {len(relative_morphs)} verified morphtarget GLBs")
+    else:
+        def export_morphs(staging: Path) -> None:
+            command = [*export_command]
+            command[command.index("-o") + 1] = str(staging)
+            completed = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
+            if completed.returncode != 0:
+                raise CharacterBuildError(
+                    f"Command failed ({completed.returncode}): {' '.join(command)}\n"
+                    f"{completed.stdout}\n{completed.stderr}"
+                )
+            for relative in relative_morphs:
+                glb_target_names(staging / relative)
+            write_json(staging / "export-cache.json", {"cache_key": morph_key})
+        try:
+            character_cache.refresh_export(
+                morph_dir, [*relative_morphs, Path("export-cache.json")], export_morphs,
+                remove=tuple(
+                    path.relative_to(morph_dir)
+                    for path in morph_dir.glob("*.morphtarget.glb")
+                    if path.name not in {relative.name for relative in relative_morphs}
+                ),
             )
+        except (CharacterBuildError, OSError) as exc:
+            plan["errors"].append(str(exc))
             plan["ok"] = False
             return plan
-        if completed.returncode != 0:
-            plan["warnings"].append(
-                f"WolvenKit returned {completed.returncode}, but exported {len(exported_morphs)} morphtarget GLBs; "
-                "the source folder contains a non-CR2W readme"
-            )
-    else:
-        plan["warnings"].append(f"Reused {len(exported_morphs)} existing morphtarget GLBs")
 
     completed = subprocess.run(blender_command, cwd=ROOT, text=True, capture_output=True, check=False)
     if completed.returncode != 0:
@@ -2170,7 +2472,6 @@ def head_build(
         )
         plan["ok"] = False
         return plan
-    outputs = sorted(str(path) for path in head_dir.glob("*.glb"))
     expected_glbs = [head_dir / f"{path.stem}.glb" for path in selected_meshes]
     missing_glbs = [str(path) for path in expected_glbs if not path.is_file()]
     plan["glb_outputs"] = [str(path) for path in expected_glbs if path.is_file()]

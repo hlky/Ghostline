@@ -8,12 +8,12 @@ import json
 import os
 import re
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import Any
 
 import character_asset_index
 import character_builder
+import character_cache
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,9 +59,9 @@ def visible_mesh_layers(
 ) -> tuple[list[dict[str, str]], list[str]]:
     """Return a bounded silhouette-oriented mesh set from the selected appearance."""
     appearances = character_builder.appearance_data(app_document)
-    if len(appearances) != 1:
+    if not appearances:
         raise CharacterFullPreviewError(
-            f"Whole-character preview requires one generated appearance, found {len(appearances)}"
+            "Whole-character preview requires at least one generated appearance"
         )
     component_sets = character_builder.component_sets(appearances[0])
     if not component_sets:
@@ -70,6 +70,10 @@ def visible_mesh_layers(
     namespace_prefix = namespace.casefold().rstrip("\\") + "\\"
     layers: list[dict[str, str]] = []
     warnings: list[str] = []
+    if len(appearances) > 1:
+        warnings.append(
+            f"Previewing the default appearance; {len(appearances) - 1} alternate appearance(s) are available"
+        )
     seen_paths: set[str] = set()
     included_feet = False
     omitted_head_layers = 0
@@ -151,7 +155,7 @@ def preview_cache_key(
         "layers": layers,
         "local_files": local_files,
         "wolvenkit": stat_identity(wolvenkit),
-        "game_archive_root": stat_identity(game_path / "archive" / "pc"),
+        "game_archives": character_cache.archive_identities(game_path),
     }
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -196,103 +200,56 @@ def export_layers(
 
     manifest_path = output_dir / "layers-manifest.json"
     cache_key = preview_cache_key(layers, generated_archive_root, wolvenkit, game_path)
-    expected = [expected_glb(output_dir, layer["depot_path"]) for layer in layers]
-    try:
-        previous = character_asset_index.read_json(manifest_path) if manifest_path.is_file() else {}
-    except character_asset_index.CharacterAssetIndexError:
-        previous = {}
-    reused = previous.get("cache_key") == cache_key and all(path.is_file() for path in expected)
-
-    pack_command: list[str] = []
-    export_command: list[str] = []
-    if not reused:
-        output_dir.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(
-            dir=output_dir.parent, prefix=f".{output_dir.name}.refresh."
-        ) as directory:
-            staging = Path(directory)
-            packed = staging / "packed"
-            raw = staging / "raw"
-            cooked = staging / "cooked"
-            packed.mkdir(parents=True)
-            pack_command = [
-                str(wolvenkit),
-                "pack",
-                str(generated_archive_root),
-                "--outpath",
-                str(packed),
-                "--verbosity",
-                "Minimal",
-            ]
-            run_checked(pack_command, "Temporary character archive pack")
-            archive = packed / "archive.archive"
-            if not archive.is_file():
-                raise CharacterFullPreviewError("WolvenKit did not create the temporary character archive")
-
-            depot_paths = [layer["depot_path"] for layer in layers]
-            pattern = "^(?:" + "|".join(re.escape(path) for path in depot_paths) + ")$"
-            archive_sources = [game_archive_root / "content"]
-            ep1_archives = game_archive_root / "ep1"
-            if ep1_archives.is_dir():
-                archive_sources.append(ep1_archives)
-            export_command = [
-                str(wolvenkit),
-                "extract-and-export",
-                *(str(path) for path in archive_sources),
-                str(archive),
-                "-o",
-                str(cooked),
-                "-or",
-                str(raw),
-                "-r",
-                pattern,
-                "--gamepath",
-                str(game_path),
-                "--mesh-export-type",
-                "MeshOnly",
-                "--mesh-export-lod-filter",
-                "--verbosity",
-                "Minimal",
-            ]
-            completed = run_checked(export_command, "Whole-character mesh export")
-            missing = [
-                layer["depot_path"]
-                for layer in layers
-                if not expected_glb(staging, layer["depot_path"]).is_file()
-            ]
-            if missing:
-                raise CharacterFullPreviewError(
-                    "WolvenKit did not export preview GLBs for: "
-                    + ", ".join(missing)
-                    + f"\n{completed.stdout}\n{completed.stderr}"
-                )
-            for layer in layers:
-                source = expected_glb(staging, layer["depot_path"])
-                target = expected_glb(output_dir, layer["depot_path"])
-                character_asset_index.replace_file(source, target)
-
+    relative_glbs = [expected_glb(Path(), layer["depot_path"]) for layer in layers]
+    reused = character_cache.cache_matches(
+        manifest_path, cache_key, [output_dir / path for path in relative_glbs]
+    )
     models = [
         {
             "id": character_asset_index.preview_cache_id(layer["depot_path"]),
-            "file": expected_glb(output_dir, layer["depot_path"])
-            .relative_to(output_dir)
-            .as_posix(),
-            "source_type": "mesh",
-            **layer,
+            "file": relative.as_posix(), "source_type": "mesh", **layer,
         }
-        for layer in layers
+        for layer, relative in zip(layers, relative_glbs, strict=True)
     ]
-    manifest = {
-        "schema_version": 1,
-        "cache_key": cache_key,
-        "models": models,
-    }
-    character_asset_index.write_json(manifest_path, manifest)
+    pack_command: list[str] = []
+    export_command: list[str] = []
+
+    def export(staging: Path) -> None:
+        nonlocal pack_command, export_command
+        packed = staging / "packed"
+        packed.mkdir(parents=True)
+        pack_command = [
+            str(wolvenkit), "pack", str(generated_archive_root),
+            "--outpath", str(packed), "--verbosity", "Minimal",
+        ]
+        run_checked(pack_command, "Temporary character archive pack")
+        archive = packed / "archive.archive"
+        if not archive.is_file():
+            raise CharacterFullPreviewError("WolvenKit did not create the temporary character archive")
+        pattern = "^(?:" + "|".join(re.escape(layer["depot_path"]) for layer in layers) + ")$"
+        archive_sources = [game_archive_root / "content"]
+        if (game_archive_root / "ep1").is_dir():
+            archive_sources.append(game_archive_root / "ep1")
+        export_command = [
+            str(wolvenkit), "extract-and-export", *(str(path) for path in archive_sources),
+            str(archive), "-o", str(staging / "cooked"), "-or", str(staging / "raw"),
+            "-r", pattern, "--gamepath", str(game_path), "--mesh-export-type", "MeshOnly",
+            "--mesh-export-lod-filter", "--verbosity", "Minimal",
+        ]
+        run_checked(export_command, "Whole-character mesh export")
+        for relative in relative_glbs:
+            character_builder.glb_target_names(staging / relative)
+        character_asset_index.write_json(staging / "layers-manifest.json", {
+            "schema_version": 1, "cache_key": cache_key, "models": models,
+        })
+
+    if not reused:
+        character_cache.refresh_export(
+            output_dir, [*relative_glbs, Path("layers-manifest.json")], export,
+        )
     return {
-        "models": models,
-        "reused": reused,
-        "pack_command": pack_command,
-        "export_command": export_command,
+        "models": models, "reused": reused,
+        "pack_command": pack_command, "export_command": export_command,
     }
 
 
@@ -343,9 +300,10 @@ def prepare_full_preview(
     game_path: Path,
 ) -> dict[str, Any]:
     layers, warnings = visible_mesh_layers(app_document, str(manifest["namespace"]))
+    source_prefix = str(manifest["outputs"]["entity_raw"]).replace("\\", "/").split("source/raw/", 1)[0]
     layer_result = export_layers(
         layers,
-        character_root / "source" / "archive",
+        character_root / source_prefix / "source/archive",
         output_dir,
         wolvenkit,
         game_path,

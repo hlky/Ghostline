@@ -169,7 +169,7 @@ class QuestBlockTemplateTests(unittest.TestCase):
                 checked_in = json.loads(
                     (
                         ROOT
-                        / "source/raw/mod/ghostline/quest_blocks/templates"
+                        / "quests/templates/source/raw/mod/ghostline/quest_blocks/templates"
                         / f"{name}.questphase.json"
                     ).read_text(encoding="utf-8")
                 )
@@ -181,7 +181,7 @@ class QuestBlockTemplateTests(unittest.TestCase):
                 raw = json.loads(
                     (
                         ROOT
-                        / "source/raw/mod/ghostline/quest_blocks/templates"
+                        / "quests/templates/source/raw/mod/ghostline/quest_blocks/templates"
                         / f"{name}.questphase.json"
                     ).read_text(encoding="utf-8")
                 )
@@ -231,7 +231,7 @@ class QuestBlockTemplateTests(unittest.TestCase):
             with self.subTest(name=name):
                 raw = (
                     ROOT
-                    / "source/raw/mod/ghostline/quest_blocks/templates"
+                    / "quests/templates/source/raw/mod/ghostline/quest_blocks/templates"
                     / f"{name}.questphase.json"
                 ).read_text(encoding="utf-8")
                 placeholders = {

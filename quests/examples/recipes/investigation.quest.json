@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "id": "gq_recipe_investigation",
+  "title": "Follow the relay trail",
+  "description": "Authoring example; world and scene resources must be built and validated before readiness.",
+  "composition": {
+    "contacts": {
+      "fixer": {
+        "name": "Relay contact",
+        "community": "#gq_recipe_investigation_com_contact",
+        "entry": "contact",
+        "scene": "mod\\gq_recipe_investigation\\scenes\\meeting.scene",
+        "threads": {
+          "offer": {
+            "title": "Follow the relay trail",
+            "messages": {
+              "invitation": "Meet me at the relay."
+            },
+            "choices": {
+              "accept": {
+                "text": "On my way.",
+                "reply": "I will be waiting."
+              }
+            }
+          },
+          "report": {
+            "title": "Follow the relay trail",
+            "messages": {
+              "request": "What did you find?"
+            },
+            "choices": {
+              "report": {
+                "text": "The relay is secure.",
+                "reply": "Good work."
+              },
+              "details": {
+                "text": "There was a complication.",
+                "reply": "Send me the details."
+              }
+            },
+            "final_message": "The job is complete."
+          }
+        }
+      }
+    },
+    "locations": {
+      "relay": {
+        "ref": "#gq_recipe_investigation_mp_relay",
+        "trigger": "#gq_recipe_investigation_tr_relay"
+      }
+    },
+    "objectives": {
+      "meeting": {
+        "text": "Meet the contact.",
+        "mappins": {
+          "relay": {
+            "ref": "@locations.relay.ref",
+            "text": "Relay"
+          }
+        }
+      },
+      "investigation": {
+        "text": "Scan the relay evidence."
+      }
+    },
+    "clues": {
+      "relay": {
+        "object_ref": "#gq_recipe_investigation_clue_relay"
+      }
+    },
+    "facts": {
+      "offer_sent": null,
+      "accepted": null,
+      "cooperate": null,
+      "refuse": null
+    },
+    "recipes": [
+      {
+        "name": "offer_meeting_investigation_decision_debrief",
+        "steps": {
+          "offer": {
+            "contact": "@contacts.fixer.contact",
+            "message": "@contacts.fixer.threads.offer.message",
+            "choice_group": "@contacts.fixer.threads.offer.choice_group",
+            "accept_choice": "@contacts.fixer.threads.offer.accept_choice",
+            "start_fact": "@facts.offer_sent",
+            "accepted_fact": "@facts.accepted",
+            "status": "planned"
+          },
+          "meeting": {
+            "objective": "@objectives.meeting.path",
+            "description_entry": "@objectives.meeting.description_entry",
+            "contact": "@contacts.fixer.entry",
+            "community": "@contacts.fixer.community",
+            "scene": "@contacts.fixer.scene",
+            "mappin": "@objectives.meeting.mappin",
+            "status": "planned"
+          },
+          "investigation": {
+            "objective": "@objectives.investigation.path",
+            "description_entry": "@objectives.investigation.description_entry",
+            "clues": [
+              "@clues.relay"
+            ],
+            "status": "planned"
+          },
+          "decision": {
+            "gate_kind": "fact",
+            "branches": [
+              {
+                "id": "cooperate",
+                "condition": "@facts.cooperate",
+                "set_fact": "gq_recipe_investigation_cooperated"
+              },
+              {
+                "id": "refuse",
+                "condition": "@facts.refuse",
+                "set_fact": "gq_recipe_investigation_refused"
+              }
+            ],
+            "join": true,
+            "status": "planned"
+          },
+          "debrief": {
+            "contact": "@contacts.fixer.contact",
+            "thread": "@contacts.fixer.threads.report.path",
+            "messages": "@contacts.fixer.threads.report.messages",
+            "choice_group": "@contacts.fixer.threads.report.choice_group",
+            "choices": "@contacts.fixer.threads.report.choices",
+            "final_message": "@contacts.fixer.threads.report.final_message",
+            "status": "planned"
+          }
+        }
+      }
+    ]
+  },
+  "external_facts": [
+    "@facts.cooperate",
+    "@facts.refuse"
+  ]
+}

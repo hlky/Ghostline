@@ -26,12 +26,12 @@ LOCALIZED_ANIMSET = (
 class Gq000LipsyncTests(unittest.TestCase):
     def test_scene_lipmap_and_archive_xl_use_the_same_binding(self) -> None:
         scene = json.loads(
-            (ROOT / "source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json").read_text(
+            (ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json").read_text(
                 encoding="utf-8-sig"
             )
         )["Data"]["RootChunk"]
         lipmap = json.loads(
-            (ROOT / "source/raw/mod/gq000/localization/en-us/gq000.lipmap.json").read_text(
+            (ROOT / "projects/shared/ghostline-runtime/source/raw/mod/gq000/localization/en-us/gq000.lipmap.json").read_text(
                 encoding="utf-8-sig"
             )
         )["Data"]["RootChunk"]
@@ -59,13 +59,13 @@ class Gq000LipsyncTests(unittest.TestCase):
             gqt005_entry["animSets"][0]["DepotPath"]["$value"],
             LOCALIZED_ANIMSET,
         )
-        archive_xl = (ROOT / "source/resources/Ghostline.archive.xl").read_text(
+        archive_xl = (ROOT / "projects/shared/ghostline-runtime/source/resources/Ghostline_Runtime.archive.xl").read_text(
             encoding="utf-8"
         )
         self.assertIn("mod\\gq000\\localization\\en-us\\gq000.lipmap", archive_xl)
 
     def test_rebuilt_animset_is_present_as_cr2w(self) -> None:
-        path = ROOT / "source/archive" / Path(LOCALIZED_ANIMSET.replace("\\", "/"))
+        path = ROOT / "projects/shared/ghostline-runtime/source/archive" / Path(LOCALIZED_ANIMSET.replace("\\", "/"))
         self.assertTrue(path.is_file())
         self.assertEqual(path.read_bytes()[:4], b"CR2W")
 

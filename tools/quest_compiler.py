@@ -3,444 +3,116 @@
 
 from __future__ import annotations
 
+
 import argparse
+import hashlib
 import json
 import re
 import sys
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Iterable
+from pathlib import Path, PureWindowsPath
+from typing import Any, Callable, Iterable, Mapping
+from project_layout import resource_project, owning_project, project_root as resolve_project
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from generate_cache_phase import (  # noqa: E402
-    GraphNode,
-    JsonObject,
-    PhaseGraphBuilder,
-    cname,
-    entity_reference,
-    fact_node,
-    input_node,
-    journal_entry_node,
-    journal_path,
-    logical_and_node,
-    mappin_node,
-    node_ref,
-    objective_node,
-    output_node,
-    realtime_delay_node,
-    trigger_condition_node,
-    local_player_reference,
-    tweakdbid,
+from phase_graph import (
+    resource_ref as resource_ref,
+    add_item_node as add_item_node, scan_started_node as scan_started_node,
+    combat_threat_node as combat_threat_node,
+    JsonObject as JsonObject,
+    device_manager_node as device_manager_node,
+    device_condition_node as device_condition_node,
+    character_spawned_node as character_spawned_node,
+    community_defeated_node as community_defeated_node,
+    community_action_node as community_action_node,
+    phase_document as phase_document,
+    quest_completion_node as quest_completion_node,
+    GraphNode as GraphNode,
+    PhaseGraphBuilder as PhaseGraphBuilder,
+    cname as cname,
+    entity_reference as entity_reference,
+    fact_node as fact_node,
+    input_node as input_node,
+    journal_entry_node as journal_entry_node,
+    journal_path as journal_path,
+    logical_and_node as logical_and_node,
+    mappin_node as mappin_node,
+    node_ref as node_ref,
+    objective_node as objective_node,
+    output_node as output_node,
+    realtime_delay_node as realtime_delay_node,
+    trigger_condition_node as trigger_condition_node,
+    local_player_reference as local_player_reference,
+    tweakdbid as tweakdbid,
+    fact_condition_node as fact_condition_node,
+    inventory_condition_node as inventory_condition_node,
+    journal_choice_succeeded_node as journal_choice_succeeded_node,
+    journal_entry_visited_node as journal_entry_visited_node,
+    logical_xor_node as logical_xor_node,
+    reserve_drop_point_node as reserve_drop_point_node,
+    reward_node as reward_node,
 )
-from generate_delivery_phase import (  # noqa: E402
-    fact_condition_node,
-    inventory_condition_node,
-    journal_choice_succeeded_node,
-    journal_entry_visited_node,
-    logical_xor_node,
-    reserve_drop_point_node,
-    reward_node,
+
+from quest_encounter import (
+    gameplay_ai_node as gameplay_ai_node,
+    character_not_in_combat_node as character_not_in_combat_node,
+    clear_ai_role_node as clear_ai_role_node,
+    alerted_patrol_role_node as alerted_patrol_role_node,
+    combat_target_node as combat_target_node,
+    named_character_spawned_node as named_character_spawned_node,
+    named_character_outcome_node as named_character_outcome_node,
+    cyberpsycho_reveal_node as cyberpsycho_reveal_node,
+    character_mortality_node as character_mortality_node,
+    character_attitude_group_node as character_attitude_group_node,
+    player_health_condition_node as player_health_condition_node,
+    player_modify_health_node as player_modify_health_node,
+    scene_flow_node as scene_flow_node,
+    build_cyberpsycho_encounter_phase as build_cyberpsycho_encounter_phase,
+)
+
+from artifact_io import atomic_write_json, publish_json_artifacts
+from quest_lifecycle import apply_objective_lifecycle
+from quest_block_builders import (
+    build_escort_phase, build_timed_defense_phase, build_choice_phase,
+    build_investigation_phase,
+)
+from quest_flow import (
+    contract_dict, stage_inputs, stage_outcomes, stage_transitions,
+    validate_flow, validate_flow_fields, validate_phase_ports, validate_emitted_contract,
+    audit_scene_contracts,
 )
 
 
-SCHEMA_VERSION = 1
-SUPPORTED_STAGE_TYPES = {
-    "phone_job_offer",
-    "meet_contact",
-    "hack_access_point",
-    "deliver_drop_point",
-    "phone_conversation",
-    "reach_area",
-    "interact_device",
-    "acquire_item",
-    "combat_encounter",
-    "cyberpsycho_encounter",
-    "leave_area",
-    "read_shard",
-    "investigate_clues",
-    "optional_condition",
-    "choice_gate",
-    "escort_npc",
-    "carry_npc",
-    "deliver_vehicle",
-    "time_gate",
-    "read_terminal_document",
-    "stealth_monitor",
-    "plant_item",
-    "defend_target",
-    "release_or_rescue_npc",
-    "enter_vehicle",
-    "ride_with_contact",
-    "drive_to",
-    "steal_vehicle",
-    "vehicle_cleanup",
-    "braindance_analysis",
-}
-DIRECT_STAGE_TYPES = {
-    "phone_job_offer",
-    "phone_conversation",
-    "reach_area",
-    "acquire_item",
-    "leave_area",
-    "read_shard",
-    "investigate_clues",
-    "interact_device",
-    "combat_encounter",
-    "cyberpsycho_encounter",
-    "time_gate",
-    "read_terminal_document",
-}
-TEMPLATE_REQUIRED_STAGE_TYPES = {
-    "optional_condition",
-    "choice_gate",
-    "escort_npc",
-    "carry_npc",
-    "deliver_vehicle",
-    "stealth_monitor",
-    "plant_item",
-    "defend_target",
-    "release_or_rescue_npc",
-    "enter_vehicle",
-    "ride_with_contact",
-    "drive_to",
-    "steal_vehicle",
-    "vehicle_cleanup",
-    "braindance_analysis",
-}
+from quest_types import (
+    QuestSpecError, Diagnostic, CompiledStage, ParallelGroup, QuestSpec,
+    require_string, ID_RE,
+)
+from quest_stages import (
+    SCHEMA_VERSION, STAGE_REGISTRY, TOP_LEVEL_FIELDS, COMMON_STAGE_FIELDS,
+    SUPPORTED_STAGE_TYPES, DIRECT_STAGE_TYPES as DIRECT_STAGE_TYPES, TEMPLATE_REQUIRED_STAGE_TYPES,
+    BUILTIN_TEMPLATE_RESOURCES as BUILTIN_TEMPLATE_RESOURCES, BUILTIN_UNSUPPORTED_FIELDS,
+    STAGE_IMPLEMENTATION_MODE as STAGE_IMPLEMENTATION_MODE, STAGE_REQUIRED_FIELDS, STAGE_TYPE_FIELDS,
+)
 
-BUILTIN_TEMPLATE_RESOURCES = {
-    stage_type: rf"mod\ghostline\quest_blocks\templates\{stage_type}.questphase"
-    for stage_type in TEMPLATE_REQUIRED_STAGE_TYPES
-}
-
-BUILTIN_UNSUPPORTED_FIELDS = {
-    "optional_condition": {"description_entry"},
-    "choice_gate": {"default_branch"},
-    "escort_npc": {
-        "description_entry",
-        "failure_fact",
-        "allow_combat_interrupt",
-    },
-    "carry_npc": {"description_entry", "placement_slot", "completion_fact"},
-    "deliver_vehicle": {
-        "description_entry",
-        "mappin",
-        "require_player_exit",
-        "completion_fact",
-    },
-}
-
-STAGE_IMPLEMENTATION_MODE = {
-    **{stage_type: "generated" for stage_type in DIRECT_STAGE_TYPES},
-    **{stage_type: "template" for stage_type in TEMPLATE_REQUIRED_STAGE_TYPES},
-    "meet_contact": "template",
-    "hack_access_point": "template",
-    "deliver_drop_point": "template",
-}
-STAGE_REQUIRED_FIELDS = {
-    "phone_job_offer": {
-        "contact",
-        "message",
-        "choice_group",
-        "accept_choice",
-        "start_fact",
-        "accepted_fact",
-    },
-    "meet_contact": {
-        "contact",
-        "scene",
-        "community",
-        "objective",
-        "description_entry",
-        "mappin",
-    },
-    "hack_access_point": {"device", "success_fact"},
-    "deliver_drop_point": {"drop_point", "deposit_fact"},
-    "phone_conversation": {"contact", "thread", "choice_group", "final_message"},
-    "reach_area": {"trigger", "objective", "description_entry", "mappin"},
-    "interact_device": {
-        "device", "controller_class", "action", "completion_function",
-    },
-    "acquire_item": {"item", "source"},
-    "combat_encounter": {"community", "hostility", "completion"},
-    "cyberpsycho_encounter": {
-        "community",
-        "boss_entry",
-        "boss_character",
-        "activation_trigger",
-    },
-    "leave_area": {"trigger", "objective", "description_entry"},
-    "read_shard": {"item", "journal_entry"},
-    "investigate_clues": {"objective", "description_entry"},
-    "optional_condition": {
-        "objective", "success_fact", "failure_fact", "evaluation",
-    },
-    "choice_gate": {"gate_kind"},
-    "escort_npc": {
-        "community", "entry", "objective", "mappin", "completion_fact",
-    },
-    "carry_npc": {"community", "entry", "destination", "objective"},
-    "deliver_vehicle": {"vehicle", "destination", "objective"},
-    "time_gate": set(),
-    "read_terminal_document": {
-        "computer", "completion_fact", "objective",
-    },
-    "stealth_monitor": {
-        "objective", "failure_fact", "success_fact", "stop_fact",
-    },
-    "plant_item": {
-        "item", "device", "controller_class", "action",
-        "completion_function", "completion_fact", "objective",
-    },
-    "defend_target": {
-        "community", "entry", "completion_fact", "failure_fact", "objective",
-    },
-    "release_or_rescue_npc": {
-        "community", "entry", "device", "controller_class", "action",
-        "completion_function", "completion_fact", "objective",
-    },
-    "enter_vehicle": {
-        "vehicle_community", "vehicle_entry", "objective", "mappin",
-    },
-    "ride_with_contact": {
-        "vehicle_community", "vehicle_entry", "contact_community",
-        "contact_entry", "objective",
-    },
-    "drive_to": {
-        "vehicle_community", "vehicle_entry", "destination",
-        "completion_fact", "objective", "mappin",
-    },
-    "steal_vehicle": {
-        "vehicle_community", "vehicle_entry", "objective", "mappin",
-        "completion_fact",
-    },
-    "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
-    "braindance_analysis": {
-        "scene",
-        "scene_origin",
-        "player_anchor",
-        "player_return",
-        "completion_fact",
-        "objective",
-    },
-}
-TOP_LEVEL_FIELDS = {
-    "schema_version",
-    "id",
-    "title",
-    "description",
-    "phase_prefabs",
-    "parallel_groups",
-    "debug_fact",
-    "stages",
-}
-COMMON_STAGE_FIELDS = {
-    "id",
-    "type",
-    "status",
-    "phase_resource",
-    "phase_template",
-    "inherit_phase_prefabs",
-    "phase_prefabs",
-    "checkpoint",
-    "retry_checkpoint",
-    "template_bindings",
-    "required_assets",
-    "notes",
-}
-STAGE_TYPE_FIELDS = {
-    "phone_job_offer": {
-        "contact", "message", "choice_group", "accept_choice", "start_fact",
-        "accepted_fact", "delay_seconds",
-    },
-    "meet_contact": {
-        "contact", "scene", "community", "appearance", "objective",
-        "description_entry", "mappin",
-    },
-    "hack_access_point": {
-        "device", "success_fact", "guard_community", "grants",
-        "controller_class", "action", "completion_function", "send_action",
-        "objective", "description_entry", "mappin",
-    },
-    "deliver_drop_point": {
-        "item", "drop_point", "deposit_fact", "item_branches",
-        "objective", "description_entry", "mappin",
-    },
-    "phone_conversation": {
-        "contact", "thread", "choice_group", "messages", "choices",
-        "opening_branches", "conditional_message_groups", "postscript_messages",
-        "final_message", "completion_fact", "complete_quest", "delay_seconds",
-        "objective", "description_entry", "reward",
-    },
-    "reach_area": {
-        "trigger", "objective", "description_entry", "mappin",
-        "start_fact", "disable_previous_mappins",
-    },
-    "interact_device": {
-        "device", "controller_class", "action", "completion_function",
-        "objective", "description_entry", "mappin", "success_fact",
-        "send_action", "outcome_branches",
-    },
-    "acquire_item": {
-        "item", "source", "quantity", "objective", "description_entry", "mappin",
-        "acquisition_fact",
-    },
-    "combat_encounter": {
-        "community", "entries", "activate", "hostility", "completion",
-        "nonlethal_allowed", "completion_fact", "cleanup_on_exit",
-        "objective", "description_entry", "trigger",
-    },
-    "cyberpsycho_encounter": {
-        "community", "boss_entry", "boss_character", "activation_trigger",
-        "activate", "reveal", "arena_trigger", "resolution", "objective",
-        "description_entry", "mappin", "completion_fact", "cleanup",
-        "authoring", "alerted_path", "alerted_spots",
-    },
-    "leave_area": {
-        "trigger", "objective", "description_entry", "mappin",
-        "completion_fact", "cleanup_community",
-    },
-    "read_shard": {
-        "item", "journal_entry", "file_entry_index", "activate_entry",
-        "objective", "description_entry", "acquisition_fact",
-        "presentation_delay_seconds", "completion_fact",
-    },
-    "investigate_clues": {
-        "clues", "required_count", "objective", "description_entry",
-        "completion_fact",
-    },
-    "optional_condition": {
-        "objective", "description_entry", "condition", "success_fact",
-        "failure_fact", "evaluation",
-    },
-    "choice_gate": {
-        "gate_kind", "branches", "default_branch", "join",
-    },
-    "escort_npc": {
-        "community", "entry", "destinations", "objective", "description_entry",
-        "mappin", "route_mappins", "failure_fact", "allow_combat_interrupt",
-        "completion_fact",
-    },
-    "carry_npc": {
-        "community", "entry", "destination", "objective", "description_entry",
-        "placement_slot", "completion_fact",
-    },
-    "deliver_vehicle": {
-        "vehicle", "destination", "objective", "description_entry", "mappin",
-        "require_player_exit", "completion_fact",
-    },
-    "time_gate": {
-        "days", "hours", "minutes", "seconds", "completion_fact",
-    },
-    "read_terminal_document": {
-        "computer", "scene", "output_socket", "document_entry",
-        "completion_fact", "objective", "description_entry",
-    },
-    "stealth_monitor": {
-        "objective", "description_entry", "failure_fact", "success_fact",
-        "stop_fact",
-    },
-    "plant_item": {
-        "item", "device", "controller_class", "action",
-        "completion_function", "completion_fact", "objective",
-        "description_entry", "consume_item",
-    },
-    "defend_target": {
-        "community", "entry", "completion_fact", "failure_fact", "objective",
-        "description_entry", "block_on_failure",
-    },
-    "release_or_rescue_npc": {
-        "community", "entry", "device", "controller_class", "action",
-        "completion_function", "completion_fact", "objective",
-        "description_entry",
-    },
-    "enter_vehicle": {
-        "vehicle_community", "vehicle_entry", "objective", "mappin",
-        "description_entry",
-    },
-    "ride_with_contact": {
-        "vehicle_community", "vehicle_entry", "contact_community",
-        "contact_entry", "objective",
-        "description_entry",
-    },
-    "drive_to": {
-        "vehicle_community", "vehicle_entry", "destination",
-        "completion_fact", "objective", "mappin", "description_entry",
-    },
-    "steal_vehicle": {
-        "vehicle_community", "vehicle_entry", "objective", "mappin",
-        "description_entry", "completion_fact",
-    },
-    "vehicle_cleanup": {"player_vehicle_record", "completion_fact"},
-    "braindance_analysis": {
-        "scene",
-        "scene_origin",
-        "player_anchor",
-        "player_return",
-        "clue_facts",
-        "completion_fact",
-        "objective",
-    },
-}
-ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 DEPOT_RE = re.compile(r"^(?:base|ep1|mod)\\.+$")
 
 
-class QuestSpecError(ValueError):
-    pass
-
-
-@dataclass(frozen=True)
-class Diagnostic:
-    level: str
-    code: str
-    message: str
-    stage: str | None = None
-
-    def as_dict(self) -> dict[str, Any]:
-        result: dict[str, Any] = {
-            "level": self.level,
-            "code": self.code,
-            "message": self.message,
-        }
-        if self.stage is not None:
-            result["stage"] = self.stage
-        return result
-
-
-@dataclass(frozen=True)
-class CompiledStage:
-    index: int
-    id: str
-    type: str
-    status: str
-    phase_resource: str
-    data: dict[str, Any]
-
-    @property
-    def node_id(self) -> int:
-        return 10 + self.index
-
-
-@dataclass(frozen=True)
-class ParallelGroup:
-    id: str
-    branches: tuple[tuple[str, ...], ...]
-
-
-@dataclass(frozen=True)
-class QuestSpec:
-    path: Path
-    id: str
-    title: str
-    description: str
-    phase_prefabs: tuple[str, ...]
-    parallel_groups: tuple[ParallelGroup, ...]
-    debug_fact: str | None
-    stages: tuple[CompiledStage, ...]
+def _depot_parts(depot_path: Any) -> tuple[str, ...] | None:
+    """Accept canonical depot names without filesystem traversal or aliases."""
+    if not isinstance(depot_path, str) or not DEPOT_RE.fullmatch(depot_path):
+        return None
+    parts = tuple(depot_path.split("\\"))
+    for part in parts:
+        if (
+            not part or part in {".", ".."} or part.endswith((".", " "))
+            or any(ord(char) < 32 or char in '/:<>"|?*' for char in part)
+            or PureWindowsPath(part).is_reserved()
+        ):
+            return None
+    return parts
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -454,25 +126,21 @@ def read_json(path: Path) -> dict[str, Any]:
 
 
 def write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+    atomic_write_json(path, value)
 
 
-def require_string(
-    value: dict[str, Any], key: str, *, context: str, diagnostics: list[Diagnostic]
-) -> str:
-    result = value.get(key)
-    if not isinstance(result, str) or not result.strip():
-        diagnostics.append(
-            Diagnostic("error", "invalid_string", f"{context}.{key} must be a non-empty string")
-        )
-        return ""
-    return result
-
-
-def resource_paths(depot_path: str) -> tuple[Path, Path]:
-    relative = Path(*depot_path.split("\\"))
-    return ROOT / "source" / "raw" / Path(f"{relative}.json"), ROOT / "source" / "archive" / relative
+def resource_paths(depot_path: str, *, project_root: Path | None = None) -> tuple[Path, Path]:
+    parts = _depot_parts(depot_path)
+    if parts is None:
+        raise QuestSpecError(f"Invalid depot path: {depot_path!r}")
+    relative = Path(*parts)
+    project = (project_root or resource_project(depot_path, root=ROOT)).resolve()
+    raw_root = project / "source/raw"
+    archive_root = project / "source/archive"
+    raw, archive = raw_root / Path(f"{relative}.json"), archive_root / relative
+    if not raw.resolve().is_relative_to(raw_root) or not archive.resolve().is_relative_to(archive_root):
+        raise QuestSpecError(f"Depot path escapes its source directory: {depot_path!r}")
+    return raw, archive
 
 
 def validate_depot_path(
@@ -482,12 +150,12 @@ def validate_depot_path(
     stage_id: str,
     diagnostics: list[Diagnostic],
 ) -> str:
-    if not isinstance(depot_path, str) or not DEPOT_RE.fullmatch(depot_path):
+    if _depot_parts(depot_path) is None:
         diagnostics.append(
             Diagnostic(
                 "error",
                 "invalid_depot_path",
-                f"{field} must be an explicit base\\, ep1\\, or mod\\ depot path",
+                f"{field} must be an explicit base\\, ep1\\, or mod\\ depot path without traversal, empty components, or invalid filename characters",
                 stage_id,
             )
         )
@@ -498,6 +166,14 @@ def validate_depot_path(
 def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
     diagnostics: list[Diagnostic] = []
     raw = read_json(path)
+    authoring_source = raw if "composition" in raw else None
+    if "composition" in raw:
+        from quest_authoring import normalize_spec, AuthoringError
+        try:
+            raw = normalize_spec(raw)
+        except AuthoringError as exc:
+            return None, [Diagnostic("error", "invalid_composition", str(exc))]
+    validate_flow_fields(raw, diagnostics)
 
     unknown = sorted(set(raw) - TOP_LEVEL_FIELDS)
     for field in unknown:
@@ -716,944 +392,9 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
                     )
                 )
 
-        if stage_type == "acquire_item":
-            if stage.get("source") not in {"inventory", "grant"}:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_item_source",
-                        f"{context}.source must be inventory or grant",
-                        stage_id or None,
-                    )
-                )
-            quantity = stage.get("quantity", 1)
-            if not isinstance(quantity, int) or isinstance(quantity, bool) or quantity < 1:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_quantity",
-                        f"{context}.quantity must be a positive integer",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "time_gate":
-            duration_fields = ("days", "hours", "minutes", "seconds")
-            duration = []
-            for field in duration_fields:
-                value = stage.get(field, 0)
-                if (
-                    not isinstance(value, int)
-                    or isinstance(value, bool)
-                    or value < 0
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_time_gate_duration",
-                            f"{context}.{field} must be a non-negative integer",
-                            stage_id or None,
-                        )
-                    )
-                else:
-                    duration.append(value)
-            if len(duration) == len(duration_fields) and not any(duration):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "empty_time_gate",
-                        f"{context} must wait for a non-zero game-time duration",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "read_shard":
-            file_index = stage.get("file_entry_index")
-            if (
-                not isinstance(file_index, int)
-                or isinstance(file_index, bool)
-                or file_index < 0
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_file_entry_index",
-                        f"{context}.file_entry_index must be a non-negative integer",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "reach_area" and not isinstance(
-            stage.get("disable_previous_mappins", True), bool
-        ):
-            diagnostics.append(
-                Diagnostic(
-                    "error",
-                    "invalid_disable_previous_mappins",
-                    f"{context}.disable_previous_mappins must be a boolean",
-                    stage_id or None,
-                )
-            )
-
-        if stage_type == "investigate_clues":
-            clues = stage.get("clues")
-            clue_fields = {
-                "id",
-                "object_ref",
-                "completion_fact",
-                "grant_item",
-                "grant_items",
-                "journal_entry",
-                "mappin",
-            }
-            if (
-                not isinstance(clues, list)
-                or not clues
-                or not all(
-                    isinstance(item, dict)
-                    and set(item) <= clue_fields
-                    and isinstance(item.get("id"), str)
-                    and ID_RE.fullmatch(item["id"])
-                    and isinstance(item.get("object_ref"), str)
-                    and (
-                        "grant_items" not in item
-                        or (
-                            isinstance(item["grant_items"], list)
-                            and bool(item["grant_items"])
-                            and all(
-                                isinstance(value, str) and value.strip()
-                                for value in item["grant_items"]
-                            )
-                            and len(set(item["grant_items"]))
-                            == len(item["grant_items"])
-                        )
-                    )
-                    for item in clues
-                )
-                or len({item["id"] for item in clues if isinstance(item, dict)}) != len(clues)
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_clues",
-                        f"{context}.clues must contain typed unique id/object_ref objects",
-                        stage_id or None,
-                    )
-                )
-            if isinstance(clues, list) and clues:
-                required_count = stage.get("required_count", len(clues))
-                if (
-                    not isinstance(required_count, int)
-                    or isinstance(required_count, bool)
-                    or not 1 <= required_count <= len(clues)
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_required_count",
-                            f"{context}.required_count must be between 1 and the clue count",
-                            stage_id or None,
-                        )
-                    )
-
-        if stage_type == "optional_condition":
-            if stage.get("success_fact") == stage.get("failure_fact"):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "duplicate_outcome_fact",
-                        f"{context}.success_fact and failure_fact must differ",
-                        stage_id or None,
-                    )
-                )
-            condition = stage.get("condition")
-            if (
-                not isinstance(condition, dict)
-                or set(condition) != {"kind", "value"}
-                or condition.get("kind")
-                not in {"fact", "trigger", "detection", "alarm", "timer"}
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_optional_condition",
-                        f"{context}.condition must contain a supported kind and value",
-                        stage_id or None,
-                    )
-                )
-            if stage.get("evaluation") not in {"continuous", "at_exit"}:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_evaluation",
-                        f"{context}.evaluation must be continuous or at_exit",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "choice_gate":
-            choices = stage.get("branches")
-            if (
-                not isinstance(choices, list)
-                or len(choices) < 2
-                or not all(
-                    isinstance(item, dict)
-                    and set(item) == {"id", "condition", "set_fact"}
-                    and isinstance(item["id"], str)
-                    and ID_RE.fullmatch(item["id"])
-                    and isinstance(item["condition"], str)
-                    and item["condition"].strip()
-                    and isinstance(item["set_fact"], str)
-                    and item["set_fact"].strip()
-                    for item in choices
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_gate_choices",
-                        f"{context}.branches must contain at least two id/condition/set_fact objects",
-                        stage_id or None,
-                    )
-                )
-            elif (
-                len({item["id"] for item in choices}) != len(choices)
-                or len({item["set_fact"] for item in choices}) != len(choices)
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "duplicate_gate_choice",
-                        f"{context}.branches must use unique ids and outcome facts",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "interact_device" and "outcome_branches" in stage:
-            branches = stage.get("outcome_branches")
-            allowed_branch_fields = {
-                "id", "condition", "set_fact", "add_items", "remove_items",
-            }
-            if (
-                not isinstance(branches, list)
-                or len(branches) != 2
-                or not all(
-                    isinstance(item, dict)
-                    and set(item) <= allowed_branch_fields
-                    and {"id", "condition", "set_fact"} <= set(item)
-                    and isinstance(item["id"], str)
-                    and ID_RE.fullmatch(item["id"])
-                    and isinstance(item["condition"], str)
-                    and item["condition"].strip()
-                    and isinstance(item["set_fact"], str)
-                    and item["set_fact"].strip()
-                    and all(
-                        isinstance(values, list)
-                        and all(isinstance(value, str) and value.strip() for value in values)
-                        for values in (
-                            item.get("add_items", []),
-                            item.get("remove_items", []),
-                        )
-                    )
-                    for item in branches
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_interact_outcomes",
-                        f"{context}.outcome_branches must contain exactly two typed fact branches",
-                        stage_id or None,
-                    )
-                )
-            elif (
-                len({item["id"] for item in branches}) != 2
-                or len({item["condition"] for item in branches}) != 2
-                or len({item["set_fact"] for item in branches}) != 2
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "duplicate_interact_outcome",
-                        f"{context}.outcome_branches must use unique ids, conditions, and facts",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "hack_access_point" and "completion_function" in stage:
-            for field in ("controller_class", "action", "completion_function"):
-                require_string(stage, field, context=context, diagnostics=diagnostics)
-            if "send_action" in stage and not isinstance(stage["send_action"], bool):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_hack_send_action",
-                        f"{context}.send_action must be a boolean",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "deliver_drop_point" and "item_branches" in stage:
-            branches = stage.get("item_branches")
-            if (
-                not isinstance(branches, list)
-                or len(branches) != 2
-                or not all(
-                    isinstance(item, dict)
-                    and set(item) == {"id", "condition", "item"}
-                    and isinstance(item["id"], str)
-                    and ID_RE.fullmatch(item["id"])
-                    and isinstance(item["condition"], str)
-                    and item["condition"].strip()
-                    and isinstance(item["item"], str)
-                    and item["item"].strip()
-                    for item in branches
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_delivery_item_branches",
-                        f"{context}.item_branches must contain exactly two id/condition/item branches",
-                        stage_id or None,
-                    )
-                )
-            elif (
-                len({item["id"] for item in branches}) != 2
-                or len({item["condition"] for item in branches}) != 2
-                or len({item["item"] for item in branches}) != 2
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "duplicate_delivery_item_branch",
-                        f"{context}.item_branches must use unique ids, conditions, and items",
-                        stage_id or None,
-                    )
-                )
-
-        if (
-            stage_type == "deliver_drop_point"
-            and not stage.get("item")
-            and not stage.get("item_branches")
-        ):
-            diagnostics.append(
-                Diagnostic(
-                    "error",
-                    "missing_delivery_item",
-                    f"{context} requires item or item_branches",
-                    stage_id or None,
-                )
-            )
-
-        if stage_type == "defend_target":
-            block_on_failure = stage.get("block_on_failure", False)
-            if not isinstance(block_on_failure, bool):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_block_on_failure",
-                        f"{context}.block_on_failure must be a boolean",
-                        stage_id or None,
-                    )
-                )
-            elif block_on_failure and not stage.get("retry_checkpoint", False):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "blocked_defense_without_retry",
-                        f"{context}.block_on_failure requires retry_checkpoint",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "combat_encounter":
-            if stage.get("hostility") not in {"neutral_to_hostile", "already_hostile"}:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_hostility",
-                        f"{context}.hostility is not supported",
-                        stage_id or None,
-                    )
-                )
-            completion = stage.get("completion")
-            if completion not in {"all_defeated", "named_defeated", "fact"}:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_combat_completion",
-                        f"{context}.completion is not supported",
-                        stage_id or None,
-                    )
-                )
-            using_builtin = not isinstance(stage.get("phase_template"), str)
-            if using_builtin and completion != "all_defeated":
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_combat_completion",
-                        f"{context} built-in template supports completion=all_defeated",
-                        stage_id or None,
-                    )
-                )
-            if using_builtin and stage.get("hostility") != "already_hostile":
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_combat_variant",
-                        f"{context} currently supports hostility=already_hostile",
-                        stage_id or None,
-                    )
-                )
-        if stage_type == "cyberpsycho_encounter":
-            for field in (
-                "community",
-                "activation_trigger",
-                "arena_trigger",
-                "alerted_path",
-            ):
-                value = stage.get(field)
-                if value is not None and (
-                    not isinstance(value, str)
-                    or not value.startswith(("#", "$/"))
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_cyberpsycho_node_ref",
-                            f"{context}.{field} must be a NodeRef",
-                            stage_id or None,
-                        )
-                    )
-            alerted_spots = stage.get("alerted_spots", [])
-            if not isinstance(alerted_spots, list) or any(
-                not isinstance(value, str)
-                or not value.startswith(("#", "$/"))
-                for value in alerted_spots
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_cyberpsycho_alerted_spots",
-                        f"{context}.alerted_spots must be a list of NodeRefs",
-                        stage_id or None,
-                    )
-                )
-            boss_character = stage.get("boss_character")
-            if (
-                isinstance(boss_character, str)
-                and re.fullmatch(
-                    r"[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_.]+",
-                    boss_character,
-                )
-                is None
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_cyberpsycho_character",
-                        f"{context}.boss_character must be a TweakDBID",
-                        stage_id or None,
-                    )
-                )
-            for field in ("activate",):
-                if field in stage and not isinstance(stage[field], bool):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_cyberpsycho_boolean",
-                            f"{context}.{field} must be a boolean",
-                            stage_id or None,
-                        )
-                    )
-
-            reveal = stage.get("reveal")
-            reveal_fields = {
-                "trigger",
-                "scan",
-                "attacked_by_boss",
-                "boss_hit_by_player",
-                "boss_sees_player",
-            }
-            if not isinstance(reveal, dict):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_cyberpsycho_reveal",
-                        f"{context}.reveal must be an object",
-                        stage_id or None,
-                    )
-                )
-            else:
-                unknown_reveal = sorted(set(reveal) - reveal_fields)
-                if unknown_reveal:
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "unknown_cyberpsycho_reveal_field",
-                            f"{context}.reveal has unknown fields: "
-                            + ", ".join(unknown_reveal),
-                            stage_id or None,
-                        )
-                    )
-                trigger = reveal.get("trigger")
-                if trigger is not None and (
-                    not isinstance(trigger, str) or not trigger.startswith(("#", "$/"))
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_cyberpsycho_reveal_trigger",
-                            f"{context}.reveal.trigger must be a NodeRef",
-                            stage_id or None,
-                        )
-                    )
-                for field in reveal_fields - {"trigger"}:
-                    if field in reveal and not isinstance(reveal[field], bool):
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "invalid_cyberpsycho_reveal_flag",
-                                f"{context}.reveal.{field} must be a boolean",
-                                stage_id or None,
-                            )
-                        )
-                if not (
-                    isinstance(trigger, str)
-                    or any(reveal.get(field) is True for field in reveal_fields - {"trigger"})
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "empty_cyberpsycho_reveal",
-                            f"{context}.reveal must enable at least one reveal route",
-                            stage_id or None,
-                        )
-                    )
-
-            resolution = stage.get("resolution")
-            resolution_fields = {
-                "allow_nonlethal",
-                "spared_fact",
-                "killed_fact",
-            }
-            if not isinstance(resolution, dict):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_cyberpsycho_resolution",
-                        f"{context}.resolution must be an object",
-                        stage_id or None,
-                    )
-                )
-            else:
-                unknown_resolution = sorted(set(resolution) - resolution_fields)
-                if unknown_resolution:
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "unknown_cyberpsycho_resolution_field",
-                            f"{context}.resolution has unknown fields: "
-                            + ", ".join(unknown_resolution),
-                            stage_id or None,
-                        )
-                    )
-                if resolution.get("allow_nonlethal", True) is not True:
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "cyberpsycho_nonlethal_required",
-                            f"{context}.resolution.allow_nonlethal must be true",
-                            stage_id or None,
-                        )
-                    )
-                for field in ("spared_fact", "killed_fact"):
-                    value = resolution.get(field)
-                    if not isinstance(value, str) or not ID_RE.fullmatch(value):
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "invalid_cyberpsycho_outcome_fact",
-                                f"{context}.resolution.{field} must be a lowercase fact name",
-                                stage_id or None,
-                            )
-                        )
-                if (
-                    isinstance(resolution.get("spared_fact"), str)
-                    and resolution.get("spared_fact") == resolution.get("killed_fact")
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "duplicate_cyberpsycho_outcome_fact",
-                            f"{context}.resolution outcome facts must differ",
-                            stage_id or None,
-                        )
-                    )
-
-            cleanup = stage.get("cleanup")
-            if cleanup is not None:
-                cleanup_fields = {"trigger", "deactivate_community"}
-                if not isinstance(cleanup, dict):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_cyberpsycho_cleanup",
-                            f"{context}.cleanup must be an object",
-                            stage_id or None,
-                        )
-                    )
-                else:
-                    unknown_cleanup = sorted(set(cleanup) - cleanup_fields)
-                    if unknown_cleanup:
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "unknown_cyberpsycho_cleanup_field",
-                                f"{context}.cleanup has unknown fields: "
-                                + ", ".join(unknown_cleanup),
-                                stage_id or None,
-                            )
-                        )
-                    cleanup_trigger = cleanup.get("trigger")
-                    if cleanup_trigger is not None and (
-                        not isinstance(cleanup_trigger, str)
-                        or not cleanup_trigger.startswith(("#", "$/"))
-                    ):
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "invalid_cyberpsycho_cleanup_trigger",
-                                f"{context}.cleanup.trigger must be a NodeRef",
-                                stage_id or None,
-                            )
-                        )
-                    if (
-                        "deactivate_community" in cleanup
-                        and not isinstance(cleanup["deactivate_community"], bool)
-                    ):
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "invalid_cyberpsycho_cleanup_flag",
-                                f"{context}.cleanup.deactivate_community must be a boolean",
-                                stage_id or None,
-                            )
-                        )
-
-            authoring = stage.get("authoring")
-            if authoring is not None:
-                authoring_fields = {"world_spec", "tweak_file"}
-                if not isinstance(authoring, dict):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_cyberpsycho_authoring",
-                            f"{context}.authoring must be an object",
-                            stage_id or None,
-                        )
-                    )
-                else:
-                    unknown_authoring = sorted(set(authoring) - authoring_fields)
-                    if unknown_authoring:
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "unknown_cyberpsycho_authoring_field",
-                                f"{context}.authoring has unknown fields: "
-                                + ", ".join(unknown_authoring),
-                                stage_id or None,
-                            )
-                        )
-                    if not authoring:
-                        diagnostics.append(
-                            Diagnostic(
-                                "error",
-                                "empty_cyberpsycho_authoring",
-                                f"{context}.authoring must name at least one file",
-                                stage_id or None,
-                            )
-                        )
-                    for field in authoring_fields:
-                        value = authoring.get(field)
-                        if value is not None and (
-                            not isinstance(value, str)
-                            or not value.strip()
-                            or Path(value).is_absolute()
-                            or ".." in Path(value).parts
-                        ):
-                            diagnostics.append(
-                                Diagnostic(
-                                    "error",
-                                    "invalid_cyberpsycho_authoring_path",
-                                    f"{context}.authoring.{field} must be a "
-                                    "workspace-relative path",
-                                    stage_id or None,
-                                )
-                            )
-        if stage_type == "braindance_analysis":
-            for field in (
-                "scene_origin",
-                "player_anchor",
-                "player_return",
-            ):
-                value = stage.get(field)
-                if (
-                    not isinstance(value, str)
-                    or not value.startswith(("#", "$/"))
-                ):
-                    diagnostics.append(
-                        Diagnostic(
-                            "error",
-                            "invalid_braindance_node_ref",
-                            f"{context}.{field} must be a NodeRef",
-                            stage_id or None,
-                        )
-                    )
-            clue_facts = stage.get("clue_facts")
-            if (
-                not isinstance(clue_facts, list)
-                or len(clue_facts) != 3
-                or not all(
-                    isinstance(item, str) and ID_RE.fullmatch(item)
-                    for item in clue_facts
-                )
-                or len(set(clue_facts)) != 3
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_braindance_clue_facts",
-                        f"{context}.clue_facts must contain exactly three "
-                        "unique fact names",
-                        stage_id or None,
-                    )
-                )
-        if stage_type == "escort_npc":
-            destinations = stage.get("destinations")
-            if (
-                not isinstance(destinations, list)
-                or not destinations
-                or not all(isinstance(item, str) and item.strip() for item in destinations)
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_destinations",
-                        f"{context}.destinations must be a non-empty string array",
-                        stage_id or None,
-                    )
-                )
-            elif (
-                not isinstance(stage.get("phase_template"), str)
-                and len(destinations) != 3
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_destination_count",
-                        f"{context}.destinations currently requires exactly three route gates",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "investigate_clues":
-            clues = stage.get("clues")
-            if (
-                not isinstance(stage.get("phase_template"), str)
-                and isinstance(clues, list)
-                and stage.get("required_count", len(clues)) != len(clues)
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_clue_threshold",
-                        f"{context} generated flow currently requires all authored clues; "
-                        "use a custom phase_template for a partial threshold",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "optional_condition":
-            if (
-                not isinstance(stage.get("phase_template"), str)
-                and stage.get("evaluation") != "at_exit"
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_condition_evaluation",
-                        f"{context} currently supports evaluation=at_exit",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "choice_gate":
-            branches = stage.get("branches")
-            if (
-                not isinstance(stage.get("phase_template"), str)
-                and (
-                    stage.get("gate_kind") != "fact"
-                    or not isinstance(branches, list)
-                    or len(branches) != 2
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "unsupported_choice_shape",
-                        f"{context} currently supports exactly two fact branches",
-                        stage_id or None,
-                    )
-                )
-
-        if stage_type == "phone_conversation":
-            messages = stage.get("messages")
-            if (
-                not isinstance(messages, list)
-                or not all(isinstance(item, str) and item.strip() for item in messages)
-                or (
-                    not messages
-                    and not stage.get("opening_branches")
-                    and not stage.get("conditional_message_groups")
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_phone_messages",
-                        f"{context}.messages must be a string array and may be empty only when conditional messages exist",
-                        stage_id or None,
-                    )
-                )
-            choices = stage.get("choices")
-            if (
-                not isinstance(choices, list)
-                or len(choices) < 2
-                or not all(
-                    isinstance(item, dict)
-                    and {"choice", "reply"} <= set(item)
-                    and set(item) <= {"choice", "reply", "set_fact"}
-                    and all(
-                        isinstance(item[key], str) and item[key].strip()
-                        for key in ("choice", "reply")
-                    )
-                    and (
-                        "set_fact" not in item
-                        or (
-                            isinstance(item["set_fact"], str)
-                            and item["set_fact"].strip()
-                        )
-                    )
-                    for item in choices
-                )
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_phone_choices",
-                        f"{context}.choices must contain at least two choice/reply "
-                        "objects with an optional set_fact",
-                        stage_id or None,
-                    )
-                )
-            opening_branches = stage.get("opening_branches")
-            if opening_branches is not None and (
-                not isinstance(opening_branches, list)
-                or len(opening_branches) < 2
-                or not all(
-                    isinstance(item, dict)
-                    and set(item) == {"condition", "messages"}
-                    and isinstance(item["condition"], str)
-                    and item["condition"].strip()
-                    and isinstance(item["messages"], list)
-                    and item["messages"]
-                    and all(
-                        isinstance(message, str) and message.strip()
-                        for message in item["messages"]
-                    )
-                    for item in opening_branches
-                )
-                or len({item["condition"] for item in opening_branches})
-                != len(opening_branches)
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_phone_opening_branches",
-                        f"{context}.opening_branches must contain at least two "
-                        "unique fact conditions with non-empty message arrays",
-                        stage_id or None,
-                    )
-                )
-            conditional_groups = stage.get("conditional_message_groups", [])
-            if (
-                not isinstance(conditional_groups, list)
-                or any(
-                    not isinstance(group, dict)
-                    or set(group) != {"id", "branches"}
-                    or not isinstance(group["id"], str)
-                    or not ID_RE.fullmatch(group["id"])
-                    or not isinstance(group["branches"], list)
-                    or len(group["branches"]) < 2
-                    or any(
-                        not isinstance(branch, dict)
-                        or set(branch) != {"condition", "messages"}
-                        or not isinstance(branch["condition"], str)
-                        or not branch["condition"].strip()
-                        or not isinstance(branch["messages"], list)
-                        or not branch["messages"]
-                        or any(
-                            not isinstance(message, str) or not message.strip()
-                            for message in branch["messages"]
-                        )
-                        for branch in group["branches"]
-                    )
-                    or len(
-                        {branch["condition"] for branch in group["branches"]}
-                    ) != len(group["branches"])
-                    for group in conditional_groups
-                )
-                or len(
-                    {
-                        group["id"]
-                        for group in conditional_groups
-                        if isinstance(group, dict) and isinstance(group.get("id"), str)
-                    }
-                ) != len(conditional_groups)
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_phone_conditional_groups",
-                        f"{context}.conditional_message_groups must contain uniquely named branch groups",
-                        stage_id or None,
-                    )
-                )
-            postscripts = stage.get("postscript_messages", [])
-            if not isinstance(postscripts, list) or any(
-                not isinstance(message, str) or not message.strip()
-                for message in postscripts
-            ):
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_phone_postscripts",
-                        f"{context}.postscript_messages must be a string array",
-                        stage_id or None,
-                    )
-                )
-            delay = stage.get("delay_seconds", 1)
-            if not isinstance(delay, int) or isinstance(delay, bool) or delay < 0:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "invalid_phone_delay",
-                        f"{context}.delay_seconds must be a non-negative integer",
-                        stage_id or None,
-                    )
-                )
+        stage_definition = STAGE_REGISTRY.get(stage_type)
+        if stage_definition is not None:
+            stage_definition.validate(stage, context, stage_id, diagnostics)
 
         for field in ("scene",):
             if field in stage:
@@ -1835,8 +576,7 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
 
     if diagnostics and any(item.level == "error" for item in diagnostics):
         return None, diagnostics
-    return (
-        QuestSpec(
+    spec = QuestSpec(
             path=path.resolve(),
             id=quest_id,
             title=title,
@@ -1845,9 +585,14 @@ def load_spec(path: Path) -> tuple[QuestSpec | None, list[Diagnostic]]:
             parallel_groups=tuple(parallel_groups),
             debug_fact=debug_fact,
             stages=tuple(stages),
-        ),
-        diagnostics,
+            entry_stage=raw.get("entry_stage"),
+            external_facts=tuple(raw.get("external_facts", [])),
+            external_events=tuple(raw.get("external_events", [])),
+            completion=raw.get("completion"),
+            authoring_source=authoring_source,
     )
+    diagnostics.extend(validate_flow(spec))
+    return (None if any(item.level == "error" for item in diagnostics) else spec), diagnostics
 
 
 def collect_ref_values(value: Any) -> set[str]:
@@ -2114,23 +859,13 @@ def audit_cyberpsycho_authoring(
 
 
 def audit_resources(spec: QuestSpec, *, root: Path = ROOT) -> list[Diagnostic]:
-    diagnostics: list[Diagnostic] = []
+    diagnostics: list[Diagnostic] = audit_scene_contracts(spec, root)
     for stage in spec.stages:
         resources = []
         template = stage_template_resource(stage)
         if template is not None:
             resources.append(template)
-        elif (
-            stage.type not in DIRECT_STAGE_TYPES
-            and not (
-                stage.type == "hack_access_point"
-                and stage.data.get("completion_function")
-            )
-            and not (
-                stage.type == "deliver_drop_point"
-                and stage.data.get("item_branches")
-            )
-        ):
+        elif not emits_stage_phase(stage):
             resources.append(stage.phase_resource)
         if isinstance(stage.data.get("scene"), str):
             resources.append(stage.data["scene"])
@@ -2250,10 +985,39 @@ def scalar_strings(value: Any) -> set[str]:
     return result
 
 
+def validate_meeting_journal_bindings(stage: CompiledStage, phase: JsonObject) -> None:
+    """Match child-owned objective/mappin changes to the root's typed paths.
+
+    Descriptions are root-owned. Some custom meeting templates intentionally
+    leave the objective active; check a child field only when that resource
+    actually contains an operation on its journal class.
+    """
+    paths: dict[str, set[str]] = {}
+    def visit(value: Any) -> None:
+        if isinstance(value, dict):
+            if value.get("$type") == "gameJournalPath":
+                name = value.get("className", {}).get("$value")
+                paths.setdefault(name, set()).add(value.get("realPath", ""))
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+    visit(phase)
+    for field, class_name in (("objective", "gameJournalQuestObjective"), ("mappin", "gameJournalQuestMapPin")):
+        owned_paths = paths.get(class_name, set())
+        if owned_paths and stage.data[field] not in owned_paths:
+            raise QuestSpecError(
+                f"Stage {stage.id} child {field} paths {sorted(owned_paths)} "
+                f"do not match root binding {stage.data[field]}"
+            )
+
+
 def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
     """Ensure typed runtime identifiers are actually represented by the child phase."""
     expected: list[tuple[str, str]] = []
     if stage.type == "meet_contact":
+        validate_meeting_journal_bindings(stage, phase)
         expected.extend(
             (field, stage.data[field]) for field in ("contact", "scene", "community")
         )
@@ -2294,6 +1058,8 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
         )
         for opening in stage.data.get("opening_branches", []):
             expected.append(("opening_branches.condition", opening["condition"]))
+            if isinstance(opening.get("unless"), str):
+                expected.append(("opening_branches.unless", opening["unless"]))
             expected.extend(
                 ("opening_branches.messages", message)
                 for message in opening["messages"]
@@ -2368,6 +1134,17 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
             expected.append(("arena_trigger", stage.data["arena_trigger"]))
         if isinstance(stage.data.get("alerted_path"), str):
             expected.append(("alerted_path", stage.data["alerted_path"]))
+        player_defeat_scene = stage.data.get("player_defeat_scene")
+        if isinstance(player_defeat_scene, dict):
+            expected.extend(
+                (
+                    "player_defeat_scene.completion_branches.set_fact",
+                    branch["set_fact"],
+                )
+                for branch in player_defeat_scene.get(
+                    "completion_branches", []
+                )
+            )
         expected.extend(
             ("alerted_spots", value)
             for value in stage.data.get("alerted_spots", [])
@@ -2543,6 +1320,13 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
                 expected.append((field, stage.data[field]))
 
     values = scalar_strings(phase)
+    policy = stage.data.get("objective_lifecycle", {})
+    if policy.get("on_enter") == "retain" and all(
+        policy.get(f"on_{outcome}") == "retain" for outcome in stage_outcomes(stage)
+    ):
+        # The linker checks the prior and next owners; retaining an objective
+        # deliberately emits no journal operation for it inside this phase.
+        expected = [(field, value) for field, value in expected if field != "objective"]
     missing = [f"{field}={value}" for field, value in expected if value not in values]
     if missing:
         raise QuestSpecError(
@@ -2552,15 +1336,21 @@ def validate_stage_contract(stage: CompiledStage, phase: JsonObject) -> None:
 
 
 def stage_template_resource(stage: CompiledStage) -> str | None:
-    explicit = stage.data.get("phase_template")
-    if isinstance(explicit, str):
-        return explicit
-    if stage.type == "defend_target" and stage.data.get("block_on_failure", False):
-        return r"mod\ghostline\quest_blocks\templates\defend_target_retry.questphase"
-    return BUILTIN_TEMPLATE_RESOURCES.get(stage.type)
+    return STAGE_REGISTRY[stage.type].template(stage.data)
 
 
-def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
+def stage_builder_name(stage: CompiledStage) -> str | None:
+    return STAGE_REGISTRY[stage.type].builder(stage.data)
+
+
+def emits_stage_phase(stage: CompiledStage) -> bool:
+    return stage_builder_name(stage) is not None or stage_template_resource(stage) is not None
+
+def builtin_template_bindings(
+    stage: CompiledStage,
+    *,
+    template_tokens: set[str] | None = None,
+) -> dict[str, str]:
     if stage.type == "interact_device":
         return {
             "{{device}}": stage.data["device"],
@@ -2684,9 +1474,15 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
             "{{mappin}}": stage.data["mappin"],
         }
     if stage.type == "vehicle_cleanup":
-        return {
+        bindings = {
             "{{completion_fact}}": stage.data["completion_fact"],
         }
+        if (
+            "{{player_vehicle_record}}" in (template_tokens or ())
+            and "player_vehicle_record" in stage.data
+        ):
+            bindings["{{player_vehicle_record}}"] = stage.data["player_vehicle_record"]
+        return bindings
     if stage.type == "braindance_analysis":
         return {
             "{{scene}}": stage.data["scene"],
@@ -2702,18 +1498,20 @@ def builtin_template_bindings(stage: CompiledStage) -> dict[str, str]:
     return {}
 
 
-def instantiate_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
+def instantiate_stage_phase(stage: CompiledStage, archive_target: Path, *, template_document: JsonObject | None = None) -> JsonObject:
     template_resource = stage_template_resource(stage)
     if template_resource is None:
         raise QuestSpecError(f"Stage {stage.id} does not declare phase_template")
-    raw_template, packed_template = resource_paths(template_resource)
-    if not raw_template.is_file():
+    raw_template, _ = resource_paths(template_resource)
+    if template_document is None and not raw_template.is_file():
         raise QuestSpecError(
             f"Stage {stage.id} needs raw template {raw_template}; packed-only templates cannot be rewritten"
         )
+    template = read_json(raw_template) if template_document is None else template_document
     bindings_value = stage.data.get("template_bindings")
     if bindings_value is None:
-        bindings_value = builtin_template_bindings(stage)
+        tokens = set(re.findall(r"\{\{.*?\}\}", json.dumps(template.get("Data", {}))))
+        bindings_value = builtin_template_bindings(stage, template_tokens=tokens)
     if not isinstance(bindings_value, dict) or not all(
         isinstance(key, str) and isinstance(value, str)
         for key, value in bindings_value.items()
@@ -2721,7 +1519,6 @@ def instantiate_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonO
         raise QuestSpecError(
             f"Stage {stage.id}.template_bindings must map strings to strings"
         )
-    template = read_json(raw_template)
     counts = {key: 0 for key in bindings_value}
     result = replace_template_scalars(template, dict(bindings_value), counts)
     unused = sorted(key for key, count in counts.items() if count == 0)
@@ -2730,29 +1527,14 @@ def instantiate_stage_phase(stage: CompiledStage, archive_target: Path) -> JsonO
             f"Stage {stage.id} has template bindings not present in {template_resource}: "
             + ", ".join(unused)
         )
+    unresolved = sorted(set(re.findall(r"\{\{.*?\}\}", json.dumps(result.get("Data", {})))))
+    if unresolved:
+        raise QuestSpecError(
+            f"Stage {stage.id} has unresolved template tokens in instantiated phase Data: "
+            + ", ".join(unresolved)
+        )
     result["Header"]["ArchiveFileName"] = str(archive_target.resolve())
     return result
-
-
-def quest_completion_node(
-    builder: PhaseGraphBuilder, quest_id: int, path: str
-) -> GraphNode:
-    node_type = builder.handles.wrap(
-        {
-            "$type": "questJournalQuestEntry_NodeType",
-            "optional": 0,
-            "path": journal_path(builder, path, "gameJournalQuest", 2),
-            "sendNotification": 1,
-            "trackQuest": 1,
-            "version": "Initial",
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questJournalNodeDefinition",
-        input_names=("Active", "Inactive", "Succeeded", "Failed"),
-        properties={"type": node_type},
-    )
 
 
 def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
@@ -2816,13 +1598,49 @@ def build_phone_phase(stage: CompiledStage, archive_target: Path) -> JsonObject:
             next_id += 1
             builder.connect(previous, condition, source_socket=previous_socket)
             branch_previous = condition
+            branch_previous_socket = "Out"
+            unless_fact = opening.get("unless")
+            if isinstance(unless_fact, str):
+                unless_condition = fact_condition_node(
+                    builder,
+                    next_id,
+                    unless_fact,
+                    comparison="LessOrEqual",
+                    value=0,
+                )
+                next_id += 1
+                builder.connect(
+                    previous,
+                    unless_condition,
+                    source_socket=previous_socket,
+                )
+                condition_join = logical_and_node(builder, next_id, 2)
+                next_id += 1
+                builder.connect(
+                    condition,
+                    condition_join,
+                    destination_socket="In1",
+                )
+                builder.connect(
+                    unless_condition,
+                    condition_join,
+                    destination_socket="In2",
+                )
+                branch_previous = condition_join
+                branch_previous_socket = "Out1"
             for path in opening["messages"]:
                 message = journal_entry_node(
                     builder, next_id, path, "gameJournalPhoneMessage", 1
                 )
                 next_id += 1
-                builder.connect(branch_previous, message, destination_socket="Active")
+                builder.connect(
+                    branch_previous,
+                    message,
+                    source_socket=branch_previous_socket,
+                    destination_socket="Active",
+                )
                 branch_previous = message
+                branch_previous_socket = "Out"
             branch_tails.append(branch_previous)
         opening_join = logical_xor_node(builder, next_id, len(branch_tails))
         next_id += 1
@@ -3005,65 +1823,6 @@ def build_phone_job_offer_phase(
     }
 
 
-def phase_document(builder: PhaseGraphBuilder, archive_target: Path) -> JsonObject:
-    return {
-        "Header": {
-            "WolvenKitVersion": "8.17.4",
-            "WKitJsonVersion": "0.0.9",
-            "GameVersion": 2310,
-            "ExportedDateTime": "1970-01-01T00:00:00Z",
-            "DataType": "CR2W",
-            "ArchiveFileName": str(archive_target.resolve()),
-        },
-        "Data": {
-            "Version": 195,
-            "BuildVersion": 0,
-            "RootChunk": {
-                "$type": "questQuestPhaseResource",
-                "cookingPlatform": "PLATFORM_PC",
-                "graph": builder.graph,
-                "inplacePhases": [],
-                "phasePrefabs": [],
-            },
-            "EmbeddedFiles": [],
-        },
-    }
-
-
-def add_item_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    item_id: str,
-    quantity: int,
-) -> GraphNode:
-    params = builder.handles.wrap(
-        {
-            "$type": "questAddRemoveItem_NodeTypeParams",
-            "entityRef": local_player_reference(builder),
-            "flagItemAddedCallbackAsSilent": 0,
-            "isPlayer": 0,
-            "itemID": tweakdbid(item_id),
-            "itemIDsToIgnoreOnRemove": [],
-            "nodeType": "AddItem",
-            "objectRef": entity_reference(),
-            "quantity": quantity,
-            "removeAllQuantity": 0,
-            "sendNotification": 1,
-            "tagsToIgnoreOnRemove": [],
-            "tagToRemove": cname("None"),
-        }
-    )
-    node_type = builder.handles.wrap(
-        {"$type": "questAddRemoveItem_NodeType", "params": [params]}
-    )
-    return builder.node(
-        quest_id,
-        "questItemManagerNodeDefinition",
-        input_names=("In",),
-        properties={"type": node_type},
-    )
-
-
 def remove_item_node(
     builder: PhaseGraphBuilder,
     quest_id: int,
@@ -3116,36 +1875,6 @@ def checkpoint_node(
             "pointOfNoReturn": 0,
             "retryOnFailure": int(retry_on_failure),
             "saveLock": 0,
-        },
-    )
-
-
-def community_action_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community_ref: str,
-    action: str,
-) -> GraphNode:
-    action_type = builder.handles.wrap(
-        {
-            "$type": "questCommunityTemplate_NodeType",
-            "action": action,
-            "communityEntryName": cname("None"),
-            "communityEntryPhaseName": cname("None"),
-            "spawnerReference": node_ref(community_ref),
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questSpawnManagerNodeDefinition",
-        input_names=("In",),
-        properties={
-            "actions": [
-                {
-                    "$type": "questSpawnManagerNodeActionEntry",
-                    "type": action_type,
-                }
-            ]
         },
     )
 
@@ -3460,27 +2189,6 @@ def build_read_terminal_document_phase(
     return phase_document(builder, archive_target)
 
 
-def scan_started_node(
-    builder: PhaseGraphBuilder, quest_id: int, object_ref: str
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questScan_ConditionType",
-            "eventType": "Finished",
-            "objectRef": entity_reference(object_ref),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questObjectCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
 def quest_highlight_node(
     builder: PhaseGraphBuilder,
     quest_id: int,
@@ -3519,454 +2227,6 @@ def quest_highlight_node(
             "objectRef": entity_reference(object_ref),
             "PSClassName": cname("None"),
         },
-    )
-
-
-def device_manager_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    *,
-    device: str,
-    controller: str,
-    action: str,
-) -> GraphNode:
-    params = builder.handles.wrap(
-        {
-            "$type": "questDeviceManager_NodeTypeParams",
-            "actionProperties": [],
-            "deviceAction": cname(action),
-            "deviceControllerClass": cname(controller),
-            "entityRef": entity_reference(),
-            "objectRef": node_ref(device),
-            "slotName": cname("None"),
-        }
-    )
-    node_type = builder.handles.wrap(
-        {"$type": "questDeviceManager_NodeType", "params": [params]}
-    )
-    return builder.node(
-        quest_id,
-        "questInteractiveObjectManagerNodeDefinition",
-        input_names=("In",),
-        properties={"type": node_type},
-    )
-
-
-def device_condition_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    *,
-    device: str,
-    controller: str,
-    function: str,
-) -> GraphNode:
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questDevice_ConditionType",
-            "deviceConditionFunction": cname(function),
-            "deviceControllerClass": cname(controller),
-            "functionParameters": [],
-            "objectRef": node_ref(device),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questObjectCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def character_spawned_node(
-    builder: PhaseGraphBuilder, quest_id: int, community: str
-) -> GraphNode:
-    comparison = builder.handles.wrap(
-        {
-            "$type": "questComparisonParam",
-            "comparisonType": "Greater",
-            "count": 0,
-            "entireCommunity": 1,
-        }
-    )
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterSpawned_ConditionType",
-            "comparisonParams": comparison,
-            "objectRef": entity_reference(community),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questCharacterCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def community_defeated_node(
-    builder: PhaseGraphBuilder, quest_id: int, community: str
-) -> GraphNode:
-    comparison = builder.handles.wrap(
-        {
-            "$type": "questComparisonParam",
-            "comparisonType": "GreaterOrEqual",
-            "count": 0,
-            "entireCommunity": 1,
-        }
-    )
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterKilled_ConditionType",
-            "comparisonParams": comparison,
-            "defeated": 1,
-            "killed": 1,
-            "objectRef": entity_reference(community),
-            "source": None,
-            "unconscious": 1,
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questCharacterCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def combat_threat_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-) -> GraphNode:
-    params = builder.handles.wrap(
-        {
-            "$type": "AIInjectCombatThreatCommandParams",
-            "dontForceHostileAttitude": 0,
-            "duration": 0.5,
-            "isPersistent": 0,
-            "targetNodeRef": node_ref("0", storage="uint64"),
-            "targetPuppetRef": entity_reference("#player"),
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questCombatNodeDefinition",
-        input_names=("In",),
-        output_names=("Success",),
-        properties={
-            "entityReference": entity_reference(
-                community, names=[entry]
-            ),
-            "params": params,
-        },
-    )
-
-
-def gameplay_ai_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-) -> GraphNode:
-    """Restore the puppet's default gameplay AI tier."""
-
-    return builder.node(
-        quest_id,
-        "questPuppetAIManagerNodeDefinition",
-        input_names=("In",),
-        output_names=("Out",),
-        properties={
-            "entries": [
-                {
-                    "$type": "questPuppetAIManagerNodeDefinitionEntry",
-                    "entityReference": entity_reference(
-                        community, names=[entry]
-                    ),
-                }
-            ]
-        },
-    )
-
-
-def character_not_in_combat_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-) -> GraphNode:
-    """Match Lt. Mower's pre-role non-combat gate."""
-
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterCombat_ConditionType",
-            "objectRef": entity_reference(community, names=[entry]),
-            "isPlayer": 0,
-            "inverted": 1,
-        }
-    )
-    condition = builder.handles.wrap(
-        {
-            "$type": "questCharacterCondition",
-            "type": condition_type,
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def alerted_patrol_role_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-    alerted_path: str,
-    alerted_spots: list[str],
-) -> GraphNode:
-    """Assign Lt. Mower's forced-alerted patrol role to the named boss."""
-
-    path_params = builder.handles.wrap(
-        {
-            "$type": "AIPatrolPathParameters",
-            "movementType": "Sprint",
-            "patrolWithWeapon": 1,
-        }
-    )
-    alerted_path_params = builder.handles.wrap(
-        {
-            "$type": "AIPatrolPathParameters",
-            "path": node_ref(alerted_path),
-            "movementType": "Sprint",
-            "patrolWithWeapon": 1,
-        }
-    )
-    workspots = builder.handles.wrap(
-        {
-            "$type": "AIbehaviorWorkspotList",
-            "spots": [node_ref(value) for value in alerted_spots],
-        }
-    )
-    role = builder.handles.wrap(
-        {
-            "$type": "AIPatrolRole",
-            "pathParams": path_params,
-            "alertedPathParams": alerted_path_params,
-            "alertedSpots": workspots,
-            "forceAlerted": 1,
-        }
-    )
-    params = builder.handles.wrap(
-        {
-            "$type": "AIAssignRoleCommandParams",
-            "role": role,
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questMiscAICommandNode",
-        input_names=("In",),
-        output_names=("Success",),
-        properties={
-            "entityReference": entity_reference(
-                community, names=[entry]
-            ),
-            "params": params,
-        },
-    )
-
-
-def combat_target_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-) -> GraphNode:
-    """Assign V as the named boss's immediate combat target."""
-
-    params = builder.handles.wrap(
-        {
-            "$type": "questCombatNodeParams_CombatTarget",
-            "duration": 0.01,
-            "immediately": 1,
-            "targetNode": node_ref("0", storage="uint64"),
-            "targetPuppet": entity_reference("#player"),
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questCombatNodeDefinition",
-        input_names=("In",),
-        output_names=("Success",),
-        properties={
-            "entityReference": entity_reference(
-                community, names=[entry]
-            ),
-            "params": params,
-        },
-    )
-
-
-def named_character_spawned_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-) -> GraphNode:
-    comparison = builder.handles.wrap(
-        {
-            "$type": "questComparisonParam",
-            "comparisonType": "GreaterOrEqual",
-            "count": 1,
-            "entireCommunity": 0,
-        }
-    )
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterSpawned_ConditionType",
-            "comparisonParams": comparison,
-            "objectRef": entity_reference(community, names=[entry]),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questCharacterCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def named_character_outcome_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-    *,
-    killed: bool,
-    unconscious: bool,
-    defeated: bool,
-) -> GraphNode:
-    comparison = builder.handles.wrap(
-        {
-            "$type": "questComparisonParam",
-            "comparisonType": "GreaterOrEqual",
-            "count": 1,
-            "entireCommunity": 0,
-        }
-    )
-    condition_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterKilled_ConditionType",
-            "comparisonParams": comparison,
-            "defeated": int(defeated),
-            "killed": int(killed),
-            "objectRef": entity_reference(community, names=[entry]),
-            "source": None,
-            "unconscious": int(unconscious),
-        }
-    )
-    condition = builder.handles.wrap(
-        {"$type": "questCharacterCondition", "type": condition_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def cyberpsycho_reveal_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    kind: str,
-    community: str,
-    entry: str,
-) -> GraphNode:
-    boss = entity_reference(community, names=[entry])
-    if kind == "scan":
-        wrapper_type = "questObjectCondition"
-        condition_type = {
-            "$type": "questScan_ConditionType",
-            "objectRef": boss,
-        }
-    elif kind == "attacked_by_boss":
-        wrapper_type = "questCharacterCondition"
-        condition_type = {
-            "$type": "questCharacterAttack_ConditionType",
-            "attackerRef": boss,
-            "isTargetPlayer": 1,
-        }
-    elif kind == "boss_hit_by_player":
-        wrapper_type = "questCharacterCondition"
-        condition_type = {
-            "$type": "questCharacterHit_ConditionType",
-            "isAttackerPlayer": 1,
-            "targetRef": boss,
-        }
-    elif kind == "boss_sees_player":
-        wrapper_type = "questSensesCondition"
-        condition_type = {
-            "$type": "questVision_ConditionType",
-            "observerPuppetRef": boss,
-        }
-    else:
-        raise QuestSpecError(f"Unsupported cyberpsycho reveal route: {kind}")
-    wrapped_type = builder.handles.wrap(condition_type)
-    condition = builder.handles.wrap(
-        {"$type": wrapper_type, "type": wrapped_type}
-    )
-    return builder.node(
-        quest_id,
-        "questPauseConditionNodeDefinition",
-        input_names=("In",),
-        properties={"condition": condition},
-    )
-
-
-def character_mortality_node(
-    builder: PhaseGraphBuilder,
-    quest_id: int,
-    community: str,
-    entry: str,
-    *,
-    state: str,
-    source: str,
-) -> GraphNode:
-    subtype = builder.handles.wrap(
-        {
-            "$type": "questCharacterManagerParameters_SetMortality",
-            "puppetRef": entity_reference(community, names=[entry]),
-            "source": cname(source),
-            "state": state,
-        }
-    )
-    node_type = builder.handles.wrap(
-        {
-            "$type": "questCharacterManagerParameters_NodeType",
-            "subtype": subtype,
-        }
-    )
-    return builder.node(
-        quest_id,
-        "questCharacterManagerNodeDefinition",
-        input_names=("In",),
-        properties={"type": node_type},
     )
 
 
@@ -4295,6 +2555,14 @@ def build_combat_encounter_phase(
         attack = combat_threat_node(
             builder, next_id, stage.data["community"], entry
         )
+        # Preserve reviewed per-quest combat metadata without changing the
+        # primitive defaults used by other encounter and defense builders.
+        if "threat_function" in stage.data:
+            attack.data["function"] = cname(stage.data["threat_function"])
+        if "threat_duration_seconds" in stage.data:
+            attack.data["params"]["Data"]["duration"] = stage.data[
+                "threat_duration_seconds"
+            ]
         next_id += 1
         builder.connect(previous, attack, source_socket=previous_socket)
         previous = attack
@@ -4333,319 +2601,6 @@ def build_combat_encounter_phase(
         builder.connect(previous, cleanup)
         previous = cleanup
     builder.connect_to_earlier_output(previous, end)
-    return phase_document(builder, archive_target)
-
-
-def build_cyberpsycho_encounter_phase(
-    stage: CompiledStage, archive_target: Path
-) -> JsonObject:
-    """Build a vanilla-style single-boss cyberpsycho encounter."""
-
-    builder = PhaseGraphBuilder()
-    start, end = input_node(builder), output_node(builder)
-    previous: GraphNode = start
-    previous_socket = "Out"
-    next_id = 10
-
-    activation = trigger_condition_node(
-        builder, next_id, stage.data["activation_trigger"], "Entered"
-    )
-    next_id += 1
-    builder.connect(previous, activation)
-    previous = activation
-
-    objective: GraphNode | None = None
-    if stage.data.get("objective"):
-        objective = objective_node(builder, next_id, stage.data["objective"])
-        next_id += 1
-        builder.connect(previous, objective, destination_socket="Active")
-        previous = objective
-    if stage.data.get("description_entry"):
-        description = journal_entry_node(
-            builder,
-            next_id,
-            stage.data["description_entry"],
-            "gameJournalQuestDescription",
-            2,
-        )
-        next_id += 1
-        builder.connect(previous, description, destination_socket="Active")
-        previous = description
-    active_mappin: GraphNode | None = None
-    if stage.data.get("mappin"):
-        active_mappin = mappin_node(builder, next_id, stage.data["mappin"])
-        next_id += 1
-        builder.connect(previous, active_mappin, destination_socket="Active")
-        previous = active_mappin
-
-    if stage.data.get("activate", True):
-        activate = community_action_node(
-            builder, next_id, stage.data["community"], "Activate"
-        )
-        next_id += 1
-        builder.connect(previous, activate)
-        previous = activate
-
-    spawned = named_character_spawned_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-    )
-    next_id += 1
-    builder.connect(previous, spawned)
-    previous = spawned
-
-    protected = character_mortality_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-        state="Invulnerable",
-        source=stage.id,
-    )
-    next_id += 1
-    builder.connect(previous, protected)
-    previous = protected
-
-    reveal = stage.data["reveal"]
-    reveal_nodes: list[GraphNode] = []
-    if isinstance(reveal.get("trigger"), str):
-        reveal_nodes.append(
-            trigger_condition_node(
-                builder, next_id, reveal["trigger"], "Entered"
-            )
-        )
-        next_id += 1
-    for kind in (
-        "scan",
-        "attacked_by_boss",
-        "boss_hit_by_player",
-        "boss_sees_player",
-    ):
-        if reveal.get(kind) is True:
-            reveal_nodes.append(
-                cyberpsycho_reveal_node(
-                    builder,
-                    next_id,
-                    kind,
-                    stage.data["community"],
-                    stage.data["boss_entry"],
-                )
-            )
-            next_id += 1
-    for reveal_node in reveal_nodes:
-        builder.connect(previous, reveal_node)
-    if len(reveal_nodes) == 1:
-        previous = reveal_nodes[0]
-        previous_socket = "Out"
-    else:
-        reveal_join = logical_xor_node(builder, next_id, len(reveal_nodes))
-        next_id += 1
-        for index, reveal_node in enumerate(reveal_nodes, start=1):
-            builder.connect(
-                reveal_node,
-                reveal_join,
-                destination_socket=f"In{index}",
-            )
-        previous = reveal_join
-        previous_socket = "Out1"
-
-    if isinstance(stage.data.get("arena_trigger"), str):
-        entered_arena = trigger_condition_node(
-            builder, next_id, stage.data["arena_trigger"], "Entered"
-        )
-        next_id += 1
-        builder.connect(
-            previous,
-            entered_arena,
-            source_socket=previous_socket,
-        )
-        previous = entered_arena
-        previous_socket = "Out"
-
-    gameplay_ai = gameplay_ai_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-    )
-    next_id += 1
-    builder.connect(
-        previous,
-        gameplay_ai,
-        source_socket=previous_socket,
-    )
-
-    mortal = character_mortality_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-        state="Mortal",
-        source=stage.id,
-    )
-    next_id += 1
-    builder.connect(gameplay_ai, mortal)
-
-    alerted_path = stage.data.get("alerted_path")
-    alerted_spots = stage.data.get("alerted_spots", [])
-    if isinstance(alerted_path, str) and alerted_spots:
-        handoff_delay = realtime_delay_node(
-            builder,
-            next_id,
-            seconds=0,
-            milliseconds=200,
-        )
-        next_id += 1
-        builder.connect(gameplay_ai, handoff_delay)
-
-        not_in_combat = character_not_in_combat_node(
-            builder,
-            next_id,
-            stage.data["community"],
-            stage.data["boss_entry"],
-        )
-        next_id += 1
-        builder.connect(handoff_delay, not_in_combat)
-
-        alerted_role = alerted_patrol_role_node(
-            builder,
-            next_id,
-            stage.data["community"],
-            stage.data["boss_entry"],
-            alerted_path,
-            alerted_spots,
-        )
-        next_id += 1
-        builder.connect(not_in_combat, alerted_role)
-        combat_handoff: GraphNode = handoff_delay
-        combat_handoff_socket = "Out"
-    else:
-        combat_handoff = mortal
-        combat_handoff_socket = "Out"
-
-    target_player = combat_target_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-    )
-    next_id += 1
-    builder.connect(
-        combat_handoff,
-        target_player,
-        source_socket=combat_handoff_socket,
-    )
-
-    hostile = combat_threat_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-    )
-    next_id += 1
-    builder.connect(target_player, hostile, source_socket="Success")
-
-    killed = named_character_outcome_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-        killed=True,
-        unconscious=False,
-        defeated=False,
-    )
-    next_id += 1
-    spared = named_character_outcome_node(
-        builder,
-        next_id,
-        stage.data["community"],
-        stage.data["boss_entry"],
-        killed=False,
-        unconscious=True,
-        defeated=True,
-    )
-    next_id += 1
-    builder.connect(hostile, killed, source_socket="Success")
-    builder.connect(hostile, spared, source_socket="Success")
-
-    resolution = stage.data["resolution"]
-    killed_fact = fact_node(
-        builder, next_id, resolution["killed_fact"]
-    )
-    next_id += 1
-    spared_fact = fact_node(
-        builder, next_id, resolution["spared_fact"]
-    )
-    next_id += 1
-    builder.connect(killed, killed_fact)
-    builder.connect(spared, spared_fact)
-
-    outcome_join = logical_xor_node(builder, next_id, 2)
-    next_id += 1
-    builder.connect(killed_fact, outcome_join, destination_socket="In1")
-    builder.connect(spared_fact, outcome_join, destination_socket="In2")
-    previous = outcome_join
-    previous_socket = "Out1"
-
-    if objective is not None:
-        objective_done = objective_node(
-            builder, next_id, stage.data["objective"]
-        )
-        next_id += 1
-        builder.connect(
-            previous,
-            objective_done,
-            source_socket=previous_socket,
-            destination_socket="Succeeded",
-        )
-        previous = objective_done
-        previous_socket = "Out"
-    if active_mappin is not None:
-        mappin_done = mappin_node(
-            builder, next_id, stage.data["mappin"]
-        )
-        next_id += 1
-        builder.connect(
-            previous,
-            mappin_done,
-            source_socket=previous_socket,
-            destination_socket="Inactive",
-        )
-        previous = mappin_done
-        previous_socket = "Out"
-    if stage.data.get("completion_fact"):
-        completed = fact_node(
-            builder, next_id, stage.data["completion_fact"]
-        )
-        next_id += 1
-        builder.connect(previous, completed, source_socket=previous_socket)
-        previous = completed
-        previous_socket = "Out"
-
-    cleanup = stage.data.get("cleanup")
-    if isinstance(cleanup, dict):
-        if isinstance(cleanup.get("trigger"), str):
-            outside = trigger_condition_node(
-                builder, next_id, cleanup["trigger"], "IsOutside"
-            )
-            next_id += 1
-            builder.connect(previous, outside, source_socket=previous_socket)
-            previous = outside
-            previous_socket = "Out"
-        if cleanup.get("deactivate_community", True):
-            deactivate = community_action_node(
-                builder, next_id, stage.data["community"], "Deactivate"
-            )
-            next_id += 1
-            builder.connect(previous, deactivate, source_socket=previous_socket)
-            previous = deactivate
-            previous_socket = "Out"
-
-    builder.connect_to_earlier_output(
-        previous, end, source_socket=previous_socket
-    )
     return phase_document(builder, archive_target)
 
 
@@ -4732,58 +2687,39 @@ def build_investigate_clues_phase(
     return phase_document(builder, archive_target)
 
 
+STAGE_BUILDERS = {builder.__name__: builder for builder in (
+    build_escort_phase,
+    build_timed_defense_phase,
+    build_choice_phase,
+    build_investigation_phase,
+    build_phone_job_offer_phase,
+    build_phone_phase,
+    build_reach_area_phase,
+    build_leave_area_phase,
+    build_acquire_item_phase,
+    build_read_shard_phase,
+    build_investigate_clues_phase,
+    build_interact_device_phase,
+    build_outcome_interact_device_phase,
+    build_outcome_delivery_phase,
+    build_combat_encounter_phase,
+    build_cyberpsycho_encounter_phase,
+    build_time_gate_phase,
+    build_read_terminal_document_phase,
+)}
+
+
 def build_stage_phase(
     stage: CompiledStage,
     archive_target: Path,
     phase_prefabs: tuple[str, ...] = (),
+    *, template_document: JsonObject | None = None,
 ) -> JsonObject:
-    if stage.type == "phone_job_offer" and not stage.data.get("phase_template"):
-        result = build_phone_job_offer_phase(stage, archive_target)
-    elif stage.type == "phone_conversation" and not stage.data.get("phase_template"):
-        result = build_phone_phase(stage, archive_target)
-    elif stage.type == "reach_area" and not stage.data.get("phase_template"):
-        result = build_reach_area_phase(stage, archive_target)
-    elif stage.type == "leave_area" and not stage.data.get("phase_template"):
-        result = build_leave_area_phase(stage, archive_target)
-    elif stage.type == "acquire_item" and not stage.data.get("phase_template"):
-        result = build_acquire_item_phase(stage, archive_target)
-    elif stage.type == "read_shard" and not stage.data.get("phase_template"):
-        result = build_read_shard_phase(stage, archive_target)
-    elif stage.type == "investigate_clues" and not stage.data.get("phase_template"):
-        result = build_investigate_clues_phase(stage, archive_target)
-    elif stage.type == "interact_device" and not stage.data.get("phase_template"):
-        if stage.data.get("outcome_branches"):
-            result = build_outcome_interact_device_phase(stage, archive_target)
-        else:
-            result = build_interact_device_phase(stage, archive_target)
-    elif (
-        stage.type == "hack_access_point"
-        and stage.data.get("completion_function")
-        and not stage.data.get("phase_template")
-    ):
-        result = build_interact_device_phase(stage, archive_target)
-    elif (
-        stage.type == "deliver_drop_point"
-        and stage.data.get("item_branches")
-        and not stage.data.get("phase_template")
-    ):
-        result = build_outcome_delivery_phase(stage, archive_target)
-    elif stage.type == "combat_encounter" and not stage.data.get("phase_template"):
-        result = build_combat_encounter_phase(stage, archive_target)
-    elif (
-        stage.type == "cyberpsycho_encounter"
-        and not stage.data.get("phase_template")
-    ):
-        result = build_cyberpsycho_encounter_phase(stage, archive_target)
-    elif stage.type == "time_gate" and not stage.data.get("phase_template"):
-        result = build_time_gate_phase(stage, archive_target)
-    elif (
-        stage.type == "read_terminal_document"
-        and not stage.data.get("phase_template")
-    ):
-        result = build_read_terminal_document_phase(stage, archive_target)
+    builder_name = stage_builder_name(stage)
+    if builder_name is None:
+        result = instantiate_stage_phase(stage, archive_target, template_document=template_document)
     else:
-        result = instantiate_stage_phase(stage, archive_target)
+        result = STAGE_BUILDERS[builder_name](stage, archive_target)
     scoped_prefabs = stage.data.get("phase_prefabs")
     if isinstance(scoped_prefabs, list):
         inherited_prefabs = tuple(scoped_prefabs)
@@ -4798,37 +2734,22 @@ def build_stage_phase(
         }
         for prefab in inherited_prefabs
     ]
+    apply_objective_lifecycle(stage, result)
     validate_handle_graph(result, context=f"Stage {stage.id}")
-    if (
-        stage.type in DIRECT_STAGE_TYPES
-        or (
-            stage.type == "hack_access_point"
-            and stage.data.get("completion_function")
-        )
-        or (stage.type == "deliver_drop_point" and stage.data.get("item_branches"))
-    ) and not stage.data.get("phase_template"):
-        validate_no_forward_handle_refs(result, context=f"Stage {stage.id}")
+    validate_no_forward_handle_refs(result, context=f"Stage {stage.id}")
     validate_stage_contract(stage, result)
+    validate_phase_ports(stage, result)
+    validate_emitted_contract(stage, result)
     return result
 
 
-def resource_ref(path: str) -> JsonObject:
-    return {
-        "DepotPath": {
-            "$type": "ResourcePath",
-            "$storage": "string",
-            "$value": path,
-        },
-        "Flags": "Soft",
-    }
-
-
-def phase_node(builder: PhaseGraphBuilder, node_id: int, path: str) -> GraphNode:
+def phase_node(builder: PhaseGraphBuilder, node_id: int, path: str, *,
+               inputs: tuple[str, ...] = ("In1",), outputs: tuple[str, ...] = ("Out1",)) -> GraphNode:
     return builder.node(
         node_id,
         "questPhaseNodeDefinition",
-        input_names=("In1",),
-        output_names=("Out1",),
+        input_names=inputs,
+        output_names=outputs,
         properties={
             "phaseGraph": None,
             "phaseInstancePrefabs": [],
@@ -4847,12 +2768,22 @@ def debug_step_node(
 ) -> GraphNode:
     node = fact_node(builder, node_id, fact_name)
     node_type = node.data["type"]["Data"]
-    node_type["setExactValue"] = value
+    node_type["setExactValue"] = 1
     node_type["value"] = value
     return node
 
 
 def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObject:
+    if spec.entry_stage or spec.completion or any(
+        set(stage.data) & {"inputs", "outcomes", "on"}
+        or (stage.type == "meet_contact" and stage.data.get("objective_lifecycle"))
+        for stage in spec.stages
+    ):
+        from quest_orchestration import build_explicit_orchestration
+        result = build_explicit_orchestration(spec, archive_target)
+        validate_handle_graph(result, context=f"Quest {spec.id} orchestration")
+        validate_no_forward_handle_refs(result, context=f"Quest {spec.id} orchestration")
+        return result
     builder = PhaseGraphBuilder()
     start = input_node(builder)
     end = output_node(builder)
@@ -4920,6 +2851,23 @@ def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObje
         source_socket = "Out" if previous is start else "Out1"
         if stage.type == "meet_contact":
             journal_base = 100 + stage.index * 3
+            opening_message_path = stage.data.get("opening_message")
+            if isinstance(opening_message_path, str):
+                opening_message = journal_entry_node(
+                    builder,
+                    600 + stage.index,
+                    opening_message_path,
+                    "gameJournalPhoneMessage",
+                    1,
+                )
+                builder.connect(
+                    previous,
+                    opening_message,
+                    source_socket=source_socket,
+                    destination_socket="Active",
+                )
+                previous = opening_message
+                source_socket = "Out"
             objective = journal_entry_node(
                 builder,
                 journal_base,
@@ -5024,6 +2972,9 @@ def build_orchestration_phase(spec: QuestSpec, archive_target: Path) -> JsonObje
 
 
 def build_plan(spec: QuestSpec, diagnostics: Iterable[Diagnostic]) -> dict[str, Any]:
+    diagnostics = tuple(diagnostics)
+    buildable = all(stage.status == "ready" for stage in spec.stages) and not any(item.level == "error" for item in diagnostics)
+    transitions = stage_transitions(spec)
     return {
         "schema_version": SCHEMA_VERSION,
         "quest": {
@@ -5032,6 +2983,14 @@ def build_plan(spec: QuestSpec, diagnostics: Iterable[Diagnostic]) -> dict[str, 
             "manifest": str(spec.path),
         },
         "linear_flow": [stage.id for stage in spec.stages],
+        "contract_version": 1,
+        "entry_stage": spec.entry_stage or spec.stages[0].id,
+        "routing_mode": "parallel_groups" if spec.parallel_groups else "named_outcomes",
+        "transitions": None if spec.parallel_groups else transitions,
+        "contracts": {stage.id: contract_dict(stage) for stage in spec.stages},
+        "buildable": buildable,
+        "runtime_verified": False,
+        "completion": spec.completion,
         "parallel_groups": [
             {
                 "id": group.id,
@@ -5048,25 +3007,16 @@ def build_plan(spec: QuestSpec, diagnostics: Iterable[Diagnostic]) -> dict[str, 
                 "status": stage.status,
                 "phase_resource": stage.phase_resource,
                 "phase_template": stage_template_resource(stage),
-                "implementation": (
-                    "generated"
-                    if (
-                        stage.type == "deliver_drop_point"
-                        and stage.data.get("item_branches")
-                    )
-                    or (
-                        stage.type == "hack_access_point"
-                        and stage.data.get("completion_function")
-                    )
-                    else STAGE_IMPLEMENTATION_MODE[stage.type]
-                ),
+                "implementation": STAGE_REGISTRY[stage.type].mode(stage.data),
                 "data": stage.data,
+                "inputs": stage_inputs(stage),
+                "outcomes": stage_outcomes(stage),
+                "transitions": None if spec.parallel_groups else transitions[stage.id],
             }
             for stage in spec.stages
         ],
         "diagnostics": [item.as_dict() for item in diagnostics],
-        "shipping_ready": all(stage.status == "ready" for stage in spec.stages)
-        and not any(item.level == "error" for item in diagnostics),
+        "shipping_ready": buildable,  # Compatibility alias; not runtime evidence.
     }
 
 
@@ -5093,6 +3043,113 @@ def command_validate(args: argparse.Namespace) -> int:
     return 0 if result["ok"] else 1
 
 
+@dataclass(frozen=True)
+class QuestArtifact:
+    raw_path: Path
+    archive_path: Path
+    document: JsonObject
+    stage_id: str | None = None
+
+
+StageOverride = Callable[[CompiledStage, Path], JsonObject]
+StageTransform = Callable[[CompiledStage, JsonObject], None]
+
+
+def compile_artifacts(
+    spec: QuestSpec, root_output: Path, root_archive: Path, *,
+    child_root: Path | None = None,
+    stage_overrides: Mapping[str, StageOverride] | None = None,
+    stage_transforms: Mapping[str, StageTransform] | None = None,
+    template_documents: Mapping[str, JsonObject] | None = None,
+    root_override: Callable[[QuestSpec, Path], JsonObject] | None = None,
+    project_root: Path | None = None,
+) -> list[QuestArtifact]:
+    """Construct and validate every phase before publishing any destination."""
+    root_document = (root_override or build_orchestration_phase)(spec, root_archive)
+    validate_handle_graph(root_document, context=f"Quest {spec.id}")
+    validate_no_forward_handle_refs(root_document, context=f"Quest {spec.id}")
+    artifacts = [QuestArtifact(root_output, root_archive, root_document)]
+    overrides = stage_overrides or {}
+    transforms = stage_transforms or {}
+    unknown_hooks = (set(overrides) | set(transforms)) - {stage.id for stage in spec.stages}
+    if unknown_hooks:
+        raise QuestSpecError(f"Unknown stage hooks: {sorted(unknown_hooks)}")
+    for stage in spec.stages:
+        if stage.id not in overrides and not emits_stage_phase(stage):
+            if set(stage.data) & {"inputs", "outcomes", "contract"}:
+                raw, _ = resource_paths(stage.phase_resource)
+                document = read_json(raw)
+                validate_phase_ports(stage, document)
+                validate_emitted_contract(stage, document)
+            continue
+        raw, archive = resource_paths(stage.phase_resource, project_root=project_root)
+        if child_root is not None:
+            raw = child_root / Path(*f"{stage.phase_resource}.json".split("\\"))
+        if stage.id in overrides:
+            document = overrides[stage.id](stage, archive)
+            validate_stage_contract(stage, document)
+            apply_objective_lifecycle(stage, document)
+        else:
+            document = build_stage_phase(stage, archive, spec.phase_prefabs,
+                template_document=(template_documents or {}).get(stage_template_resource(stage)))
+        if stage.id in transforms:
+            # An explicit quest-owned hook can change lifecycle ownership (for
+            # example GQT005 keeps its review objective active across handoff).
+            transforms[stage.id](stage, document)
+        validate_handle_graph(document, context=f"Stage {stage.id}")
+        validate_no_forward_handle_refs(document, context=f"Stage {stage.id}")
+        validate_phase_ports(stage, document)
+        validate_emitted_contract(stage, document)
+        artifacts.append(QuestArtifact(raw, archive, document, stage.id))
+    if spec.authoring_source is not None:
+        from quest_authoring import compose
+        for depot, document in compose(spec.authoring_source).documents.items():
+            raw, archive = resource_paths(depot, project_root=project_root)
+            if child_root is not None:
+                raw = child_root / Path(*f"{depot}.json".split("\\"))
+            document["Header"]["ArchiveFileName"] = str(archive.resolve())
+            artifacts.append(QuestArtifact(raw, archive, document))
+    paths = [artifact.raw_path.resolve() for artifact in artifacts]
+    if len(set(paths)) != len(paths):
+        raise QuestSpecError("Quest artifacts contain duplicate destination paths")
+    return artifacts
+
+
+def compile_manifest_artifacts(
+    manifest: Path, root_output: Path, root_archive: Path, *,
+    allow_planned: bool = False, **options: Any,
+) -> list[QuestArtifact]:
+    spec, diagnostics = load_spec(manifest)
+    if spec is not None:
+        diagnostics.extend(audit_resources(spec))
+    errors = [item.message for item in diagnostics if item.level == "error"]
+    if spec is None or errors:
+        raise QuestSpecError("Quest build failed: " + "; ".join(errors))
+    if not allow_planned and any(stage.status == "planned" for stage in spec.stages):
+        raise QuestSpecError("Quest build contains planned stages")
+    return compile_artifacts(spec, root_output, root_archive, **options)
+
+
+def publish_quest_artifacts(artifacts: list[QuestArtifact], *, ownership_path: Path) -> list[tuple[Path, Path]]:
+    publication = publish_json_artifacts(
+        artifact_documents(artifacts),
+        ownership_path=ownership_path,
+    )
+    if publication.obsolete_paths:
+        print("Obsolete generated outputs (retained for review): " + ", ".join(map(str, publication.obsolete_paths)), file=sys.stderr)
+    return [(artifact.raw_path, artifact.archive_path) for artifact in artifacts]
+
+
+def artifact_documents(artifacts: list[QuestArtifact]) -> dict[Path, JsonObject]:
+    documents: dict[Path, JsonObject] = {}
+    for artifact in artifacts:
+        path = artifact.raw_path.resolve()
+        if path in documents:
+            raise QuestSpecError(f"Duplicate quest artifact destination: {path}")
+        documents[path] = artifact.document
+    return documents
+
+
 def command_compile(args: argparse.Namespace) -> int:
     spec, diagnostics = load_spec(args.manifest)
     if spec is None:
@@ -5116,43 +3173,24 @@ def command_compile(args: argparse.Namespace) -> int:
         return 1
 
     output = args.out.resolve()
-    archive_target = (
-        ROOT / "source" / "archive" / "mod" / spec.id / "phases" / f"{spec.id}.questphase"
+    project = resolve_project(args.project) if getattr(args, "project", None) else owning_project(
+        args.manifest, fallback=resource_project(f"mod/{spec.id}/", root=ROOT),
     )
-    phase = build_orchestration_phase(spec, archive_target)
-    write_json(output, phase)
-    children: list[dict[str, str]] = []
-    child_root = output.parent / "children"
-    for stage in spec.stages:
-        if (
-            stage_template_resource(stage) is None
-            and stage.type not in DIRECT_STAGE_TYPES
-            and not (
-                stage.type == "hack_access_point"
-                and stage.data.get("completion_function")
-            )
-            and not (
-                stage.type == "deliver_drop_point"
-                and stage.data.get("item_branches")
-            )
-        ):
-            continue
-        relative = Path(*stage.phase_resource.split("\\"))
-        child_output = child_root / Path(f"{relative}.json")
-        child_archive = ROOT / "source" / "archive" / relative
-        write_json(
-            child_output,
-            build_stage_phase(stage, child_archive, spec.phase_prefabs),
-        )
-        children.append(
-            {
-                "stage": stage.id,
-                "resource": stage.phase_resource,
-                "output": str(child_output),
-            }
-        )
-    plan_path = args.plan.resolve() if args.plan else output.with_suffix(".plan.json")
-    write_json(plan_path, build_plan(spec, diagnostics))
+    archive_target = project / "source/archive/mod" / spec.id / "phases" / f"{spec.id}.questphase"
+    artifacts = compile_artifacts(spec, output, archive_target, child_root=output.parent / "children", project_root=project)
+    children = [
+        {"stage": artifact.stage_id, "resource": next(stage.phase_resource for stage in spec.stages if stage.id == artifact.stage_id), "output": str(artifact.raw_path)}
+        for artifact in artifacts if artifact.stage_id is not None
+    ]
+    output_key = hashlib.sha256(str(output).encode("utf-8")).hexdigest()[:12]
+    metadata_root = project / "generated" / "quest-builds" / spec.id / output_key
+    plan_path = args.plan.resolve() if args.plan else metadata_root / "plan.json"
+    documents = artifact_documents(artifacts)
+    if plan_path in documents:
+        raise QuestSpecError(f"Build plan collides with quest artifact: {plan_path}")
+    documents[plan_path] = build_plan(spec, diagnostics)
+    ownership_path = metadata_root / "outputs.json"
+    publication = publish_json_artifacts(documents, ownership_path=ownership_path)
     print(
         json.dumps(
             {
@@ -5164,6 +3202,8 @@ def command_compile(args: argparse.Namespace) -> int:
                 "shipping_ready": not planned,
                 "planned_stages": planned,
                 "children": children,
+                "ownership": str(ownership_path),
+                "obsolete_outputs": [str(path) for path in publication.obsolete_paths],
             },
             indent=2,
         )
@@ -5180,6 +3220,7 @@ def parser() -> argparse.ArgumentParser:
     compile_parser = subparsers.add_parser("compile")
     compile_parser.add_argument("manifest", type=Path)
     compile_parser.add_argument("--out", type=Path, required=True)
+    compile_parser.add_argument("--project", help="Target project ID or directory; defaults to the manifest's owner")
     compile_parser.add_argument("--plan", type=Path)
     compile_parser.add_argument("--allow-planned", action="store_true")
     compile_parser.set_defaults(func=command_compile)

@@ -25,8 +25,8 @@ Use the native serializer and give the complete output filename:
 
 ```powershell
 & $red cr2w-serialize `
-  .\source\archive\mod\gq000\phases\gq000.questphase `
-  .\source\raw\mod\gq000\phases\gq000.questphase.json `
+  .\projects\shared\ghostline-runtime\source\archive\mod\gq000\phases\gq000.questphase `
+  .\projects\shared\ghostline-runtime\source\raw\mod\gq000\phases\gq000.questphase.json `
   --schema .\red-schema.json
 ```
 
@@ -47,9 +47,9 @@ template and output target:
 
 ```powershell
 & $red cr2w-deserialize `
-  .\source\raw\mod\gq000\phases\gq000.questphase.json `
-  .\source\archive\mod\gq000\phases\gq000.questphase `
-  --template .\source\archive\mod\gq000\phases\gq000.questphase `
+  .\projects\shared\ghostline-runtime\source\raw\mod\gq000\phases\gq000.questphase.json `
+  .\projects\shared\ghostline-runtime\source\archive\mod\gq000\phases\gq000.questphase `
+  --template .\projects\shared\ghostline-runtime\source\archive\mod\gq000\phases\gq000.questphase `
   --schema .\red-schema.json
 ```
 
@@ -66,12 +66,16 @@ validation.
 
 ## Archive Operations
 
+Use the project packager in `docs/reference/project-layout.md` for dependency
+composition and verified install packages. The scoped command below packs only
+the selected source tree.
+
 Runtime archives must be packed with WolvenKit. The current `ghostline-red
 pack` output is not runtime-safe and has caused a reproducible startup crash.
 
 ```powershell
 & 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' pack `
-  .\source\archive `
+  .\projects\ghostline\source\archive `
   -o H:\Ghostline-builds\wkit-candidate
 & 'H:\WolvenKit.Console-8.17.4\WolvenKit.CLI.exe' archive `
   H:\Ghostline-builds\wkit-candidate\archive.archive `
@@ -93,8 +97,10 @@ Keep WolvenKit for:
   native writer can derive its binary layout;
 - comparison/oracle testing when investigating a new RED or Kraken format.
 
-Do not use WolvenKit CLI for routine pack, extract, archive listing, reflected
-CR2W serialization, or template-backed deserialization.
+Follow `docs/workflows/build-and-package.md` for runtime packing and archive
+verification. For supported reflected CR2W serialization and template-backed
+deserialization, prefer the pinned native CLI; retain WolvenKit for the
+unsupported cases above.
 
 ## Verification
 

@@ -28,7 +28,7 @@ class GenerateWorldTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.spec = generate_world.load_json(
-            ROOT / "quests/story/ghostline/gq000/implementation/world/"
+            ROOT / "projects/ghostline/quests/gq000/implementation/world/"
             "patch-meet.world.json"
         )
 
@@ -260,6 +260,70 @@ class GenerateWorldTests(unittest.TestCase):
             data["resource"]["patch"][r"mod\gq000\world\gq000_custom_devices.devices"],
             [r"base\worlds\03_night_city\_compiled\default\03_night_city.devices"],
         )
+
+    def test_node_data_orientation_overrides_yaw_quaternion(self) -> None:
+        orientation = {
+            "i": -0.083388629,
+            "j": -0.075279092,
+            "k": 0.665849862,
+            "r": 0.737579390,
+        }
+        placement = generate_world.node_data(
+            7,
+            "#test_camera",
+            generate_world.Vec3(1, 2, 3),
+            178.6,
+            {"orientation": orientation},
+        )
+
+        self.assertEqual(
+            placement["Orientation"],
+            {"$type": "Quaternion", **orientation},
+        )
+
+    def test_node_data_orientation_preserves_yaw_default(self) -> None:
+        placement = generate_world.node_data(
+            7,
+            "#test_camera",
+            generate_world.Vec3(1, 2, 3),
+            178.6,
+        )
+
+        self.assertEqual(placement["Orientation"]["i"], 0)
+        self.assertEqual(placement["Orientation"]["j"], 0)
+        self.assertAlmostEqual(
+            placement["Orientation"]["k"],
+            math.sin(math.radians(178.6) / 2),
+            places=6,
+        )
+        self.assertAlmostEqual(
+            placement["Orientation"]["r"],
+            math.cos(math.radians(178.6) / 2),
+            places=6,
+        )
+
+    def test_node_data_orientation_rejects_invalid_quaternions(self) -> None:
+        invalid = (
+            ({"i": 0, "j": 0, "k": 0}, "must be an object with i/j/k/r"),
+            (
+                {"i": 0, "j": 0, "k": float("nan"), "r": 1},
+                r"orientation\.k must be a finite number",
+            ),
+            (
+                {"i": 0, "j": 0, "k": 0, "r": 0},
+                "must have a finite, non-zero norm",
+            ),
+        )
+        for orientation, message in invalid:
+            with self.subTest(orientation=orientation):
+                with self.assertRaisesRegex(SystemExit, message):
+                    generate_world.node_data(
+                        7,
+                        "#test_camera",
+                        generate_world.Vec3(1, 2, 3),
+                        178.6,
+                        {"orientation": orientation},
+                    )
 
     def test_device_instance_buffer_ids_must_be_nonzero_and_unique(self) -> None:
         zero = copy.deepcopy(self.spec)

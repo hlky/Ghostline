@@ -7,13 +7,25 @@ offsets and trigger shapes in JSON, dry-run the output, then generate raw
 resources and deserialize them with WolvenKit.
 
 The production `gq000` meeting source of truth is
-`quests/story/ghostline/gq000/implementation/world/patch-meet.world.json`. It currently describes the tested
-`90/10/60/20`-radius, 12-unit-high trigger layout, an inactive-on-start
+`projects/ghostline/quests/gq000/implementation/world/patch-meet.world.json`. It currently describes the tested
+`90/10/60/6`-radius, 12-unit-high trigger layout, an inactive-on-start
 `patch/default` community, and the `Character.GhostlinePatch` runtime actor.
 The preceding `Character.Judy` mapping remains the historical crash-isolation
 baseline.
-The checked-in `quests/story/ghostline/_quest-template/implementation/world/example.world.json` uses reference coordinates
+The checked-in `projects/ghostline/quests/_quest-template/implementation/world/example.world.json` uses reference coordinates
 and is tutorial input only.
+
+Every emitted world node must have a unique full NodeRef, across Quest and
+AlwaysLoaded sectors. Reusing a shorthand leaf under different prefab paths is
+allowed. Explicit `always_loaded_node_refs` can mirror a Quest-sector reference
+for lookup, but duplicate aliases and aliases of concrete AlwaysLoaded nodes
+are rejected.
+
+`exported_datetime` optionally supplies provenance for every generated CR2W
+header. When omitted, the generator uses `1970-01-01T00:00:00Z`, so rebuilding
+unchanged inputs does not introduce timestamp differences. `build_world_documents`
+constructs the complete resource set without writing it; `build_world` publishes
+the set only after construction succeeds.
 
 ## Commands
 
@@ -21,21 +33,21 @@ and is tutorial input only.
 py .\tools\generate_world.py example
 py .\tools\generate_world.py hash "$/mod/gq000/#gq000_pr_patch_meet/#gq000_01_spot_patch_bridge"
 py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\_quest-template\implementation\world\example.world.json --dry-run
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json --dry-run
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\_quest-template\implementation\world\example.world.json --dry-run
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\gq000\implementation\world\patch-meet.world.json --dry-run
 ```
 
 For an intentional production update, write and inspect raw output before the
 final registration/deserialization pass:
 
 ```powershell
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\gq000\implementation\world\patch-meet.world.json
 py -B -m unittest discover -s tests -v
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json --register --deserialize
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world summary
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\gq000\implementation\world\patch-meet.world.json --register --deserialize
 ```
 
-`--register` adds the generated block path to `source/resources/Ghostline.archive.xl`.
+`--register` adds the generated block path to `projects/ghostline/source/resources/Ghostline.archive.xl`.
 `--deserialize` converts generated raw CR2W-JSON to CR2W binaries under
 `source/archive`.
 
@@ -721,7 +733,7 @@ Archive targets mirror the depot paths under `source/archive`.
 
 ## Validation Workflow
 
-1. Start from `quests/story/ghostline/_quest-template/implementation/world/example.world.json` for a new quest, or edit the
+1. Start from `projects/ghostline/quests/_quest-template/implementation/world/example.world.json` for a new quest, or edit the
    existing production spec for an intentional `gq000` world change.
 2. Replace or confirm `origin` with coordinates captured in game.
 3. Use `measure` to compare captured points and planned offsets.
@@ -733,7 +745,7 @@ Archive targets mirror the depot paths under `source/archive`.
 Useful checks:
 
 ```powershell
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world nodes --type TriggerArea --limit 0
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world summary
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world nodes --type TriggerArea --limit 0
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world communities
 ```

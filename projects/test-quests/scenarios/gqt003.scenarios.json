@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "scenarios": [
+    {
+      "id": "success",
+      "steps": [
+        {
+          "event": {
+            "event_id": "reach_extraction_relay-success",
+            "stage": "reach_extraction_relay",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "release_patch-success",
+            "stage": "release_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "escort_patch-success",
+            "stage": "escort_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "defend_patch-success",
+            "stage": "defend_patch",
+            "outcome": "success"
+          }
+        }
+      ],
+      "expect": {
+        "active_stage": null,
+        "terminal_outcome": "success"
+      }
+    },
+    {
+      "id": "escort_patch_failure",
+      "steps": [
+        {
+          "event": {
+            "event_id": "reach_extraction_relay-success",
+            "stage": "reach_extraction_relay",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "release_patch-success",
+            "stage": "release_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "escort_patch-failure",
+            "stage": "escort_patch",
+            "outcome": "failure"
+          }
+        }
+      ],
+      "expect": {
+        "active_stage": null,
+        "terminal_outcome": "failure"
+      }
+    },
+    {
+      "id": "defend_patch_failure",
+      "steps": [
+        {
+          "event": {
+            "event_id": "reach_extraction_relay-success",
+            "stage": "reach_extraction_relay",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "release_patch-success",
+            "stage": "release_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "escort_patch-success",
+            "stage": "escort_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "defend_patch-failure",
+            "stage": "defend_patch",
+            "outcome": "failure"
+          }
+        }
+      ],
+      "expect": {
+        "active_stage": null,
+        "terminal_outcome": "failure"
+      }
+    },
+    {
+      "id": "duplicate_event_does_not_skip_escort",
+      "steps": [
+        {
+          "event": {
+            "event_id": "reach_extraction_relay-success",
+            "stage": "reach_extraction_relay",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "release_patch-success",
+            "stage": "release_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "release_patch-success",
+            "stage": "release_patch",
+            "outcome": "success"
+          },
+          "expect": {
+            "result": "duplicate",
+            "active_stage": "escort_patch"
+          }
+        },
+        {
+          "event": {
+            "event_id": "escort_patch-success",
+            "stage": "escort_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "defend_patch-success",
+            "stage": "defend_patch",
+            "outcome": "success"
+          }
+        }
+      ],
+      "expect": {
+        "active_stage": null,
+        "terminal_outcome": "success"
+      }
+    },
+    {
+      "id": "model_restore_after_failed_hold",
+      "steps": [
+        {
+          "event": {
+            "event_id": "reach_extraction_relay-success",
+            "stage": "reach_extraction_relay",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "release_patch-success",
+            "stage": "release_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "event": {
+            "event_id": "escort_patch-success",
+            "stage": "escort_patch",
+            "outcome": "success"
+          }
+        },
+        {
+          "save": "before_hold"
+        },
+        {
+          "event": {
+            "event_id": "defend_patch-failure",
+            "stage": "defend_patch",
+            "outcome": "failure"
+          }
+        },
+        {
+          "load": "before_hold",
+          "expect": {
+            "active_stage": "defend_patch",
+            "terminal_outcome": null
+          }
+        },
+        {
+          "event": {
+            "event_id": "defend_patch-success",
+            "stage": "defend_patch",
+            "outcome": "success"
+          }
+        }
+      ],
+      "expect": {
+        "active_stage": null,
+        "terminal_outcome": "success"
+      }
+    }
+  ]
+}

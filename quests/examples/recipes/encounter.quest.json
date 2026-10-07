@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "gq_recipe_encounter",
+  "title": "Encounter and evidence",
+  "description": "Authoring example; world and scene resources must be built and validated before readiness.",
+  "composition": {
+    "contacts": {
+      "fixer": {
+        "name": "Relay contact",
+        "community": "#gq_recipe_encounter_com_contact",
+        "entry": "contact",
+        "scene": "mod\\gq_recipe_encounter\\scenes\\meeting.scene",
+        "threads": {
+          "offer": {
+            "title": "Encounter and evidence",
+            "messages": {
+              "invitation": "Meet me at the relay."
+            },
+            "choices": {
+              "accept": {
+                "text": "On my way.",
+                "reply": "I will be waiting."
+              }
+            }
+          },
+          "report": {
+            "title": "Encounter and evidence",
+            "messages": {
+              "request": "What did you find?"
+            },
+            "choices": {
+              "report": {
+                "text": "The relay is secure.",
+                "reply": "Good work."
+              },
+              "details": {
+                "text": "There was a complication.",
+                "reply": "Send me the details."
+              }
+            },
+            "final_message": "The job is complete."
+          }
+        }
+      }
+    },
+    "locations": {
+      "relay": {
+        "ref": "#gq_recipe_encounter_mp_relay",
+        "trigger": "#gq_recipe_encounter_tr_relay"
+      }
+    },
+    "objectives": {
+      "evidence": {
+        "text": "Collect the encounter evidence."
+      }
+    },
+    "clues": {
+      "relay": {
+        "object_ref": "#gq_recipe_encounter_clue_relay"
+      }
+    },
+    "facts": {
+      "offer_sent": null,
+      "accepted": null,
+      "cooperate": null,
+      "refuse": null
+    },
+    "recipes": [
+      {
+        "name": "encounter_evidence_report_reward",
+        "reward": "QuestRewards.gq_recipe_encounter_completion",
+        "steps": {
+          "encounter": {
+            "community": "#gq_recipe_encounter_guards",
+            "hostility": "already_hostile",
+            "completion": "all_defeated",
+            "status": "planned"
+          },
+          "evidence": {
+            "objective": "@objectives.evidence.path",
+            "description_entry": "@objectives.evidence.description_entry",
+            "clues": [
+              "@clues.relay"
+            ],
+            "status": "planned"
+          },
+          "report": {
+            "contact": "@contacts.fixer.contact",
+            "thread": "@contacts.fixer.threads.report.path",
+            "messages": "@contacts.fixer.threads.report.messages",
+            "choice_group": "@contacts.fixer.threads.report.choice_group",
+            "choices": "@contacts.fixer.threads.report.choices",
+            "final_message": "@contacts.fixer.threads.report.final_message",
+            "status": "planned"
+          }
+        }
+      }
+    ]
+  }
+}

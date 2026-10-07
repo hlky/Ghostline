@@ -21,7 +21,7 @@ SPEC.loader.exec_module(quest_compiler)
 
 class QuestCompilerTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.path = ROOT / "quests/story/ghostline/gq001/implementation/quest.json"
+        self.path = ROOT / "projects/ghostline/quests/gq001/implementation/quest.json"
         self.raw = json.loads(self.path.read_text(encoding="utf-8"))
 
     def write_manifest(self, root: Path, value: dict) -> Path:
@@ -65,7 +65,7 @@ class QuestCompilerTests(unittest.TestCase):
         spec, _ = quest_compiler.load_spec(self.path)
         assert spec is not None
         phase = quest_compiler.build_orchestration_phase(
-            spec, ROOT / "source/archive/mod/gq001/phases/gq001.questphase"
+            spec, ROOT / "projects/ghostline/source/archive/mod/gq001/phases/gq001.questphase"
         )
         graph = phase["Data"]["RootChunk"]["graph"]["Data"]
         phase_nodes = [
@@ -84,7 +84,7 @@ class QuestCompilerTests(unittest.TestCase):
         )
 
     def test_child_phase_can_opt_out_of_manifest_prefabs(self) -> None:
-        path = ROOT / "quests/tests/gqt004_vehicle_lab.quest.json"
+        path = ROOT / "projects/test-quests/gqt004/gqt004_vehicle_lab.quest.json"
         spec, diagnostics = quest_compiler.load_spec(path)
         self.assertFalse([item for item in diagnostics if item.level == "error"])
         assert spec is not None
@@ -92,7 +92,7 @@ class QuestCompilerTests(unittest.TestCase):
         phase = quest_compiler.build_stage_phase(
             stage,
             ROOT
-            / "source/archive/mod/gqt004/phases/gqt004_steal_test_vehicle.questphase",
+            / "projects/test-quests/gqt004/source/archive/mod/gqt004/phases/gqt004_steal_test_vehicle.questphase",
             spec.phase_prefabs,
         )
         self.assertEqual(
@@ -104,14 +104,14 @@ class QuestCompilerTests(unittest.TestCase):
         )
 
     def test_debug_fact_marks_each_stage_entry(self) -> None:
-        path = ROOT / "quests/tests/gqt004_vehicle_lab.quest.json"
+        path = ROOT / "projects/test-quests/gqt004/gqt004_vehicle_lab.quest.json"
         spec, diagnostics = quest_compiler.load_spec(path)
         self.assertFalse([item for item in diagnostics if item.level == "error"])
         assert spec is not None
         phase = quest_compiler.build_orchestration_phase(
             spec,
             ROOT
-            / "source/archive/mod/gqt004_vehicle_lab/phases/gqt004_vehicle_lab.questphase",
+            / "projects/test-quests/gqt004/source/archive/mod/gqt004_vehicle_lab/phases/gqt004_vehicle_lab.questphase",
         )
         nodes = [
             item["Data"]
@@ -124,14 +124,15 @@ class QuestCompilerTests(unittest.TestCase):
             and item["type"]["Data"]["factName"] == "gqt004_debug_step"
         ]
         self.assertEqual(
-            [item["type"]["Data"]["setExactValue"] for item in debug_nodes],
+            [item["type"]["Data"]["value"] for item in debug_nodes],
             [10, 20, 30, 40, 50, 60],
         )
+        self.assertTrue(all(item["type"]["Data"]["setExactValue"] == 1 for item in debug_nodes))
 
     def test_gqt004_theft_vehicle_is_persistent_until_mount(self) -> None:
         world = json.loads(
             (
-                ROOT / "quests/tests/gqt004/implementation/world/vehicle-lab.world.json"
+                ROOT / "projects/test-quests/gqt004/implementation/world/vehicle-lab.world.json"
             ).read_text(encoding="utf-8")
         )
         theft = next(
@@ -143,7 +144,9 @@ class QuestCompilerTests(unittest.TestCase):
         self.assertEqual(theft["spot"]["is_workspot_infinite"], 1)
 
     def test_duplicate_stage_ids_are_rejected(self) -> None:
-        value = copy.deepcopy(self.raw)
+        from quest_authoring import normalize_spec
+
+        value = normalize_spec(self.raw)
         value["stages"][1]["id"] = value["stages"][0]["id"]
         with tempfile.TemporaryDirectory() as temporary:
             spec, diagnostics = quest_compiler.load_spec(
@@ -216,7 +219,7 @@ class QuestCompilerTests(unittest.TestCase):
 
         iris = quest_compiler.build_stage_phase(
             spec.stages[3],
-            ROOT / "source/archive/mod/gq001/phases/gq001_iris_meet.questphase",
+            ROOT / "projects/ghostline/source/archive/mod/gq001/phases/gq001_iris_meet.questphase",
         )
         encoded = json.dumps(iris)
         self.assertIn("gq001_iris_meet", encoded)
@@ -350,7 +353,7 @@ class QuestCompilerTests(unittest.TestCase):
         ):
             quest_compiler.build_stage_phase(
                 broken_stage,
-                ROOT / "source/archive/mod/gq001/phases/broken.questphase",
+                ROOT / "projects/ghostline/source/archive/mod/gq001/phases/broken.questphase",
             )
 
 

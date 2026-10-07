@@ -1,5 +1,5 @@
 param(
-    [string]$OutputPath = "quests/story/ghostline/gq003/images/gq003-black-lantern-poster.png"
+    [string]$OutputPath = "projects/ghostline/quests/gq003/images/gq003-black-lantern-poster.png"
 )
 
 $ErrorActionPreference = "Stop"

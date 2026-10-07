@@ -19,7 +19,7 @@ import braindance_pipeline
 import braindance_scene
 import quest_compiler
 
-BUILD_PATH = ROOT / "quests/tests/gqt005/implementation/build.py"
+BUILD_PATH = ROOT / "projects/test-quests/gqt005/implementation/build.py"
 BUILD_SPEC = importlib.util.spec_from_file_location(
     "generate_gqt005_content",
     BUILD_PATH,
@@ -29,17 +29,17 @@ generate_gqt005_content = importlib.util.module_from_spec(BUILD_SPEC)
 sys.modules["generate_gqt005_content"] = generate_gqt005_content
 BUILD_SPEC.loader.exec_module(generate_gqt005_content)
 
-SCENE = ROOT / "source/raw/mod/gqt005/scenes/gqt005_braindance_analysis.scene.json"
+SCENE = ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/scenes/gqt005_braindance_analysis.scene.json"
 SCENE_TEMPLATE = ROOT / "braindance/templates/braindance_analysis.scene.json"
 WORLD_SPEC = (
-    ROOT / "quests/tests/gqt005/implementation/world/braindance-analysis.world.json"
+    ROOT / "projects/test-quests/gqt005/implementation/world/braindance-analysis.world.json"
 )
-LAUNCH_SCENE = ROOT / "source/raw/mod/gqt005/scenes/gqt005_patch_start.scene.json"
-SPEC = ROOT / "braindance/tests/gqt005_braindance_analysis.json"
-MANIFEST = ROOT / "quests/tests/gqt005_braindance_analysis.quest.json"
-JOURNAL = ROOT / "source/raw/mod/gqt005/journal/gqt005.journal.json"
+LAUNCH_SCENE = ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/scenes/gqt005_patch_start.scene.json"
+SPEC = ROOT / "projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json"
+MANIFEST = ROOT / "projects/test-quests/gqt005/gqt005_braindance_analysis.quest.json"
+JOURNAL = ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/journal/gqt005.journal.json"
 REVIEW_PHASE = (
-    ROOT / "source/raw/mod/gqt005/phases/gqt005_review_braindance.questphase.json"
+    ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/phases/gqt005_review_braindance.questphase.json"
 )
 
 
@@ -374,7 +374,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
             },
         )
         tweaks = (
-            ROOT / "source/resources/r6/tweaks/ghostline/gqt005_braindance.yaml"
+            ROOT / "projects/test-quests/gqt005/source/resources/r6/tweaks/ghostline/gqt005_braindance.yaml"
         ).read_text(encoding="utf-8")
         self.assertNotIn("Props.q004", tweaks)
         self.assertEqual(tweaks.count("$type: gamedataProp_Record"), 6)
@@ -1049,7 +1049,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         self.assertEqual(scene["exitPoints"][0]["name"]["$value"], "complete")
 
     def test_bd_capture_rig_is_gqt005_owned_and_stage_authored(self) -> None:
-        helper_root = ROOT / "source/raw/mod/gqt005/braindance"
+        helper_root = ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/braindance"
         helper_paths = [
             helper_root / "gqt005_bdview.ent.json",
             helper_root / "gqt005_bdfog.ent.json",
@@ -1137,7 +1137,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         )
 
     def test_bd_clue_targets_own_the_vanilla_scanning_contract(self) -> None:
-        helper_root = ROOT / "source/raw/mod/gqt005/braindance"
+        helper_root = ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/braindance"
         targets = {
             "gqt005_encrypted_shard_clue.ent.json": (
                 "Props.GhostlineGQT005BDEncryptedShardClue",
@@ -1202,13 +1202,13 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
             ),
         }
         tweaks = (
-            ROOT / "source/resources/r6/tweaks/ghostline/gqt005_braindance.yaml"
+            ROOT / "projects/test-quests/gqt005/source/resources/r6/tweaks/ghostline/gqt005_braindance.yaml"
         ).read_text(encoding="utf-8")
-        generator = (ROOT / "quests/tests/gqt005/implementation/build.py").read_text(
+        generator = (ROOT / "projects/test-quests/gqt005/implementation/build.py").read_text(
             encoding="utf-8"
         )
         onscreens = load(
-            ROOT / "source/raw/mod/gqt005/localization/en-us/onscreens/gqt005.json.json"
+            ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/localization/en-us/onscreens/gqt005.json.json"
         )
         localized = {
             entry["secondaryKey"]: entry["femaleVariant"]
@@ -1362,7 +1362,12 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
                 )
             self.assertIn(localized_name, localized)
             self.assertIn(localized_name, tweaks)
-            self.assertIn(localized_name, generator)
+            generated_entries = generate_gqt005_content.generate_onscreens()["Data"][
+                "RootChunk"
+            ]["root"]["Data"]["entries"]
+            self.assertIn(
+                localized_name, {entry["secondaryKey"] for entry in generated_entries}
+            )
         encoded = "\n".join(encoded_targets)
         self.assertNotIn("124162930667", encoded)
         self.assertNotIn("122165831249", encoded)
@@ -1371,7 +1376,9 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
             6,
         )
 
-    def test_launch_scene_has_repeatable_patch_lipsync_and_braindance_choices(self) -> None:
+    def test_launch_scene_has_repeatable_patch_lipsync_and_braindance_choices(
+        self,
+    ) -> None:
         scene = load(LAUNCH_SCENE)["Data"]["RootChunk"]
         graph = scene["sceneGraph"]["Data"]["graph"]
         self.assertEqual(
@@ -1411,7 +1418,9 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
             choice["options"][4]["iconTagIds"][0]["$value"],
             "ChoiceCaptionParts.BraindanceIcon",
         )
-        self.assertTrue(all(option["isSingleChoice"] == 0 for option in choice["options"][:4]))
+        self.assertTrue(
+            all(option["isSingleChoice"] == 0 for option in choice["options"][:4])
+        )
         self.assertEqual(choice["options"][4]["isSingleChoice"], 1)
         lines = scene["screenplayStore"]["lines"]
         expected_locstrings = [
@@ -1458,9 +1467,9 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         self.assertEqual(scene["actors"][0]["voicetagId"]["id"], "1624173162010260376")
         self.assertEqual(choice["options"][4]["screenplayOptionId"]["id"], 1026)
         self.assertEqual(
-            scene["resouresReferences"]["lipsyncAnimSets"][0][
-                "asyncRefLipsyncAnimSet"
-            ]["DepotPath"]["$value"],
+            scene["resouresReferences"]["lipsyncAnimSets"][0]["asyncRefLipsyncAnimSet"][
+                "DepotPath"
+            ]["$value"],
             r"base\localization\en-us\lipsync\mod\gq000\scenes\gq000_patch_meet\civ_low_m_11_enus_40_fat.anims",
         )
         self.assertEqual(
@@ -1491,7 +1500,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
 
         world_spec = load(
             ROOT
-            / "quests/tests/gqt005/implementation/world/braindance-analysis.world.json"
+            / "projects/test-quests/gqt005/implementation/world/braindance-analysis.world.json"
         )
         self.assertEqual(
             world_spec["community"]["spot"]["workspot"],
@@ -1500,10 +1509,10 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
 
     def test_meet_contact_owns_patch_and_bd_phase_owns_player_handoff(self) -> None:
         meet = load(
-            ROOT / "source/raw/mod/gqt005/phases/gqt005_meet_patch.questphase.json"
+            ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/phases/gqt005_meet_patch.questphase.json"
         )
         review = load(
-            ROOT / "source/raw/mod/gqt005/phases/"
+            ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/phases/"
             "gqt005_review_braindance.questphase.json"
         )
         meet_encoded = json.dumps(meet)
@@ -1640,7 +1649,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         )
 
     def test_normal_generation_uses_owned_scene_template(self) -> None:
-        generator = (ROOT / "quests/tests/gqt005/implementation/build.py").read_text(
+        generator = (ROOT / "projects/test-quests/gqt005/implementation/build.py").read_text(
             encoding="utf-8"
         )
         self.assertIn("SCENE_TEMPLATE", generator)
@@ -1665,16 +1674,14 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
                 "link_scene_document",
                 return_value=(template, {"ok": True}),
             ) as linker,
-            mock.patch.object(generate_gqt005_content, "write"),
         ):
-            report = generate_gqt005_content.generate_scene(
+            document, report = generate_gqt005_content.generate_scene(
                 SCENE_TEMPLATE,
                 SCENE_TEMPLATE,
                 SCENE_TEMPLATE,
-                wolvenkit=None,
-                deserialize_scene=False,
             )
 
+        self.assertEqual(document, template)
         self.assertEqual(report, {"ok": True})
         self.assertEqual(
             linker.call_args.kwargs["scene_spawn_set_actors"],
@@ -1703,10 +1710,10 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
     def test_quest_scene_sockets_match_scene_entry_points(self) -> None:
         phases = [
             load(
-                ROOT / "source/raw/mod/gqt005/phases/gqt005_meet_patch.questphase.json"
+                ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/phases/gqt005_meet_patch.questphase.json"
             ),
             load(
-                ROOT / "source/raw/mod/gqt005/phases/"
+                ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/phases/"
                 "gqt005_review_braindance.questphase.json"
             ),
         ]
@@ -1750,31 +1757,31 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
 
     def test_all_registered_gqt005_binaries_are_cr2w(self) -> None:
         expected = [
-            ROOT / "source/archive/mod/gqt005/braindance/"
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/"
             "gqt005_braindance_analysis.scenerid",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_bdview.ent",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_bdfog.ent",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_bdsetup.ent",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_bdview.mesh",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_bdview.mi",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_bdfog.mesh",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_reveal_mask.xbm",
-            ROOT / "source/archive/mod/gqt005/braindance/gqt005_clues_data.xbm",
-            ROOT / "source/archive/mod/gqt005/scenes/gqt005_braindance_analysis.scene",
-            ROOT / "source/archive/mod/gqt005/scenes/gqt005_patch_start.scene",
-            ROOT / "source/archive/mod/gqt005/phases/"
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_bdview.ent",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_bdfog.ent",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_bdsetup.ent",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_bdview.mesh",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_bdview.mi",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_bdfog.mesh",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_reveal_mask.xbm",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/braindance/gqt005_clues_data.xbm",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/scenes/gqt005_braindance_analysis.scene",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/scenes/gqt005_patch_start.scene",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/phases/"
             "gqt005_braindance_analysis.questphase",
-            ROOT / "source/archive/mod/gqt005/phases/gqt005_approach_patch.questphase",
-            ROOT / "source/archive/mod/gqt005/phases/gqt005_meet_patch.questphase",
-            ROOT / "source/archive/mod/gqt005/phases/"
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/phases/gqt005_approach_patch.questphase",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/phases/gqt005_meet_patch.questphase",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/phases/"
             "gqt005_review_braindance.questphase",
-            ROOT / "source/archive/mod/gqt005/journal/gqt005.journal",
-            ROOT / "source/archive/mod/gqt005/localization/en-us/onscreens/gqt005.json",
-            ROOT / "source/archive/mod/gqt005/world/"
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/journal/gqt005.journal",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/localization/en-us/onscreens/gqt005.json",
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/world/"
             "gqt005_braindance_analysis.streamingblock",
-            ROOT / "source/archive/mod/gqt005/world/"
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/world/"
             "gqt005_braindance_analysis.streamingsector",
-            ROOT / "source/archive/mod/gqt005/world/"
+            ROOT / "projects/test-quests/gqt005/source/archive/mod/gqt005/world/"
             "gqt005_always_loaded.streamingsector",
         ]
         for path in expected:
@@ -1783,11 +1790,11 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
 
     def test_world_owns_origin_patch_and_player_handoff_markers(self) -> None:
         always = load(
-            ROOT / "source/raw/mod/gqt005/world/"
+            ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/world/"
             "gqt005_always_loaded.streamingsector.json"
         )["Data"]["RootChunk"]
         sector = load(
-            ROOT / "source/raw/mod/gqt005/world/"
+            ROOT / "projects/test-quests/gqt005/source/raw/mod/gqt005/world/"
             "gqt005_braindance_analysis.streamingsector.json"
         )["Data"]["RootChunk"]
         self.assertEqual(len(always["nodes"]), 5)
@@ -1820,7 +1827,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         self.assertIn("#gqt005_com_contact", encoded)
         self.assertIn("Character.GhostlinePatchLipsyncTest", encoded)
         tweak = (
-            ROOT / "source/resources/r6/tweaks/ghostline/gqt005_lipsync.yaml"
+            ROOT / "projects/test-quests/gqt005/source/resources/r6/tweaks/ghostline/gqt005_lipsync.yaml"
         ).read_text(encoding="utf-8")
         self.assertIn("$base: Character.GhostlinePatch", tweak)
         self.assertIn("voiceTag: civ_low_m_11_enus_40_fat", tweak)
@@ -1911,7 +1918,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
         self.assertNotIn("vehicle_lab", encoded)
 
     def test_archive_xl_activates_gqt005_and_not_older_test_quests(self) -> None:
-        config = (ROOT / "source/resources/Ghostline.archive.xl").read_text(
+        config = (ROOT / "projects/test-quests/gqt005/source/resources/Ghostline_GQT005.archive.xl").read_text(
             encoding="utf-8"
         )
         self.assertIn(

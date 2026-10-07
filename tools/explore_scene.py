@@ -11,14 +11,13 @@ from pathlib import Path
 from typing import Any
 
 from cr2w_helpers import (
+    search_scalars,
     bounded,
     collect_type_counts,
-    depot_path_value,
     first_scalar_label,
     int_or_text,
     load_json,
     nested_get,
-    object_handle,
     path_to_string,
     print_json,
     print_table,
@@ -29,7 +28,7 @@ from cr2w_helpers import (
 )
 
 
-DEFAULT_SCENE = Path("source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json")
+DEFAULT_SCENE = Path("projects/shared/ghostline-runtime/source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json")
 
 
 @dataclass(frozen=True)
@@ -437,19 +436,7 @@ class SceneExplorer:
         return str(data.get("$type", "")) if isinstance(data, dict) else ""
 
     def search(self, terms: list[str], limit: int) -> list[tuple[str, str]]:
-        normalized_terms = [term.casefold() for term in terms if term]
-        matches: list[tuple[str, str]] = []
-        for path, value in walk(self.data):
-            if isinstance(value, (dict, list)):
-                continue
-            path_text = path_to_string(path)
-            value_text = str(value)
-            haystack = f"{path_text} {value_text}".casefold()
-            if all(term in haystack for term in normalized_terms):
-                matches.append((path_text, value_text))
-                if limit > 0 and len(matches) >= limit:
-                    break
-        return matches
+        return search_scalars(self.data, terms, limit)
 
     def summary(self) -> dict[str, Any]:
         root_arrays = {

@@ -595,12 +595,20 @@ def sample_navigation_islands(
     coverage even when their XY footprints overlap.
     """
 
-    if spacing_m <= 0:
-        raise ValueError("spacing_m must be positive")
-    if camera_height_m < 0:
-        raise ValueError("camera_height_m must not be negative")
-    if vertical_weight <= 0:
-        raise ValueError("vertical_weight must be positive")
+    for name, value, allow_zero in (
+        ("spacing_m", spacing_m, False),
+        ("camera_height_m", camera_height_m, True),
+        ("vertical_weight", vertical_weight, False),
+    ):
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or value < 0
+            or (not allow_zero and value == 0)
+        ):
+            bound = "nonnegative" if allow_zero else "positive"
+            raise ValueError(f"{name} must be finite and {bound}")
 
     samples: list[NavigationSample] = []
     for island in sorted(islands, key=lambda item: item.island_id):

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "scenarios": [
+    {
+      "id": "success",
+      "steps": [
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}, "expect": {"active_stage": "encounter"}},
+        {"event": {"event_id": "encounter-1", "stage": "encounter", "outcome": "success"}, "expect": {"active_stage": "cleanup"}},
+        {"event": {"event_id": "cleanup-1", "stage": "cleanup", "outcome": "success"}}
+      ],
+      "expect": {"active_stage": null, "terminal_outcome": "success"}
+    },
+    {
+      "id": "failure",
+      "steps": [
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}},
+        {"event": {"event_id": "encounter-1", "stage": "encounter", "outcome": "failure"}}
+      ],
+      "expect": {"active_stage": null, "terminal_outcome": "failure"}
+    },
+    {
+      "id": "interruption",
+      "steps": [
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}},
+        {"event": {"event_id": "encounter-1", "stage": "encounter", "outcome": "interrupted"}},
+        {"event": {"event_id": "late-success", "stage": "encounter", "outcome": "success"}, "expect": {"result": "terminal"}}
+      ],
+      "expect": {"active_stage": null, "terminal_outcome": "interrupted"}
+    },
+    {
+      "id": "repeated_and_inactive_events",
+      "steps": [
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}},
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}, "expect": {"result": "duplicate"}},
+        {"event": {"event_id": "approach-late", "stage": "approach", "outcome": "success"}, "expect": {"result": "inactive"}},
+        {"event": {"event_id": "encounter-1", "stage": "encounter", "outcome": "success"}},
+        {"event": {"event_id": "cleanup-1", "stage": "cleanup", "outcome": "success"}}
+      ],
+      "expect": {"active_stage": null, "terminal_outcome": "success"}
+    },
+    {
+      "id": "save_reload_and_retry",
+      "steps": [
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}},
+        {"save": "before_encounter"},
+        {"event": {"event_id": "encounter-failed", "stage": "encounter", "outcome": "failure"}},
+        {"load": "before_encounter", "expect": {"active_stage": "encounter", "terminal_outcome": null}},
+        {"event": {"event_id": "approach-1", "stage": "approach", "outcome": "success"}, "expect": {"result": "duplicate"}},
+        {"event": {"event_id": "encounter-1", "stage": "encounter", "outcome": "success"}},
+        {"event": {"event_id": "cleanup-1", "stage": "cleanup", "outcome": "success"}}
+      ],
+      "expect": {"active_stage": null, "terminal_outcome": "success"}
+    }
+  ]
+}

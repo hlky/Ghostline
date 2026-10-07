@@ -10,18 +10,17 @@ steps because a full Night City serialization is unnecessarily expensive.
 
 from __future__ import annotations
 
+from artifact_io import atomic_write_json as write_json
+
 import argparse
 import json
 import math
-import tempfile
 from pathlib import Path
 from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-# Legacy exact-resource indexes have a different schema from the normalized
-# multi-family catalog produced by world_asset_catalog.py. Keep their defaults
-# separate so this helper cannot overwrite the canonical catalog.
+# Keep exact-resource output separate from preserved historical research catalogs.
 DEFAULT_MANIFEST = ROOT / "reference" / "world" / "world-assets-exact.json"
 WORLD_SECTOR_PREFIX = r"base\worlds\03_night_city\_compiled\default"
 
@@ -30,25 +29,6 @@ def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            newline="\n",
-            dir=path.parent,
-            prefix=f".{path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as stream:
-            stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
-            temporary = Path(stream.name)
-        temporary.replace(path)
-    finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
 
 
 def scalar(value: Any) -> Any:

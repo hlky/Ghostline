@@ -15,7 +15,16 @@ from . import PROTOCOL_SCHEMA_VERSION
 
 
 class ProtocolError(RuntimeError):
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "protocol_error",
+        event: Mapping[str, Any] | None = None,
+    ):
+        self.code = code
+        self.event = dict(event or {})
+        super().__init__(message)
 
 
 class RuntimeTimeout(ProtocolError):
@@ -141,7 +150,10 @@ class RuntimeProtocol:
         )
 
     def send(self, command: Mapping[str, Any]) -> None:
-        if int(command.get("schema_version", -1)) != PROTOCOL_SCHEMA_VERSION:
+        if (
+            type(command.get("schema_version")) is not int
+            or command["schema_version"] != PROTOCOL_SCHEMA_VERSION
+        ):
             raise ProtocolError("command has an unsupported schema_version")
         for required in ("session_id", "command_id", "kind"):
             if not command.get(required):
@@ -151,12 +163,18 @@ class RuntimeProtocol:
         atomic_write_json(self.command_path, command)
 
     def acknowledge(
-        self, command_id: str, success: bool, detail: Mapping[str, Any] | None = None
+        self,
+        command_id: str,
+        success: bool,
+        detail: Mapping[str, Any] | None = None,
+        *,
+        session_id: str,
     ) -> None:
         atomic_write_json(
             self.ack_path,
             {
                 "schema_version": PROTOCOL_SCHEMA_VERSION,
+                "session_id": session_id,
                 "command_id": command_id,
                 "success": success,
                 "detail": dict(detail or {}),
@@ -189,7 +207,16 @@ class RuntimeProtocol:
                     event = None
                 if not event or event.get("command_id") != command_id:
                     continue
-                if int(event.get("schema_version", -1)) != PROTOCOL_SCHEMA_VERSION:
+                if event.get("session_id") != session_id:
+                    raise ProtocolError(
+                        "runtime event belongs to a different session",
+                        code="session_mismatch",
+                        event=event,
+                    )
+                if (
+                    type(event.get("schema_version")) is not int
+                    or event["schema_version"] != PROTOCOL_SCHEMA_VERSION
+                ):
                     raise ProtocolError(
                         "runtime event has an unsupported schema_version"
                     )
@@ -200,7 +227,9 @@ class RuntimeProtocol:
                 if event_type == "error":
                     raise ProtocolError(
                         f"CET runtime error {event.get('error_code', 'unknown')}: "
-                        f"{event.get('error_detail', '')}"
+                        f"{event.get('error_detail', '')}",
+                        code=str(event.get("error_code", "runtime_error")),
+                        event=event,
                     )
                 return event
             if now >= deadline:
@@ -247,7 +276,16 @@ class RuntimeProtocol:
                 last_malformed = str(error)
                 event = None
             if event and event.get("command_id") == command_id:
-                if int(event.get("schema_version", -1)) != PROTOCOL_SCHEMA_VERSION:
+                if event.get("session_id") != session_id:
+                    raise ProtocolError(
+                        "runtime completion belongs to a different session",
+                        code="session_mismatch",
+                        event=event,
+                    )
+                if (
+                    type(event.get("schema_version")) is not int
+                    or event["schema_version"] != PROTOCOL_SCHEMA_VERSION
+                ):
                     raise ProtocolError(
                         "runtime completion has an unsupported schema_version"
                     )
@@ -267,12 +305,68 @@ class RuntimeProtocol:
 
     def assert_runtime_alive(self, *, maximum_age_seconds: float) -> dict[str, Any]:
         heartbeat = read_json(self.cet_heartbeat_path)
+        # Lua's Windows rename briefly removes the preceding heartbeat. A
+        # bounded transport retry prevents that gap from rejecting good frames.
+        deadline = time.monotonic() + 0.05
+        while heartbeat is None and time.monotonic() < deadline:
+            time.sleep(0.001)
+            heartbeat = read_json(self.cet_heartbeat_path)
         if not heartbeat:
             raise ProtocolError(f"CET heartbeat not found in {self.root}")
+        if (
+            type(heartbeat.get("schema_version")) is not int
+            or heartbeat["schema_version"] != PROTOCOL_SCHEMA_VERSION
+        ):
+            raise ProtocolError("CET heartbeat has an unsupported schema_version")
         try:
             age = time.time() - self.cet_heartbeat_path.stat().st_mtime
         except OSError as error:
             raise ProtocolError(f"cannot stat CET heartbeat: {error}") from error
         if age > maximum_age_seconds:
             raise ProtocolError(f"CET heartbeat is stale ({age:.2f}s old)")
+        return heartbeat
+
+    def capture_evidence(
+        self,
+        *,
+        session_id: str,
+        command_id: str,
+        minimum_frame: int,
+        maximum_age_seconds: float,
+    ) -> dict[str, Any]:
+        """Check the same destination is still ready while frames are settling."""
+        error = read_json(self.event_paths["error"])
+        if error and error.get("command_id") == command_id:
+            if error.get("session_id") != session_id:
+                raise ProtocolError(
+                    "runtime error belongs to a different session",
+                    code="session_mismatch",
+                    event=error,
+                )
+            raise ProtocolError(
+                f"CET runtime error {error.get('error_code', 'unknown')}: {error.get('error_detail', '')}",
+                code=str(error.get("error_code", "runtime_error")),
+                event=error,
+            )
+        heartbeat = self.assert_runtime_alive(maximum_age_seconds=maximum_age_seconds)
+        if (
+            heartbeat.get("session_id") != session_id
+            or heartbeat.get("command_id") != command_id
+        ):
+            raise ProtocolError(
+                "capture heartbeat does not match the active destination",
+                code="session_mismatch",
+                event=heartbeat,
+            )
+        frame = heartbeat.get("frame")
+        if (
+            heartbeat.get("stage") != "ready"
+            or type(frame) is not int
+            or frame < minimum_frame
+        ):
+            raise ProtocolError(
+                "CET is no longer ready for this capture",
+                code="readiness_lost",
+                event=heartbeat,
+            )
         return heartbeat

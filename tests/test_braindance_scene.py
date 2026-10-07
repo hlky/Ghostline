@@ -10,8 +10,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / "tools") not in sys.path:
+    sys.path.insert(0, str(ROOT / "tools"))
 TOOLS = ROOT / "tools"
-SPEC_PATH = ROOT / "braindance/tests/gqt005_braindance_analysis.json"
+SPEC_PATH = ROOT / "projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json"
 
 MODULE_SPEC = importlib.util.spec_from_file_location(
     "braindance_scene", TOOLS / "braindance_scene.py"
@@ -55,7 +57,7 @@ class BraindanceSceneTests(unittest.TestCase):
         self.assertEqual(first["kind"], "ghostline_braindance_animation_handoff")
         self.assertEqual(
             first["source_spec"],
-            "braindance/tests/gqt005_braindance_analysis.json",
+            "projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json",
         )
         self.assertEqual(first["actors"][0]["root_object"], "ACTOR_patch")
         self.assertEqual(first["actors"][0]["rid_signature"], "patch")

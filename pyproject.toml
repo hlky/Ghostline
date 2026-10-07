@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghostline-authoring"
+version = "1.0.0"
+description = "Development dependencies for the Ghostline quest-building toolkit"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+test = [
+  "scipy>=1.14,<2",
+    "jsonschema>=4,<5",
+    "PyYAML>=6,<7",
+    "numpy>=2,<3",
+    "Pillow>=10.4,<12",
+    "opencv-python>=4.10,<5",
+    "ijson>=3.3,<4",
+]
+capture = [
+    "ghostline-authoring[test]",
+    "windows-capture==2.0.0; sys_platform == 'win32'",
+]
+research = ["requests>=2,<3", "beautifulsoup4>=4,<5"]
+dev = ["ghostline-authoring[test]", "ruff>=0.11,<1"]
+
+[tool.setuptools]
+packages = []
+
+[tool.ruff]
+target-version = "py312"
+extend-exclude = ["WolvenKit", "modding_docs", "tools/ghostline-red", "generated", "converted", "packed"]
+
+[tool.ruff.lint]
+select = ["F"]

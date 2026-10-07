@@ -1,0 +1,441 @@
+{
+  "schema_version": 1,
+  "id": "gq001",
+  "title": "Ghostline",
+  "description": "Prototype acceptance manifest for reusable Ghostline quest blocks.",
+  "phase_prefabs": [
+    "@locations.gq000_pr_patch_meet.ref",
+    "@locations.gq001_pr_iris_meet.ref"
+  ],
+  "stages": [
+    {
+      "id": "patch_job_offer",
+      "type": "phone_job_offer",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_job_offer.questphase",
+      "contact": "@contacts.patch.contact",
+      "message": "@contacts.patch.threads.gq001_01_start.entries.entry_01_msg_patch_bridge.path",
+      "choice_group": "@contacts.patch.threads.gq001_01_start.entries.entry_02_ch_meet_patch.path",
+      "accept_choice": "@contacts.patch.threads.gq001_01_start.entries.entry_02_ch_meet_patch.entries.entry_02a_ch_on_my_way.path",
+      "start_fact": "@facts.gq001_phone_start_sent",
+      "accepted_fact": "@facts.gq001_phone_reply_on_my_way",
+      "phase_prefabs": []
+    },
+    {
+      "id": "meet_patch",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_patch_meet.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "gq000_job_accepted": "gq001_patch_accepted",
+        "gq000_patch_meet": "gq001_patch_meet",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.gq001_01_obj_meet_patch.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.gq001_01_obj_meet_patch.mappins.gq001_01_qmp_patch_bridge.path"
+      },
+      "contact": "@contacts.patch.contact",
+      "scene": "mod\\gq000\\scenes\\gq000_patch_meet.scene",
+      "community": "@locations.gq000_01_com_patch_bridge.ref",
+      "appearance": "ghostline_patch_default",
+      "objective": "@objectives.gq001_01_obj_meet_patch.path",
+      "description_entry": "@objectives.gq001_01_obj_meet_patch.description_entry",
+      "mappin": "@objectives.gq001_01_obj_meet_patch.mappins.gq001_01_qmp_patch_bridge.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\patch\\patch.ent"
+      ],
+      "phase_prefabs": [
+        "@locations.gq000_pr_patch_meet.ref"
+      ]
+    },
+    {
+      "id": "hack_relay",
+      "type": "hack_access_point",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_hack_relay.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_post_accept.questphase",
+      "template_bindings": {
+        "gq000_02_started": "gq001_02_started",
+        "gq000_cache_acquired": "@facts.gq001_cache_acquired",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache": "@objectives.gq001_02_obj_reach_cache.path",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache/gq000_02_desc_reach_cache": "@objectives.gq001_02_obj_reach_cache.description_entry",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_reach_cache/gq000_02_qmp_cache": "@objectives.gq001_02_obj_reach_cache.mappins.gq001_02_qmp_cache.path",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_extract_cache": "@objectives.gq001_02_obj_extract_cache.path",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_extract_cache/gq000_02_desc_extract_cache": "@objectives.gq001_02_obj_extract_cache.description_entry",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_extract_cache/gq000_02_qmp_extract_cache": "@objectives.gq001_02_obj_extract_cache.mappins.gq001_02_qmp_extract_cache.path",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_leave_area": "@objectives.gq001_02_obj_leave_area.path",
+        "quests/minor_quest/gq000/gq000_02/gq000_02_obj_leave_area/gq000_02_desc_leave_area": "@objectives.gq001_02_obj_leave_area.description_entry"
+      },
+      "device": "@locations.gq000_02_ap_cache.ref",
+      "success_fact": "@facts.gq001_cache_acquired",
+      "guard_community": "@locations.gq000_02_com_cache_guards.ref",
+      "grants": [
+        "Items.gq000_datacache",
+        "Items.GhostlineQuietSpine01",
+        "Items.GhostlineQuietSpine02"
+      ],
+      "phase_prefabs": [
+        "@locations.gq000_pr_patch_meet.ref"
+      ]
+    },
+    {
+      "id": "meet_iris",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_iris_meet.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "@locations.gq001_03_com_iris.ref",
+        "#gq000_01_sm_patch_bridge": "@locations.gq001_03_sm_iris.ref",
+        "#gq000_01_tr_setup": "@locations.gq001_03_tr_setup.ref",
+        "#gq000_pr_patch_meet": "@locations.gq001_pr_iris_meet.ref",
+        "gq000_job_accepted": "gq001_iris_met",
+        "gq000_patch_meet": "gq001_iris_meet",
+        "job_accept": "continue_delivery",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq001\\scenes\\gq001_iris_meet.scene",
+        "patch": "iris",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.gq001_03_obj_meet_iris.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.gq001_03_obj_meet_iris.mappins.gq001_03_qmp_iris.path"
+      },
+      "contact": "iris",
+      "scene": "mod\\gq001\\scenes\\gq001_iris_meet.scene",
+      "community": "@locations.gq001_03_com_iris.ref",
+      "appearance": "ghostline_iris_default",
+      "objective": "@objectives.gq001_03_obj_meet_iris.path",
+      "description_entry": "@objectives.gq001_03_obj_meet_iris.description_entry",
+      "mappin": "@objectives.gq001_03_obj_meet_iris.mappins.gq001_03_qmp_iris.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\iris\\iris.ent",
+        "mod\\gq001\\world\\gq001_iris_meet.streamingblock",
+        "mod\\gq001\\world\\gq001_iris_meet.streamingsector",
+        "mod\\gq001\\world\\gq001_always_loaded.streamingsector",
+        "mod\\gq001\\journal\\gq001.journal",
+        "mod\\gq001\\localization\\en-us\\subtitles\\gq001_03_subtitles_map.json",
+        "mod\\gq001\\localization\\en-us\\vo\\gq001_03.json"
+      ],
+      "notes": "Authored candidate at -406.1001, 724.7273, 127.00006. Runtime approach, choice, appearance, and exit-handoff validation remain.",
+      "phase_prefabs": [
+        "@locations.gq001_pr_iris_meet.ref"
+      ]
+    },
+    {
+      "id": "deliver_cache",
+      "type": "deliver_drop_point",
+      "status": "ready",
+      "phase_resource": "mod\\gq001\\phases\\gq001_delivery.questphase",
+      "phase_template": "mod\\gq000\\phases\\gq000_delivery.questphase",
+      "template_bindings": {
+        "gq000_cache_delivered": "gq001_cache_delivered",
+        "gq000_completed": "gq001_completed",
+        "quests/minor_quest/gq000": "quests/minor_quest/gq001",
+        "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache": "@objectives.gq001_04_obj_deliver_cache.path",
+        "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache/gq000_03_desc_deliver_cache": "@objectives.gq001_04_obj_deliver_cache.description_entry",
+        "quests/minor_quest/gq000/gq000_03/gq000_03_obj_deliver_cache/gq000_03_qmp_drop_point": "@objectives.gq001_04_obj_deliver_cache.mappins.gq001_04_qmp_drop_point.path",
+        "contacts/morrow/gq000_04_delivery/01_msg_cache_authenticated": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_01_msg_cache_authenticated.path",
+        "contacts/morrow/gq000_04_delivery/02_msg_route_found": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_02_msg_route_found.path",
+        "contacts/morrow/gq000_04_delivery/03_ch_delivery_response": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_03_ch_delivery_response.path",
+        "contacts/morrow/gq000_04_delivery/03_ch_delivery_response/03a_ch_pay_me": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_03_ch_delivery_response.entries.entry_03a_ch_pay_me.path",
+        "contacts/morrow/gq000_04_delivery/03_ch_delivery_response/03b_ch_what_route": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_03_ch_delivery_response.entries.entry_03b_ch_what_route.path",
+        "contacts/morrow/gq000_04_delivery/04a_msg_pay_adjusted": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_04a_msg_pay_adjusted.path",
+        "contacts/morrow/gq000_04_delivery/04b_msg_route_explained": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_04b_msg_route_explained.path",
+        "contacts/morrow/gq000_04_delivery/05_msg_more_work": "@contacts.morrow.threads.gq001_05_delivery.entries.entry_05_msg_more_work.path"
+      },
+      "item": "Items.gq000_datacache",
+      "drop_point": "$/03_night_city/c_watson/kabuki/kabuki_drop_points_prefabAR4NTYY/drop_point_009_prefabBIYNP3Y",
+      "deposit_fact": "@facts.gq000_datacache",
+      "phase_prefabs": []
+    }
+  ],
+  "composition": {
+    "namespace": "gq001",
+    "journal_template": "gq000_shapes",
+    "quest": {
+      "title": "Ghostline",
+      "localization_key": "gl_gq001_title"
+    },
+    "objectives": {
+      "gq001_01_obj_meet_patch": {
+        "phase_id": "gq001_01",
+        "id": "gq001_01_obj_meet_patch",
+        "text": "Meet Patch at the bridge.",
+        "localization_key": "gl_gq001_01_objective_meet_patch",
+        "description": "Patch is waiting with the details of a quiet job. Hear him out.",
+        "description_id": "gq001_01_desc_meet_patch",
+        "description_key": "gl_gq001_01_description_meet_patch",
+        "mappins": {
+          "gq001_01_qmp_patch_bridge": {
+            "id": "gq001_01_qmp_patch_bridge",
+            "ref": "@locations.gq000_01_mp_patch_bridge.ref",
+            "text": "Patch's meeting point",
+            "localization_key": "gl_gq001_01_mappin_patch_bridge",
+            "debug_caption": "gl_gq001_01_mappin_patch_bridge"
+          }
+        },
+        "template": "gq000_01_obj_meet_patch"
+      },
+      "gq001_02_obj_reach_cache": {
+        "phase_id": "gq001_02",
+        "id": "gq001_02_obj_reach_cache",
+        "text": "Go to the cache coordinates.",
+        "localization_key": "gl_gq001_02_objective_reach_cache",
+        "description": "Patch gave you the first cache location. Get there and see what is waiting.",
+        "description_id": "gq001_02_desc_reach_cache",
+        "description_key": "gl_gq001_02_description_reach_cache",
+        "mappins": {
+          "gq001_02_qmp_cache": {
+            "id": "gq001_02_qmp_cache",
+            "ref": "@locations.gq000_02_mp_cache.ref",
+            "text": "Cache coordinates",
+            "localization_key": "gl_gq001_02_mappin_cache",
+            "debug_caption": "gl_gq001_02_mappin_cache"
+          }
+        },
+        "template": "gq000_02_obj_reach_cache"
+      },
+      "gq001_02_obj_extract_cache": {
+        "phase_id": "gq001_02",
+        "id": "gq001_02_obj_extract_cache",
+        "text": "Extract the datacache.",
+        "localization_key": "gl_gq001_02_objective_extract_cache",
+        "description": "Connect to the relay and breach its access point. The Tyger Claws do not need to be dead, but they will not make it easy.",
+        "description_id": "gq001_02_desc_extract_cache",
+        "description_key": "gl_gq001_02_description_extract_cache",
+        "mappins": {
+          "gq001_02_qmp_extract_cache": {
+            "id": "gq001_02_qmp_extract_cache",
+            "ref": "@locations.gq000_02_ap_cache.ref",
+            "text": "Cache coordinates",
+            "localization_key": "gl_gq001_02_mappin_cache",
+            "debug_caption": "gl_gq001_02_mappin_cache"
+          }
+        },
+        "template": "gq000_02_obj_extract_cache"
+      },
+      "gq001_02_obj_leave_area": {
+        "phase_id": "gq001_02",
+        "id": "gq001_02_obj_leave_area",
+        "text": "Leave the relay area.",
+        "localization_key": "gl_gq001_02_objective_leave_area",
+        "description": "You have the datacache. Put some distance between yourself and the relay before the Tyger Claws regroup.",
+        "description_id": "gq001_02_desc_leave_area",
+        "description_key": "gl_gq001_02_description_leave_area",
+        "mappins": {},
+        "template": "gq000_02_obj_leave_area"
+      },
+      "gq001_03_obj_meet_iris": {
+        "phase_id": "gq001_03",
+        "id": "gq001_03_obj_meet_iris",
+        "text": "Meet Iris.",
+        "localization_key": "gl_gq001_03_objective_meet_iris",
+        "description": "Iris can make sense of the recovered cache. Bring it to her.",
+        "description_id": "gq001_03_desc_meet_iris",
+        "description_key": "gl_gq001_03_description_meet_iris",
+        "mappins": {
+          "gq001_03_qmp_iris": {
+            "id": "gq001_03_qmp_iris",
+            "ref": "@locations.gq001_03_mp_iris.ref",
+            "text": "Iris",
+            "localization_key": "gl_gq001_03_mappin_iris",
+            "debug_caption": "gl_gq001_03_mappin_iris"
+          }
+        },
+        "template": "gq000_01_obj_meet_patch"
+      },
+      "gq001_04_obj_deliver_cache": {
+        "phase_id": "gq001_04",
+        "id": "gq001_04_obj_deliver_cache",
+        "text": "Deliver the datacache to the drop point.",
+        "localization_key": "gl_gq001_04_objective_deliver_cache",
+        "description": "Take the datacache to Ghostline's drop point in Kabuki and deposit it.",
+        "description_id": "gq001_04_desc_deliver_cache",
+        "description_key": "gl_gq001_04_description_deliver_cache",
+        "mappins": {
+          "gq001_04_qmp_drop_point": {
+            "id": "gq001_04_qmp_drop_point",
+            "ref": "@locations.gq000_03_mp_drop_point.ref",
+            "text": "Drop point",
+            "localization_key": "gl_gq001_04_mappin_drop_point",
+            "debug_caption": "gl_gq001_04_mappin_drop_point"
+          }
+        },
+        "template": "gq000_03_obj_deliver_cache"
+      }
+    },
+    "contacts": {
+      "patch": {
+        "id": "patch",
+        "localization_key": "gl_gq001_phone_patch_name",
+        "template": "patch",
+        "threads": {
+          "gq001_01_start": {
+            "id": "gq001_01_start",
+            "title": "Bridge Work",
+            "title_key": "gl_gq001_phone_start_title",
+            "entries": {
+              "entry_01_msg_patch_bridge": {
+                "type": "message",
+                "id": "01_msg_patch_bridge",
+                "localization_key": "gl_gq001_phone_msg_patch_bridge",
+                "text": "Got a quiet job if you're still taking those. Meet me at the bridge. Come alone.",
+                "delay": 3
+              },
+              "entry_02_ch_meet_patch": {
+                "type": "choice_group",
+                "id": "02_ch_meet_patch",
+                "entries": {
+                  "entry_02a_ch_on_my_way": {
+                    "id": "02a_ch_on_my_way",
+                    "text": "On my way.",
+                    "localization_key": "gl_gq001_phone_choice_on_my_way"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "name": "Patch"
+      },
+      "morrow": {
+        "id": "morrow",
+        "localization_key": "gl_gq001_phone_morrow_name",
+        "template": "morrow",
+        "threads": {
+          "gq001_05_delivery": {
+            "id": "gq001_05_delivery",
+            "title": "Quiet Spine",
+            "title_key": "gl_gq001_phone_delivery_title",
+            "entries": {
+              "entry_01_msg_cache_authenticated": {
+                "type": "message",
+                "id": "01_msg_cache_authenticated",
+                "localization_key": "gl_gq001_phone_morrow_cache_authenticated",
+                "text": "Cache authenticated. Clean extraction.",
+                "delay": 1
+              },
+              "entry_02_msg_route_found": {
+                "type": "message",
+                "id": "02_msg_route_found",
+                "localization_key": "gl_gq001_phone_morrow_route_found",
+                "text": "Iris found a courier route folded into the payload. You brought us more than Patch promised.",
+                "delay": 2
+              },
+              "entry_03_ch_delivery_response": {
+                "type": "choice_group",
+                "id": "03_ch_delivery_response",
+                "entries": {
+                  "entry_03a_ch_pay_me": {
+                    "id": "03a_ch_pay_me",
+                    "text": "Then pay me for it.",
+                    "localization_key": "gl_gq001_phone_choice_pay_me"
+                  },
+                  "entry_03b_ch_what_route": {
+                    "id": "03b_ch_what_route",
+                    "text": "What kind of route?",
+                    "localization_key": "gl_gq001_phone_choice_what_route"
+                  }
+                }
+              },
+              "entry_04a_msg_pay_adjusted": {
+                "type": "message",
+                "id": "04a_msg_pay_adjusted",
+                "localization_key": "gl_gq001_phone_morrow_pay_adjusted",
+                "text": "Already adjusted. Ghostline rewards useful surprises.",
+                "delay": 1
+              },
+              "entry_04b_msg_route_explained": {
+                "type": "message",
+                "id": "04b_msg_route_explained",
+                "localization_key": "gl_gq001_phone_morrow_route_explained",
+                "text": "Names without faces, handoffs without addresses. Enough to know the route is still live.",
+                "delay": 1
+              },
+              "entry_05_msg_more_work": {
+                "type": "message",
+                "id": "05_msg_more_work",
+                "localization_key": "gl_gq001_phone_morrow_more_work",
+                "text": "Keep this number. When we find the other end, I may need someone who works outside the wire.",
+                "delay": 2
+              }
+            }
+          }
+        },
+        "name": "Morrow"
+      }
+    },
+    "readables": {
+      "quiet_spine_01": {
+        "kind": "onscreen",
+        "group": "shards",
+        "id": "quiet_spine_01",
+        "title": "Archived conversation: Seki and K. Morita",
+        "text": "SEKI: Node six is carrying double tonight.\nK. MORITA: Then split it between two couriers.\nSEKI: Flesh couriers? Thought Quiet Spine stayed on the wire.\nK. MORITA: Nothing stays on the wire through inspection. First courier carries the cipher. Second carries the memory. Neither knows the other.\nSEKI: And if the Claws open them?\nK. MORITA: Then your fee becomes an apology to my employer.",
+        "title_key": "gl_gq001_shard_quiet_spine_01_title",
+        "text_key": "gl_gq001_shard_quiet_spine_01_body",
+        "tag": "technology"
+      },
+      "quiet_spine_02": {
+        "kind": "onscreen",
+        "group": "shards",
+        "id": "quiet_spine_02",
+        "title": "Archived conversation: Hiromi and K. Morita",
+        "text": "HIROMI: Little China relay is burned. Someone pinged the old municipal line.\nK. MORITA: Move the next packet to Japantown. Quiet Spine, route C.\nHIROMI: Drop is a braindance editor?\nK. MORITA: The editor thinks she is cleaning signal noise. The courier thinks he is moving scop. Keep it that way.\nHIROMI: And the source?\nK. MORITA: Above your invoice.",
+        "title_key": "gl_gq001_shard_quiet_spine_02_title",
+        "text_key": "gl_gq001_shard_quiet_spine_02_body",
+        "tag": "technology"
+      }
+    },
+    "locations": {
+      "gq000_pr_patch_meet": {
+        "ref": "#gq000_pr_patch_meet"
+      },
+      "gq001_pr_iris_meet": {
+        "ref": "#gq001_pr_iris_meet"
+      },
+      "gq000_01_com_patch_bridge": {
+        "ref": "#gq000_01_com_patch_bridge"
+      },
+      "gq000_02_ap_cache": {
+        "ref": "#gq000_02_ap_cache"
+      },
+      "gq000_02_com_cache_guards": {
+        "ref": "#gq000_02_com_cache_guards"
+      },
+      "gq001_03_com_iris": {
+        "ref": "#gq001_03_com_iris"
+      },
+      "gq001_03_sm_iris": {
+        "ref": "#gq001_03_sm_iris"
+      },
+      "gq001_03_tr_setup": {
+        "ref": "#gq001_03_tr_setup"
+      },
+      "gq000_01_mp_patch_bridge": {
+        "ref": "#gq000_01_mp_patch_bridge"
+      },
+      "gq000_02_mp_cache": {
+        "ref": "#gq000_02_mp_cache"
+      },
+      "gq001_03_mp_iris": {
+        "ref": "#gq001_03_mp_iris"
+      },
+      "gq000_03_mp_drop_point": {
+        "ref": "#gq000_03_mp_drop_point"
+      }
+    },
+    "facts": {
+      "gq001_phone_start_sent": "gq001_phone_start_sent",
+      "gq001_phone_reply_on_my_way": "gq001_phone_reply_on_my_way",
+      "gq001_cache_acquired": "gq001_cache_acquired",
+      "gq000_datacache": "gq000_datacache"
+    },
+    "points_of_interest": {
+      "gq001_01_poi_patch_bridge": {
+        "id": "gq001_01_poi_patch_bridge",
+        "ref": "@locations.gq000_01_mp_patch_bridge.ref"
+      }
+    },
+    "text": {
+      "gl_gq001_01_poi_patch_bridge": "Patch",
+      "gl_gq001_item_datacache_name": "Datacache"
+    }
+  }
+}

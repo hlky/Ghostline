@@ -18,15 +18,15 @@ py -B -m unittest discover -s tests -v
 `tools/braindance_scene.py` validates a versioned performance spec and invokes
 Blender headlessly to generate a relocatable authoring scene, animated GLB, and
 deterministic RID-compiler handoff manifest. The checked two-actor fixture is
-`braindance/tests/gqt005_braindance_analysis.json`.
+`projects/test-quests/gqt005/braindance/gqt005_braindance_analysis.json`.
 
 ```powershell
 py -B .\tools\braindance_scene.py validate `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
 py -B .\tools\braindance_scene.py build `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
 py -B .\tools\braindance_scene.py bake `
-  --spec .\braindance\tests\gqt005_braindance_analysis.json
+  --spec .\projects\test-quests\gqt005\braindance\gqt005_braindance_analysis.json
 py -B -m unittest tests.test_braindance_scene tests.test_braindance_rid `
   tests.test_braindance_pipeline -v
 ```
@@ -50,9 +50,9 @@ the sidecar index rather than using Blender's data-bone order.
 
 ```powershell
 py -B .\tools\braindance_rid.py compile `
-  --handoff .\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json `
+  --handoff .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json `
   --template C:\path\to\template.scenerid `
-  --output .\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid
+  --output .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.scenerid
 ```
 
 The compiler writes new RED buffers from Blender's evaluated actor roots,
@@ -77,8 +77,8 @@ interrupted cleanup, and replay.
 
 ```powershell
 py -B .\tools\braindance_pipeline.py audit-scene `
-  --scene .\source\raw\mod\gqt005\scenes\gqt005_braindance_analysis.scene.json `
-  --handoff .\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json
+  --scene .\projects\test-quests\gqt005\source\raw\mod\gqt005\scenes\gqt005_braindance_analysis.scene.json `
+  --handoff .\projects\test-quests\gqt005\.tmp\braindance\gqt005\gqt005_braindance_analysis.handoff.json
 ```
 
 See `docs/authoring/braindance.md` for the exact channel/cardinality contract,
@@ -89,15 +89,15 @@ typed `gqt005` test quest, journal, localization, and Kabuki world resources
 are generated and serialized together with:
 
 ```powershell
-py -B .\quests\tests\gqt005\implementation\build.py --deserialize
+py -B .\projects\test-quests\gqt005\implementation\build.py --deserialize
 ```
 
 The command consumes Ghostline's checked scene template and the already-built
 handoff/RID under
-`.tmp/braindance/gqt005`, writes authored CR2W-JSON under
-`source/raw/mod/gqt005`, writes game resources under
-`source/archive/mod/gqt005`, and emits a hash manifest at
-`.tmp/braindance/gqt005/package.json`. Onscreen localization is serialized by
+`projects/test-quests/gqt005/.tmp/braindance/gqt005`, writes authored CR2W-JSON under
+`projects/test-quests/gqt005/source/raw/mod/gqt005`, writes game resources under
+`projects/test-quests/gqt005/source/archive/mod/gqt005`, and emits a hash manifest at
+`projects/test-quests/gqt005/.tmp/braindance/gqt005/package.json`. Onscreen localization is serialized by
 WolvenKit in the runtime candidate. `--serializer native` remains available
 for differential testing and routes onscreen localization through the typed
 `ghostline-red` codec so `primaryKey = 0` remains an implicit RED default.
@@ -105,15 +105,15 @@ for differential testing and routes onscreen localization through the typed
 The location-pending Goth Baddie Cyberpsycho test package is regenerated with:
 
 ```powershell
-py -B .\quests\tests\gqt006\implementation\build.py --deserialize
+py -B .\projects\test-quests\gqt006\implementation\build.py --deserialize
 ```
 
 The selected location is stored as `origin.x`, `origin.y`, `origin.z`, and
-`origin.yaw` in `quests/tests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json`. The generator
+`origin.yaw` in `projects/test-quests/gqt006/implementation/world/goth-baddie-cyberpsycho.world.json`. The generator
 writes the journal, onscreen localization, world block/sectors, orchestration
-phase, and five child phases under `source/raw/mod/gqt006` and
-`source/archive/mod/gqt006`. ArchiveXL registration is authored separately in
-`source/resources/Ghostline.archive.xl`.
+phase, and five child phases under `projects/test-quests/gqt006/source/raw/mod/gqt006` and
+`projects/test-quests/gqt006/source/archive/mod/gqt006`. ArchiveXL registration is authored separately in
+`projects/ghostline/source/resources/Ghostline.archive.xl`.
 
 ## Native Archive And CR2W Inspection
 
@@ -127,36 +127,26 @@ cargo test --manifest-path .\tools\ghostline-red\Cargo.toml
 cargo build --release --manifest-path .\tools\ghostline-red\Cargo.toml
 ```
 
-List the current archive index and resolve every hash from the authored depot
-tree:
+List a verified package archive and resolve its hashes from the frozen input
+tree. Replace `<run>` with the package run directory:
 
 ```powershell
 .\tools\ghostline-red\target\release\ghostline-red.exe archive-list `
-  .\packed\archive\pc\mod\Ghostline.archive `
-  --paths-root .\source\archive
+  .\projects\ghostline\generated\packages\<run>\install\archive\pc\mod\Ghostline.archive `
+  --paths-root .\projects\ghostline\generated\packages\<run>\archive
 ```
 
-Pack and extract the authored depot tree:
-
-```powershell
-.\tools\ghostline-red\target\release\ghostline-red.exe pack `
-  .\source\archive -o H:\Ghostline-builds\native-candidate
-
-.\tools\ghostline-red\target\release\ghostline-red.exe extract `
-  H:\Ghostline-builds\native-candidate\archive.archive `
-  -o H:\Ghostline-builds\native-candidate\extracted
-```
-
-The native packer uses ghostline-red's clean-room Kraken encoder and decoder;
-no proprietary DLL is required for normal archive workflows. The current
-301-file archive extracts every payload byte-identically, and WolvenKit remains
-useful as an independent interoperability oracle.
+Runtime packing and verification follow the
+[build/package guide](../workflows/build-and-package.md). Use the shared profile
+packager there; its WolvenKit pack/list/extract/hash gate is required before
+installation. Historical native packer interoperability probes are recorded in
+[native archive experiments](../history/native-archive-experiments.md).
 
 Inspect the structural tables of a packed CR2W resource:
 
 ```powershell
 .\tools\ghostline-red\target\release\ghostline-red.exe cr2w-inspect `
-  .\source\archive\mod\gq000\phases\gq000.questphase
+  .\projects\shared\ghostline-runtime\source\archive\mod\gq000\phases\gq000.questphase
 ```
 
 Both commands accept `--json`. Generic reflected CR2W conversion uses the
@@ -167,12 +157,12 @@ schema generated from the pinned WolvenKit submodule:
   .\WolvenKit .\red-schema.json
 
 .\tools\ghostline-red\target\release\ghostline-red.exe cr2w-serialize `
-  .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase `
+  .\projects\shared\ghostline-runtime\source\archive\mod\gq000\phases\gq000_patch_meet.questphase `
   --schema .\red-schema.json .\converted\gq000_patch_meet.questphase.json
 
 .\tools\ghostline-red\target\release\ghostline-red.exe cr2w-deserialize `
   .\converted\gq000_patch_meet.questphase.json `
-  --template .\source\archive\mod\gq000\phases\gq000_patch_meet.questphase `
+  --template .\projects\shared\ghostline-runtime\source\archive\mod\gq000\phases\gq000_patch_meet.questphase `
   --schema .\red-schema.json .\converted\gq000_patch_meet.questphase
 ```
 
@@ -194,14 +184,14 @@ The specialized localization commands remain available:
 ```powershell
 .\tools\ghostline-red\target\release\ghostline-red.exe `
   cr2w-serialize-localization `
-  .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json `
+  .\projects\shared\ghostline-runtime\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json `
   .\converted\gq000.json.json
 
 .\tools\ghostline-red\target\release\ghostline-red.exe `
   cr2w-deserialize-localization `
   .\converted\gq000.json.json `
   --template `
-  .\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json `
+  .\projects\shared\ghostline-runtime\source\archive\mod\gq000\localization\en-us\onscreens\gq000.json `
   .\converted\gq000.json
 ```
 
@@ -231,7 +221,7 @@ The final `compare` is expected to report all four documents as equivalent to
 their applied shipping source paths. Character manifests point to a
 frame-specific entity shell, an empty appearance shell, and a component-library
 descriptor. The library keeps full `.app` donors under
-`characters/components/donors`; the builder chooses the smallest prototype
+`quests/templates/characters/components/donors`; the builder chooses the smallest prototype
 covering the manifest's required component names. Donor appearance names do not
 belong in manifests. Patch's original catalog selections and automatic
 prototype assembly remain covered by `tests/test_character_builder.py`.
@@ -244,7 +234,7 @@ py -B .\tools\character_builder.py make-shell `
   --out .\characters\templates\npv-female.app-shell.json
 
 py -B .\tools\character_builder.py make-entity-shell `
-  --donor .\source\raw\mod\ghostline\characters\patch\patch.ent.json `
+  --donor .\projects\shared\ghostline-runtime\source\raw\mod\ghostline\characters\patch\patch.ent.json `
   --frame male_average `
   --out .\characters\templates\npv-male.ent-shell.json
 ```
@@ -353,7 +343,7 @@ py -B .\tools\character_ui.py `
 ```
 
 Without `--manifest`, the UI and CLI use
-`characters/patch.character.json` and `characters/catalog.json`.
+`projects/shared/ghostline-runtime/characters/patch.character.json` and `quests/templates/characters/catalog.json`.
 The manifest option switches the trusted server-side manifest and its declared
 catalog; client requests cannot replace either path. UI generation and head
 builds are isolated under ignored `converted/characters`. The pinned Three.js
@@ -379,7 +369,8 @@ nails, and shadow proxies. It is a fit and silhouette check, not a substitute
 for in-game materials, animation, garment-support, LOD, or streaming tests.
 
 The server intentionally accepts loopback hosts only. Browser requests may
-change identity, selections, and head values, but template paths, source roots,
+change display names, selections, and head values. Character ID/namespace remain
+fixed; template paths, source roots,
 morphtarget lists, output definitions, WolvenKit, Blender, and game paths are
 reloaded from the reviewed server-side manifest. Build/index operations are
 serialized and JSON reports are replaced atomically.
@@ -416,17 +407,14 @@ validation. Other indexed categories remain preview-only.
 
 ## Questphase Explorer
 
-### World Asset Catalog
+### World Asset Discovery
 
-`tools/world_asset_catalog.py` discovers reusable world families in extracted
-binary streaming sectors, serializes a deterministic bounded candidate set
-with WolvenKit, builds a normalized placement catalog, and performs safe
-deterministic selection by category, tag, district, area, radius, and seed.
-Default selection excludes every record not explicitly reviewed as accessible
-and quest-safe.
-
-See `docs/authoring/world-assets.md` for the discovery/build/curation workflow,
-the generated coverage summary, and test-quest selection examples.
+`tools/index_world_assets.py` indexes exact resource placements, transforms and
+node identities from serialized sectors. Use `tools/world_location_capture.py`
+for in-game planning, captures and reviewed location evidence. See the
+[world asset guide](../authoring/world-assets.md) and
+[retirement record](../history/retired-world-pipeline.md) for ownership of the
+retained historical catalog snapshots.
 
 ### Vanilla Quest Reference
 
@@ -442,32 +430,59 @@ building blocks. Machine-readable IGN-to-journal linkage is written to
 py -B .\tools\build_quest_reference.py
 ```
 
-The generator stores links and locally exported journal structure; it does not
-copy IGN walkthrough prose.
+The generator reads the checked-in index snapshot by default and records input
+and generator hashes. `--refresh-indexes` explicitly fetches new links. See
+`reference/quests/README.md` for reproducible offline generation and provenance.
+It stores links and locally exported journal structure, not IGN walkthrough prose.
 
 ### Typed Quest Composition
 
-`tools/quest_compiler.py` validates typed linear quest manifests and emits a
-deterministic orchestration questphase, instantiated child questphases, and a
-normalized build plan. Simple objective, item, shard, and phone blocks are
-generated directly. Meeting, hacking, delivery, device, combat, investigation,
-branching, escort, carry, and vehicle blocks use reduced raw CR2W-JSON
-templates with strict scalar bindings. Nineteen reusable template-backed
-blocks have compiler-owned defaults, so normal manifests do not expose
-template placeholders. Scene, world, journal, localization, community AI, and
-device placement remain separate stage-owned build products.
+`tools/quest_compiler.py` validates typed quest manifests and emits deterministic
+root and child phases plus a normalized plan. Linear shorthand, named outcomes,
+explicit transitions, and declared all-of groups share the stage registry.
+Generated blocks support variable escort routes, timed defense, N-way choices,
+and K-distinct-clue investigation. Existing template shapes remain compatible.
+Composition declarations generate journals and onscreen localization in the
+same staged artifact set. All ten active story/test manifests use this path;
+GQ000 remains the preserved prototype/runtime baseline. Scene content and world
+placement remain explicit authored inputs.
 
 ```powershell
 py -B .\tools\quest_compiler.py validate `
-  .\quests\story\ghostline\gq001\implementation\quest.json
+  .\projects\ghostline\quests\gq001\implementation\quest.json
 
 py -B .\tools\quest_compiler.py compile `
-  .\quests\story\ghostline\gq001\implementation\quest.json `
+  .\projects\ghostline\quests\gq001\implementation\quest.json `
   --out .\converted\quests\gq001\gq001.questphase.json
 ```
 
 See `tools/quest_spec.md` for the schema, readiness rules, and current
 meet-hack-meet-deliver acceptance manifest.
+
+`tools/quest_build.py` is the shared complete-build API used by quest entry
+points. It relocates previews, converts the complete resource set before
+publication, and records owned paths with rollback support. Use the owning
+entry point when regenerating a quest's complete content:
+
+```powershell
+py -B .\projects\ghostline\quests\gq001\implementation\build.py `
+  --out-root .\generated\quest-builds\gq001
+py -B .\projects\ghostline\quests\gq003\implementation\build.py `
+  --out-root .\generated\quest-builds\gq003 --allow-planned
+```
+
+Add `--deserialize` for staged raw/binary publication. GQ003's planned build
+requires an isolated output root. `quest_build.main(manifest, root_resource,
+argv=None)` serves simple wrappers; specialized builders pass a complete
+`QuestArtifact` list to `publish_build(...)` and may use `relocate_artifacts(...)`
+to inspect preview destinations. See the composition guide for metadata,
+serializer selection, and publication boundaries.
+
+`tools/quest_authoring.py` expands reusable recipes and aliases;
+`tools/quest_catalog.py` generates the registry catalog and records hash-bound
+build evidence; `tools/quest_scenarios.py` previews named routes and runs
+structural signal scenarios. See [quest composition](../authoring/quest-composition.md)
+and [block evidence and scenarios](../authoring/quest-blocks.md).
 
 The standalone generated-phone example is:
 
@@ -501,7 +516,7 @@ Their vanilla provenance and deliberately supported shapes are documented in
 
 `tools/explore_questphase.py` inspects deserialized questphase JSON. The
 default target is
-`source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`.
+`projects/shared/ghostline-runtime/source/raw/mod/gq000/phases/gq000_patch_meet.questphase.json`.
 
 ```powershell
 py .\tools\explore_questphase.py summary
@@ -518,7 +533,7 @@ py .\tools\explore_questphase.py dot > questphase.dot
 Pass another raw questphase with `--file`:
 
 ```powershell
-py .\tools\explore_questphase.py --file .\source\raw\mod\gq000\phases\gq000.questphase.json summary
+py .\tools\explore_questphase.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\phases\gq000.questphase.json summary
 ```
 
 Large lists are bounded by default. Use `--limit`, `--offset`, or `--limit 0`
@@ -536,7 +551,7 @@ py -B .\tools\generate_cache_phase.py --dry-run
 py -B .\tools\generate_cache_phase.py
 py -B -m unittest tests.test_generate_cache_phase -v
 py -B .\tools\explore_questphase.py `
-  --file .\source\raw\mod\gq000\phases\gq000_post_accept.questphase.json `
+  --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\phases\gq000_post_accept.questphase.json `
   summary
 ```
 
@@ -557,7 +572,7 @@ py -B .\tools\generate_delivery_phase.py --dry-run
 py -B .\tools\generate_delivery_phase.py
 py -B -m unittest tests.test_generate_delivery_phase -v
 py -B .\tools\explore_questphase.py `
-  -f .\source\raw\mod\gq000\phases\gq000_delivery.questphase.json `
+  -f .\projects\shared\ghostline-runtime\source\raw\mod\gq000\phases\gq000_delivery.questphase.json `
   summary
 ```
 
@@ -568,7 +583,7 @@ vanilla delivery graphs do not consume that output.
 ## Scene Explorer
 
 `tools/explore_scene.py` inspects deserialized `.scene` CR2W-JSON. The default
-target is `source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`.
+target is `projects/shared/ghostline-runtime/source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json`.
 
 ```powershell
 py .\tools\explore_scene.py summary
@@ -597,17 +612,17 @@ py .\tools\explore_scene.py --file .\reference\vanilla_extract_json\mq007\mq007_
 
 `tools/generate_scene.py` creates fresh `.scene` CR2W-JSON from a compact JSON
 spec. The production fixture is
-`quests/story/ghostline/gq000/implementation/scenes/patch-meet.scene-spec.json`, and the spec reference is
+`projects/ghostline/quests/gq000/implementation/scenes/patch-meet.scene-spec.json`, and the spec reference is
 `tools/scene_spec.md`.
 
 ```powershell
 py .\tools\generate_scene.py example
-py .\tools\generate_scene.py audit --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
-py .\tools\generate_scene.py generate --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json --dry-run
-py .\tools\generate_scene.py generate --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
-py .\tools\generate_scene.py validate --file .\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json
+py .\tools\generate_scene.py audit --spec .\projects\ghostline\quests\gq000\implementation\scenes\patch-meet.scene-spec.json
+py .\tools\generate_scene.py generate --spec .\projects\ghostline\quests\gq000\implementation\scenes\patch-meet.scene-spec.json --dry-run
+py .\tools\generate_scene.py generate --spec .\projects\ghostline\quests\gq000\implementation\scenes\patch-meet.scene-spec.json
+py .\tools\generate_scene.py validate --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\scenes\gq000_patch_meet.scene.json --spec .\projects\ghostline\quests\gq000\implementation\scenes\patch-meet.scene-spec.json
 py -B -m unittest discover -s tests -v
-py .\tools\generate_scene.py generate --spec .\quests\story\ghostline\gq000\implementation\scenes\patch-meet.scene-spec.json --deserialize
+py .\tools\generate_scene.py generate --spec .\projects\ghostline\quests\gq000\implementation\scenes\patch-meet.scene-spec.json --deserialize
 ```
 
 The generator uses audited vanilla shells under `reference/vanilla_extract_json`
@@ -638,7 +653,7 @@ py .\tools\explore_localization.py types
 Pass one or more localization files with repeated `--file` arguments:
 
 ```powershell
-py .\tools\explore_localization.py --file .\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json --file .\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json check
+py .\tools\explore_localization.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\localization\en-us\subtitles\gq000_01.json.json --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\localization\en-us\vo\gq000_01.json.json check
 ```
 
 ## Lipsync Explorer
@@ -785,7 +800,7 @@ from clamping a generated line to the donor clip's length.
 ```powershell
 & 'H:\dinoml_v2\.venv\rocm\Scripts\python.exe' `
   .\tools\compile_lipsync_line.py `
-  .\quests\story\ghostline\gq000\voice\source\patch_i_54a4cb510257868f.wav `
+  .\projects\ghostline\quests\gq000\voice\source\patch_i_54a4cb510257868f.wav `
   .\export\civ_low_m_11_enus_40_fat.anims.glb `
   .\generated\patch\civ_low_m_11_enus_40_fat.anims.glb `
   --text 'You made it. Good. Keep your voice down.' `
@@ -853,7 +868,7 @@ py .\tools\explore_ent_app.py types
 Pass one or more raw entity/app files with repeated `--file` arguments:
 
 ```powershell
-py .\tools\explore_ent_app.py --file .\source\raw\mod\ghostline\characters\patch\patch.ent.json --file .\source\raw\mod\ghostline\characters\patch\patch.app.json summary
+py .\tools\explore_ent_app.py --file .\projects\shared\ghostline-runtime\source\raw\mod\ghostline\characters\patch\patch.ent.json --file .\projects\shared\ghostline-runtime\source\raw\mod\ghostline\characters\patch\patch.app.json summary
 ```
 
 ## Journal Explorer
@@ -864,8 +879,8 @@ default it loads the mq003 quest journal reference from `reference/journal`.
 ```powershell
 py .\tools\explore_journal.py summary
 py .\tools\explore_journal.py prefixes --with-types
-py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json tree --max-depth 6
-py .\tools\explore_journal.py -f .\source\raw\mod\gq000\journal\gq000.journal.json refs
+py .\tools\explore_journal.py -f .\projects\shared\ghostline-runtime\source\raw\mod\gq000\journal\gq000.journal.json tree --max-depth 6
+py .\tools\explore_journal.py -f .\projects\shared\ghostline-runtime\source\raw\mod\gq000\journal\gq000.journal.json refs
 ```
 
 Pass a different reference directory to the prefix command with
@@ -945,9 +960,9 @@ Pass one or more files or directories with repeated `--file` arguments:
 
 ```powershell
 py .\tools\explore_world.py --file .\reference\world\001\sectors summary
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world noderefs --limit 0
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world summary
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world noderefs --limit 0
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world communities
 ```
 
 `tools/find_collision_instances.py` fingerprints a World Inspector collision
@@ -973,8 +988,8 @@ py .\tools\find_collision_instances.py `
 
 `tools/generate_world.py` turns captured in-game coordinates into raw
 `.streamingsector.json` and `.streamingblock.json` files. The production
-meeting source is `quests/story/ghostline/gq000/implementation/world/patch-meet.world.json`. The checked-in
-`quests/story/ghostline/_quest-template/implementation/world/example.world.json` uses placeholder/reference coordinates
+meeting source is `projects/ghostline/quests/gq000/implementation/world/patch-meet.world.json`. The checked-in
+`projects/ghostline/quests/_quest-template/implementation/world/example.world.json` uses placeholder/reference coordinates
 and is tutorial input only. The full spec reference is `tools/world_spec.md`.
 
 The generator now supports several communities, several entries/spots per
@@ -993,8 +1008,8 @@ HUD/objective distance display.
 py .\tools\generate_world.py example
 py .\tools\generate_world.py hash "$/mod/npcac/#npcac_spot"
 py .\tools\generate_world.py measure -- "origin=-287.155151,-1950.40015,8.960001" "target=-280.087708,-1943.4187,8.960001"
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\_quest-template\implementation\world\example.world.json --dry-run
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json --dry-run
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\_quest-template\implementation\world\example.world.json --dry-run
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\gq000\implementation\world\patch-meet.world.json --dry-run
 ```
 
 For an intentional production update, generate the raw files first, run the
@@ -1002,12 +1017,12 @@ regression suite, inspect the generated world, then register and deserialize
 the same reviewed spec:
 
 ```powershell
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\gq000\implementation\world\patch-meet.world.json
 py -B -m unittest discover -s tests -v
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world summary
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world nodes --type Device --limit 0
-py .\tools\explore_world.py --file .\source\raw\mod\gq000\world communities
-py .\tools\generate_world.py generate --spec .\quests\story\ghostline\gq000\implementation\world\patch-meet.world.json --register --deserialize
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world summary
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world nodes --type Device --limit 0
+py .\tools\explore_world.py --file .\projects\shared\ghostline-runtime\source\raw\mod\gq000\world communities
+py .\tools\generate_world.py generate --spec .\projects\ghostline\quests\gq000\implementation\world\patch-meet.world.json --register --deserialize
 ```
 
 ## Voiceover WEM Conversion
@@ -1032,11 +1047,11 @@ ignored `generated-voices` directory.
 
 `tools/convert_wavs_to_wem.ps1` converts the current quest WAV voiceover files
 into Wwise `.wem` files. The authored WAVs live in each quest's `voice/source`
-alongside legacy duplicates; the script reads `quests/story/ghostline/gq000/script/gq000_01_manifest.json`
+alongside legacy duplicates; the script reads `projects/ghostline/quests/gq000/script/gq000_01_manifest.json`
 and selects only the 13 referenced basenames. It normalizes those WAVs into
 `wwise_conversion\ExternalSources`, writes `external_sources.wsources`, runs
 Wwise external-source conversion, and copies the results to
-`source/archive/mod/gq000/localization/en-us/vo` without deleting the WAVs.
+`projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/vo` without deleting the WAVs.
 
 ```powershell
 .\tools\convert_wavs_to_wem.ps1 -NoCopy
@@ -1075,8 +1090,12 @@ commands, rendering limitations, and validation workflow.
 `tools/world_location_capture.py` incrementally streams the serialized Night
 City sectors into an R-tree/FTS5 SQLite index, derives calibrated object and
 100 m road poses, and drives an event-gated CET/Python capture queue at exactly
-1920×1080. It supports `index`, `plan`, `capture`, `status`, `retry`, `export`,
-and CET installation. The state-restoration contract, metadata review,
+1920×1080. It supports `index`, `plan`, `capture`, `status`, `retry`, `review`,
+`export`, and CET installation. `review --limit 0` builds a read-only HTML
+gallery with quality evidence, failed previews, filters, and selected retry
+commands. Capture accepts repeatable `--location-id` and `--category` selectors;
+retrying successful captures requires explicit IDs and `--recapture`.
+The state-restoration contract, metadata review,
 commands, output layout, and acceptance gates are documented in
 `docs/authoring/world-locations.md`.
 
@@ -1101,6 +1120,10 @@ The default ignored output is
 `generated/world-locations/indoor-candidates.json`. `likely_unowned` is a
 discovery classification, not proof that a location is safe: shortlisted
 sites still require in-game access and world-state validation.
+Candidate records retain the source file SHA-256 and size, explicitly scope
+quest ownership evidence to the source sector, and mark placement-derived
+positions as unverified for walkability and visibility. A high ranking is a
+shortlist signal, not evidence of an accessible screenshot viewpoint.
 
 The standalone CET mod opens **Ghostline Indoor Locations** with the CET
 overlay. It provides ownership and score filters, text search, previous/next
@@ -1118,6 +1141,30 @@ expected node count, node-definition index, and node type), node/entity
 transforms, entity template and appearance, and selected component details.
 The same action is available as the assignable CET hotkey
 `ghostline_indoor_copy_inspected`.
+
+## GQ003 Black Lantern Scout
+
+`tools/gq003_black_lantern_scout.py` installs a quest-specific standalone CET
+mod for selecting Black Lantern's five principal origins and delivery point.
+Those sites expand into 40 manifest-derived placement targets: six site origins
+and 34 sublocations covering scenes, encounters, clues, escort gates, vehicles,
+devices, routes, and exits. The overlay also tags captures as origins,
+approaches, triggers, devices, clues,
+staging, patrol, route, vehicle, scene, cleanup, or miscellaneous anchors. It
+records position, facing, runtime area/interior labels, author notes, candidate
+review state, and an optional RedHotTools World Inspector target. Captures
+persist inside the CET mod directory and can be teleported to without losing
+the player's previous position.
+
+```powershell
+py -B .\tools\gq003_black_lantern_scout.py install-cet `
+  --game-root "H:\Cyberpunk 2077"
+py -B .\tools\gq003_black_lantern_scout.py import-log `
+  --game-root "H:\Cyberpunk 2077"
+```
+
+The import validates the runtime schema and writes
+`projects/ghostline/quests/gq003/implementation/world-candidates.json`.
 
 ## Vanilla Sex RID Catalog
 

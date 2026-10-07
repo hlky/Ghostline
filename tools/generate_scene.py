@@ -17,11 +17,12 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from cr2w_helpers import load_json, print_json
+from scene_validation import validate_reference_tables
 from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, deserialize as deserialize_cr2w
 
 
 DEFAULT_SPEC = Path(
-    "quests/story/ghostline/gq000/implementation/scenes/"
+    "projects/ghostline/quests/gq000/implementation/scenes/"
     "patch-meet.scene-spec.json"
 )
 DEFAULT_EXPORTED_DATETIME = "1970-01-01T00:00:00Z"
@@ -247,6 +248,154 @@ def prop_performer_id(prop_index: int) -> int:
     return prop_index * 256 + 2
 
 
+def euler_angles(value: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "$type": "EulerAngles",
+        "Pitch": float(value.get("pitch", 0)),
+        "Roll": float(value.get("roll", 0)),
+        "Yaw": float(value.get("yaw", 0)),
+    }
+
+
+def dynamic_entity_ref(dynamic_name: str) -> dict[str, Any]:
+    """Build the vanilla EntityRef shape used for scene-spawned performers."""
+    value = empty_entity_ref()
+    value["dynamicEntityUniqueName"] = cname(dynamic_name)
+    return value
+
+
+def build_fpp_gender_params(event_spec: dict[str, Any]) -> list[dict[str, Any]]:
+    params = event_spec.get("fpp_gender_params")
+    if not isinstance(params, dict):
+        return []
+    blend_angles = [
+        euler_angles(value)
+        for value in params.get("transition_blend_in_trajectory_space_angles", [])
+    ]
+    end_angles = [
+        euler_angles(value)
+        for value in params.get("transition_end_input_angles", [])
+    ]
+    return [
+        {
+            "$type": "scnfppGenderSpecificParams",
+            "genderMask": {"$type": "scnGenderMask", "mask": int(mask)},
+            "idleCameraLs": euler_angles({}),
+            "idleControlCameraMs": euler_angles({}),
+            "transitionBlendInCameraSpace": [],
+            "transitionBlendInTrajectorySpaceAngles": copy.deepcopy(blend_angles),
+            "transitionEndInputAngles": copy.deepcopy(end_angles),
+        }
+        for mask in params.get("gender_masks", [2, 1])
+    ]
+
+
+def build_props(
+    spec: dict[str, Any], debug_symbols: dict[str, Any]
+) -> list[dict[str, Any]]:
+    props: list[dict[str, Any]] = []
+    for raw_prop in spec.get("props", []):
+        prop_index = int(raw_prop["id"])
+        node_reference = str(raw_prop["node_ref"])
+        props.append(
+            {
+                "$type": "scnPropDef",
+                "animSets": [],
+                "cinematicAnimSets": [],
+                "communityParams": {
+                    "$type": "scnCommunityParams",
+                    "entryName": cname("None"),
+                    "forceMaxVisibility": 0,
+                    "reference": node_ref(0, storage="uint64"),
+                },
+                "dynamicAnimSets": [],
+                "entityAcquisitionPlan": "findInNode",
+                "findEntityInEntityParams": {
+                    "$type": "scnFindEntityInEntityParams",
+                    "actorId": actor_id(UINT32_NONE),
+                    "forceMaxVisibility": 0,
+                    "itemID": tweakdbid(0, storage="uint64"),
+                    "ownershipTransferOptions": {
+                        "$type": "scnPropOwnershipTransferOptions",
+                        "dettachFromSlot": 1,
+                        "removeFromInventory": 1,
+                        "type": "TransferToWorkspotSystem_Automatic",
+                    },
+                    "performerId": performer_id(PERFORMER_NONE),
+                    "slotID": tweakdbid(0, storage="uint64"),
+                },
+                "findEntityInNodeParams": {
+                    "$type": "scnFindEntityInNodeParams",
+                    "forceMaxVisibility": 0,
+                    "nodeRef": node_ref(node_reference),
+                },
+                "findEntityInWorldParams": {
+                    "$type": "scnFindEntityInWorldParams",
+                    "actorRef": empty_entity_ref(),
+                    "forceMaxVisibility": 0,
+                },
+                "propId": {"$type": "scnPropId", "id": prop_index},
+                "propName": str(raw_prop["name"]),
+                "spawnDespawnParams": {
+                    "$type": "scnSpawnDespawnEntityParams",
+                    "alwaysSpawned": 0,
+                    "appearance": cname("None"),
+                    "dynamicEntityUniqueName": cname("None"),
+                    "findInWorld": 0,
+                    "forceMaxVisibility": 0,
+                    "isEnabled": 1,
+                    "itemOwnerId": performer_id(PERFORMER_NONE),
+                    "keepAlive": 0,
+                    "prefetchAppearance": 0,
+                    "spawnMarker": cname("None"),
+                    "spawnMarkerNodeRef": node_ref(0, storage="uint64"),
+                    "spawnMarkerType": "Local",
+                    "spawnOffset": {
+                        "$type": "Transform",
+                        "orientation": {
+                            "$type": "Quaternion",
+                            "i": 0,
+                            "j": 0,
+                            "k": 0,
+                            "r": 1,
+                        },
+                        "position": {
+                            "$type": "Vector4",
+                            "W": 0,
+                            "X": 0,
+                            "Y": 0,
+                            "Z": 0,
+                        },
+                    },
+                    "spawnOnStart": 1,
+                    "specRecordId": tweakdbid(0, storage="uint64"),
+                    "validateSpawnPostion": 1,
+                },
+                "spawnerParams": {
+                    "$type": "scnSpawnerParams",
+                    "forceMaxVisibility": 0,
+                    "reference": node_ref(0, storage="uint64"),
+                },
+                "spawnSetParams": {
+                    "$type": "scnSpawnSetParams",
+                    "entryName": cname("None"),
+                    "forceMaxVisibility": 0,
+                    "reference": node_ref(0, storage="uint64"),
+                },
+                "specPropRecordId": tweakdbid(0, storage="uint64"),
+            }
+        )
+        debug_symbols["performersDebugSymbols"].append(
+            {
+                "$type": "scnPerformerSymbol",
+                "editorPerformerId": "0",
+                "entityRef": empty_entity_ref(node_reference, storage="string"),
+                "performerId": performer_id(prop_performer_id(prop_index)),
+            }
+        )
+    return props
+
+
 def build_actors(spec: dict[str, Any], base_root: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     if not base_root.get("actors") or not base_root.get("playerActors"):
         raise SceneBuildError("Base scene must contain at least one NPC actor and one player actor shell")
@@ -273,13 +422,19 @@ def build_actors(spec: dict[str, Any], base_root: dict[str, Any]) -> tuple[list[
             actor["actorId"] = actor_id(actor_index)
             actor["actorName"] = actor_name
             actor["acquisitionPlan"] = "community"
-            actor["animSets"] = []
+            actor["animSets"] = [
+                {"$type": "scnSRRefId", "id": int(value)}
+                for value in raw_actor.get("rid_anim_sets", [])
+            ]
             actor["bodyCinematicAnimSets"] = []
             actor["cyberwareAnimSets"] = []
             actor["cyberwareCinematicAnimSets"] = []
             actor["deformationAnimSets"] = []
             actor["dynamicAnimSets"] = []
-            actor["facialAnimSets"] = []
+            actor["facialAnimSets"] = [
+                {"$type": "scnRidFacialAnimSetSRRefId", "id": int(value)}
+                for value in raw_actor.get("rid_facial_anim_sets", [])
+            ]
             actor["facialCinematicAnimSets"] = []
             actor["communityParams"]["entryName"] = cname(str(raw_actor["entry"]))
             actor["communityParams"]["reference"] = node_ref(str(raw_actor["community_ref"]))
@@ -294,13 +449,19 @@ def build_actors(spec: dict[str, Any], base_root: dict[str, Any]) -> tuple[list[
             actor["actorId"] = actor_id(actor_index)
             actor["playerName"] = actor_name
             actor["acquisitionPlan"] = "findInContext"
-            actor["animSets"] = []
+            actor["animSets"] = [
+                {"$type": "scnSRRefId", "id": int(value)}
+                for value in raw_actor.get("rid_anim_sets", [])
+            ]
             actor["bodyCinematicAnimSets"] = []
             actor["cyberwareAnimSets"] = []
             actor["cyberwareCinematicAnimSets"] = []
             actor["deformationAnimSets"] = []
             actor["dynamicAnimSets"] = []
-            actor["facialAnimSets"] = []
+            actor["facialAnimSets"] = [
+                {"$type": "scnRidFacialAnimSetSRRefId", "id": int(value)}
+                for value in raw_actor.get("rid_facial_anim_sets", [])
+            ]
             actor["facialCinematicAnimSets"] = []
             record = str(raw_actor.get("record", "Character.Player_Puppet_Base"))
             actor["findActorInContextParams"]["contextualName"] = str(raw_actor.get("contextual_name", "Player"))
@@ -312,6 +473,90 @@ def build_actors(spec: dict[str, Any], base_root: dict[str, Any]) -> tuple[list[
             actor["voicetagId"] = {"$type": "scnVoicetagId", "id": str(raw_actor.get("voicetag", "1103967280742240864"))}
             player_actors.append(actor)
             debug_ref = empty_entity_ref("#player", storage="string")
+        elif actor_kind == "spawn":
+            actor = copy.deepcopy(npc_shell)
+            dynamic_name = str(raw_actor["dynamic_name"])
+            actor["actorId"] = actor_id(actor_index)
+            actor["actorName"] = actor_name
+            actor["acquisitionPlan"] = "spawnDespawn"
+            actor["animSets"] = [
+                {"$type": "scnSRRefId", "id": int(value)}
+                for value in raw_actor.get("rid_anim_sets", [])
+            ]
+            actor["bodyCinematicAnimSets"] = []
+            actor["cyberwareAnimSets"] = []
+            actor["cyberwareCinematicAnimSets"] = []
+            actor["deformationAnimSets"] = []
+            actor["dynamicAnimSets"] = []
+            actor["facialAnimSets"] = [
+                {"$type": "scnRidFacialAnimSetSRRefId", "id": int(value)}
+                for value in raw_actor.get("rid_facial_anim_sets", [])
+            ]
+            actor["facialCinematicAnimSets"] = []
+            # The NPC shell is sourced from a community-acquired actor.  A
+            # spawn/despawn actor must not retain that shell's community key:
+            # the scene owns it exclusively through its dynamic name/record.
+            actor["communityParams"] = {
+                "$type": "scnCommunityParams",
+                "entryName": cname("None"),
+                "forceMaxVisibility": 0,
+                "reference": node_ref(0, storage="uint64"),
+            }
+            actor["lipsyncAnimSet"] = {
+                "$type": "scnLipsyncAnimSetSRRefId",
+                "id": int(raw_actor.get("lipsync", UINT32_NONE)),
+            }
+            actor["spawnDespawnParams"] = {
+                "$type": "scnSpawnDespawnEntityParams",
+                "alwaysSpawned": 1 if raw_actor.get("always_spawned", False) else 0,
+                "appearance": cname(str(raw_actor.get("appearance", "default"))),
+                "dynamicEntityUniqueName": cname(dynamic_name),
+                "findInWorld": 0,
+                "forceMaxVisibility": 1
+                if raw_actor.get("force_max_visibility", False)
+                else 0,
+                "isEnabled": 1,
+                "itemOwnerId": performer_id(PERFORMER_NONE),
+                "keepAlive": 1 if raw_actor.get("keep_alive", False) else 0,
+                "prefetchAppearance": 1
+                if raw_actor.get("prefetch_appearance", False)
+                else 0,
+                "spawnMarker": cname("None"),
+                "spawnMarkerNodeRef": node_ref(str(raw_actor["spawn_marker"])),
+                "spawnMarkerType": str(raw_actor.get("spawn_marker_type", "Global")),
+                "spawnOffset": {
+                    "$type": "Transform",
+                    "orientation": {
+                        "$type": "Quaternion",
+                        "i": 0,
+                        "j": 0,
+                        "k": 0,
+                        "r": 1,
+                    },
+                    "position": {
+                        "$type": "Vector4",
+                        "W": 0,
+                        "X": 0,
+                        "Y": 0,
+                        "Z": 0,
+                    },
+                },
+                "spawnOnStart": 1 if raw_actor.get("spawn_on_start", True) else 0,
+                "specRecordId": tweakdbid(str(raw_actor["record"])),
+                "validateSpawnPostion": 1
+                if raw_actor.get("validate_spawn_position", True)
+                else 0,
+            }
+            actor["specAppearance"] = cname(
+                str(raw_actor.get("appearance", "default"))
+            )
+            actor["specCharacterRecordId"] = tweakdbid(0, storage="uint64")
+            actor["voicetagId"] = {
+                "$type": "scnVoicetagId",
+                "id": str(raw_actor.get("voicetag", "0")),
+            }
+            actors.append(actor)
+            debug_ref = dynamic_entity_ref(dynamic_name)
         else:
             raise SceneBuildError(f"Unsupported actor kind: {actor_kind}")
 
@@ -334,7 +579,16 @@ def build_resource_refs(spec: dict[str, Any]) -> dict[str, Any]:
             r"base\animations\facial\generic\interactive_scene\generic_facial_lipsync_gestures.anims",
         )
     )
-    count = max(int(actor.get("lipsync", actor.get("id", 0))) for actor in spec.get("actors", [])) + 1
+    lipsync_ids = []
+    for actor in spec.get("actors", []):
+        value = actor.get("lipsync")
+        if value is None:
+            if actor.get("kind") == "spawn":
+                continue
+            value = actor.get("id", 0)
+        if int(value) != UINT32_NONE:
+            lipsync_ids.append(int(value))
+    count = max(lipsync_ids, default=-1) + 1
     lipsync_refs = [
         {
             "$type": "scnLipsyncAnimSetSRRef",
@@ -353,13 +607,177 @@ def build_resource_refs(spec: dict[str, Any]) -> dict[str, Any]:
         "gameplayAnimSets": [],
         "lipsyncAnimSets": lipsync_refs,
         "ridAnimationContainers": [],
-        "ridAnimations": [],
-        "ridAnimSets": [],
-        "ridCameraAnimations": [],
+        "ridAnimations": [
+            {
+                "$type": "scnRidAnimationSRRef",
+                "animationSN": {"$type": "scnRidSerialNumber", "serialNumber": int(ref["serial_number"])},
+                "resourceId": {"$type": "scnRidResourceId", "id": int(ref["resource_id"])},
+            }
+            for ref in spec.get("rid_animations", [])
+        ],
+        "ridAnimSets": [
+            {
+                "$type": "scnRidAnimSetSRRef",
+                "animations": [
+                    {"$type": "scnSRRefId", "id": int(animation_id)}
+                    for animation_id in value.get("animations", [])
+                ],
+            }
+            for value in spec.get("rid_anim_sets", [])
+        ],
+        "ridCameraAnimations": [
+            {
+                "$type": "scnRidCameraAnimationSRRef",
+                "animationSN": {"$type": "scnRidSerialNumber", "serialNumber": int(ref["serial_number"])},
+                "resourceId": {"$type": "scnRidResourceId", "id": int(ref["resource_id"])},
+            }
+            for ref in spec.get("rid_camera_animations", [])
+        ],
         "ridCyberwareAnimSets": [],
         "ridDeformationAnimSets": [],
-        "ridFacialAnimSets": [],
+        "ridFacialAnimSets": [
+            {
+                "$type": "scnRidAnimSetSRRef",
+                "animations": [
+                    {"$type": "scnSRRefId", "id": int(animation_id)}
+                    for animation_id in value.get("animations", [])
+                ],
+            }
+            for value in spec.get("rid_facial_anim_sets", [])
+        ],
     }
+
+
+def rid_marker(node_ref_value: str) -> dict[str, Any]:
+    return {
+        "$type": "scnMarker",
+        "entityRef": empty_entity_ref(),
+        "isMounted": 1,
+        "localMarkerId": cname("None"),
+        "nodeRef": node_ref(node_ref_value),
+        "slotName": cname("None"),
+        "type": "Global",
+    }
+
+
+def rid_anim_event(
+    scene_name: str,
+    section_key: str,
+    event_index: int,
+    event_spec: dict[str, Any],
+    actors: dict[str, dict[str, Any]],
+    alloc: HandleAllocator,
+) -> dict[str, Any]:
+    actor = actors[str(event_spec["actor"]).casefold()]
+    is_player = bool(event_spec.get("fpp", False))
+    event = {
+        "$type": "scnPlayRidAnimEvent",
+        "actorComponent": cname(str(event_spec.get("component", "body"))),
+        "actorHasCollision": 1,
+        "actorPlacement": "SceneOrigin",
+        "animData": {
+            "$type": "scneventsPlayAnimEventExData",
+            "basic": {"$type": "scneventsPlayAnimEventData", "blendIn": 0, "blendInCurve": "SinusoidalEaseInOut", "blendOut": 0, "blendOutCurve": "SinusoidalEaseInOut", "clipEnd": 0, "clipFront": 0, "stretch": 1},
+            "bodyPartMask": cname("None"),
+            "weight": 1,
+        },
+        "animOriginMarker": rid_marker(str(event_spec["origin"])),
+        "animResRefId": {"$type": "scnRidAnimationSRRefId", "id": int(event_spec["anim_ref_id"])},
+        "blendInTrajectoryBone": 0,
+        "blendOverride": "CopyPitch_CopyYaw",
+        "cameraBlendInDuration": 0.5,
+        "cameraBlendOutDuration": 0.5,
+        "cameraParallaxSpace": "Camera" if is_player else "Trajectory",
+        "cameraParallaxWeight": 0,
+        "cameraUseTrajectorySpace": 1,
+        "convertToAdditive": 0,
+        "duration": int(event_spec["duration_ms"]),
+        "enableWorldSpaceSmoothing": 1,
+        "executionTagFlags": 0,
+        "eyesBlendAdditive": 1,
+        "FPPControlActive": 1 if is_player else 0,
+        "gameplayAnimName": alloc.wrap({"$type": "scnAnimName", "type": "direct", "unk1": [cname("None")], "unk2": []}),
+        "genderSpecificParams": build_fpp_gender_params(event_spec),
+        "id": {"$type": "scnSceneEventId", "id": deterministic_event_id(scene_name, section_key, f"rid_{event_index}", int(event_spec["anim_ref_id"]))},
+        "idleIsMountedWorkspot": 0,
+        "isSceneCarrying": 0,
+        "lowerFaceBlendAdditive": 1,
+        "muteAnimEvents": "0",
+        "neckWeight": 1,
+        "performer": performer_id(actor_performer_id(actor.id)),
+        "pitchLimitBottom": 0,
+        "pitchLimitTop": 0,
+        "ridVersinon": 5,
+        "scalingData": None,
+        "startTime": int(event_spec.get("start_time_ms", 0)),
+        "stayInScene": 0,
+        "type": "0",
+        "upperFaceBlendAdditive": 1,
+        "vehicleProceduralCameraWeight": 0,
+        "yawLimitLeft": 0,
+        "yawLimitRight": 0,
+    }
+    return alloc.wrap(event)
+
+
+def rid_camera_event(scene_name: str, section_key: str, event_spec: dict[str, Any], alloc: HandleAllocator) -> dict[str, Any]:
+    return alloc.wrap({
+        "$type": "scneventsPlayRidCameraAnimEvent",
+        "activateAsGameCamera": 1,
+        "animData": {"$type": "scneventsPlayAnimEventData", "blendIn": 0, "blendInCurve": "Linear", "blendOut": 0, "blendOutCurve": "Linear", "clipEnd": 0, "clipFront": 0, "stretch": 1},
+        "animOriginMarker": rid_marker(str(event_spec["origin"])),
+        "animSRRefId": {"$type": "scnRidCameraAnimationSRRefId", "id": int(event_spec["camera_ref_id"])},
+        "cameraPlacement": "SceneOrigin",
+        "cameraRef": node_ref(str(event_spec["camera_ref"])),
+        "controlRenderToTextureState": 0,
+        "duration": int(event_spec["duration_ms"]),
+        "executionTagFlags": 0,
+        "id": {"$type": "scnSceneEventId", "id": deterministic_event_id(scene_name, section_key, "rid_camera", int(event_spec["camera_ref_id"]))},
+        "markCamerCut": 1,
+        "scalingData": None,
+        "startTime": int(event_spec.get("start_time_ms", 0)),
+        "type": "0",
+    })
+
+
+def camera_event(
+    scene_name: str,
+    section_key: str,
+    event_spec: dict[str, Any],
+    alloc: HandleAllocator,
+) -> dict[str, Any]:
+    """Activate a world camera for a section without playing a RID camera."""
+    blend_time = float(event_spec.get("blend_time_seconds", 0))
+    if blend_time < 0:
+        raise SceneBuildError("camera_event blend_time_seconds cannot be negative")
+    duration = int(event_spec["duration_ms"])
+    if duration <= 0:
+        raise SceneBuildError("camera_event duration_ms must be positive")
+    return alloc.wrap(
+        {
+            "$type": "scneventsCameraEvent",
+            "blendTime": blend_time,
+            "cameraRef": node_ref(str(event_spec["camera_ref"])),
+            "duration": duration,
+            "executionTagFlags": 0,
+            "id": {
+                "$type": "scnSceneEventId",
+                "id": deterministic_event_id(
+                    scene_name,
+                    section_key,
+                    "camera",
+                    str(event_spec["camera_ref"]),
+                ),
+            },
+            # isBlendIn selects whether this event acquires or releases the
+            # referenced world camera. Blend time controls the transition in
+            # either direction; zero is a hard cut.
+            "isBlendIn": int(bool(event_spec.get("blend_in", True))),
+            "scalingData": None,
+            "startTime": int(event_spec.get("start_time_ms", 0)),
+            "type": "0",
+        }
+    )
 
 
 def build_screenplay_store(
@@ -501,6 +919,74 @@ def dialog_event(scene_name: str, section_key: str, line_key: str, line_id: int,
     )
 
 
+def actor_look_at_event(
+    scene_name: str,
+    section_key: str,
+    event_index: int,
+    event_spec: dict[str, Any],
+    actors: dict[str, dict[str, Any]],
+    duration: int,
+    alloc: HandleAllocator,
+) -> dict[str, Any]:
+    performer = actors[str(event_spec["actor"])]
+    target = actors[str(event_spec["target"])]
+    return alloc.wrap(
+        {
+            "$type": "scnLookAtEvent",
+            "basicData": {
+                "$type": "scnLookAtBasicEventData",
+                "basic": {
+                    "$type": "scnAnimTargetBasicData",
+                    "isStart": 1,
+                    "performerId": performer_id(actor_performer_id(performer.id)),
+                    "staticTarget": {"$type": "Vector4", "W": 1, "X": 0, "Y": 0, "Z": 0},
+                    "targetActorId": actor_id(4294967295),
+                    "targetOffsetEntitySpace": {"$type": "Vector4", "W": 0, "X": 0, "Y": 0, "Z": 0},
+                    "targetPerformerId": performer_id(actor_performer_id(target.id)),
+                    "targetPropId": {"$type": "scnPropId", "id": 4294967295},
+                    "targetSlot": cname(str(event_spec.get("target_slot", "pla_default_tgt"))),
+                    "targetType": "Actor",
+                },
+                "removePreviousAdvancedLookAts": 1,
+                "requests": [
+                    {
+                        "$type": "animLookAtRequestForPart",
+                        "attachLeftHandToRightHand": -1,
+                        "attachRightHandToLeftHand": -1,
+                        "bodyPart": cname("Eyes"),
+                        "request": {
+                            "$type": "animLookAtRequest",
+                            "additionalParts": {
+                                "Elements": [
+                                    {"$type": "animLookAtPartRequest", "mode": 0, "partName": cname("Head"), "suppress": 0, "weight": 1},
+                                    {"$type": "animLookAtPartRequest", "mode": 0, "partName": cname("Chest"), "suppress": 0, "weight": 1},
+                                ]
+                            },
+                            "calculatePositionInParentSpace": 0,
+                            "debugInfo": "Ghostline: Goth looks down at V",
+                            "followingSpeedFactorOverride": -1,
+                            "hasOutTransition": 0,
+                            "invalid": 0,
+                            "limits": {"$type": "animLookAtLimits", "backLimitDegrees": 210, "hardLimitDegrees": 270, "hardLimitDistance": 1000000, "softLimitDegrees": 140},
+                            "mode": 0,
+                            "outTransitionSpeed": 60,
+                            "priority": -1,
+                            "suppress": 0,
+                            "transitionSpeed": 140,
+                        },
+                    }
+                ],
+            },
+            "duration": int(event_spec.get("duration_ms", duration)),
+            "executionTagFlags": 0,
+            "id": {"$type": "scnSceneEventId", "id": deterministic_event_id(scene_name, section_key, "actor_look_at", event_index)},
+            "scalingData": None,
+            "startTime": int(event_spec.get("start_ms", 0)),
+            "type": "0",
+        }
+    )
+
+
 def build_section_node(
     spec: dict[str, Any],
     section_spec: dict[str, Any],
@@ -508,6 +994,12 @@ def build_section_node(
     line_ids: dict[str, int],
     alloc: HandleAllocator,
 ) -> dict[str, Any]:
+    if "rid_camera" in section_spec and "camera_event" in section_spec:
+        raise SceneBuildError(
+            f"Section {section_spec['key']} cannot declare both rid_camera and "
+            "camera_event"
+        )
+
     line_events = []
     start = 0
     gap = int(section_spec.get("line_gap_ms", spec.get("line_gap_ms", 250)))
@@ -517,10 +1009,30 @@ def build_section_node(
         line_events.append(dialog_event(str(spec["name"]), str(section_spec["key"]), line_key, line_ids[line_key], start, duration, alloc))
         start += duration + gap
 
-    if line_events:
+    actors = actor_lookup(spec)
+    for event_index, event_spec in enumerate(section_spec.get("rid_events", [])):
+        line_events.append(rid_anim_event(str(spec["name"]), str(section_spec["key"]), event_index, event_spec, actors, alloc))
+    if "rid_camera" in section_spec:
+        line_events.append(rid_camera_event(str(spec["name"]), str(section_spec["key"]), section_spec["rid_camera"], alloc))
+    if "camera_event" in section_spec:
+        line_events.append(
+            camera_event(
+                str(spec["name"]),
+                str(section_spec["key"]),
+                section_spec["camera_event"],
+                alloc,
+            )
+        )
+
+    if section_spec.get("rid_duration_ms") is not None:
+        section_duration = int(section_spec["rid_duration_ms"])
+    elif line_events:
         section_duration = start - gap + int(section_spec.get("tail_padding_ms", spec.get("section_tail_padding_ms", 400)))
     else:
         section_duration = int(section_spec.get("section_duration_ms", 1000))
+
+    for event_index, event_spec in enumerate(section_spec.get("look_at_events", [])):
+        line_events.append(actor_look_at_event(str(spec["name"]), str(section_spec["key"]), event_index, event_spec, actors, section_duration, alloc))
 
     actor_behaviors = [
         {"$type": "scnSectionInternalsActorBehavior", "actorId": actor_id(int(actor["id"])), "behaviorMode": "OnlyIfAlive"}
@@ -672,6 +1184,554 @@ def build_puppet_ai_node(node_spec: dict[str, Any], alloc: HandleAllocator) -> d
     return alloc.wrap(data)
 
 
+def build_use_workspot_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    node_id = int(node_spec["node_id"])
+    function = str(node_spec.get("function", "UseWorkspot"))
+    stopping = function == "StopWorkspot"
+    inputs = ["CutDestination", "In"]
+    outputs = ["Success"] if stopping else ["Success", "Work Started"]
+    data, quest = build_quest_node_base(
+        node_id,
+        "questUseWorkspotNodeDefinition",
+        inputs,
+        outputs,
+        [],
+        alloc,
+    )
+    data["outputSockets"] = [
+        output_socket(
+            0,
+            0,
+            [
+                (
+                    int(dest["node_id"]),
+                    int(dest.get("input_name", 0)),
+                    int(dest.get("input_ordinal", 0)),
+                )
+                for dest in node_spec.get("on_success", [])
+            ],
+        )
+    ]
+    if not stopping:
+        data["outputSockets"].append(
+            output_socket(
+                0,
+                1,
+                [
+                    (
+                        int(dest["node_id"]),
+                        int(dest.get("input_name", 0)),
+                        int(dest.get("input_ordinal", 0)),
+                    )
+                    for dest in node_spec.get("on_work_started", [])
+                ],
+            )
+        )
+    quest["entityReference"] = empty_entity_ref(
+        str(node_spec["entity_ref"]),
+        storage="string",
+        names=[str(node_spec["entry"])],
+    )
+    quest["paramsV1"] = alloc.wrap(
+        {
+            "$type": "questUseWorkspotParamsV1",
+            "changeWorkspot": 1,
+            "continueInCombat": 0,
+            "dangleResetSimulation": 0,
+            "enableIdleMode": 0,
+            "entryId": {
+                "$type": "workWorkEntryId",
+                "id": int(node_spec.get("entry_id", UINT32_NONE)),
+            },
+            "entryTag": cname(str(node_spec.get("entry_tag", "None"))),
+            "exitAnimName": cname("None"),
+            "exitEntryId": {"$type": "workWorkEntryId", "id": UINT32_NONE},
+            "finishAnimation": int(bool(node_spec.get("finish_animation", True))),
+            "forceEntryAnimName": cname(
+                str(node_spec.get("force_entry_animation", "None"))
+            ),
+            "function": function,
+            "instant": int(bool(node_spec.get("instant", False))),
+            "isPlayer": 0,
+            "isWorkspotInfinite": int(
+                bool(node_spec.get("is_workspot_infinite", True))
+            ),
+            "jumpToEntry": int(bool(node_spec.get("jump_to_entry", False))),
+            "maxAnimTimeLimit": float(node_spec.get("max_anim_time_limit", 0)),
+            "meshDissolvingEnabled": 1,
+            "movementType": str(node_spec.get("movement_type", "Walk")),
+            "playerParams": {
+                "$type": "questUseWorkspotPlayerParams",
+                "applyCameraParams": 0,
+                "cameraSettings": {
+                    "$type": "gameTier3CameraSettings",
+                    "pitchBottomLimit": 45,
+                    "pitchSpeedMultiplier": 1,
+                    "pitchTopLimit": 60,
+                    "yawLeftLimit": 60,
+                    "yawRightLimit": 60,
+                    "yawSpeedMultiplier": 1,
+                },
+                "cameraUseTrajectorySpace": 1,
+                "emptyHands": 0,
+                "parallaxSpace": "Trajectory",
+                "parallaxWeight": 1,
+                "tier": "Tier3",
+                "vehicleProceduralCameraWeight": 1,
+            },
+            "repeatCommandOnInterrupt": int(
+                bool(node_spec.get("repeat_on_interrupt", True))
+            ),
+            "teleport": int(bool(node_spec.get("teleport", not stopping))),
+            "workExcludedGestures": [],
+            "workspotNode": node_ref(str(node_spec["workspot_ref"])),
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_stop_workspot_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    return build_use_workspot_node(
+        {**node_spec, "function": "StopWorkspot", "teleport": False}, alloc
+    )
+
+
+def build_appearance_node(node_spec: dict[str, Any], alloc: HandleAllocator) -> dict[str, Any]:
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questCharacterManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    appearance_entry = {
+        "$type": "questCharacterManagerVisuals_EntityAppearanceOperationBaseEntityAppearanceEntry",
+        "appearanceName": cname(str(node_spec["appearance"])),
+        "isPlayer": 0,
+        "puppetRef": empty_entity_ref(
+            str(node_spec["entity_ref"]),
+            storage="string",
+            names=[str(node_spec["entry"])],
+        ),
+    }
+    quest["type"] = alloc.wrap(
+        {
+            "$type": "questCharacterManagerVisuals_NodeType",
+            "subtype": alloc.wrap(
+                {
+                    "$type": "questCharacterManagerVisuals_ChangeEntityAppearance",
+                    "appearanceEntries": [appearance_entry],
+                }
+            ),
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_scene_tier_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questSceneManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    quest["type"] = alloc.wrap(
+        {
+            "$type": "questSetTier_NodeType",
+            "forceEmptyHands": 1 if node_spec.get("force_empty_hands", False) else 0,
+            "motionConstrainedTierDataParams": {
+                "$type": "gameMotionConstrainedTierDataParams",
+                "adjustingDuration": 0,
+                "adjustingSpeed": 0,
+                "notificationBackwardIndex": 0,
+                "splineRef": node_ref(0, storage="uint64"),
+                "travellingDuration": 0,
+                "travellingSpeed": 0,
+            },
+            "tier": str(node_spec["tier"]),
+            "useEnterAnim": 0,
+            "useExitAnim": 0,
+            "usePlayerWorkspot": 0,
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_unequip_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator, *, is_player: bool
+) -> dict[str, Any]:
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questEquipItemNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    if is_player:
+        entity_reference = empty_entity_ref()
+    else:
+        entity_reference = empty_entity_ref(
+            str(node_spec["entity_ref"]),
+            storage="string",
+            names=[str(node_spec["entry"])],
+        )
+    quest["entityReference"] = alloc.wrap(
+        {
+            "$type": "questObservableUniversalRef",
+            "entityReference": entity_reference,
+            "mainPlayerObject": 0,
+            "refLocalPlayer": 1 if is_player else 0,
+        }
+    )
+    item_id = node_spec.get("item_id", 0)
+    item_storage = "string" if isinstance(item_id, str) else "uint64"
+    slot_id = node_spec.get("slot_id", 0)
+    slot_storage = "string" if isinstance(slot_id, str) else "uint64"
+    quest["params"] = alloc.wrap(
+        {
+            "$type": "questEquipItemParams",
+            "byItem": 1 if node_spec.get("by_item", False) else 0,
+            "equipDurationOverride": node_spec.get("equip_duration_override", -1),
+            "equipLastWeapon": 0,
+            "equipTypes": "LastWeaponEquipped",
+            "failIfItemNotFound": 0,
+            "forceFirstEquip": 0,
+            "ignoreStateMachine": 0,
+            "instant": 1 if node_spec.get("instant", False) else 0,
+            "isPlayer": 1 if is_player else 0,
+            "itemId": tweakdbid(item_id, storage=item_storage),
+            "slotId": tweakdbid(slot_id, storage=slot_storage),
+            "type": str(node_spec.get("operation", "Unequip")),
+            "unequipDurationOverride": node_spec.get(
+                "unequip_duration_override", -1
+            ),
+            "unequipTypes": str(node_spec.get("unequip_types", "AllWeapons")),
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_unequip_player_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    return build_unequip_node(node_spec, alloc, is_player=True)
+
+
+def build_unequip_actor_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    return build_unequip_node(node_spec, alloc, is_player=False)
+
+
+def build_equip_player_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    equip_spec = dict(node_spec)
+    equip_spec["operation"] = "Equip"
+    return build_unequip_node(equip_spec, alloc, is_player=True)
+
+
+def build_equip_actor_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    equip_spec = dict(node_spec)
+    equip_spec["operation"] = "Equip"
+    return build_unequip_node(equip_spec, alloc, is_player=False)
+
+
+def build_teleport_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator, *, is_player: bool
+) -> dict[str, Any]:
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questTeleportPuppetNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    if is_player:
+        target_ref = empty_entity_ref()
+    else:
+        target_ref = empty_entity_ref(
+            str(node_spec["entity_ref"]),
+            storage="string",
+            names=[str(node_spec["entry"])],
+        )
+    quest["entityReference"] = alloc.wrap(
+        {
+            "$type": "questUniversalRef",
+            "entityReference": target_ref,
+            "mainPlayerObject": 0,
+            "refLocalPlayer": 1 if is_player else 0,
+        }
+    )
+    look_at_ref = node_spec.get("look_at_ref")
+    quest["lookAtAction"] = "Set" if look_at_ref else "Reset"
+    quest["params"] = alloc.wrap(
+        {
+            "$type": "questTeleportPuppetParamsV1",
+            "destinationOffset": {
+                "$type": "Vector3",
+                "X": 0,
+                "Y": 0,
+                "Z": 0,
+            },
+            "destinationRef": alloc.wrap(
+                {
+                    "$type": "questUniversalRef",
+                    "entityReference": empty_entity_ref(
+                        str(node_spec["destination_ref"]), storage="string"
+                    ),
+                    "mainPlayerObject": 0,
+                    "refLocalPlayer": 0,
+                }
+            ),
+            "doNavTest": 0,
+            "healAtTeleport": 1 if node_spec.get("heal", False) else 0,
+            "useFastTravelMechanism": 0,
+        }
+    )
+    quest["playerLookAt"] = alloc.wrap(
+        {
+            "$type": "questPlayerLookAtParams",
+            "adjustPitch": 1,
+            "adjustYaw": 1,
+            "cameraInputMagToBreak": 0.2,
+            "duration": 0.25,
+            "easeIn": 1,
+            "easeOut": 1,
+            "endOnCameraInputApplied": 1,
+            "endOnTargetReached": 1,
+            "endOnTimeExceeded": 1,
+            "lookAtTarget": empty_entity_ref(
+                str(look_at_ref),
+                storage="string",
+                names=(
+                    [str(node_spec["look_at_entry"])]
+                    if node_spec.get("look_at_entry")
+                    else None
+                ),
+            ) if look_at_ref else empty_entity_ref(),
+            "maxDuration": 2,
+            "offset": {"$type": "Vector3", "X": 0, "Y": 0, "Z": 0},
+            "precision": 0.1,
+            "slotName": cname("None"),
+            "useOffsetToPlayer": 0 if look_at_ref else 1,
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_teleport_player_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    return build_teleport_node(node_spec, alloc, is_player=True)
+
+
+def build_teleport_actor_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    return build_teleport_node(node_spec, alloc, is_player=False)
+
+
+def build_realtime_delay_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questPauseConditionNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    quest["condition"] = alloc.wrap(
+        {
+            "$type": "questTimeCondition",
+            "type": alloc.wrap(
+                {
+                    "$type": "questRealtimeDelay_ConditionType",
+                    "hours": int(node_spec.get("hours", 0)),
+                    "miliseconds": int(node_spec.get("milliseconds", 0)),
+                    "minutes": int(node_spec.get("minutes", 0)),
+                    "seconds": int(node_spec.get("seconds", 0)),
+                }
+            ),
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_render_fade_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    """Fade to or from black using the vanilla scene handoff node."""
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    duration = float(node_spec.get("duration_seconds", 0))
+    if duration < 0:
+        raise SceneBuildError("render_fade duration_seconds cannot be negative")
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questRenderFxManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    quest["type"] = alloc.wrap(
+        {
+            "$type": "questSetFadeInOut_NodeType",
+            "duration": duration,
+            "fadeColor": {
+                "$type": "Color",
+                "Alpha": 0,
+                "Blue": 0,
+                "Green": 0,
+                "Red": 0,
+            },
+            "fadeIn": 1 if node_spec.get("fade_in", True) else 0,
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_player_look_at_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    """Aim the player camera at an entity slot or an entity-relative offset."""
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    duration = float(node_spec.get("duration_seconds", 2.5))
+    max_duration = float(node_spec.get("max_duration_seconds", duration))
+    if duration < 0 or max_duration < 0:
+        raise SceneBuildError("player_look_at durations cannot be negative")
+    target_ref = str(node_spec["target_ref"])
+    target_entry = node_spec.get("target_entry")
+    offset = node_spec.get("offset", {})
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questSceneManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    quest["type"] = alloc.wrap(
+        {
+            "$type": "questPlayerLookAt_NodeType",
+            "adjustPitch": 1 if node_spec.get("adjust_pitch", True) else 0,
+            "adjustYaw": 1 if node_spec.get("adjust_yaw", True) else 0,
+            "cameraInputMagToBreak": float(
+                node_spec.get("camera_input_magnitude_to_break", 2.0)
+            ),
+            "duration": duration,
+            "easeIn": 1 if node_spec.get("ease_in", True) else 0,
+            "easeOut": 1 if node_spec.get("ease_out", True) else 0,
+            "endOnCameraInputApplied": 1
+            if node_spec.get("end_on_camera_input", False)
+            else 0,
+            "endOnTargetReached": 1
+            if node_spec.get("end_on_target_reached", True)
+            else 0,
+            "endOnTimeExceeded": 1
+            if node_spec.get("end_on_time_exceeded", True)
+            else 0,
+            "maxDuration": max_duration,
+            "objectRef": empty_entity_ref(
+                target_ref,
+                storage="string",
+                names=[str(target_entry)] if target_entry else None,
+            ),
+            "offsetPos": {
+                "$type": "Vector3",
+                "X": float(offset.get("x", 0)),
+                "Y": float(offset.get("y", 0)),
+                "Z": float(offset.get("z", 0)),
+            },
+            "precision": float(node_spec.get("precision", 0.1)),
+            "slotName": cname(str(node_spec.get("slot", "Head"))),
+            "useOffsetToPlayer": 0,
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_player_status_effect_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questCharacterManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    selector = alloc.wrap(
+        {
+            "$type": "questRecordSelector",
+            "characterRecordID": tweakdbid(0, storage="uint64"),
+            "deviceRecordID": tweakdbid(0, storage="uint64"),
+            "isCharacter": 1,
+            "isDevice": 0,
+            "isItem": 0,
+            "itemRecordID": tweakdbid(0, storage="uint64"),
+        }
+    )
+    subtype = alloc.wrap(
+        {
+            "$type": "questCharacterManagerParameters_SetStatusEffect",
+            "isPlayer": 1,
+            "isPlayerStatusEffectSource": 1,
+            "puppetRef": empty_entity_ref(),
+            "recordSelector": selector,
+            "set": 1 if node_spec.get("set", True) else 0,
+            "statusEffectID": tweakdbid(str(node_spec["status_effect"])),
+            "statusEffectSourceObject": empty_entity_ref(),
+        }
+    )
+    quest["type"] = alloc.wrap(
+        {
+            "$type": "questCharacterManagerParameters_NodeType",
+            "subtype": subtype,
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
 def build_trigger_condition(trigger_ref: str) -> dict[str, Any]:
     return {
         "$type": "questTriggerCondition",
@@ -710,6 +1770,178 @@ def build_pause_condition_node(node_spec: dict[str, Any], alloc: HandleAllocator
         )
     else:
         quest["condition"] = trigger_condition
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_character_gender_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    """Branch on Player gender using the vanilla quest condition shape."""
+    node_id = int(node_spec["node_id"])
+    inputs = ["CutDestination", "In"]
+    outputs = ["True", "False"]
+    data = {
+        "$type": "scnQuestNode",
+        "ffStrategy": "automatic",
+        "isockMappings": [socket_mapping(name) for name in inputs],
+        "nodeId": scene_node_id(node_id),
+        "osockMappings": [socket_mapping(name) for name in outputs],
+        "outputSockets": [
+            output_socket(
+                0,
+                0,
+                [
+                    (
+                        int(dest["node_id"]),
+                        int(dest.get("input_name", 0)),
+                        int(dest.get("input_ordinal", 0)),
+                    )
+                    for dest in node_spec.get("on_true", [])
+                ],
+            ),
+            output_socket(
+                0,
+                1,
+                [
+                    (
+                        int(dest["node_id"]),
+                        int(dest.get("input_name", 0)),
+                        int(dest.get("input_ordinal", 0)),
+                    )
+                    for dest in node_spec.get("on_false", [])
+                ],
+            ),
+        ],
+        "questNode": alloc.wrap(
+            {
+                "$type": "questConditionNodeDefinition",
+                "condition": alloc.wrap(
+                    {
+                        "$type": "questCharacterCondition",
+                        "type": alloc.wrap(
+                            {
+                                "$type": "questCharacterGender_CondtionType",
+                                "gender": cname(str(node_spec.get("gender", "Male"))),
+                                "isPlayer": 1
+                                if node_spec.get("is_player", True)
+                                else 0,
+                                "objectRef": empty_entity_ref(
+                                    str(node_spec.get("object_ref", 0)),
+                                    storage=(
+                                        "string"
+                                        if "object_ref" in node_spec
+                                        else "uint64"
+                                    ),
+                                ),
+                            }
+                        ),
+                    }
+                ),
+                "id": node_id,
+                "sockets": [],
+            }
+        ),
+    }
+    add_quest_sockets(data["questNode"]["Data"], inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_spawn_actor_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    """Activate or deactivate a scene-owned spawnDespawn performer."""
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questSpawnManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    action = str(node_spec.get("action", "Activate"))
+    if action not in {"Activate", "Deactivate"}:
+        raise SceneBuildError("spawn_actor action must be Activate or Deactivate")
+    quest["actions"] = [
+        {
+            "$type": "questSpawnManagerNodeActionEntry",
+            "type": alloc.wrap(
+                {
+                    "$type": "questScene_NodeType",
+                    "action": action,
+                    "entityReference": dynamic_entity_ref(
+                        str(node_spec["dynamic_name"])
+                    ),
+                }
+            ),
+        }
+    ]
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_wait_actor_spawned_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    """Wait until a dynamic scene performer has materialized in the world."""
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questPauseConditionNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    quest["condition"] = alloc.wrap(
+        {
+            "$type": "questCharacterCondition",
+            "type": alloc.wrap(
+                {
+                    "$type": "questCharacterSpawned_ConditionType",
+                    "comparisonParams": alloc.wrap(
+                        {
+                            "$type": "questComparisonParam",
+                            "comparisonType": "Greater",
+                            "count": 0,
+                            "entireCommunity": 1,
+                        }
+                    ),
+                    "objectRef": dynamic_entity_ref(str(node_spec["dynamic_name"])),
+                }
+            ),
+        }
+    )
+    add_quest_sockets(quest, inputs, outputs, alloc)
+    return alloc.wrap(data)
+
+
+def build_show_player_node(
+    node_spec: dict[str, Any], alloc: HandleAllocator
+) -> dict[str, Any]:
+    """Hide/show the real Player while a TPP cutscene replica is on camera."""
+    inputs = ["CutDestination", "In"]
+    outputs = ["Out"]
+    data, quest = build_quest_node_base(
+        int(node_spec["node_id"]),
+        "questWorldDataManagerNodeDefinition",
+        inputs,
+        outputs,
+        node_spec.get("on_out", []),
+        alloc,
+    )
+    quest["type"] = alloc.wrap(
+        {
+            "$type": "questShowWorldNode_NodeType",
+            "componentName": cname("None"),
+            "isPlayer": 1,
+            "objectRef": node_ref(0, storage="uint64"),
+            "show": 1 if node_spec.get("show", True) else 0,
+        }
+    )
     add_quest_sockets(quest, inputs, outputs, alloc)
     return alloc.wrap(data)
 
@@ -769,8 +2001,44 @@ def build_quest_node(node_spec: dict[str, Any], alloc: HandleAllocator) -> dict[
     kind = node_spec.get("kind")
     if kind == "puppet_ai":
         return build_puppet_ai_node(node_spec, alloc)
+    if kind == "use_workspot":
+        return build_use_workspot_node(node_spec, alloc)
+    if kind == "stop_workspot":
+        return build_stop_workspot_node(node_spec, alloc)
+    if kind == "appearance":
+        return build_appearance_node(node_spec, alloc)
+    if kind == "scene_tier":
+        return build_scene_tier_node(node_spec, alloc)
+    if kind == "unequip_player":
+        return build_unequip_player_node(node_spec, alloc)
+    if kind == "unequip_actor":
+        return build_unequip_actor_node(node_spec, alloc)
+    if kind == "equip_player":
+        return build_equip_player_node(node_spec, alloc)
+    if kind == "equip_actor":
+        return build_equip_actor_node(node_spec, alloc)
+    if kind == "teleport_player":
+        return build_teleport_player_node(node_spec, alloc)
+    if kind == "teleport_actor":
+        return build_teleport_actor_node(node_spec, alloc)
+    if kind == "realtime_delay":
+        return build_realtime_delay_node(node_spec, alloc)
+    if kind == "render_fade":
+        return build_render_fade_node(node_spec, alloc)
+    if kind == "player_look_at":
+        return build_player_look_at_node(node_spec, alloc)
+    if kind == "player_status_effect":
+        return build_player_status_effect_node(node_spec, alloc)
     if kind == "pause_condition":
         return build_pause_condition_node(node_spec, alloc)
+    if kind == "character_gender":
+        return build_character_gender_node(node_spec, alloc)
+    if kind == "spawn_actor":
+        return build_spawn_actor_node(node_spec, alloc)
+    if kind == "wait_actor_spawned":
+        return build_wait_actor_spawned_node(node_spec, alloc)
+    if kind == "show_player":
+        return build_show_player_node(node_spec, alloc)
     if kind == "journal":
         return build_journal_node(node_spec, alloc)
     if kind == "mappin":
@@ -831,6 +2099,12 @@ def order_graph_by_spec(graph: list[dict[str, Any]], graph_order: list[int]) -> 
     return [by_id[node_id] for node_id in graph_order]
 
 
+def scene_start_specs(spec: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return every authored scene start while preserving legacy specs."""
+
+    return spec.get("start_nodes") or [spec["start_node"]]
+
+
 def build_graph(
     spec: dict[str, Any],
     base_root: dict[str, Any],
@@ -841,7 +2115,14 @@ def build_graph(
 ) -> dict[str, Any]:
     choice_shell = load_choice_shell(base_root, spec.get("choice_shell_node_id")) if spec_declares_choices(spec) else None
     graph: list[dict[str, Any]] = []
-    graph.append(build_start_node(int(spec["start_node"]["node_id"]), spec["start_node"].get("on_start", []), alloc))
+    for start_spec in scene_start_specs(spec):
+        graph.append(
+            build_start_node(
+                int(start_spec["node_id"]),
+                start_spec.get("on_start", []),
+                alloc,
+            )
+        )
     for section_spec in spec.get("sections", []):
         graph.append(build_section_node(spec, section_spec, spoken_manifest, line_ids, alloc))
     for choice_spec in spec.get("choices", []):
@@ -858,12 +2139,16 @@ def build_graph(
     if "graph_order" in spec:
         graph = order_graph_by_spec(graph, [int(node_id) for node_id in spec["graph_order"]])
     else:
-        graph = order_graph_by_connections(graph, int(spec["start_node"]["node_id"]))
+        graph = order_graph_by_connections(
+            graph,
+            int(scene_start_specs(spec)[0]["node_id"]),
+        )
     return {"HandleId": "2", "Data": {"$type": "scnSceneGraph", "endNodes": [], "graph": graph}}
 
 
 def build_entry_points(spec: dict[str, Any]) -> list[dict[str, Any]]:
-    return [{"$type": "scnEntryPoint", "name": cname(str(spec["entry_point"]["name"])), "nodeId": scene_node_id(int(spec["entry_point"]["node_id"]))}]
+    values = spec.get("entry_points") or [spec["entry_point"]]
+    return [{"$type": "scnEntryPoint", "name": cname(str(value["name"])), "nodeId": scene_node_id(int(value["node_id"]))} for value in values]
 
 
 def build_exit_points(spec: dict[str, Any]) -> list[dict[str, Any]]:
@@ -901,10 +2186,20 @@ def build_scene(spec: dict[str, Any]) -> dict[str, Any]:
     root["executionTags"] = []
     root["localMarkers"] = []
     root["notablePoints"] = [{"$type": "scnNotablePoint", "nodeId": scene_node_id(int(choice["node_id"]))} for choice in spec.get("choices", [])]
-    root["props"] = []
+    root["props"] = build_props(spec, debug_symbols)
     root["referencePoints"] = []
     root["resouresReferences"] = build_resource_refs(spec)
-    root["ridResources"] = []
+    root["ridResources"] = [
+        {
+            "$type": "scnRidResourceHandler",
+            "id": {"$type": "scnRidResourceId", "id": int(value["resource_id"])},
+            # scnRidResourceHandler owns a synchronous CResourceReference.
+            # A Soft import can activate the world camera before its RID
+            # animation is available, leaving the camera at its entity anchor.
+            "ridResource": resource_path(str(value["path"]), flags="Default"),
+        }
+        for value in spec.get("rid_resources", [])
+    ]
     root["voInfo"] = []
     root["workspotInstances"] = []
     root["workspots"] = []
@@ -936,6 +2231,7 @@ def iter_journal_paths(value: Any) -> Iterator[dict[str, Any]]:
 def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     root = scene.get("Data", {}).get("RootChunk", {})
+    errors.extend(validate_reference_tables(root))
     if root.get("version") != 5:
         errors.append("Root version must be 5")
     if root.get("cookingPlatform") != "PLATFORM_PC":
@@ -950,8 +2246,11 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
 
     if not isinstance(root.get("entryPoints"), list):
         errors.append("entryPoints must be a vanilla-style array")
-    elif not any(ep.get("name", {}).get("$value") == spec["entry_point"]["name"] for ep in root["entryPoints"]):
-        errors.append("Missing configured entry point")
+    else:
+        actual_entry_names = {ep.get("name", {}).get("$value") for ep in root["entryPoints"]}
+        for entry_spec in spec.get("entry_points") or [spec["entry_point"]]:
+            if entry_spec["name"] not in actual_entry_names:
+                errors.append(f"Missing configured entry point: {entry_spec['name']}")
 
     if not isinstance(root.get("exitPoints"), list):
         errors.append("exitPoints must be a vanilla-style array")
@@ -967,11 +2266,76 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
     actor_count = len(root.get("actors", [])) + len(root.get("playerActors", []))
     if actor_count != len(spec.get("actors", [])):
         errors.append(f"Actor count mismatch: {actor_count}")
+    actor_ids = [int(actor["id"]) for actor in spec.get("actors", [])]
+    if len(actor_ids) != len(set(actor_ids)):
+        errors.append("Scene actor ids must be unique")
+    player_specs = [
+        actor for actor in spec.get("actors", []) if actor.get("kind") == "player"
+    ]
+    if player_specs and any(int(actor["id"]) != 1 for actor in player_specs):
+        errors.append("The real player actor must use actor id 1 / performer 257")
+    if any(
+        actor.get("kind") != "player" and int(actor["id"]) == 1
+        for actor in spec.get("actors", [])
+    ):
+        errors.append("Actor id 1 / performer 257 is reserved for the real player")
+    rid_anim_set_count = len(
+        root.get("resouresReferences", {}).get("ridAnimSets", [])
+    )
+    rid_facial_anim_set_count = len(
+        root.get("resouresReferences", {}).get("ridFacialAnimSets", [])
+    )
+    for actor_spec in spec.get("actors", []):
+        actor_key = str(actor_spec.get("key", actor_spec.get("name", "?")))
+        for set_id in actor_spec.get("rid_anim_sets", []):
+            if not isinstance(set_id, int) or not 0 <= set_id < rid_anim_set_count:
+                errors.append(
+                    f"Actor {actor_key} references missing RID anim set {set_id}; "
+                    f"scene has {rid_anim_set_count} sets"
+                )
+        for set_id in actor_spec.get("rid_facial_anim_sets", []):
+            if (
+                not isinstance(set_id, int)
+                or not 0 <= set_id < rid_facial_anim_set_count
+            ):
+                errors.append(
+                    f"Actor {actor_key} references missing RID facial anim set {set_id}; "
+                    f"scene has {rid_facial_anim_set_count} sets"
+                )
     performers = root.get("debugSymbols", {}).get("performersDebugSymbols", [])
     performer_ids = [entry.get("performerId", {}).get("id") for entry in performers]
     expected_performers = [actor_performer_id(int(actor["id"])) for actor in spec.get("actors", [])]
+    expected_performers.extend(
+        prop_performer_id(int(prop["id"])) for prop in spec.get("props", [])
+    )
     if performer_ids != expected_performers:
         errors.append(f"Performer debug symbols mismatch: {performer_ids} != {expected_performers}")
+
+    props = root.get("props", [])
+    if len(props) != len(spec.get("props", [])):
+        errors.append(f"Prop count mismatch: {len(props)}")
+    for index, prop_spec in enumerate(spec.get("props", [])):
+        if index >= len(props):
+            break
+        prop = props[index]
+        actual_ref = (
+            prop.get("findEntityInNodeParams", {})
+            .get("nodeRef", {})
+            .get("$value")
+        )
+        if prop.get("entityAcquisitionPlan") != "findInNode":
+            errors.append(f"Prop {index} must use findInNode acquisition")
+        if actual_ref != str(prop_spec["node_ref"]):
+            errors.append(
+                f"Prop {index} nodeRef mismatch: {actual_ref} != {prop_spec['node_ref']}"
+            )
+
+    for index, handler in enumerate(root.get("ridResources", [])):
+        rid_resource = handler.get("ridResource", {})
+        if rid_resource.get("Flags") != "Default":
+            errors.append(
+                f"RID resource {index} must use a synchronous Default reference"
+            )
 
     screenplay = root.get("screenplayStore", {})
     line_ids = [line.get("itemId", {}).get("id") for line in screenplay.get("lines", [])]
@@ -989,6 +2353,12 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
         expected_graph_order = [int(node_id) for node_id in spec["graph_order"]]
         if actual_graph_order != expected_graph_order:
             errors.append(f"Scene graph order mismatch: {actual_graph_order} != {expected_graph_order}")
+
+    graph_by_id = {
+        int(wrapper["Data"]["nodeId"]["id"]): wrapper["Data"]
+        for wrapper in graph_wrappers
+        if wrapper.get("Data", {}).get("nodeId", {}).get("id") is not None
+    }
 
     all_node_ids = set(actual_graph_order)
     node_ids = set()
@@ -1018,6 +2388,33 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
                 dest_id = dest.get("nodeId", {}).get("id")
                 if dest_id not in all_node_ids:
                     errors.append(f"Node {node_id} points to missing node {dest_id}")
+                    continue
+                target = graph_by_id.get(dest_id, {})
+                stamp = dest.get("isockStamp", {})
+                if target.get("$type") == "scnSectionNode":
+                    if stamp.get("name") != 0 or stamp.get("ordinal") != 0:
+                        errors.append(
+                            f"Node {node_id} targets a non-executable socket on "
+                            f"section node {dest_id}; section flow must use socket 0:0"
+                        )
+                    continue
+                if target.get("$type") != "scnQuestNode":
+                    continue
+                ordinal = stamp.get("ordinal")
+                mappings = [
+                    mapping.get("$value")
+                    for mapping in target.get("isockMappings", [])
+                ]
+                mapped_input = (
+                    mappings[ordinal]
+                    if isinstance(ordinal, int) and 0 <= ordinal < len(mappings)
+                    else None
+                )
+                if mapped_input == "CutDestination" and data.get("$type") != "scnCutControlNode":
+                    errors.append(
+                        f"Node {node_id} targets CutDestination on quest node {dest_id}; "
+                        "ordinary scene flow must use the executable In socket"
+                    )
     if len(event_ids) != len(set(event_ids)):
         errors.append("Scene event ids must be unique")
 
@@ -1140,9 +2537,9 @@ def command_example(_: argparse.Namespace) -> None:
     example = {
         "name": "gq000_patch_meet",
         "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
-        "manifest": "quests/story/ghostline/gq000/script/gq000_01_manifest.json",
-        "raw_path": "source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json",
-        "archive_path": "source/archive/mod/gq000/scenes/gq000_patch_meet.scene",
+        "manifest": "projects/ghostline/quests/gq000/script/gq000_01_manifest.json",
+        "raw_path": "projects/shared/ghostline-runtime/source/raw/mod/gq000/scenes/gq000_patch_meet.scene.json",
+        "archive_path": "projects/shared/ghostline-runtime/source/archive/mod/gq000/scenes/gq000_patch_meet.scene",
         "actors": [
             {"key": "patch", "name": "patch", "kind": "community", "id": 0, "entry": "patch", "community_ref": "#gq000_01_com_patch_bridge"},
             {"key": "v", "name": "V", "kind": "player", "id": 1, "record": "Character.Player_Puppet_Base"},

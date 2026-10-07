@@ -1,0 +1,182 @@
+{
+  "name": "gqt006_goth_baddie",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/test-quests/gqt006/script/gqt006_10_manifest.json",
+  "lipsync_animset": "mod\\gqt006\\scenes\\lipsync\\en\\gqt006_goth_baddie\\civ_low_f_45_afam_30.anims",
+  "raw_path": "projects/test-quests/gqt006/source/raw/mod/gqt006/scenes/gqt006_goth_baddie.scene.json",
+  "archive_path": "projects/test-quests/gqt006/source/archive/mod/gqt006/scenes/gqt006_goth_baddie.scene",
+  "exported_datetime": "2026-08-12T00:00:00Z",
+  "choice_locales": ["db_db", "pl_pl", "en_us"],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "actors": [
+    {"key":"goth","name":"Goth Baddie","kind":"community","id":0,"entry":"goth_baddie","community_ref":"#gqt006_com_goth_baddie","appearance":"ghostline_goth_baddie_default","lipsync":0,"rid_anim_sets":[0],"rid_facial_anim_sets":[0]},
+    {"key":"v","name":"V","kind":"player","id":1,"record":"Character.Player_Puppet_Base","appearance":"default","lipsync":0,"rid_anim_sets":[1],"rid_facial_anim_sets":[]}
+  ],
+  "spoken_line_order": [
+    "gqt006_10_goth_intro_01","gqt006_10_v_intro_01","gqt006_10_goth_bet_01","gqt006_10_goth_bet_02",
+    "gqt006_10_v_accept","gqt006_10_v_threaten","gqt006_10_v_leave",
+    "gqt006_20_goth_down_01","gqt006_20_v_floor_01","gqt006_20_goth_prize_01","gqt006_20_v_ask_01","gqt006_20_goth_want_01",
+    "gqt006_20_v_continue","gqt006_20_v_tease","gqt006_20_v_stop","gqt006_20_goth_after_01","gqt006_20_v_after_01",
+    "gqt006_30_goth_yield_01","gqt006_30_v_brief_01","gqt006_30_goth_disappointed_01",
+    "gqt006_30_v_continue","gqt006_30_v_challenge","gqt006_30_v_stop","gqt006_30_goth_stay_01",
+    "gqt006_30_v_after_01","gqt006_30_goth_after_01"
+  ],
+  "choice_line_order": [
+    "gqt006_10_accept_short","gqt006_10_threaten_short","gqt006_10_leave_short",
+    "gqt006_20_continue_short","gqt006_20_tease_short","gqt006_20_stop_short",
+    "gqt006_30_continue_short","gqt006_30_challenge_short","gqt006_30_stop_short"
+  ],
+  "entry_point": {"name":"start","node_id":1},
+  "entry_points": [
+    {"name":"start","node_id":1},
+    {"name":"v_wins","node_id":47},
+    {"name":"goth_wins_debug","node_id":48},
+    {"name":"goth_after","node_id":78}
+  ],
+  "exit_points": [
+    {"name":"start_combat","node_id":50},
+    {"name":"end","node_id":51},
+    {"name":"v_wins_done","node_id":52},
+    {"name":"goth_wins_done","node_id":53},
+    {"name":"goth_truce_done","node_id":125},
+    {"name":"goth_intimacy_requested","node_id":77}
+  ],
+  "start_node": {"node_id":1,"on_start":[{"node_id":10,"input_name":0,"input_ordinal":1}]},
+  "start_nodes": [
+    {"node_id":1,"on_start":[{"node_id":10,"input_name":0,"input_ordinal":1}]},
+    {"node_id":47,"on_start":[{"node_id":69,"input_name":0,"input_ordinal":1}]},
+    {"node_id":48,"on_start":[{"node_id":70,"input_name":0,"input_ordinal":1}]},
+    {"node_id":78,"on_start":[{"node_id":96,"input_name":0,"input_ordinal":1}]}
+  ],
+  "graph_order": [1,10,2,3,4,5,6,47,69,71,54,65,66,41,11,12,13,15,17,43,73,58,16,60,14,45,75,48,70,72,55,67,68,56,57,81,42,94,83,82,95,109,84,86,88,89,90,91,32,33,34,35,112,78,96,102,119,100,104,107,97,98,99,103,105,37,46,120,121,122,124,123,76,50,51,52,53,125,77],
+  "sections": [
+    {"key":"pre_fight","node_id":2,"lines":["gqt006_10_goth_intro_01","gqt006_10_v_intro_01","gqt006_10_goth_bet_01","gqt006_10_goth_bet_02"],"on_end":[{"node_id":3}]},
+    {"key":"accept","node_id":4,"lines":["gqt006_10_v_accept"],"on_end":[{"node_id":50}]},
+    {"key":"threaten","node_id":5,"lines":["gqt006_10_v_threaten"],"on_end":[{"node_id":50}]},
+    {"key":"leave","node_id":6,"lines":["gqt006_10_v_leave"],"on_end":[{"node_id":51}]},
+    {"key":"v_wins","node_id":11,"lines":["gqt006_20_goth_down_01","gqt006_20_v_floor_01","gqt006_20_goth_prize_01","gqt006_20_v_ask_01","gqt006_20_goth_want_01"],"on_end":[{"node_id":12}]},
+    {"key":"v_continue","node_id":13,"lines":["gqt006_20_v_continue"],"on_end":[{"node_id":43,"input_name":0,"input_ordinal":1}]},
+    {"key":"v_tease","node_id":15,"lines":["gqt006_20_v_tease"],"on_end":[{"node_id":43,"input_name":0,"input_ordinal":1}]},
+    {"key":"v_stop","node_id":17,"lines":["gqt006_20_v_stop"],"on_end":[{"node_id":45,"input_name":0,"input_ordinal":1}]},
+    {
+      "key":"v_intimacy","node_id":16,"lines":[],"rid_duration_ms":5000,
+      "rid_events":[
+        {"actor":"goth","component":"body","anim_ref_id":0,"origin":"#gqt006_sm_intimacy","duration_ms":5000},
+        {"actor":"goth","component":"head","anim_ref_id":1,"origin":"#gqt006_sm_intimacy","duration_ms":5000},
+        {
+          "actor":"v","component":"body","anim_ref_id":2,"origin":"#gqt006_sm_intimacy","duration_ms":5000,"fpp":true,
+          "fpp_gender_params":{
+            "gender_masks":[2,1],
+            "transition_blend_in_trajectory_space_angles":[{"pitch":-19.1825619,"roll":1.49255657,"yaw":-8.83565426}],
+            "transition_end_input_angles":[{"pitch":-38.6518097,"roll":4.41326952,"yaw":-10.6926498},{"pitch":-68.0276566,"roll":-0.00000456369389,"yaw":35.9254951}]
+          }
+        }
+      ],
+      "rid_camera":{"camera_ref_id":0,"origin":"#gqt006_sm_intimacy","camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":5000},
+      "on_end":[{"node_id":60,"input_name":0,"input_ordinal":1}]
+    },
+    {"key":"v_after","node_id":14,"lines":["gqt006_20_goth_after_01","gqt006_20_v_after_01"],"on_end":[{"node_id":45,"input_name":0,"input_ordinal":1}]},
+    {"key":"goth_knockdown_hold","node_id":57,"lines":[],"rid_duration_ms":750,"on_end":[{"node_id":81,"input_name":0,"input_ordinal":1}]},
+    {"key":"goth_yield","node_id":86,"lines":["gqt006_30_goth_yield_01"],"look_at_events":[{"actor":"goth","target":"v","target_slot":"camera"}],"camera_event":{"camera_ref":"#gqt006_sm_lose_face_cam","duration_ms":1770,"blend_time_seconds":0},"on_end":[{"node_id":88}]},
+    {"key":"v_glances_down","node_id":88,"lines":[],"rid_duration_ms":600,"look_at_events":[{"actor":"goth","target":"v","target_slot":"camera"}],"camera_event":{"camera_ref":"#gqt006_sm_lose_genitals_cam","duration_ms":600,"blend_time_seconds":0.15},"on_end":[{"node_id":89}]},
+    {"key":"v_notices_anatomy","node_id":89,"lines":["gqt006_30_v_brief_01"],"look_at_events":[{"actor":"goth","target":"v","target_slot":"camera"}],"camera_event":{"camera_ref":"#gqt006_sm_lose_genitals_cam","duration_ms":3370,"blend_time_seconds":0.15},"on_end":[{"node_id":90,"input_name":0,"input_ordinal":1}]},
+    {"key":"goth_disappointed","node_id":91,"lines":["gqt006_30_goth_disappointed_01"],"look_at_events":[{"actor":"goth","target":"v","target_slot":"camera"}],"camera_event":{"camera_ref":"#gqt006_sm_lose_face_cam","duration_ms":1840,"blend_time_seconds":0.15},"on_end":[{"node_id":32}]},
+    {"key":"goth_continue","node_id":33,"lines":["gqt006_30_v_continue","gqt006_30_goth_stay_01"],"on_end":[{"node_id":77}]},
+    {"key":"goth_challenge","node_id":34,"lines":["gqt006_30_v_challenge","gqt006_30_goth_stay_01"],"on_end":[{"node_id":77}]},
+    {"key":"goth_stop","node_id":35,"lines":["gqt006_30_v_stop"],"on_end":[{"node_id":112,"input_name":0,"input_ordinal":1}]},
+    {"key":"release_lose_face_camera","node_id":97,"lines":[],"rid_duration_ms":50,"camera_event":{"camera_ref":"#gqt006_sm_lose_face_cam","duration_ms":50,"blend_time_seconds":0,"blend_in":false},"on_end":[{"node_id":98}]},
+    {"key":"release_lose_genitals_camera","node_id":98,"lines":[],"rid_duration_ms":50,"camera_event":{"camera_ref":"#gqt006_sm_lose_genitals_cam","duration_ms":50,"blend_time_seconds":0,"blend_in":false},"on_end":[{"node_id":99}]},
+    {"key":"release_intimacy_camera","node_id":99,"lines":[],"rid_duration_ms":50,"camera_event":{"camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":50,"blend_time_seconds":0,"blend_in":false},"on_end":[{"node_id":103,"input_name":0,"input_ordinal":1}]},
+    {"key":"stop_release_lose_face_camera","node_id":120,"lines":[],"rid_duration_ms":50,"camera_event":{"camera_ref":"#gqt006_sm_lose_face_cam","duration_ms":50,"blend_time_seconds":0,"blend_in":false},"on_end":[{"node_id":121}]},
+    {"key":"stop_release_lose_genitals_camera","node_id":121,"lines":[],"rid_duration_ms":50,"camera_event":{"camera_ref":"#gqt006_sm_lose_genitals_cam","duration_ms":50,"blend_time_seconds":0,"blend_in":false},"on_end":[{"node_id":122}]},
+    {"key":"stop_release_intimacy_camera","node_id":122,"lines":[],"rid_duration_ms":50,"camera_event":{"camera_ref":"#gqt006_sm_intimacy_cam","duration_ms":50,"blend_time_seconds":0,"blend_in":false},"on_end":[{"node_id":124,"input_name":0,"input_ordinal":1}]},
+    {"key":"goth_after","node_id":37,"lines":["gqt006_30_v_after_01","gqt006_30_goth_after_01"],"on_end":[{"node_id":76,"input_name":0,"input_ordinal":1}]}
+  ],
+  "props": [
+    {"id":0,"name":"gqt006_intimacy_camera","node_ref":"#gqt006_sm_intimacy_cam"},
+    {"id":1,"name":"gqt006_lose_face_camera","node_ref":"#gqt006_sm_lose_face_cam"},
+    {"id":2,"name":"gqt006_lose_genitals_camera","node_ref":"#gqt006_sm_lose_genitals_cam"}
+  ],
+  "choices": [
+    {"key":"pre_choice","node_id":3,"actor_id":0,"options":[
+      {"choice_key":"gqt006_10_accept_short","caption":"Deal. No killing.","single_choice":false,"choice_type":1,"target_node_id":4},
+      {"choice_key":"gqt006_10_threaten_short","caption":"I'm not here to play.","single_choice":false,"choice_type":1,"target_node_id":5},
+      {"choice_key":"gqt006_10_leave_short","caption":"Find someone else.","single_choice":false,"choice_type":0,"target_node_id":6}
+    ]},
+    {"key":"v_win_choice","node_id":12,"actor_id":0,"options":[
+      {"choice_key":"gqt006_20_continue_short","caption":"That's better.","single_choice":false,"choice_type":1,"target_node_id":13},
+      {"choice_key":"gqt006_20_tease_short","caption":"Maybe I like hearing you ask.","single_choice":false,"choice_type":1,"target_node_id":15},
+      {"choice_key":"gqt006_20_stop_short","caption":"Changed my mind. Get dressed.","single_choice":false,"choice_type":0,"target_node_id":17}
+    ]},
+    {"key":"goth_loss_choice","node_id":32,"actor_id":0,"options":[
+      {"choice_key":"gqt006_30_continue_short","caption":"No. Just recalculating.","single_choice":false,"choice_type":1,"target_node_id":33},
+      {"choice_key":"gqt006_30_challenge_short","caption":"You still have to make me submit.","single_choice":false,"choice_type":1,"target_node_id":34},
+      {"choice_key":"gqt006_30_stop_short","caption":"The fight's over. So is the deal.","single_choice":false,"choice_type":0,"target_node_id":35}
+    ]}
+  ],
+  "quest_nodes": [
+    {"kind":"puppet_ai","node_id":10,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","ai_tier":"Cinematic","on_out":[{"node_id":2}]},
+    {"kind":"puppet_ai","node_id":69,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","ai_tier":"Cinematic","on_out":[{"node_id":71,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":71,"tier":"Tier1_FullGameplay","force_empty_hands":true,"on_out":[{"node_id":54,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_player","node_id":54,"unequip_types":"AllWeapons","instant":true,"on_out":[{"node_id":65,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_actor","node_id":65,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","by_item":true,"item_id":"Items.Preset_Katana_E3","slot_id":"AttachmentSlots.WeaponRight","unequip_types":"AllItems","instant":true,"on_out":[{"node_id":66,"input_name":0,"input_ordinal":1}]},
+    {"kind":"realtime_delay","node_id":66,"milliseconds":100,"on_out":[{"node_id":41,"input_name":0,"input_ordinal":1}]},
+    {"kind":"puppet_ai","node_id":70,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","ai_tier":"Cinematic","on_out":[{"node_id":72,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":72,"tier":"Tier1_FullGameplay","force_empty_hands":true,"on_out":[{"node_id":55,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_player","node_id":55,"unequip_types":"AllWeapons","instant":true,"on_out":[{"node_id":67,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_actor","node_id":67,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","by_item":true,"item_id":"Items.Preset_Katana_E3","slot_id":"AttachmentSlots.WeaponRight","unequip_types":"AllItems","instant":true,"on_out":[{"node_id":68,"input_name":0,"input_ordinal":1}]},
+    {"kind":"realtime_delay","node_id":68,"milliseconds":100,"on_out":[{"node_id":56,"input_name":0,"input_ordinal":1}]},
+    {"kind":"player_status_effect","node_id":56,"status_effect":"BaseStatusEffect.Knockdown","on_out":[{"node_id":57}]},
+    {"kind":"appearance","node_id":41,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_postfight","on_out":[{"node_id":11}]},
+    {"kind":"render_fade","node_id":81,"fade_in":false,"duration_seconds":0.3,"on_out":[{"node_id":42,"input_name":0,"input_ordinal":1}]},
+    {"kind":"appearance","node_id":42,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_postfight","on_out":[{"node_id":94,"input_name":0,"input_ordinal":1}]},
+    {"kind":"puppet_ai","node_id":94,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","ai_tier":"Cinematic","on_out":[{"node_id":83,"input_name":0,"input_ordinal":1}]},
+    {"kind":"teleport_player","node_id":83,"destination_ref":"#gqt006_sm_lose_v","heal":true,"on_out":[{"node_id":82,"input_name":0,"input_ordinal":1}]},
+    {"kind":"teleport_actor","node_id":82,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","destination_ref":"#gqt006_sm_lose_goth","on_out":[{"node_id":95,"input_name":0,"input_ordinal":1}]},
+    {"kind":"realtime_delay","node_id":95,"milliseconds":350,"on_out":[{"node_id":109,"input_name":0,"input_ordinal":1}]},
+    {"kind":"use_workspot","node_id":109,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","workspot_ref":"#gqt006_ws_lose_goth_lean","teleport":true,"is_workspot_infinite":true,"repeat_on_interrupt":false,"on_work_started":[{"node_id":84,"input_name":0,"input_ordinal":1}]},
+    {"kind":"stop_workspot","node_id":112,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","workspot_ref":"#gqt006_ws_lose_goth_lean","finish_animation":true,"on_success":[{"node_id":46,"input_name":0,"input_ordinal":1}]},
+    {"kind":"render_fade","node_id":84,"fade_in":true,"duration_seconds":0.3,"on_out":[{"node_id":86}]},
+    {"kind":"player_look_at","node_id":90,"target_ref":"#gqt006_com_goth_baddie","target_entry":"goth_baddie","slot":"Head","duration_seconds":0.35,"max_duration_seconds":0.5,"on_out":[{"node_id":91}]},
+    {"kind":"appearance","node_id":96,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_default","on_out":[{"node_id":102,"input_name":0,"input_ordinal":1}]},
+    {"kind":"teleport_actor","node_id":102,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","destination_ref":"#gqt006_sm_aftermath_goth","on_out":[{"node_id":119,"input_name":0,"input_ordinal":1}]},
+    {"kind":"use_workspot","node_id":119,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","workspot_ref":"#gqt006_ws_aftermath_goth_stand","teleport":true,"is_workspot_infinite":true,"repeat_on_interrupt":false,"on_work_started":[{"node_id":100,"input_name":0,"input_ordinal":1}]},
+    {"kind":"equip_player","node_id":100,"unequip_types":"AllClothing","instant":false,"on_out":[{"node_id":104,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":104,"tier":"Tier1_FullGameplay","force_empty_hands":true,"on_out":[{"node_id":107,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_player","node_id":107,"unequip_types":"AllWeapons","instant":true,"on_out":[{"node_id":97}]},
+    {"kind":"teleport_player","node_id":103,"destination_ref":"#gqt006_sm_aftermath_v","heal":true,"on_out":[{"node_id":105,"input_name":0,"input_ordinal":1}]},
+    {"kind":"render_fade","node_id":105,"fade_in":true,"duration_seconds":0.25,"on_out":[{"node_id":37}]},
+    {"kind":"appearance","node_id":43,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_intimacy","on_out":[{"node_id":73,"input_name":0,"input_ordinal":1}]},
+    {"kind":"unequip_actor","node_id":73,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","by_item":true,"item_id":"Items.Preset_Katana_E3","slot_id":"AttachmentSlots.WeaponRight","unequip_types":"AllItems","instant":true,"on_out":[{"node_id":58,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":58,"tier":"Tier4_FPPCinematic","force_empty_hands":true,"on_out":[{"node_id":16}]},
+    {"kind":"scene_tier","node_id":60,"tier":"Tier1_FullGameplay","force_empty_hands":true,"on_out":[{"node_id":14}]},
+    {"kind":"appearance","node_id":45,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_default","on_out":[{"node_id":75,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":75,"tier":"Tier1_FullGameplay","force_empty_hands":false,"on_out":[{"node_id":52}]},
+    {"kind":"appearance","node_id":46,"entity_ref":"#gqt006_com_goth_baddie","entry":"goth_baddie","appearance":"ghostline_goth_baddie_default","on_out":[{"node_id":120}]},
+    {"kind":"scene_tier","node_id":123,"tier":"Tier1_FullGameplay","force_empty_hands":false,"on_out":[{"node_id":125}]},
+    {"kind":"player_look_at","node_id":124,"target_ref":"#gqt006_com_goth_baddie","target_entry":"goth_baddie","slot":"Head","duration_seconds":0.35,"max_duration_seconds":0.5,"on_out":[{"node_id":123,"input_name":0,"input_ordinal":1}]},
+    {"kind":"scene_tier","node_id":76,"tier":"Tier1_FullGameplay","force_empty_hands":false,"on_out":[{"node_id":53}]}
+  ],
+  "xor_nodes": [],
+  "end_nodes": [{"node_id":50},{"node_id":51},{"node_id":52},{"node_id":53},{"node_id":125},{"node_id":77}],
+  "rid_resources": [
+    {"resource_id":2539346898,"path":"base\\animations\\quest\\lore\\generic_sex\\intercourse\\sex_06_5s_m.scenerid"}
+  ],
+  "rid_animations": [
+    {"resource_id":2539346898,"serial_number":1},
+    {"resource_id":2539346898,"serial_number":8},
+    {"resource_id":2539346898,"serial_number":5}
+  ],
+  "rid_anim_sets": [
+    {"animations":[0]},
+    {"animations":[2]}
+  ],
+  "rid_facial_anim_sets": [
+    {"animations":[1]}
+  ],
+  "rid_camera_animations": [
+    {"resource_id":2539346898,"serial_number":7}
+  ]
+}
