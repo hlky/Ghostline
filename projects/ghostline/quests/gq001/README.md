@@ -90,9 +90,17 @@ native writer loses a field, including the custom NPC voice tag. The offline
 story lipsync tests check clip names, selectors, and mappings; WolvenKit exports
 verify baked clip durations. Playback needs an in-game test.
 
-Compile new facial clips with `--strip-donor-skeleton` so inherited donor body
-animation cannot extend a clip beyond its source WAV duration. Check durations
-after WolvenKit import, as well as in the generated GLB.
+Compile facial clips with the default `--neutral-skeleton` policy: every bone
+keeps its constant additive reference pose, while a harmless two-key channel
+carries the source WAV duration. Stripping the reference channels can import
+successfully yet collapse the head in game. Check the baked reference pose,
+facial curves, and duration after WolvenKit import.
+
+The repaired Patch, Iris, and Cinder animsets have editable CR2W companions
+under their owning project's `source/raw/base/localization/en-us/lipsync` tree.
+Each of the 36 story clips carries 1,031 constant skeletal keys and two neutral
+translation keys for duration. Preserve the constant references when importing
+new facial curves; clip-name and duration checks alone cannot detect this failure.
 
 The installable story package combines this project's `source/archive` with
 its declared shared runtime dependency. Build it from the repository root:

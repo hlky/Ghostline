@@ -10,6 +10,49 @@ installed or registered.
 
 ## Isolated Story Project Install (2026-10-07)
 
+### Playback repair after in-game feedback
+
+The first isolated install sent both quest offers immediately. The supplied
+in-game screenshots also showed Patch bowing his head with an offset cigarette
+and Iris's head mesh stretching severely during her opening line.
+
+The repair gates GQ002's initial phone message on `gq001_completed > 0`, before
+any message or choice is activated. That fact is set by GQ001's final delivery
+phase after the Morrow response and reward. Patch now uses
+`generic__stand_ground__wait__01.workspot`, without a cigarette prop, and every
+dialogue section has a look-at event targeting V's camera slot.
+
+The previous lipsync duration repair stripped required constant skeletal
+references. Successful import, clip-name matching, and duration matching did
+not detect this defect. All 36 Patch/Iris/Cinder clips were rebuilt with a
+complete neutral additive reference: 344 joints, 1,031 constant skeletal keys,
+and two neutral translation keys carrying the WAV duration. Independent
+WolvenKit readback confirms unchanged facial keys, durations within 50 ms, and
+skeletal rest values within `6.1e-7` of the rig reference. Iris's player-head
+rig and the female lipsync donor have identical bone and facial-track ordering.
+The compiler now defaults to this complete neutral-reference policy, including
+reconstructing channels lost by an earlier stripped import. The three editable
+raw CR2W companions also pass WolvenKit import/readback verification.
+
+The repaired package is
+`projects/ghostline/generated/packages/story-66af954da806`, with 174 archive
+payloads and seven install files. Archive and ZIP extraction match the frozen
+inputs; all seven installed files match the verified candidate. The installed
+archive SHA-256 is
+`faa4bbf18bffee19f013bde0bcfa74722d60c2051621f618d36f9029bf3f50ba`.
+Audit logs, per-clip evidence, the install receipt, and the previous installation
+backup are under `projects/ghostline/generated/runtime-repair-20261007`.
+
+The repaired project passes 751 Python tests, Ruff, and seven Rust voice-tool
+tests. The GQ002 gate, Patch scene, and exact world-resource path replacement
+pass cooked typed readback. The repaired package has **not yet been tested in
+game**. Restart the game and use a pre-Ghostline save to verify that only the
+GQ001 offer arrives initially, GQ002 unlocks after GQ001 completes, Patch faces
+V naturally, and Iris/Cinder speak without mesh deformation. Offers already
+delivered by the previous build persist in saved journal state.
+
+### Original isolated install (superseded)
+
 Generated the GQ001/GQ002 questphases, dialogue, localization and world assets,
 converted all 36 reviewed WAVs to WEMs, and installed the `ghostline` project's
 `story` profile with its declared shared runtime dependency. The package has

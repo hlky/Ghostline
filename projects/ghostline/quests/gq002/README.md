@@ -29,6 +29,11 @@ and falsify evidence of a shutdown. Neither outcome is perfectly clean.
 
 ## Build
 
+The initial phone offer waits for `gq001_completed > 0`. GQ001 sets that fact
+after the delivery, Morrow response, and completion reward; accepting Patch's
+first job does not unlock GQ002. Test this ordering on a pre-Ghostline save,
+because an offer already sent by an earlier build persists in saved journal state.
+
 The manifest's `composition` section owns the journal, onscreen text, contacts,
 objectives, locations, and fact aliases. Stage references resolve from those
 declarations before the shared compiler builds the graph.
@@ -77,7 +82,7 @@ py -B -m unittest tests.test_gq002_content tests.test_quest_compiler `
   tests.test_generate_scene tests.test_generate_world -v
 ```
 
-The installable archive is a whole-mod build from `source/archive`; follow
+Build this project's `story` profile with `tools/package_project.py --project ghostline`; follow
 [`docs/workflows/build-and-package.md`](../../../../docs/workflows/build-and-package.md)
 for packing and loose
 resource staging.

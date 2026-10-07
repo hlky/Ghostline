@@ -65,6 +65,28 @@ class Gq002ContentTests(unittest.TestCase):
             all(stage["status"] == "ready" for stage in self.quest["stages"])
         )
 
+    def test_phone_offer_waits_for_gq001_completion_without_a_bypass(self):
+        from explore_questphase import QuestphaseExplorer
+
+        self.assertEqual(self.quest["stages"][0]["prerequisite_fact"], "gq001_completed")
+        phase = QuestphaseExplorer(
+            ROOT / "projects/ghostline/source/raw/mod/gq002/phases/gq002_job_offer.questphase.json"
+        )
+        ids = {handle: node.quest_id for handle, node in phase.nodes_by_handle.items()}
+        gate_handle = next(handle for handle, node_id in ids.items() if node_id == "15")
+        gate = phase.node_data_by_handle[gate_handle]
+        self.assertEqual(gate["$type"], "questPauseConditionNodeDefinition")
+        comparison = gate["condition"]["Data"]["type"]["Data"]
+        self.assertEqual(comparison["factName"], "gq001_completed")
+        self.assertEqual(comparison["comparisonType"], "Greater")
+        self.assertEqual(comparison["value"], 0)
+        edges = {(ids[e.source_node], ids[e.destination_node])
+                 for e in phase.edges_by_handle.values()}
+        self.assertIn(("0", "15"), edges)
+        self.assertIn(("15", "10"), edges)
+        self.assertNotIn(("0", "10"), edges)
+        self.assertEqual({target for source, target in edges if source == "0"}, {"15"})
+
     def test_shard_handoff_routes_back_to_relay_before_combat(self):
         return_stage = next(
             stage for stage in self.quest["stages"] if stage["id"] == "return_to_relay"

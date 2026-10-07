@@ -67,6 +67,22 @@ class GenerateSceneTests(unittest.TestCase):
             )
         )
 
+    def test_patch_looks_at_v_throughout_each_dialogue_section(self) -> None:
+        sections = [node["Data"] for node in self.root["sceneGraph"]["Data"]["graph"]
+                    if node["Data"]["$type"] == "scnSectionNode"]
+        self.assertEqual(len(sections), len(self.spec["sections"]))
+        for section in sections:
+            events = [event["Data"] for event in section["events"]
+                      if event["Data"]["$type"] == "scnLookAtEvent"]
+            self.assertEqual(len(events), 1)
+            event = events[0]
+            self.assertEqual(event["duration"], section["sectionDuration"]["stu"])
+            self.assertEqual(event["startTime"], 0)
+            basic = event["basicData"]["basic"]
+            self.assertEqual(basic["performerId"]["id"], 1)
+            self.assertEqual(basic["targetPerformerId"]["id"], 257)
+            self.assertEqual(basic["targetSlot"]["$value"], "camera")
+
     def test_fixture_uses_one_shared_lipsync_slot_for_crash_isolation(self) -> None:
         patch_lipsync = self.root["actors"][0]["lipsyncAnimSet"]["id"]
         player_lipsync = self.root["playerActors"][0]["lipsyncAnimSet"]["id"]

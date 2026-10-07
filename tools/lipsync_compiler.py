@@ -200,6 +200,23 @@ def build_neutral_skeletal_channels(
         raise ValueError(f"Animation not found: {animation_name}")
     nodes = document.get("nodes", [])
     channels = animation.get("channels", [])
+    skins = document.get("skins", [])
+    if skins and skins[0].get("joints"):
+        joints = skins[0]["joints"]
+        if len(joints) != len(set(joints)) or any(
+            not isinstance(node, int) or not 0 <= node < len(nodes)
+            for node in joints
+        ):
+            raise ValueError("Invalid facial skeleton joint table")
+        # Rebuild every reference channel, including those lost in an earlier
+        # stripped import. Facial additive buffers need a complete const pose.
+        channels = [
+            {"sampler": index * 3 + offset, "target": {"node": node, "path": path}}
+            for index, node in enumerate(joints)
+            for offset, path in enumerate(("translation", "rotation", "scale"))
+        ]
+        animation["channels"] = channels
+        animation["samplers"] = [{} for _ in channels]
     if not channels:
         raise ValueError(f"Animation has no skeletal channels: {animation_name}")
 
@@ -451,7 +468,7 @@ class CompileSettings:
     release_ms: float = 80.0
     strip_donor_skeleton: bool = False
     clear_donor_controls: bool = False
-    neutral_skeleton: bool = False
+    neutral_skeleton: bool = True
     zero_track_prefix: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
@@ -591,5 +608,9 @@ def add_compile_options(parser: Any, *, clear_donor_controls: bool = False) -> N
         action=argparse.BooleanOptionalAction,
         default=clear_donor_controls,
     )
-    parser.add_argument("--neutral-skeleton", action="store_true")
+    parser.add_argument(
+        "--neutral-skeleton", action=argparse.BooleanOptionalAction,
+        default=defaults.neutral_skeleton,
+        help="Keep a complete neutral constant skeleton reference (required for runtime facial clips)",
+    )
     parser.add_argument("--zero-track-prefix", action="append", default=[])

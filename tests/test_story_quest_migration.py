@@ -39,10 +39,11 @@ EXPECTED = {
         "text_count": 36,
     },
     "gq002": {
-        "manifest": "6d15b54c595bc41e43c184296f56e4452cfe38ea79e17a4cf1ec5383b61463c6",
+        # Reviewed series-order correction: the phone offer waits for GQ001.
+        "manifest": "1ad689a02d7a3442db9f85a49f7b231d3296631813273553f3e9bfdcddd6d178",
         "journal": "fc8f092c799bb9b757a945a1871ea1759fe8358a79a15acfb422204645cc5211",
         "onscreens": "4bf6da550e35d2d51c0c6ee17e56925c685618d5db300b2bea6feb946664a9c5",
-        "phases": "236bf973c3cbe757862910302de1b59aea0a1fa0c923c732391c97ec26613a1e",
+        "phases": "0b448fb120bc6191eb576acc8ceab828f84ec87c28fceb0bd70291134bb6ae4e",
         "phase_count": 13,
         "stage_count": 12,
         "text_count": 50,

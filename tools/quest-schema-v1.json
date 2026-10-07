@@ -988,6 +988,10 @@
                 "type": {
                   "const": "phone_job_offer"
                 },
+                "prerequisite_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
                 "contact": {
                   "type": "string",
                   "minLength": 1
@@ -3829,6 +3833,16 @@
                   "properties": {
                     "type": {
                       "$ref": "#/$defs/stage/oneOf/2/allOf/1/properties/type"
+                    },
+                    "prerequisite_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/2/allOf/1/properties/prerequisite_fact"
+                        }
+                      ]
                     },
                     "contact": {
                       "anyOf": [

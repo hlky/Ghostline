@@ -965,7 +965,7 @@ def actor_look_at_event(
                                 ]
                             },
                             "calculatePositionInParentSpace": 0,
-                            "debugInfo": "Ghostline: Goth looks down at V",
+                            "debugInfo": f"Ghostline: {event_spec['actor']} looks at {event_spec['target']}",
                             "followingSpeedFactorOverride": -1,
                             "hasOutTransition": 0,
                             "invalid": 0,

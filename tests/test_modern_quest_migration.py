@@ -36,7 +36,9 @@ EXPECTED = {
             "root": "fd8c2851f767726ad35bd75bf393dd437baa80f9b8537ac1c7bdcfbf88d7be39",
         },
         "special": {
-            "launch_scene": "870bb3ba8bb88075250a24e9babfafac7e0d8f84976350a946867237ba3a1bb5"
+            # The shared Patch donor now includes look-at events; only generated
+            # HandleId allocation changes in this launch scene.
+            "launch_scene": "3bb0218de667e8ee74988c96859094f5fd82cece8416f3d1ff68ac1cc488de32"
         },
         "world": [
             "bfecc8318d508699bef90ab2d48e4bcb4b5fca25ebe5602412aa3a2d8d518e71",

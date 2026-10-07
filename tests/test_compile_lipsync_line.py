@@ -242,6 +242,44 @@ class CompileLipsyncLineTests(unittest.TestCase):
         np.testing.assert_allclose(masked[:, 0], values[:, 0])
         np.testing.assert_allclose(masked[:, 1:], 0.0)
 
+    def test_neutral_skeleton_restores_all_joint_references_after_stripping(self) -> None:
+        extras = {"trackKeys": [{"trackIndex": 0, "time": 0.5, "value": 0.7}]}
+        document = {
+            "buffers": [{"byteLength": 0}], "bufferViews": [], "accessors": [],
+            "skins": [{"joints": [0, 1]}],
+            "nodes": [{"name": "face_root_JNT", "translation": [1, 2, 3]},
+                      {"name": "jaw", "rotation": [0, 0, 0, 1]}],
+            "animations": [{"name": "generated", "channels": [], "samplers": [],
+                            "extras": extras}],
+        }
+        chunks = [(compiler.BIN_CHUNK, b"")]
+        compiler.build_neutral_skeletal_channels(document, chunks, "generated", 4.0)
+        animation = document["animations"][0]
+        self.assertEqual(animation["extras"], extras)
+        self.assertEqual(
+            {(c["target"]["node"], c["target"]["path"]) for c in animation["channels"]},
+            {(node, path) for node in range(2) for path in ("translation", "rotation", "scale")},
+        )
+        for channel in animation["channels"]:
+            sampler = animation["samplers"][channel["sampler"]]
+            marker = channel["target"] == {"node": 0, "path": "translation"}
+            self.assertEqual(sampler["interpolation"], "LINEAR" if marker else "STEP")
+            self.assertEqual(document["accessors"][sampler["input"]]["count"], 2 if marker else 1)
+            self.assertEqual(document["accessors"][sampler["output"]]["count"], 2 if marker else 1)
+        document["skins"][0]["joints"] = [0, 0]
+        with self.assertRaisesRegex(ValueError, "joint table"):
+            compiler.build_neutral_skeletal_channels(document, chunks, "generated", 4.0)
+
+    def test_compiler_defaults_preserve_the_complete_facial_reference(self) -> None:
+        self.assertTrue(compiler.CompileSettings().neutral_skeleton)
+        args = compiler.build_parser().parse_args([
+            "audio.wav", "donor.glb", "out.glb", "--text", "Hello",
+            "--locstring", "42", "--source", "donor",
+        ])
+        self.assertTrue(compiler.CompileSettings.from_args(args).neutral_skeleton)
+        with self.assertRaisesRegex(ValueError, "incompatible"):
+            compiler.CompileSettings(strip_donor_skeleton=True)
+
     def test_duration_marker_uses_an_isolated_float_accessor(self) -> None:
         document = {
             "animations": [{"name": "generated", "samplers": [{"input": 0}]}],

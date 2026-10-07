@@ -24,7 +24,8 @@ class LipsyncCommandParityTests(unittest.TestCase):
             audio = root / "historical_audio.wav"
             audio.write_bytes(b"mock aligner input")
             document = {
-                "skins": [{"extras": {"trackNames": ["jaw"]}}],
+                "skins": [{"joints": [0], "extras": {"trackNames": ["jaw"]}}],
+                "nodes": [{"name": "face_root_JNT"}],
                 "animations": [
                     {
                         "name": "source",

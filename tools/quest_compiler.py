@@ -1769,6 +1769,10 @@ def build_phone_job_offer_phase(
     builder = PhaseGraphBuilder()
     phase_input = input_node(builder)
     phase_output = output_node(builder)
+    previous = phase_input
+    if prerequisite := stage.data.get("prerequisite_fact"):
+        previous = fact_condition_node(builder, 15, prerequisite)
+        builder.connect(phase_input, previous)
     message = journal_entry_node(
         builder,
         10,
@@ -1792,7 +1796,7 @@ def build_phone_job_offer_phase(
     )
     accepted_fact = fact_node(builder, 14, stage.data["accepted_fact"])
 
-    builder.connect(phase_input, message, destination_socket="Active")
+    builder.connect(previous, message, destination_socket="Active")
     builder.connect(message, choice_group, destination_socket="Active")
     builder.connect(choice_group, started)
     builder.connect(started, accepted)
