@@ -76,14 +76,19 @@ def _source_archive(path: Path, output_root: Path | None, project: Path) -> Path
 def _convert(
     raw: Path, candidate: Path, template: Path | None, *,
     serializer: str, wolvenkit: Path | None,
+    red_cli: Path | None = None, schema_path: Path | None = None,
 ) -> None:
     """Require typed read-back parity; native layout loss triggers a fresh writer."""
     import json
     from cr2w_validation import compare_documents
-    from ghostline_red import ensure_schema
+    from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, ensure_schema
 
     expected = json.loads(raw.read_text(encoding="utf-8"))
-    schema = json.loads(ensure_schema().read_text(encoding="utf-8"))
+    schema_file = (
+        ensure_schema(red_cli or DEFAULT_RED_CLI, schema_path or DEFAULT_RED_SCHEMA)
+        if red_cli is not None or schema_path is not None else ensure_schema()
+    )
+    schema = json.loads(schema_file.read_text(encoding="utf-8"))
     executable = wolvenkit or resolve_tool("wolvenkit")
     if template is not None and candidate.resolve() == template.resolve():
         raise ValueError("CR2W conversion candidate must be separate from its template")
@@ -104,7 +109,12 @@ def _convert(
 
     if serializer == "native" and template is not None and template.is_file():
         try:
-            native_deserialize(raw, candidate, template=template)
+            native_options = {}
+            if red_cli is not None:
+                native_options["red_cli"] = red_cli
+            if schema_path is not None:
+                native_options["schema"] = schema_path
+            native_deserialize(raw, candidate, template=template, **native_options)
             if candidate.is_file() and candidate.read_bytes()[:4] == b"CR2W":
                 decoded = read_back("native")
                 if compare_documents(expected, decoded, schema=schema).ok:
@@ -128,6 +138,9 @@ def _convert(
     if not comparison.ok:
         details = "; ".join(item["path"] for item in comparison.errors[:8])
         raise RuntimeError(f"CR2W semantic verification failed for {candidate}: {details}")
+
+
+convert_resource = _convert
 
 
 def publish_build(

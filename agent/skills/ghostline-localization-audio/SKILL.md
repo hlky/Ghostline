@@ -42,7 +42,7 @@ Current `gq000_01` dialogue localization files:
 
 Quest-specific onscreens should live under
 `projects/shared/ghostline-runtime/source/archive/mod/gq000/localization/en-us/onscreens` and be registered in
-`projects/ghostline/source/resources/Ghostline.archive.xl`.
+`projects/shared/ghostline-runtime/source/resources/Ghostline_Runtime.archive.xl`.
 
 ## Scene And Localization Generation
 

@@ -1,13 +1,18 @@
 {
   "schema_version": 1,
-  "provenance": "Exact missing-property values from an independent WolvenKit 8.17.4 write/read of GQT005, checked against the pinned reflected constructors. Applies only to these render-settings fields; source hashes invalidate stale defaults.",
+  "provenance": "Exact missing-property values from independent WolvenKit 8.17.4 write/read of GQT005 render settings and GQ001/GQ002 scenes, checked against pinned reflected constructors, enum defaults, and CName representation. Source hashes invalidate stale defaults.",
   "source_sha256": {
     "WolvenKit/WolvenKit.RED4/Types/Classes/BloomAreaSettings.cs": "5c8cef061143236e4235585dbe96e7a033fd81eb597a05f42a4ecb9a2e1bcc1a",
     "WolvenKit/WolvenKit.RED4/Types/Classes/ChromaticAberrationAreaSettings.cs": "0b0d05420af1231a877d332c83a33118e829b7c9812170d750ab444555d1cdb8",
     "WolvenKit/WolvenKit.RED4/Types/Classes/ColorGradingAreaSettings.cs": "6179637d1fa7edbec88c330e1856998063ea0b4e61d7aa9321af27b4ea7e794f",
     "WolvenKit/WolvenKit.RED4/Types/Classes/ImageBasedFlareAreaSettings.cs": "a258d3b6d5c1509a0c1f7e5c19d6283573bcf1b4b8b6d01d1814b7ece48834c2",
     "WolvenKit/WolvenKit.RED4/Types/Classes/VolumetricFogAreaSettings.cs": "86a2192ee57d98aa2b954cbcf1ec9e39564bb32ba3195b1b07068611e27c80d9",
-    "WolvenKit/WolvenKit.RED4/Types/Classes/IAreaSettings.cs": "cfa06ce1cc37357600a6cebeb583d832c99f64c51abf1f80c3228dd03eb088af"
+    "WolvenKit/WolvenKit.RED4/Types/Classes/IAreaSettings.cs": "cfa06ce1cc37357600a6cebeb583d832c99f64c51abf1f80c3228dd03eb088af",
+    "WolvenKit/WolvenKit.RED4/Types/Classes/scnEndNode.cs": "c78c5952d6dc001458cac69e8268cc2cbb071b05c1057616d0f86313ffce9f47",
+    "WolvenKit/WolvenKit.RED4/Types/Classes/scnSceneGraph.cs": "b7d1f34fcfbb3d4e9f608115c65024170c3bf27ec5cd0262bb9d52db002d286e",
+    "WolvenKit/WolvenKit.RED4/Types/Classes/scnNotablePoint.cs": "d342adea9db9e2b79f2de812705a583e296d32c2256b917a2945f962bb780c93",
+    "WolvenKit/WolvenKit.RED4/Types/Enums/cp77enums.cs": "c5b50b8469a8b306a102544c6fae807391d74a67c546a2d230cb7b0c6c7a45c6",
+    "WolvenKit/WolvenKit.RED4/Types/Primitives/Simples/CName.cs": "342343c3d8dddd5d90cc91405859af0cb7272bcea97157b1fbc25a465c635838"
   },
   "classes": {
     "BloomAreaSettings": {
@@ -206,6 +211,19 @@
       "distantAlbedo": null,
       "distantGroundIrradiance": null,
       "localAmbientScale": null
+    },
+    "scnEndNode": {
+      "type": "Terminating"
+    },
+    "scnSceneGraph": {
+      "startNodes": []
+    },
+    "scnNotablePoint": {
+      "name": {
+        "$type": "CName",
+        "$storage": "string",
+        "$value": "None"
+      }
     }
   },
   "custom_data": {
@@ -214,7 +232,7 @@
       "source_sha256": {
         "WolvenKit/WolvenKit.RED4/Types/ClassesExt/CustomData/AreaShapeOutline.cs": "819f10e499fa3004089efb8c639e1cc45cb49969f9ccba0af2ace9368780833d",
         "WolvenKit/WolvenKit.RED4/Types/Classes/AreaShapeOutline.cs": "2415462c0949e8e4cca4c62ea2d820bf77ed34864cc70af284138fcd6028b5f6",
-        "tools/ghostline-red/src/writer.rs": "c4e9732afc91e7d6e9a8c00b4404b65992ba1fdbac8cf9c92957a57008764356",
+        "tools/ghostline-red/src/writer.rs": "53384c69e8497048e8a2756df9aed1d218ee8e791e4a92b65f4f9add1ac99f32",
         "tools/ghostline-red/src/codec.rs": "2c726b22983f9411903742fa4f4c2ae28d98483fa667309138acede268238062"
       }
     }

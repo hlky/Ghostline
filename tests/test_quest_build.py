@@ -181,6 +181,36 @@ class QuestBuildTests(unittest.TestCase):
                         wolvenkit=Path("wkit"),
                     )
 
+    def test_native_voice_tag_loss_uses_the_verified_wolvenkit_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw, template, candidate = root / "one.json", root / "template", root / "one"
+            template.write_bytes(b"CR2Wdonor")
+            document = {"Header": {}, "Data": {"RootChunk": {"$type": "Probe", "voicetagId": {"$type": "scnVoicetagId", "id": "13635884494759391413"}}}}
+            raw.write_text(json.dumps(document), encoding="utf-8")
+            schema = root / "schema.json"
+            schema.write_text("{}", encoding="utf-8")
+
+            def native(*args, **options):
+                candidate.write_bytes(b"CR2Wnative")
+
+            def oracle(command, **options):
+                if "-d" in command:
+                    candidate.write_bytes(b"CR2Wwolvenkit")
+                else:
+                    decoded = json.loads(json.dumps(document))
+                    if candidate.read_bytes() == b"CR2Wnative":
+                        decoded["Data"]["RootChunk"]["voicetagId"]["id"] = "0"
+                    (Path(command[-1]) / "one.json").write_text(json.dumps(decoded), encoding="utf-8")
+
+            with (
+                mock.patch("ghostline_red.ensure_schema", return_value=schema),
+                mock.patch.object(build, "native_deserialize", side_effect=native),
+                mock.patch.object(build.subprocess, "run", side_effect=oracle),
+            ):
+                build.convert_resource(raw, candidate, template, serializer="native", wolvenkit=Path("wkit"))
+            self.assertEqual(candidate.read_bytes(), b"CR2Wwolvenkit")
+
     def test_planned_build_requires_isolated_destination(self):
         manifest = ROOT / "projects/ghostline/quests/gq003/implementation/quest.json"
         with (

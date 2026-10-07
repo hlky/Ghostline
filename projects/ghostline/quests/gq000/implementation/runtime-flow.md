@@ -402,6 +402,14 @@ the desired final facial-animation setup. A final two-slot design must provide
 two distinct, valid NPC/V resources and confirm that both remain addressable
 after cooking.
 
+Current story builds retain that shared slot, register both the NPC and V
+voice tags in the lipmap, and explicitly select authored clips for both voice
+variants. The Patch meeting now contains all 13 spoken clips; the Iris meeting
+contains all 12. Cooked scene read-back must preserve every authored field,
+including custom NPC voice tags. The scene generator stages conversion and
+falls back to WolvenKit when the native writer fails that check, then publishes
+only the verified binary. In-game playback remains a separate validation step.
+
 Other required invariants:
 
 - Keep the 12-unit trigger height; shallower bridge volumes can miss the player
@@ -441,7 +449,7 @@ For Ghostline-added entries:
 - use a globally unique textual `secondaryKey`;
 - put the same secondary key in the journal localization field;
 - register the packed onscreen resource in
-  `projects/ghostline/source/resources/Ghostline.archive.xl`.
+  `projects/shared/ghostline-runtime/source/resources/Ghostline_Runtime.archive.xl`.
 
 These keys are not scene locstring RUIDs and should not be converted into one.
 
@@ -454,12 +462,12 @@ projects/ghostline/quests/gq000/script/gq000_01_manifest.json spoken_lines[].str
   -> scene screenplayStore.lines[].locstringId
   -> same numeric ID joins both registered runtime paths:
 
-     projects/ghostline/source/resources/Ghostline.archive.xl localization.subtitles
+     projects/shared/ghostline-runtime/source/resources/Ghostline_Runtime.archive.xl localization.subtitles
        -> mod/gq000/localization/en-us/subtitles/gq000_01_subtitles_map.json
        -> subtitleFile mod/gq000/localization/en-us/subtitles/gq000_01.json
        -> subtitle entry stringId and text
 
-     projects/ghostline/source/resources/Ghostline.archive.xl localization.vomaps
+     projects/shared/ghostline-runtime/source/resources/Ghostline_Runtime.archive.xl localization.vomaps
        -> mod/gq000/localization/en-us/vo/gq000_01.json
        -> VO-map entry stringId
        -> female/male WEM resource path

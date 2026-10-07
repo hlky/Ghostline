@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -73,6 +74,24 @@ class GenerateSceneTests(unittest.TestCase):
 
         self.assertEqual((patch_lipsync, player_lipsync), (0, 0))
         self.assertEqual(len(lipsync_refs), 1)
+
+    def test_validation_rejects_lost_actor_voice_tags(self) -> None:
+        for group in ("actors", "playerActors"):
+            with self.subTest(group=group):
+                scene = copy.deepcopy(self.scene)
+                scene["Data"]["RootChunk"][group][0]["voicetagId"]["id"] = "0"
+                self.assertTrue(any("voicetag mismatch" in error for error in generate_scene.validate_scene(scene, self.spec)))
+
+    def test_failed_scene_readback_preserves_the_previous_packed_resource(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw, binary = root / "probe.scene.json", root / "probe.scene"
+            raw.write_text("{}", encoding="utf-8")
+            binary.write_bytes(b"CR2Wprevious")
+            with mock.patch("quest_build.convert_resource", side_effect=RuntimeError("voice tag lost")):
+                with self.assertRaisesRegex(generate_scene.SceneBuildError, "voice tag lost"):
+                    generate_scene.deserialize({"raw_path": str(raw), "archive_path": str(binary)}, root / "red", root / "schema")
+            self.assertEqual(binary.read_bytes(), b"CR2Wprevious")
 
     def test_fixture_graph_matches_mq003_shaped_scene_order(self) -> None:
         node_ids = [

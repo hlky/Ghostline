@@ -76,7 +76,33 @@ py -B .\tools\generate_world.py generate `
 py -B -m unittest tests.test_quest_compiler -v
 ```
 
-The installable archive is a whole-mod build from `source/archive`; follow
+## Lipsync
+
+The Iris meeting has 12 authored clips (seven Iris lines and five V lines).
+The reused Patch meeting has 13 (eight Patch lines and five V lines). Both
+dialogue manifests explicitly select their `f_<locstring ID in hex>` clip for
+both voice variants. These variants currently share the reviewed source audio.
+
+Each meeting retains one shared lipsync resource slot. Its lipmap registers
+both the NPC and V voice tags against the localized animset. Scene conversion
+checks cooked data against authored data and falls back to WolvenKit if the
+native writer loses a field, including the custom NPC voice tag. The offline
+story lipsync tests check clip names, selectors, and mappings; WolvenKit exports
+verify baked clip durations. Playback needs an in-game test.
+
+Compile new facial clips with `--strip-donor-skeleton` so inherited donor body
+animation cannot extend a clip beyond its source WAV duration. Check durations
+after WolvenKit import, as well as in the generated GLB.
+
+The installable story package combines this project's `source/archive` with
+its declared shared runtime dependency. Build it from the repository root:
+
+```powershell
+uv run python -B tools/package_project.py --project ghostline --plan
+uv run python -B tools/package_project.py --project ghostline --install
+```
+
+Follow
 [`docs/workflows/build-and-package.md`](../../../../docs/workflows/build-and-package.md)
 for packing and loose
 resource staging.

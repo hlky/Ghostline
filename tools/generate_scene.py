@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate Ghostline .scene CR2W-JSON from a compact scene spec.
 
-The generator intentionally emits raw CR2W-JSON under source/raw. Packed CR2W
-files are produced by the template-backed ghostline-red CLI.
+The generator emits raw CR2W-JSON under the owning project's source/raw.
+Packed writes require read-back parity, with a WolvenKit fallback for layouts
+that the template-backed native writer cannot preserve.
 """
 
 from __future__ import annotations
@@ -12,13 +13,14 @@ import copy
 import json
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
 from cr2w_helpers import load_json, print_json
 from scene_validation import validate_reference_tables
-from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, deserialize as deserialize_cr2w
+from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA
 
 
 DEFAULT_SPEC = Path(
@@ -2269,6 +2271,16 @@ def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
     actor_ids = [int(actor["id"]) for actor in spec.get("actors", [])]
     if len(actor_ids) != len(set(actor_ids)):
         errors.append("Scene actor ids must be unique")
+    actual_actors = {
+        actor.get("actorId", {}).get("id"): actor
+        for actor in [*root.get("actors", []), *root.get("playerActors", [])]
+    }
+    for actor_spec in spec.get("actors", []):
+        actor = actual_actors.get(int(actor_spec["id"]), {})
+        default_tag = "1103967280742240864" if actor_spec.get("kind") == "player" else "0"
+        expected_tag = str(actor_spec.get("voicetag", default_tag))
+        if str(actor.get("voicetagId", {}).get("id")) != expected_tag:
+            errors.append(f"Actor {actor_spec.get('key', actor_spec['id'])} voicetag mismatch")
     player_specs = [
         actor for actor in spec.get("actors", []) if actor.get("kind") == "player"
     ]
@@ -2528,9 +2540,24 @@ def write_scene(path: Path, scene: dict[str, Any]) -> None:
 
 
 def deserialize(spec: dict[str, Any], red_cli: Path, schema: Path) -> None:
+    from artifact_io import publish_json_artifacts
+    from project_layout import owning_project
+    from quest_build import convert_resource
+
     raw_path = path_from_spec(spec, "raw_path")
     archive_path = Path(spec["archive_path"])
-    deserialize_cr2w(raw_path, archive_path, red_cli=red_cli, schema=schema)
+    staging = owning_project(raw_path) / "generated/scene-builds"
+    staging.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=f"{archive_path.stem}-", dir=staging) as directory:
+        candidate = Path(directory) / archive_path.name
+        try:
+            convert_resource(
+                raw_path, candidate, archive_path if archive_path.is_file() else None,
+                serializer="native", wolvenkit=None, red_cli=red_cli, schema_path=schema,
+            )
+        except RuntimeError as exc:
+            raise SceneBuildError(str(exc)) from exc
+        publish_json_artifacts({}, binary_artifacts={archive_path: candidate.read_bytes()})
 
 
 def command_example(_: argparse.Namespace) -> None:

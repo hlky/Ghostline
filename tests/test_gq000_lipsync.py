@@ -49,7 +49,8 @@ class Gq000LipsyncTests(unittest.TestCase):
                 str(fnv1a64(r"mod\gqt005\scenes\gqt005_patch_start.scene")),
             },
         )
-        self.assertEqual(entry["actorVoiceTags"], [voice_tag])
+        self.assertEqual(entry["actorVoiceTags"], [voice_tag, "1103967280742240864"])
+        self.assertEqual(len(entry["animSets"]), 2)
         self.assertEqual(entry["animSets"][0]["DepotPath"]["$value"], LOCALIZED_ANIMSET)
         gqt005_entry = entries[
             str(fnv1a64(r"mod\gqt005\scenes\gqt005_patch_start.scene"))
