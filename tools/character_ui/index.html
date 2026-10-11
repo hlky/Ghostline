@@ -44,13 +44,14 @@
       <section class="panel head-panel">
         <div class="panel-heading">
           <span>02</span>
-          <div><h2>Live head geometry</h2><p>Character-creator indices drive the same named morph targets used by the final Blender build.</p></div>
+          <div><h2>Live face preview</h2><p>Inspect facial shapes with the selected game textures, eyes, brows and makeup. Drag to orbit; scroll to zoom.</p></div>
         </div>
         <div class="head-workspace">
           <div class="shape-controls">
             <div id="shape-fields" class="shape-grid"></div>
             <p id="shape-range-hint" class="hint">Shape ranges are loaded from the trusted body-frame profile. Empty values preserve the current head and block regeneration.</p>
             <div class="preview-actions">
+              <button data-action="preview-face" class="primary">Prepare textured face</button>
               <button data-action="preview-prepare" class="primary">Prepare live preview</button>
               <button data-action="preview-full" class="primary">Prepare full character</button>
               <label class="check-field"><input id="preview-all-parts" type="checkbox"> Load all head layers</label>
@@ -63,6 +64,10 @@
               <button id="viewport-head" type="button">Head</button>
               <button id="viewport-full" type="button">Full character</button>
               <button id="viewport-reset" type="button">Reset view</button>
+              <button id="viewport-front" type="button">Front</button>
+              <button id="viewport-three-quarter" type="button">¾ view</button>
+              <label>Lighting <select id="viewport-lighting"><option value="studio">Neutral studio</option><option value="night">Night City</option></select></label>
+              <label class="check-field"><input id="viewport-hair" type="checkbox" checked> Hair</label>
               <button id="viewport-wireframe" type="button" aria-pressed="false">Wireframe</button>
             </div>
           </div>
@@ -139,6 +144,6 @@
       </section>
     </main>
 
-    <script type="module" src="/app.js?v=full-character-preview-1"></script>
+    <script type="module" src="/app.js?v=textured-face-2"></script>
   </body>
 </html>

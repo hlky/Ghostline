@@ -22,6 +22,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 import character_builder
 import character_asset_index
 import character_full_preview
+import character_face_preview
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -262,6 +263,7 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
             full_preview_manifest = (
                 PREVIEW_ROOT / character_id / "full-preview" / "preview-manifest.json"
             )
+            face_preview_manifest = PREVIEW_ROOT / character_id / "face-preview" / "preview-manifest.json"
             asset_index = (
                 character_asset_index.read_json(ASSET_INDEX_PATH)
                 if ASSET_INDEX_PATH.is_file()
@@ -277,6 +279,10 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                         f"/preview/{character_id}/preview/preview-manifest.json"
                         if preview_manifest.is_file()
                         else None
+                    ),
+                    "face_preview_url": (
+                        f"/preview/{character_id}/face-preview/preview-manifest.json"
+                        if face_preview_manifest.is_file() else None
                     ),
                     "full_preview_url": (
                         f"/preview/{character_id}/full-preview/preview-manifest.json"
@@ -392,6 +398,19 @@ class CharacterUIHandler(SimpleHTTPRequestHandler):
                         ),
                     )
                 self.send_json(result, HTTPStatus.OK if result["ok"] else HTTPStatus.BAD_REQUEST)
+                return
+
+            if self.path == "/api/preview/face":
+                with BUILD_LOCK:
+                    result = with_temp_manifest(
+                        manifest,
+                        lambda path: character_face_preview.prepare_face_preview(
+                            path, PREVIEW_ROOT / character_id / "face-preview",
+                            character_builder.DEFAULT_WOLVENKIT, character_builder.DEFAULT_GAME,
+                        ),
+                    )
+                result["preview_url"] = f"/preview/{character_id}/face-preview/preview-manifest.json"
+                self.send_json(result)
                 return
 
             if self.path == "/api/preview/prepare":

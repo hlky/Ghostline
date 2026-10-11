@@ -277,6 +277,33 @@
           "changes": []
         }
       }
+    },
+    "face_tattoos": {
+      "label": "Face tattoos",
+      "options": {
+        "tutorial_tattoo": {
+          "label": "Tutorial face tattoo",
+          "description": "Keeps the donor face tattoo overlay.",
+          "component_names": [
+            "h0_tattoo"
+          ],
+          "changes": [
+            {
+              "component": "h0_tattoo",
+              "path": "isEnabled",
+              "value": 1
+            }
+          ]
+        },
+        "none": {
+          "label": "No face tattoos",
+          "description": "Disables the face tattoo overlay in both appearance component copies.",
+          "disable_components": [
+            "h0_tattoo"
+          ],
+          "changes": []
+        }
+      }
     }
   }
 }

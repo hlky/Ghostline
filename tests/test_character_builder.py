@@ -1227,6 +1227,7 @@ class CharacterBuilderTests(unittest.TestCase):
                 "business_extras",
                 "legs",
                 "feet",
+                "face_tattoos",
             },
         )
         self.assertTrue(validation["ok"])

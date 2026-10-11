@@ -551,6 +551,31 @@ baking. Preview fit also does not establish NPC runtime fit: player garment
 support is driven by the equipped item system and is not automatically applied
 to NPC appearance components.
 
+`Prepare textured face` resolves the selected appearance's enabled head components
+and hair, exports their exact mesh appearances and PNG textures through WolvenKit,
+and applies those materials to the matching live morph GLBs. It respects chunk
+masks and disabled tattoo components. The viewer reconstructs RED's two-channel
+normals, reads roughness from red, repeats tiled UVs, and blends makeup decals.
+Front/three-quarter views, a hair visibility toggle, neutral studio lighting and
+Night City lighting support face review. This is a PBR approximation: RED skin
+scattering, eye refraction/gradients, hair profiles and multilayer jewelry remain
+in-game validation work. Full-body and indexed clothing previews remain neutral.
+
+Goth Baddie's revised face uses eyes 8, nose 5, mouth 10, jaw 3 and ears 2,
+with `face_tattoos: none` in default, postfight and intimacy appearances. Her
+makeup, personal-link and earring morphs are rebuilt alongside the four core
+head layers so they follow the same facial choices. To open this character:
+
+```powershell
+py -B tools/character_ui.py --manifest projects/test-quests/gqt006/characters/goth_baddie.character.json --open
+```
+
+For this appearance, use WolvenKit `convert deserialize`, then `convert serialize`
+to verify `h0_tattoo.isEnabled` is zero in both component copies of every
+appearance. The native template writer currently omits false `isEnabled` values;
+WolvenKit reads the omitted property as enabled. Native serialization alone
+therefore does not verify this change.
+
 `Prepare full character` adds a neutral-material composition pass. It generates
 the selected appearance in the character's ignored output tree, exports the
 four morphable head cores, packs that isolated tree into a temporary WolvenKit

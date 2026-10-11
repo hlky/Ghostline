@@ -276,7 +276,7 @@ function render(data) {
   state.catalog = data.catalog;
   state.frameProfile = frameProfile;
   state.assetIndex = data.asset_index;
-  state.headPreviewUrl = data.preview_url;
+  state.headPreviewUrl = data.face_preview_url || data.preview_url;
   state.fullPreviewUrl = data.full_preview_url;
   state.editableAppearance.indexed_overrides ||= {};
   byId("character-id").value = state.manifest.id;
@@ -353,8 +353,8 @@ function render(data) {
   byId("connection").textContent = data.validation.ok ? "Engine ready" : "Needs attention";
   setResult(data.validation, !data.validation.ok);
   viewer.setShapes(currentShapes());
-  if (data.preview_url) {
-    viewer.load(data.preview_url).catch((error) => viewer.setStatus(String(error), true));
+  if (state.headPreviewUrl) {
+    viewer.load(state.headPreviewUrl).catch((error) => viewer.setStatus(String(error), true));
   }
   updateAssetSummary(data.asset_index?.summary);
   loadAssets().catch((error) => setResult(String(error), true));
@@ -391,6 +391,13 @@ async function action(name) {
       "head-plan": "/api/head/plan",
       "head-build": "/api/head/build",
     };
+    if (name === "preview-face") {
+      viewer.setStatus("Preparing game textures and face layers…");
+      const result = await post("/api/preview/face");
+      state.headPreviewUrl = result.preview_url;
+      await viewer.load(result.preview_url);
+      return;
+    }
     if (name === "preview-prepare") {
       const result = await post("/api/preview/prepare", {
         include_all_head_parts: byId("preview-all-parts").checked,
@@ -428,6 +435,10 @@ document.querySelectorAll("button[data-action]").forEach((button) => {
 
 const viewer = new CharacterViewer(byId("character-viewport"), byId("viewport-status"));
 byId("viewport-reset").addEventListener("click", () => viewer.resetView());
+byId("viewport-front").addEventListener("click", () => viewer.setViewAngle(0));
+byId("viewport-three-quarter").addEventListener("click", () => viewer.setViewAngle(Math.PI / 5));
+byId("viewport-lighting").addEventListener("change", (event) => viewer.setLighting(event.target.value));
+byId("viewport-hair").addEventListener("change", (event) => viewer.setHairVisible(event.target.checked));
 byId("viewport-head").addEventListener("click", () => {
   if (state.headPreviewUrl) viewer.load(state.headPreviewUrl).catch((error) => viewer.setStatus(String(error), true));
   else viewer.setStatus("Prepare the live head preview first", true);
