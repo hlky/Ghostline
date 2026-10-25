@@ -121,6 +121,10 @@ def editable_manifest(value: dict[str, Any]) -> dict[str, Any]:
                     "depot_path": depot_path,
                     "mesh_appearance": mesh_appearance,
                 }
+                if "chunk_mask" in override:
+                    trusted_appearance["indexed_overrides"][category_id]["chunk_mask"] = (
+                        character_builder.indexed_chunk_mask(override)
+                    )
     return trusted
 
 
@@ -177,6 +181,8 @@ def validate_installed_overrides(manifest: dict[str, Any], character_id: str) ->
                 f"Indexed mesh {depot_path} belongs to {assignment['manifest_category']!r}, not {category_id!r}"
             )
         canonical[category_id] = assignment["override"]
+        if "chunk_mask" in override:
+            canonical[category_id]["chunk_mask"] = character_builder.indexed_chunk_mask(override)
     appearance["indexed_overrides"] = canonical
 
 

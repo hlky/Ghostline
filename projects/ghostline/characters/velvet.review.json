@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "character": "velvet",
+  "review": "offline neutral geometry",
+  "body_frame": "female_average",
+  "checked_views": ["front", "three-quarter"],
+  "face_review": {
+    "textured_preview": "Golden-blonde twin buns, green eyes, liner 01 and rose gloss; inherited skull tattoo and freckles disabled in both component copies.",
+    "likeness": "Revised blonde direction requested by the user; distinct head values replace the shared Goth Baddie sculpt.",
+    "head_shapes": {"eyes": 12, "nose": 6, "mouth": 6, "jaw": 7, "ears": 2},
+    "native_head_build": "four revised head meshes rebuilt successfully"
+  },
+  "outfit": {
+    "silhouette": "cropped jacket and bustier preserve exposed midriff; dark cargo trousers and boots align in the static preview",
+    "bustier_chunk_mask": "3",
+    "chunk_mask_provenance": "Items.Undershirt_03_basic_02 female appearance component in the local item database",
+    "runtime_fit": "not tested",
+    "animated_deformation": "not tested"
+  },
+  "evidence": {
+    "blonde_face_front": "projects/ghostline/generated/characters/velvet/review/blonde-no-freckles-front.png",
+    "blonde_face_three_quarter": "projects/ghostline/generated/characters/velvet/review/blonde-face-three-quarter.png",
+    "hair_bundle": "projects/ghostline/characters/velvet.hair-contract.json",
+    "front": "projects/ghostline/generated/characters/velvet/review/full-front.png",
+    "three_quarter": "projects/ghostline/generated/characters/velvet/review/full-three-quarter.png",
+    "browser_manifest": "converted/characters/velvet/full-preview/preview-manifest.json",
+    "native_readback": "projects/ghostline/generated/characters/velvet/character-binary-validation.json"
+  },
+  "limits": [
+    "Full-outfit silhouette screenshots predate the blonde head redesign; current head is reviewed separately with textures. The blonde three-quarter image predates freckle removal.",
+    "Full-character preview uses neutral materials and omits seven makeup/piercing layers.",
+    "Item gallery renders supply wardrobe material references separately.",
+    "Twin buns use their complete native control bundle; satin bows and pink flyaways remain custom work.",
+    "Companion cuffs and shadows retain curated anchors; body hiding and foot state require in-game review."
+  ],
+  "verification": {
+    "character_tests": 59,
+    "passed": 59,
+    "ruff": "passed",
+    "native_entity_appearance_readback": "passed including both copies of explicit chunk mask"
+  }
+}

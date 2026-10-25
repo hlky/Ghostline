@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "quest": "gq004",
+  "project": "ghostline",
+  "status": "installed_playtest_candidate",
+  "script": {
+    "spoken_lines": 43,
+    "scene_choices": 9,
+    "manifest_index": "script/voice-production.json",
+    "readable": "script/dialogue.md"
+  },
+  "scenes": [
+    {
+      "spec": "implementation/scenes/gq004_01.scene-spec.json",
+      "resource": "mod\\gq004\\scenes\\gq004_01_velvet.scene",
+      "preview_binary": "projects/ghostline/generated/love-actually-preview/source/archive/mod/gq004/scenes/gq004_01_velvet.scene"
+    },
+    {
+      "spec": "implementation/scenes/gq004_03.scene-spec.json",
+      "resource": "mod\\gq004\\scenes\\gq004_03_velvet.scene",
+      "preview_binary": "projects/ghostline/generated/love-actually-preview/source/archive/mod/gq004/scenes/gq004_03_velvet.scene"
+    }
+  ],
+  "world": {
+    "spec": "implementation/world/love-actually.world.json",
+    "coordinates": "CET-captured and applied",
+    "registered": true,
+    "cet": "implementation/cet/init.lua",
+    "installer": "implementation/scout.py",
+    "targets": 16,
+    "capture_log": "implementation/world/love-actually.locations.json",
+    "native_resources": 4,
+    "validation": "projects/ghostline/generated/love-actually-preview/world-validation.json",
+    "runtime_placement_verified": false,
+    "native_readback": "projects/ghostline/generated/love-actually-preview/native-validation.json"
+  },
+  "character": {
+    "manifest": "projects/ghostline/characters/velvet.character.json",
+    "wardrobe": "projects/ghostline/characters/velvet.wardrobe.json",
+    "hair_contract": "projects/ghostline/characters/velvet.hair-contract.json",
+    "concept": "projects/ghostline/characters/references/velvet-kade-concept.png",
+    "preview_root": "projects/ghostline/generated/characters/velvet",
+    "head_shapes_baked": true,
+    "head_build_report": "projects/ghostline/generated/characters/velvet/head-build-report.json",
+    "custom_hair_bows_jacket_tattoos": "pending",
+    "runtime_fit": "pending",
+    "offline_geometry_review": "projects/ghostline/characters/velvet.review.json",
+    "native_entity_appearance_verified": true,
+    "binary_validation": "projects/ghostline/generated/characters/velvet/character-binary-validation.json"
+  },
+  "audio": {
+    "engine": "ghostline-voice",
+    "conditioning": "full_reference",
+    "wav_candidates": 60,
+    "source_reviewed": true,
+    "wem_conversion": "60 WEM files converted and packaged",
+    "review": "voice/review.json"
+  },
+  "lipsync": {
+    "manifest": "voice/lipsync.json",
+    "performances": 60,
+    "named_player_gender_variants": 86,
+    "sets": {
+      "female": "generated-voices/gq004/lipsync/female/gq004.anims.glb",
+      "male": "generated-voices/gq004/lipsync/male/gq004.anims.glb",
+      "velvet": "generated-voices/gq004/lipsync/velvet-a/gq004.anims.glb"
+    },
+    "runtime_anims_and_lipmap": "cooked, registered and packaged",
+    "runtime_validation": "projects/ghostline/generated/gq004-lipsync/runtime-validation.json",
+    "resource": "base/localization/en-us/lipsync/mod/gq004/gq004.anims"
+  },
+  "dependencies": [
+    {
+      "project": "ghostline-runtime",
+      "use": "existing declared project dependency; phase lifecycle donor and NPV localization template"
+    },
+    {
+      "project": "velvet-crash",
+      "use": "native pink-heart/black-bow FX and quickhack",
+      "package_integration": "explicit declared project dependency; included in love-actually profile"
+    }
+  ],
+  "shipping": {
+    "story_activation": false,
+    "development_excluded": true,
+    "in_game_validation": false,
+    "playtest_profile": "love-actually",
+    "installed": true
+  }
+}

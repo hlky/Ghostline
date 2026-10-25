@@ -1,0 +1,48 @@
+{
+  "candidate": "heartbreaker-492ef3a948e3",
+  "runtime_result": "failed visuals",
+  "user_report": {
+    "inventory": "item present and localized",
+    "v": "white screen, no hearts",
+    "npc": "Goth Baddie blinded, no hearts"
+  },
+  "confirmed_faults": [
+    "Wrong-case TweakDB flats: vfx, sfx, onEquip",
+    "Goth Baddie custom entity omitted from NPC resource.patch targets"
+  ],
+  "correction_version": "0.1.1",
+  "corrected_runtime_verified": true,
+  "working_baseline": {
+    "version": "0.1.1",
+    "candidate": "heartbreaker-030753a50e0d",
+    "package_sha256": "a142d0d15f78baf64e9ecb33c6d6f313873df5d1c08698d5db26a1395b8c625f",
+    "date": "2026-10-11",
+    "user_report": "Working, now we can refine it",
+    "visual_observations": [
+      "V shows hearts and pixel-fragment outro, with large cropped corner hearts",
+      "Goth Baddie shows a heart cluster and pixel-fragment outro",
+      "Runtime colour reads coral/red instead of desired pink"
+    ],
+    "audio_verified": false,
+    "evidence": [
+      "C:/Users/user/Desktop/Discord_7oOGEhMdu0.mp4_snapshot_00.06.462.png",
+      "C:/Users/user/Desktop/Discord_7oOGEhMdu0.mp4_snapshot_00.09.212.png",
+      "C:/Users/user/Desktop/Discord_X5GLXV2ctP.mp4_snapshot_00.01.597.png",
+      "C:/Users/user/Desktop/Discord_X5GLXV2ctP.mp4_snapshot_00.08.036.png"
+    ]
+  },
+  "refinement": {
+    "version": "0.1.2",
+    "requested_style": "Sharper pixel-art hearts with stronger glitching",
+    "requested_motion": "Bobbing, varied sizes, configurable V density and pink pixel accents",
+    "runtime_verified": false,
+    "candidate": "heartbreaker-4e0afb82ef81",
+    "package_sha256": "f3333730cbe1e37c6a998d268a681a60cad4c8c264ceb1e1905e5a20fbe7d092",
+    "installed": true
+  },
+  "evidence": [
+    "C:/Users/user/Documents/ShareX/Screenshots/2026-10/Cyberpunk2077_k2IP5FXNtB.jpg",
+    "C:/Users/user/Documents/ShareX/Screenshots/2026-10/Cyberpunk2077_scV5BErdGb.png",
+    "C:/Users/user/Documents/ShareX/Screenshots/2026-10/Cyberpunk2077_wjKtEtfuqV.jpg"
+  ]
+}

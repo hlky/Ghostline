@@ -1,0 +1,55 @@
+Character.GhostlineLoveGuard1:
+  $base: Character.jpn_tyger_claws_gangster2_ranged2_sidewinder_ma
+
+Character.GhostlineLoveGuard2:
+  $base: Character.jpn_tyger_claws_biker2_ranged2_copperhead_wa
+
+Character.GhostlineLoveGuard3:
+  $base: Character.jpn_tyger_claws_biker1_melee1_baseball_ma
+
+Items.GhostlineLoveSales:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: GhostlineLove.SalesRead
+  localizedName: gl_gq004_sales_title
+GhostlineLove.SalesRead:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq004/files/sales
+
+Items.GhostlineLoveArchive:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: GhostlineLove.ArchiveRead
+  localizedName: gl_gq004_archive_title
+GhostlineLove.ArchiveRead:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq004/files/archive
+
+Items.GhostlineLoveRevocation:
+  $base: Items.sts_wbr_jpn_01_shard_002
+  itemSecondaryAction: GhostlineLove.RevocationRead
+  localizedName: gl_gq004_revocation_title
+GhostlineLove.RevocationRead:
+  $base: Items.sts_wbr_jpn_01_shard_002_inline0
+  journalEntry: onscreens/emails/quests/minor_quest/gq004/files/revocation
+
+Items.GhostlineLoveHeartbreaker:
+  $base: Items.BlindProgram
+  displayName: gl_gq004_heartbreaker_name
+  localizedDescription: gl_gq004_heartbreaker_description
+  quality: Quality.Legendary
+  statModifiers:
+    - !append-once GhostlineLove.IconicReward
+  objectActions: [ItemAction.ProgramDisassemble, QuickHack.GhostlineVelvetCrashProtocol]
+
+GhostlineLove.IconicReward:
+  $type: ConstantStatModifier
+  statType: BaseStats.IsItemIconic
+  modifierType: Additive
+  value: 1.0
+
+Interactions.GhostlineLoveRecover:
+  $base: Interactions.ConnectPersonalLink
+  caption: gl_gq004_recover_link
+
+Interactions.GhostlineLoveUpload:
+  $base: Interactions.ConnectPersonalLink
+  caption: gl_gq004_upload_link

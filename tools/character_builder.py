@@ -58,7 +58,7 @@ FRAME_PROFILES: dict[str, dict[str, Any]] = {
         "unresolved_documented_values": (),
     },
 }
-INDEXED_OVERRIDE_KEYS = frozenset({"depot_path", "mesh_appearance"})
+INDEXED_OVERRIDE_KEYS = frozenset({"depot_path", "mesh_appearance", "chunk_mask"})
 CNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.:-]+$")
 FRAME_TOKEN_PATTERN = re.compile(
     r"(?:^|_)(pma|pwa|mba|wba|mab|wab|ma|wa|mb|wb)(?=__|_|\.|$)", re.IGNORECASE
@@ -1163,6 +1163,8 @@ def normalized_indexed_override(
         raise CharacterBuildError(f"Category {category_id!r} does not support indexed mesh overrides")
     if not isinstance(override, dict):
         raise CharacterBuildError(f"Indexed override {category_id!r} must be an object")
+    if "chunk_mask" in override:
+        indexed_chunk_mask(override)
     unknown = sorted(set(override) - INDEXED_OVERRIDE_KEYS)
     if unknown:
         raise CharacterBuildError(
@@ -1234,6 +1236,17 @@ def normalized_indexed_override(
     return config, depot_path, mesh_appearance
 
 
+def indexed_chunk_mask(override: dict[str, Any]) -> str:
+    """Validate an explicitly authored unsigned 64-bit visibility mask."""
+    value = override["chunk_mask"]
+    if isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise CharacterBuildError("Indexed chunk_mask must be an unsigned 64-bit decimal integer")
+    text = str(value)
+    if len(text) > 20 or not text.isascii() or not text.isdecimal() or not 0 <= int(text) <= 2**64 - 1:
+        raise CharacterBuildError("Indexed chunk_mask must be an unsigned 64-bit decimal integer")
+    return str(int(text))
+
+
 def apply_indexed_overrides(
     app_document: dict[str, Any], manifest: dict[str, Any], catalog: dict[str, Any]
 ) -> list[str]:
@@ -1287,6 +1300,8 @@ def apply_indexed_overrides(
                 )
             mesh["$value"] = depot_path
             mesh_appearance_value["$value"] = mesh_appearance
+            if "chunk_mask" in override:
+                component["chunkMask"] = indexed_chunk_mask(override)
             component["isEnabled"] = 1
         warnings.append(
             f"{category_id} uses indexed mesh {depot_path}; its curated cuff/shadow companion remains provisional"
@@ -1886,6 +1901,10 @@ def validate_generated(
                 if component.get("isEnabled") != 1:
                     report.errors.append(
                         f"Generated indexed override {category_id!r} is disabled in copy {index}"
+                    )
+                if "chunk_mask" in override and str(component.get("chunkMask")) != indexed_chunk_mask(override):
+                    report.errors.append(
+                        f"Generated indexed override {category_id!r} has the wrong chunk mask in copy {index}"
                     )
 
     all_resources = resource_paths(entity) + resource_paths(appearance)

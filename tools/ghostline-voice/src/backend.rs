@@ -7,6 +7,8 @@ use crate::Result;
 /// One deterministic synthesis request.
 #[derive(Debug, Clone, Copy)]
 pub struct SynthesisRequest<'a> {
+    /// Performer name used to select an optional reference prompt.
+    pub speaker_name: &'a str,
     /// Text to speak.
     pub text: &'a str,
     /// Qwen language identifier.

@@ -1,0 +1,322 @@
+{
+  "name": "gq004_01_velvet",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/ghostline/quests/gq004/script/gq004_01_manifest.json",
+  "raw_path": "projects/ghostline/source/raw/mod/gq004/scenes/gq004_01_velvet.scene.json",
+  "archive_path": "projects/ghostline/source/archive/mod/gq004/scenes/gq004_01_velvet.scene",
+  "exported_datetime": "2026-10-25T00:00:00Z",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "actors": [
+    {
+      "key": "velvet",
+      "name": "Velvet",
+      "kind": "community",
+      "id": 0,
+      "entry": "velvet",
+      "community_ref": "#gq004_com_velvet",
+      "appearance": "ghostline_velvet_default",
+      "lipsync": 0,
+      "voicetag": "5506207259407814236"
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 1
+    }
+  ],
+  "spoken_line_order": [
+    "gq004_01_velvet_hello",
+    "gq004_01_v_hello",
+    "gq004_01_velvet_job",
+    "gq004_01_v_hack",
+    "gq004_01_velvet_hack",
+    "gq004_01_v_recover",
+    "gq004_01_velvet_recover",
+    "gq004_01_v_name",
+    "gq004_01_velvet_name",
+    "gq004_01_v_accept",
+    "gq004_01_velvet_route",
+    "gq004_01_velvet_bows",
+    "gq004_01_v_later",
+    "gq004_01_velvet_later"
+  ],
+  "choice_line_order": [
+    "gq004_01_what_short",
+    "gq004_01_recover_short",
+    "gq004_01_flirt_short",
+    "gq004_01_accept_short",
+    "gq004_01_later_short"
+  ],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "end",
+      "node_id": 18
+    },
+    {
+      "name": "job_accept",
+      "node_id": 19
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 10,
+        "input_name": 0,
+        "input_ordinal": 1
+      },
+      {
+        "node_id": 11,
+        "input_name": 0,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "sections": [
+    {
+      "key": "opening",
+      "node_id": 2,
+      "lines": [
+        "gq004_01_velvet_hello",
+        "gq004_01_v_hello",
+        "gq004_01_velvet_job"
+      ],
+      "on_end": [
+        {
+          "node_id": 22,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "key": "what",
+      "node_id": 3,
+      "lines": [
+        "gq004_01_v_hack",
+        "gq004_01_velvet_hack"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "recover",
+      "node_id": 4,
+      "lines": [
+        "gq004_01_v_recover",
+        "gq004_01_velvet_recover"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "flirt",
+      "node_id": 5,
+      "lines": [
+        "gq004_01_v_name",
+        "gq004_01_velvet_name"
+      ],
+      "on_end": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "key": "accept",
+      "node_id": 6,
+      "lines": [
+        "gq004_01_v_accept",
+        "gq004_01_velvet_route",
+        "gq004_01_velvet_bows"
+      ],
+      "on_end": [
+        {
+          "node_id": 19
+        }
+      ]
+    },
+    {
+      "key": "later",
+      "node_id": 7,
+      "lines": [
+        "gq004_01_v_later",
+        "gq004_01_velvet_later"
+      ],
+      "on_end": [
+        {
+          "node_id": 18
+        }
+      ]
+    }
+  ],
+  "choices": [
+    {
+      "key": "conversation",
+      "node_id": 8,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "gq004_01_what_short",
+          "caption": "What does it actually do?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 3
+        },
+        {
+          "choice_key": "gq004_01_recover_short",
+          "caption": "Why keep the stolen code?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 4
+        },
+        {
+          "choice_key": "gq004_01_flirt_short",
+          "caption": "Flirting or tech support?",
+          "single_choice": false,
+          "choice_type": 0,
+          "target_node_id": 5
+        },
+        {
+          "choice_key": "gq004_01_accept_short",
+          "caption": "I'll recover it.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 6
+        },
+        {
+          "choice_key": "gq004_01_later_short",
+          "caption": "I'll come back.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 7
+        }
+      ]
+    }
+  ],
+  "quest_nodes": [
+    {
+      "kind": "puppet_ai",
+      "node_id": 10,
+      "entity_ref": "#gq004_com_velvet",
+      "entry": "velvet",
+      "ai_tier": "Cinematic"
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 11,
+      "trigger_ref": "#gq004_tr_mood",
+      "require_player_not_in_combat": true,
+      "on_out": [
+        {
+          "node_id": 13,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 13,
+      "trigger_ref": "#gq004_tr_awareness",
+      "on_out": [
+        {
+          "node_id": 2
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 22,
+      "trigger_ref": "#gq004_tr_engage",
+      "on_out": [
+        {
+          "node_id": 8
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 24,
+      "trigger_ref": "#gq004_tr_engage",
+      "require_player_not_in_combat": true,
+      "on_out": [
+        {
+          "node_id": 8
+        }
+      ]
+    }
+  ],
+  "xor_nodes": [],
+  "end_nodes": [
+    {
+      "node_id": 18
+    },
+    {
+      "node_id": 19
+    }
+  ],
+  "lipsync_animset": "base\\localization\\en-us\\lipsync\\mod\\gq004\\gq004.anims",
+  "entry_points": [
+    {
+      "name": "start",
+      "node_id": 1
+    },
+    {
+      "name": "resume",
+      "node_id": 23
+    }
+  ],
+  "start_nodes": [
+    {
+      "node_id": 1,
+      "on_start": [
+        {
+          "node_id": 10,
+          "input_name": 0,
+          "input_ordinal": 1
+        },
+        {
+          "node_id": 11,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "node_id": 23,
+      "on_start": [
+        {
+          "node_id": 10,
+          "input_name": 0,
+          "input_ordinal": 1
+        },
+        {
+          "node_id": 24,
+          "input_name": 0,
+          "input_ordinal": 1
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,26 @@ class PackageError(RuntimeError):
     pass
 
 
+class TweakDependencyLoader(yaml.SafeLoader):
+    """Read declarative TweakXL values for dependency discovery only."""
+
+
+def _tweak_value(loader: TweakDependencyLoader, node: yaml.Node) -> Any:
+    if isinstance(node, yaml.ScalarNode):
+        return loader.construct_scalar(node)
+    if isinstance(node, yaml.SequenceNode):
+        return loader.construct_sequence(node)
+    return loader.construct_mapping(node)
+
+
+for _tag in ("!append", "!append-once", "!prepend", "!prepend-once", "!remove"):
+    TweakDependencyLoader.add_constructor(_tag, _tweak_value)
+
+
+def read_tweak_dependencies(path: Path) -> Any:
+    return yaml.load(path.read_text(encoding="utf-8"), Loader=TweakDependencyLoader)
+
+
 def depot_path(value: str) -> str:
     normalized = value.replace("\\", "/").casefold()
     path = PurePosixPath(normalized)
@@ -155,9 +175,19 @@ def filter_registration(document: dict, profile: dict, quests: set[str]) -> dict
         return len(parts) > 1 and (parts[1] in quests or parts[:3] == ["mod", "ghostline", "localization"])
 
     result: dict[str, Any] = {}
+    extras = [depot_path(path) for path in profile.get("additional_root_phases", [])]
+    if len(extras) != len(set(extras)) or any(
+        len(path.split('/')) < 3 or path.split('/')[:1] != ['mod']
+        or path.split('/')[1] not in profile['active_quests'] or not path.endswith('.questphase')
+        for path in extras
+    ):
+        raise PackageError("Additional roots must be unique phases owned by active quests")
     phases = [entry for entry in document.get("quest", {}).get("phases", [])
               if depot_path(entry["path"]).split("/")[1] in profile["active_quests"]]
-    if Counter(depot_path(entry["path"]).split("/")[1] for entry in phases) != Counter(profile["active_quests"]):
+    if Counter(depot_path(entry['path']) for entry in phases if depot_path(entry['path']) in extras) != Counter(extras):
+        raise PackageError("Each additional root must have exactly one ArchiveXL registration")
+    primary = [entry for entry in phases if depot_path(entry['path']) not in extras]
+    if Counter(depot_path(entry["path"]).split("/")[1] for entry in primary) != Counter(profile["active_quests"]):
         raise PackageError("Each active quest must have one ArchiveXL phase registration")
     result["quest"] = {"phases": phases}
     result["journal"] = [path for path in document.get("journal", []) if keep(path)]
@@ -260,12 +290,31 @@ def build_manifest(profile_name: str | None = None, *, root: Path = ROOT, projec
         loose = {f"r6/tweaks/{profile['archive_name']}/{name}.yaml": loose_inventory.get(
                     f"r6/tweaks/ghostline/{name}.yaml", root / "source/resources/r6/tweaks/ghostline" / f"{name}.yaml")
                  for name in profile["tweaks"]}
-    references = resource_strings(registration)
+        available_loose = {depot_path(name): source for name, source in loose_inventory.items()}
+        if profile.get("include_loose") and len(available_loose) != len(loose_inventory):
+            raise PackageError("Case-colliding explicit loose resource paths")
+        for relative in profile.get("include_loose", []):
+            relative = depot_path(relative)
+            if relative not in available_loose:
+                raise PackageError(f"Missing explicit loose resource: {relative}")
+            if relative in loose:
+                raise PackageError(f"Colliding explicit loose resource: {relative}")
+            loose[relative] = available_loose[relative]
+    patch = registration.get("resource", {}).get("patch", {})
+    patch_sources = {depot_path(source) for source in patch}
+    patch_targets = resource_strings(list(patch.values()))
+    external_patch_targets = {depot_path(target) for target in profile.get("external_patch_targets", [])}
+    if external_patch_targets - patch_targets or external_patch_targets & patch_sources:
+        raise PackageError("External patch targets must be registered targets, never patch sources")
+    # Optional integration targets are installed by their owning mod. They
+    # are excluded only from registration dependency discovery; hard imports
+    # to the same paths in packed resources/tweaks still require a payload.
+    references = resource_strings(registration) - external_patch_targets
     for path in loose.values():
         if not path.is_file():
             raise PackageError(f"Missing loose resource: {path}")
         if path.suffix in {".yaml", ".yml"}:
-            references.update(resource_strings(yaml.safe_load(path.read_text(encoding="utf-8"))))
+            references.update(resource_strings(read_tweak_dependencies(path)))
     external: set[str] = set()
     added: set[str] = set()
     inspected: set[str] = set()
@@ -363,6 +412,7 @@ def build_manifest(profile_name: str | None = None, *, root: Path = ROOT, projec
         "selected_paths": sorted(payloads), "loose_files": sorted(loose),
         "payload_count": len(payloads), "payload_bytes": sum(p.stat().st_size for p in payloads.values()),
         "dependency_additions": sorted(added), "external_game_dependencies": sorted(external),
+        "external_patch_targets": sorted(external_patch_targets),
         "localized_lipsync_references": localized_references,
         "authored_dependency_sources": sorted(raw_sources),
         "unresolved_numeric_resource_paths": dict(sorted(unresolved_numeric.items())),

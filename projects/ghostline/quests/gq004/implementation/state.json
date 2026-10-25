@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "quest": "gq004",
+  "authoring": "playtested_complete",
+  "preview_native_phases": 14,
+  "preview_native_scenes": 10,
+  "preview_native_journal": 1,
+  "candidate_audio": 60,
+  "candidate_lipsync_variants": 86,
+  "location_capture": {
+    "ready": true,
+    "guide": "implementation/LOCATION-CAPTURE.md",
+    "installed_game_root": "K:/Cyberpunk 2077",
+    "targets": 16,
+    "capture_stops": 7,
+    "cet_offline_harness": "passed",
+    "scout_and_import_tests": 9,
+    "installed_code_and_target_contract": "matched",
+    "coordinates": "captured and applied",
+    "captured_targets": 16,
+    "snapshot": "implementation/world/love-actually.locations.json",
+    "capture_sha256": "cc7877dc5136faac046240cdbb9037b8ac9719dab4e1b41d401e5e476a791c8f"
+  },
+  "velvet_freckles": "disabled in both native component copies and excluded from textured preview",
+  "tests": {
+    "python_suite_run": 793,
+    "python_errors": 1,
+    "remaining_failure": "Historical full-suite error; subsequently fixed and covered by the 59 passing character/face tests. Full suite not rerun.",
+    "quest_targeted_tests": 29,
+    "quest_targeted_passed": 29,
+    "rust_tests_passed": 18,
+    "rust_clippy": "passed -D warnings",
+    "python_ruff": "passed",
+    "character_and_face_tests_passed": 59,
+    "latest_grouped_tests_passed": 62,
+    "scene_tests_passed": 37,
+    "packaging_tests_passed": 26,
+    "latest_grouped_tests_scope": "28 quest/import, 19 package, 7 dependency and 8 FX tests passed"
+  },
+  "limitations": [
+    "Reference-specific custom hair bows, charms and tattoos remain cosmetic backlog; native hack hearts/bows included."
+  ],
+  "character_native_readback": "passed character-specific validator and resource identity preservation",
+  "timed_scene_readback": "All nine scenes passed authored-field readback; approved take timings retained.",
+  "preview_native_world": 4,
+  "world_readback": "passed authored-field verification for all four captured world resources; reader-added defaults recorded separately",
+  "reviewed_audio": 60,
+  "cooked_lipsync_variants": 86,
+  "native_resources_verified": 44,
+  "installed_game": "K:/Cyberpunk 2077",
+  "package": "projects\\ghostline\\generated\\packages\\love-actually-736fbdd18ed4/verification.json",
+  "runtime_tested": false,
+  "goth_baddie": "disabled with five hash-verified timestamped backups; see goth-baddie-disabled.json",
+  "other_installed_prototypes": [],
+  "disabled_prototypes": [
+    "Goth Baddie",
+    "Heartbreaker",
+    "Velvet Crash",
+    "NPC Runtime"
+  ],
+  "isolation_receipt": "implementation/isolation-receipt.json",
+  "playtest_feedback": "Success opening now plays; first socket and scanner/active-target icons confirmed good. Latest work adds audio-only call, skips deferred intro, nudges second mount 3 cm inward, and halves inventory icon to native 50x65 footprint.",
+  "confirmed_in_game": [
+    "Torso/body rendering corrected",
+    "Intro distance corrected",
+    "Velvet stays after accepting",
+    "Recovery and upload commit; confirmed in read-only trace",
+    "Shard visited gates advance through all three reads (labels broken in prior candidate)",
+    "Heartbreaker reward arrives; inventory and scanner names correct",
+    "Leave-operation gate fixed; user confirmed progression",
+    "Quickhack hearts/bows now render; user confirmed EP1 registration fix",
+    "Upload success opening plays after native spawn-readiness gate",
+    "First wall socket mount looks correct",
+    "Scanner and active-target icons have correct size",
+    "Updated Heartbreaker effect description appears in inventory",
+    "Final audio-call, deferred-return, socket and inventory-icon polish: user reported all good",
+    "Complete driving-inclusive playthrough approximately 10 minutes"
+  ],
+  "remaining_runtime_issue": null,
+  "diagnostic_helper": "Link diagnostic loading and update callback disabled in source and installed scout; location capture UI and previous logs retained.",
+  "link_fix": "Installed: disable HackingSkillCheck on both cloned devices (NONE/inactive); fresh _link IDs avoid saved active slots. Plug-in transfer retained, no minigame. In-game retest pending.",
+  "fast_travel_fix": "Installed IsInside setup/operation gates, with IsOutside awareness gate before rearming deferred meetings. In-game test pending.",
+  "velvet_protection": "Friendly record attitude and Invulnerable tag; both native meeting phases reapply friendly attitude and invulnerable mortality after spawning. In-game test pending.",
+  "leave_fix": "Quest-owned IsOutside gate preserves node IDs and cleanup ordering; departure during preceding VO or before load cannot be missed. Scoped native readback passed; in-game check pending.",
+  "effect_root_cause": "Trace: custom statuses dispatch, VFX has one entry, has_spawner false on quest guards, NCPD and Maelstrom. Faction records use unpatched EP1 replacement entities.",
+  "effect_fix": "User confirmed working; current package preserves FX payload hashes and EP1 registrations.",
+  "polish": {
+    "mappins": "Central approach marker then socket markers derived from actual mounts; original 16 captures retained.",
+    "shards": "Sales at recovery; Archive after sales dialogue; Revocation after archive dialogue.",
+    "velvet": "Root retained until outside 60 m meeting area after debrief; journal completes independently.",
+    "reward_timing": "One-second wait replaced with two game ticks."
+  },
+  "custom_icon": "256 px broken-heart/circuit/bow glyph, native atlas + RGBA texture, inventory and scanner aliases. Atlas readback and exact texture alpha verified; runtime check pending.",
+  "heartbreaker_description": "Custom OnAttach GameplayLogicPackage UIData replaces EquipmentGLP.BlindProgram tooltip bullet; same effect localization used by scanner. Native readback/hash verification passed; runtime display check pending.",
+  "audio_call": {
+    "mode": "Audio",
+    "automatic": true,
+    "video": false,
+    "scope": "Operation reached through leave completion; closes before in-person debrief"
+  },
+  "deferred_return": "Skip introduction and restore choices through a separate resume entry on the existing scene.",
+  "inventory_icon_1080p": [
+    50,
+    65
+  ],
+  "scanner_icon_1080p": [
+    32,
+    32
+  ],
+  "latest_checks": "34 quest, 26 package and 8 native FX tests passed; 44 native readbacks and 7 installed hashes passed.",
+  "final_playthrough": {
+    "date": "2026-10-25",
+    "user_feedback": "All good; driving-inclusive playthrough approximately 10 minutes.",
+    "duration_minutes": 10,
+    "package": "love-actually-736fbdd18ed4"
+  }
+}

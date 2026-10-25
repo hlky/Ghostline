@@ -1,0 +1,396 @@
+{
+  "_note": "CET-captured coordinates; collision, navmesh, scene facing and vanilla activity review still required.",
+  "name": "gq004",
+  "prefab_root": "$/mod/gq004/#gq004_pr_love_actually",
+  "block_path": "mod\\gq004\\world\\love_actually.streamingblock",
+  "quest_sector_path": "mod\\gq004\\world\\love_actually.streamingsector",
+  "always_loaded_sector_path": "mod\\gq004\\world\\always_loaded.streamingsector",
+  "device_registry_path": "mod\\gq004\\world\\love_actually.devices",
+  "streaming_box": "world",
+  "origin": {
+    "x": -1201.0946044922,
+    "y": 2057.7619628906,
+    "z": 12.008598327637,
+    "yaw": 21.696689723204
+  },
+  "markers": [
+    {
+      "ref": "#gq004_mp_velvet",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1201.0946044922,
+        "y": 2057.7619628906,
+        "z": 12.008598327637
+      },
+      "yaw": 21.696689723204
+    },
+    {
+      "ref": "#gq004_sm_velvet",
+      "sector": "always_loaded",
+      "position": {
+        "x": -1201.0946044922,
+        "y": 2057.7619628906,
+        "z": 12.008598327637
+      },
+      "yaw": 21.696689723204,
+      "scene_marker": true
+    },
+    {
+      "ref": "#gq004_mp_relay",
+      "sector": "always_loaded",
+      "position": {
+        "x": -609.83190917969,
+        "y": 798.18487548828,
+        "z": 20.226013183594
+      },
+      "yaw": 2.3986820238857
+    },
+    {
+      "ref": "#gq004_mp_recover",
+      "sector": "always_loaded",
+      "derived_from": "#gq004_ap_relay_link",
+      "position": {
+        "x": -614.7692818567276,
+        "y": 800.4016895053287,
+        "z": 21.426013183594
+      },
+      "yaw": 10.268323559479168
+    },
+    {
+      "ref": "#gq004_mp_upload",
+      "sector": "always_loaded",
+      "derived_from": "#gq004_ap_upload_link",
+      "position": {
+        "x": -605.4119229654033,
+        "y": 799.7671024060959,
+        "z": 21.426013183594
+      },
+      "yaw": -168.9999841875196
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gq004_tr_setup",
+      "position": {
+        "x": -1201.0946044922,
+        "y": 2057.7619628906,
+        "z": 6.008598327636999
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 90,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "yaw": 21.696689723204
+    },
+    {
+      "ref": "#gq004_tr_mood",
+      "position": {
+        "x": -1201.0946044922,
+        "y": 2057.7619628906,
+        "z": 6.008598327636999
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 60,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "yaw": 21.696689723204
+    },
+    {
+      "ref": "#gq004_tr_awareness",
+      "position": {
+        "x": -1201.0946044922,
+        "y": 2057.7619628906,
+        "z": 6.008598327636999
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 3,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "yaw": 21.696689723204
+    },
+    {
+      "ref": "#gq004_tr_engage",
+      "position": {
+        "x": -1201.0946044922,
+        "y": 2057.7619628906,
+        "z": 6.008598327636999
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 2.5,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "yaw": 21.696689723204
+    },
+    {
+      "ref": "#gq004_tr_operation",
+      "position": {
+        "x": -609.83190917969,
+        "y": 798.18487548828,
+        "z": 14.226013183593999
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 30,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "yaw": 2.3986820238857
+    },
+    {
+      "ref": "#gq004_tr_cleanup",
+      "position": {
+        "x": -609.83190917969,
+        "y": 798.18487548828,
+        "z": 14.226013183593999
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 50,
+        "segments": 20,
+        "height": 12
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "yaw": 2.3986820238857
+    }
+  ],
+  "devices": [
+    {
+      "ref": "#gq004_ap_relay_link",
+      "kind": "access_point",
+      "position": {
+        "x": -614.7692818567276,
+        "y": 800.4016895053287,
+        "z": 21.426013183594
+      },
+      "yaw": 10.268323559479168,
+      "appearance": "access_point_access_point_socket_f_neomil",
+      "buffer_id": 1,
+      "content_scale": "DeviceContentAssignment.Autoscaling",
+      "initial_state": "OFF",
+      "network_name": "HEARTBREAKER / RECOVERY",
+      "controller_class": "AccessPointControllerPS",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "entity_template": "mod\\gq004\\devices\\recover.ent",
+      "mount_setback": 0.4,
+      "capture_ref": "#gq004_ap_relay",
+      "wall_mount": {
+        "surface_point": [
+          -614.9171264377624,
+          801.1504720837152
+        ],
+        "normal": [
+          0.9839837398328699,
+          0.17825823892465453
+        ],
+        "rear_offset": 0.01,
+        "clearance": 0.002,
+        "source_sector": "base/worlds/03_night_city/_compiled/default/exterior_-5_6_0_1.streamingsector",
+        "collision_node": 2409,
+        "collision_actor": 28,
+        "capture_position": {
+          "x": -614.26049804688,
+          "y": 800.50091552734,
+          "z": 21.426013183594,
+          "yaw": -78.737274553797
+        }
+      }
+    },
+    {
+      "ref": "#gq004_ap_upload_link",
+      "kind": "access_point",
+      "position": {
+        "x": -605.4119229654033,
+        "y": 799.7671024060959,
+        "z": 21.426013183594
+      },
+      "yaw": -168.9999841875196,
+      "appearance": "access_point_access_point_socket_f_neomil",
+      "buffer_id": 2,
+      "content_scale": "DeviceContentAssignment.Autoscaling",
+      "initial_state": "OFF",
+      "network_name": "HEARTBREAKER / DISTRIBUTION",
+      "controller_class": "AccessPointControllerPS",
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "entity_template": "mod\\gq004\\devices\\upload.ent",
+      "mount_setback": 0.4,
+      "capture_ref": "#gq004_ap_upload",
+      "wall_mount": {
+        "surface_point": [
+          -605.350722528665,
+          799.3579188761859
+        ],
+        "normal": [
+          -0.9816271307881895,
+          -0.19080926628585632
+        ],
+        "rear_offset": 0.01,
+        "clearance": 0.002,
+        "source_sector": "base/worlds/03_night_city/_compiled/default/exterior_-10_12_0_0.streamingsector",
+        "collision_node": 2634,
+        "collision_actor": 45,
+        "capture_position": {
+          "x": -605.92346191406,
+          "y": 799.68493652344,
+          "z": 21.426013183594,
+          "yaw": 98.571363926452
+        },
+        "render_surface_inset": 0.03
+      }
+    }
+  ],
+  "communities": [
+    {
+      "ref": "#gq004_com_velvet",
+      "entry": "velvet",
+      "phase": "default",
+      "period": "Day",
+      "character": "Character.GhostlineVelvet",
+      "appearance": "ghostline_velvet_default",
+      "source_object_id": "auto",
+      "registry_node_id": "auto",
+      "active_on_start": 0,
+      "streaming_distance": 160,
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      },
+      "spot": {
+        "ref": "#gq004_spot_velvet",
+        "position": {
+          "x": -1201.0946044922,
+          "y": 2057.7619628906,
+          "z": 12.008598327637
+        },
+        "yaw": 21.696689723204,
+        "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__wait__01.workspot",
+        "node_data": {
+          "max_streaming_distance": 280,
+          "streaming_distance": 240
+        }
+      }
+    },
+    {
+      "ref": "#gq004_com_claws",
+      "position": {
+        "x": -614.98815917969,
+        "y": 805.70452880859,
+        "z": 20.226013183594
+      },
+      "yaw": 0,
+      "phase": "A",
+      "period": "Day",
+      "source_object_id": "auto",
+      "registry_node_id": "auto",
+      "registry_debug_name": "gq004_cache_guards_registry",
+      "active_on_start": 0,
+      "streaming_distance": 160,
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      },
+      "entries": [
+        {
+          "entry": "guard_ranged_m",
+          "character": "Character.GhostlineLoveGuard1",
+          "appearance": "default",
+          "quantity": 1,
+          "is_sequence": 1,
+          "spots": [
+            {
+              "ref": "#gq004_spot_guard_1",
+              "position": {
+                "x": -614.98815917969,
+                "y": 805.70452880859,
+                "z": 20.226013183594
+              },
+              "yaw": -12.085025915413,
+              "workspot": "base\\workspots\\patrolling\\guard_stand.workspot",
+              "is_workspot_infinite": 0,
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            }
+          ]
+        },
+        {
+          "entry": "guard_ranged_f",
+          "character": "Character.GhostlineLoveGuard2",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq004_spot_guard_2",
+              "position": {
+                "x": -604.90203857422,
+                "y": 803.25506591797,
+                "z": 20.240325927734
+              },
+              "yaw": 92.483995577524,
+              "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__02.workspot",
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            }
+          ]
+        },
+        {
+          "entry": "guard_melee",
+          "character": "Character.GhostlineLoveGuard3",
+          "appearance": "default",
+          "quantity": 1,
+          "spots": [
+            {
+              "ref": "#gq004_spot_guard_3",
+              "position": {
+                "x": -609.72814941406,
+                "y": 796.22827148438,
+                "z": 20.226013183594
+              },
+              "yaw": 3.0931337849088,
+              "workspot": "base\\workspots\\master\\master_generic__stand_ground__guard__01.workspot",
+              "node_data": {
+                "max_streaming_distance": 320,
+                "streaming_distance": 280
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ai_spots": [],
+  "always_loaded_node_refs": []
+}

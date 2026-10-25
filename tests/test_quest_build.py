@@ -228,21 +228,21 @@ class QuestBuildTests(unittest.TestCase):
 
 
 class MigratedCompositionTests(unittest.TestCase):
-    def test_all_ten_active_quests_use_composition_and_keep_planned_status(self):
+    def test_all_quest_manifests_use_composition_and_preserve_readiness(self):
         paths = [
             *sorted((ROOT / "projects/test-quests").rglob("*.quest.json")),
             *sorted((ROOT / "projects/ghostline/quests").glob("**/implementation/quest.json")),
         ]
-        self.assertEqual(len(paths), 10)
+        self.assertEqual(len(paths), 11)
         for path in paths:
             raw = json.loads(path.read_text(encoding="utf-8"))
             with self.subTest(path=path):
                 self.assertIn("composition", raw)
                 self.assertTrue(resolve_bindings(raw)["objectives"])
-                if "gq003" in path.parts:
+                if "gq003" in path.parts or "gq004" in path.parts:
                     self.assertEqual(
                         {stage["status"] for stage in normalize_spec(raw)["stages"]},
-                        {"planned"},
+                        {"ready"} if "gq004" in path.parts else {"planned"},
                     )
 
     def test_shared_phase_and_explicit_phone_ids_preserve_order(self):

@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "quest": "gq004",
+  "status": "installed_playtest_candidate",
+  "coordinates": "CET-captured and applied",
+  "start_condition": {
+    "requires": "gq004_completed == 0",
+    "repeat_offer_until": "gq004_offer_accepted == 1"
+  },
+  "facts": {
+    "gq004_offer_sent": "initial phone message delivered",
+    "gq004_offer_accepted": "V acknowledged meeting",
+    "gq004_job_accepted": "briefing job_accept exit",
+    "gq004_prototype_recovered": "prototype and live signing key verified locally",
+    "gq004_patch_uploaded": "corrected build committed and stolen batch revoked",
+    "gq004_operation_left": "cleanup boundary exited",
+    "gq004_debrief_done": "return scene job_accept exit",
+    "gq004_completed": "closing text completed and reward granted",
+    "gq004_reward_delivery_verified": "Set only after actual quickhack inventory confirmation; suppresses repeat repair grants."
+  },
+  "encounter": {
+    "community": "#gq004_com_claws",
+    "activation": "native reach phase, after briefing; hostile attitude without forced combat target",
+    "combat_required": false,
+    "entries": 3,
+    "on_upload": {
+      "targets": "quest-owned guards only",
+      "fx_record": "BaseStatusEffect.GhostlineVelvetCrashVision",
+      "duration_seconds": 6,
+      "commit_once": true,
+      "emotional_override": false
+    },
+    "cleanup": "release community after V exits; no disposal of downed actors",
+    "arrival_gate": "IsInside",
+    "departure_gate": "IsOutside: accepts already-outside state after dialogue and save/load"
+  },
+  "relay": {
+    "recovery_device": "#gq004_ap_relay",
+    "upload_device": "#gq004_ap_upload",
+    "preserve": [
+      "prototype",
+      "signing_key"
+    ],
+    "order": [
+      "copy",
+      "checksum",
+      "upload",
+      "revoke",
+      "bounded_fx"
+    ],
+    "interrupt": "retain verified local copy; discard partial upload; permit retry",
+    "non_netrunner_fallback": "personal_link",
+    "terminal_documents": [
+      "sales",
+      "archive",
+      "revocation"
+    ],
+    "implementation_status": "native cloned access-point controllers, minigame skip and named interactions; five-second attempts with terminating success/retry exits",
+    "terminal_documents_delivery": "Sequential: Sales on recovery, Archive after sales dialogue, Revocation after archive dialogue; visited gates retained.",
+    "controller_class": "AccessPointControllerPS",
+    "activation_action": "ForceON",
+    "disable_action": "ForceDisabled",
+    "arrival_vo_blocks_arming": false,
+    "mount_yaw": "Captured player yaw + 90 degrees: socket local +X aligns with player local +Y",
+    "mount_setback_m": 0.4,
+    "mount_validation": "In-game wall fit remains unverified",
+    "hacking_skill_gate": "Disabled: HackingSkillCheck difficulty NONE, isActive false; expose native TogglePersonalLink directly.",
+    "device_state_migration": "Fresh _link NodeRefs; original scout IDs retained in capture_ref.",
+    "minigame": false,
+    "read_gate": "Read sales, archive and revocation onscreens in order; visited journal conditions precede comments and upload objective.",
+    "progress": "Native outro; parent waits two ticks after child exit before forced unplug so retry listener can retire.",
+    "vfx_binding": "Hearts/bows moved to custom ShortBlind (observed payload); secondary Vision no longer starts duplicate cosmetics. Candidate, in-game check pending.",
+    "vfx_entity_coverage": "244 audited vanilla roots: 128 base, 116 EP1 replacements, plus optional Goth Baddie integration. Same native spawner and FX assets."
+  },
+  "reward": {
+    "item": "Items.GhostlineLoveHeartbreaker",
+    "inventory_title": "Heartbreaker Protocol",
+    "quickhack_caption": "Velvet Crash",
+    "count": 1,
+    "gating": "same reward for every debrief tone and both closing replies",
+    "dependency": "projects/experiments/velvet-crash",
+    "integration_status": "Direct vanilla base; finish root evaluates current inventory after debrief and completes journal independently of optional phone. Old completed-save reward repair retained.",
+    "quality": "Quality.Legendary",
+    "iconic_stat": "BaseStats.IsItemIconic +1",
+    "transaction_settle": "two game ticks, replacing one second"
+  },
+  "save_load_checks": [
+    "after offer",
+    "after accepting",
+    "after local recovery",
+    "interrupted upload",
+    "after upload before exit",
+    "interrupted debrief",
+    "completed reward replay"
+  ],
+  "voice": {
+    "index": "script/voice-production.json",
+    "conditioning": "full reference: speaker embedding + transcript + codec frames",
+    "candidate_root": "generated-voices/gq004",
+    "reviewed_source": "voice/source",
+    "lipsync_status": "86 cooked variants verified by WolvenKit re-export",
+    "review": "voice/review.json",
+    "revision_review": "voice/dialogue-review-02.json"
+  },
+  "runtime_validation": false,
+  "implementation": "native questphases, scenes, stock device controllers, TweakXL and ArchiveXL; no custom runtime scripts",
+  "meeting": {
+    "intro_radius_m": 3,
+    "conversation_radius_m": 2.5,
+    "release": "On entering the Claw operation, not on job acceptance",
+    "setup_gate": "IsInside: accepts direct fast-travel arrival and existing occupancy",
+    "rearm": "Immediately watch outside the 2.5 m engage radius; no blind delay.",
+    "protection": "friendly attitude group for native aiming protection, Invulnerable tag and native meeting mortality node",
+    "deferred_return": "Persistent gq004_meet_deferred branch enters resume: acquire community actor, wait inside engage radius/out of combat, show choices without replaying introduction."
+  },
+  "epilogue_timing": "Separate native finish root completes quest after confirmed reward, waits 45 seconds, then dispatches one-shot closing phone phase; no streamed-area dependency.",
+  "mappins": {
+    "reach": "#gq004_mp_relay",
+    "recover": "#gq004_mp_recover",
+    "upload": "#gq004_mp_upload",
+    "derivation": "Mounted device positions; no extra capture targets."
+  },
+  "meeting_retention": "Root waits outside 60 m mood area after debrief before community deactivation; finish root remains independent.",
+  "audio_call": {
+    "mode": "Audio",
+    "start": "Native questCallContact StartCall after reach, before recover",
+    "end": "Native questCallContact EndCall after leave, before return",
+    "answer_prompt": false,
+    "video": false,
+    "show_avatar": false,
+    "reference": "Installed vanilla PhoneSystem.OnTriggerCall accepts direct StartCall; newHudPhoneGameController.UpdateHoloAudioCall activates EHudPhoneFunction.Audiocall."
+  }
+}

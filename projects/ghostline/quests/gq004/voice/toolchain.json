@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "engine": "ghostline-voice",
+  "dinoml_checkout": "H:/dinoml_v2-worktrees/facet-voice-studio",
+  "dinoml_commit": "baa6f17d5cd63fca2ac54ca4c3200a4bd5673efb",
+  "native_library_directory": "H:/dinoml-native-libraries",
+  "pytorch_python": "H:/dinoml_v2/.venv/rocm10/Scripts/python.exe",
+  "powershell_profile": "C:/Users/user/Documents/PowerShell/profile.ps1",
+  "checkpoint": "X:/checkpoints/Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+  "design_checkpoint": "X:/checkpoints/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+  "design_artifact": "H:/facet/.work/gui-engine/evidence/voice-studio/coherent/voice_design_generation_p256_f288",
+  "design_decoder": "H:/facet/.work/gui-engine/evidence/voice-studio/coherent/tokenizer_decoder_f256",
+  "generation_artifact": "generated-voices/french-twins/artifacts/base_generation_p256_f288",
+  "decoder_artifact": "generated-voices/french-twins/artifacts/tokenizer_decoder_f256",
+  "reference_encoder_artifact": "generated-voices/french-twins/artifacts/tokenizer_encoder_s190048",
+  "reference_encoder_samples": 190048,
+  "velvet_reference": "generated-voices/gq004/design/velvet-clone-reference.wav",
+  "velvet_reference_text": "Okay, gorgeous. The hearts are intentional.",
+  "conditioning": "full_reference",
+  "v_sources": "generated-voices/vanilla-library/selected-voices.json",
+  "instruction": null,
+  "seed_base": 4004,
+  "versions": 1,
+  "review": {
+    "voice_direction": "keep this direction, user 2026-10-25",
+    "individual_takes": "unreviewed"
+  },
+  "notes": [
+    "Older runtime uses exact-size static tokenizer encoding. Reference receives trailing silence to 190048 samples; no speech is removed.",
+    "The newer bounded-variable tokenizer artifact needs a matching newer runtime; it is not silently used with this checkout."
+  ]
+}

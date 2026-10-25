@@ -1,0 +1,34 @@
+{
+  "version": "0.1.1",
+  "prior_runtime_feedback": {
+    "version": "0.1.0",
+    "candidate": "velvet-crash-8b6cc6857fec",
+    "package_sha256": "f9984eca9858122518fbe077e607642baa1f9a412fec4da180f0c90f0fc1e34d",
+    "evidence": [
+      "C:/Users/user/Documents/cyberpunk videos/2026-10-11_14-34-04_480p_30fps.mp4",
+      "C:/Users/user/Documents/cyberpunk videos/2026-10-11_14-34-49_480p_30fps.mp4"
+    ],
+    "observations": "V and NPC hearts/confetti render; bows read mostly as faint outlines",
+    "confirmed_material_setting": "AdditiveAlphaBlend is 0 in the compiled mixed-layer resource",
+    "cause_confirmed": false,
+    "audio_verifiable": false,
+    "notes": "Both supplied videos have no audio stream. Sampled at 10 fps to inspect active FX as well as the outro."
+  },
+  "revision": "Separate synchronized bow/heart particle tracks, independent alpha/additive materials, stronger bow rims and full bow opacity",
+  "runtime_verified": false,
+  "requested_effect": "Black bows and pink hearts explode into glitch confetti",
+  "native_gameplay": "Six seconds of Reboot Optics-derived blindness",
+  "presentations": [
+    "V screen overlay",
+    "NPC head-attached billboard"
+  ],
+  "runtime_checks_pending": [
+    "Black bow interiors remain visible with non-additive blending",
+    "Pink heart colour and animated loop render correctly on V and NPCs",
+    "Confetti outro fades fully and electronic cue plays once",
+    "Early cancellation and reapplication leave no stranded FX"
+  ],
+  "installed": true,
+  "candidate": "velvet-crash-190d6210cc8a",
+  "package_sha256": "5af59bd8c198d2cb52c0f78982bfd16714ca4cea3876426d66cd574a2b914dab"
+}

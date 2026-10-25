@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "quest": "gq004",
+  "spoken_line_count": 43,
+  "manifests": [
+    {
+      "id": "gq004_01",
+      "file": "gq004_01_manifest.json",
+      "delivery": "formal_scene",
+      "runtime_status": "native scenes compiled, registered and installed for playtest",
+      "line_count": 14,
+      "speakers": [
+        "V",
+        "Velvet"
+      ]
+    },
+    {
+      "id": "gq004_02",
+      "file": "gq004_02_manifest.json",
+      "delivery": "gameplay_voiceover",
+      "runtime_status": "native scenes compiled, registered and installed for playtest",
+      "line_count": 14,
+      "speakers": [
+        "V",
+        "Velvet"
+      ]
+    },
+    {
+      "id": "gq004_03",
+      "file": "gq004_03_manifest.json",
+      "delivery": "formal_scene",
+      "runtime_status": "native scenes compiled, registered and installed for playtest",
+      "line_count": 15,
+      "speakers": [
+        "V",
+        "Velvet"
+      ]
+    }
+  ],
+  "voice_sources": {
+    "V": {
+      "mode": "full_reference_clone",
+      "source": "projects/ghostline/quests/shared/voice/embeddings/v.safetensors",
+      "status": "clone only; selected male and female full-reference conditioning available"
+    },
+    "Velvet": {
+      "mode": "designed_reference",
+      "source": "generated-voices/gq004/embeddings/velvet.safetensors",
+      "reference": "generated-voices/gq004/design/velvet-clone-reference.wav",
+      "status": "user listened and approved current takes 2026-10-25"
+    }
+  },
+  "notes": [
+    "43 authored lines; 60 user-reviewed WAVs promoted, converted to WEM and packaged.",
+    "All 86 named lipsync variants passed cooked re-export duration and facial-key checks.",
+    "Two physical conversations and eight native remote-VO scenes are connected to phase progression.",
+    "In-game playback still needs observation.",
+    "Dialogue pass 02: ten replacement Velvet takes listening-approved and promoted with matching facial clips; selection hashes recorded in voice/dialogue-review-02.json."
+  ]
+}

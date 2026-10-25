@@ -5,29 +5,29 @@ references, and compiler examples/templates. It is not a WolvenKit project.
 
 ```text
 projects/
-├── catalog.json
-├── ghostline/
-│   ├── Ghostline.cpmodproj
-│   ├── project.json
-│   ├── quests/                  # Series bible and gq000–gq003 authoring
-│   ├── characters/              # Iris and Cinder authoring
-│   ├── packaging/profiles.json  # story and story-only development
-│   ├── source/{raw,archive,resources}/
-│   ├── generated/
-│   └── packed/
-├── test-quests/
-│   └── gqt001/ … gqt007/        # Each is a separate project
-│       ├── GQT###.cpmodproj
-│       ├── project.json
-│       ├── *.quest.json
-│       ├── implementation/
-│       ├── packaging/profiles.json
-│       └── source/{raw,archive,resources}/
-└── shared/ghostline-runtime/
-    ├── Ghostline_Runtime.cpmodproj
-    ├── project.json
-    ├── characters/              # Patch and reusable character authoring
-    └── source/{raw,archive,resources}/
+â”œâ”€â”€ catalog.json
+â”œâ”€â”€ ghostline/
+â”‚   â”œâ”€â”€ Ghostline.cpmodproj
+â”‚   â”œâ”€â”€ project.json
+â”‚   â”œâ”€â”€ quests/                  # Series bible and gq000â€“gq003 authoring
+â”‚   â”œâ”€â”€ characters/              # Iris and Cinder authoring
+â”‚   â”œâ”€â”€ packaging/profiles.json  # story and story-only development
+â”‚   â”œâ”€â”€ source/{raw,archive,resources}/
+â”‚   â”œâ”€â”€ generated/
+â”‚   â””â”€â”€ packed/
+â”œâ”€â”€ test-quests/
+â”‚   â””â”€â”€ gqt001/ â€¦ gqt007/        # Each is a separate project
+â”‚       â”œâ”€â”€ GQT###.cpmodproj
+â”‚       â”œâ”€â”€ project.json
+â”‚       â”œâ”€â”€ *.quest.json
+â”‚       â”œâ”€â”€ implementation/
+â”‚       â”œâ”€â”€ packaging/profiles.json
+â”‚       â””â”€â”€ source/{raw,archive,resources}/
+â””â”€â”€ shared/ghostline-runtime/
+    â”œâ”€â”€ Ghostline_Runtime.cpmodproj
+    â”œâ”€â”€ project.json
+    â”œâ”€â”€ characters/              # Patch and reusable character authoring
+    â””â”€â”€ source/{raw,archive,resources}/
 ```
 
 The prototype GQ000's narrative and implementation documentation remain in the
@@ -36,6 +36,15 @@ runtime project. GQT003 also declares GQ000 as package support because its
 existing packed phases reference the baseline. GQT005 borrows the shared GQ000
 lipsync animation. GQT006 owns Goth Baddie's character and custom assets.
 GQT007 has no shared runtime dependency.
+
+`projects/experiments/heartbreaker` is an independent native quickhack/FX
+prototype with no story or shared-runtime dependency. Its `heartbreaker`
+package profile owns the V/NPC effect resources, ArchiveXL patches and TweakXL
+items. The optional CET test harness is outside its runtime source resources.
+
+`projects/experiments/velvet-crash` owns the separate native black-bow/pink-heart
+quickhack and glitch-confetti FX. Its `velvet-crash` package profile is independent
+of Heartbreaker and uses unique depot paths and gameplay records.
 
 `quests/templates` owns reusable phase/journal shapes and neutral character
 catalogs/components. Its `source` trees contain compiler inputs. Those inputs

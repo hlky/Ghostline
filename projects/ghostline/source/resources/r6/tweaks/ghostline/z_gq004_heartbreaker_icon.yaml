@@ -1,0 +1,37 @@
+# Apply after velvet_crash_protocol.yaml, which creates the shared interaction.
+UIIcon.GhostlineLoveHeartbreaker:
+  $type: UIIcon
+  atlasResourcePath: mod\gq004\ui\heartbreaker.inkatlas
+  atlasPartName: heartbreaker
+
+UIIcon.GhostlineVelvetCrashGlyph:
+  $type: UIIcon
+  atlasResourcePath: mod\gq004\ui\heartbreaker.inkatlas
+  atlasPartName: velvet_crash
+
+ChoiceCaptionParts.GhostlineLoveHeartbreaker:
+  $base: ChoiceCaptionParts.OpticsMalfunctionIcon
+  texturePartID: UIIcon.GhostlineVelvetCrashGlyph
+
+Items.GhostlineLoveHeartbreaker:
+  icon: UIIcon.ItemIcon
+  iconPath: GhostlineLoveHeartbreaker
+  OnAttach:
+    - !remove EquipmentGLP.BlindProgram
+    - !append-once GhostlineLove.HeartbreakerTooltip
+
+# Inventory quickhack bullets come from OnAttach ability UIData, independently
+# of Item.localizedDescription and the scanner interaction description.
+GhostlineLove.HeartbreakerTooltip:
+  $base: EquipmentGLP.BlindProgram
+  UIData: GhostlineLove.HeartbreakerTooltipUI
+
+GhostlineLove.HeartbreakerTooltipUI:
+  $type: GameplayLogicPackageUIData
+  iconPath: ability_utility
+  localizedName: LocKey("gl_gq004_heartbreaker_name")
+  localizedDescription: LocKey("gl_gq004_heartbreaker_effect")
+
+GhostlineVelvetCrash.Interaction:
+  captionIcon: ChoiceCaptionParts.GhostlineLoveHeartbreaker
+  description: gl_gq004_heartbreaker_effect

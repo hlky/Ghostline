@@ -1,0 +1,105 @@
+{
+  "name": "gq004_02_success",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/ghostline/quests/gq004/script/gq004_02_manifest.json",
+  "raw_path": "projects/ghostline/source/raw/mod/gq004/scenes/gq004_02_success.scene.json",
+  "archive_path": "projects/ghostline/source/archive/mod/gq004/scenes/gq004_02_success.scene",
+  "exported_datetime": "2026-10-25T00:00:00Z",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "actors": [
+    {
+      "key": "velvet",
+      "name": "Velvet",
+      "kind": "spawn",
+      "id": 0,
+      "record": "Character.GhostlineVelvet",
+      "dynamic_name": "gq004_field_velvet_success",
+      "spawn_marker": "#holocall_marker",
+      "appearance": "ghostline_velvet_default",
+      "lipsync": 0,
+      "validate_spawn_position": false,
+      "voicetag": "5506207259407814236",
+      "force_max_visibility": true,
+      "always_spawned": true,
+      "keep_alive": false
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 1
+    }
+  ],
+  "spoken_line_order": [
+    "gq004_02_velvet_success",
+    "gq004_02_v_success",
+    "gq004_02_velvet_exit"
+  ],
+  "choice_line_order": [],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "end",
+      "node_id": 3
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 4,
+        "input_name": 0,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "sections": [
+    {
+      "key": "field",
+      "node_id": 2,
+      "lines": [
+        "gq004_02_velvet_success",
+        "gq004_02_v_success",
+        "gq004_02_velvet_exit"
+      ],
+      "on_end": [
+        {
+          "node_id": 3
+        }
+      ]
+    }
+  ],
+  "choices": [],
+  "quest_nodes": [
+    {
+      "kind": "wait_actor_spawned",
+      "node_id": 4,
+      "dynamic_name": "gq004_field_velvet_success",
+      "on_out": [
+        {
+          "node_id": 2
+        }
+      ]
+    }
+  ],
+  "xor_nodes": [],
+  "end_nodes": [
+    {
+      "node_id": 3
+    }
+  ],
+  "lipsync_animset": "base\\localization\\en-us\\lipsync\\mod\\gq004\\gq004.anims"
+}

@@ -179,6 +179,7 @@ fn render_candidate(
     }
 
     let generated = backend.synthesize(SynthesisRequest {
+        speaker_name: &line.speaker,
         text: &line.text,
         language: &options.language,
         speaker: embedding,

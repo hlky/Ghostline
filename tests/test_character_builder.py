@@ -432,6 +432,53 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertNotIn("hx_makeup_eyes", components)
         self.assertTrue(any("head layer" in warning for warning in warnings))
 
+    def test_indexed_chunk_mask_survives_both_component_copies_and_preview(self) -> None:
+        manifest = character_builder.load_manifest(
+            ROOT / "projects/ghostline/characters/velvet.character.json"
+        )
+        manifest["appearance"]["indexed_overrides"]["inner_torso"]["chunk_mask"] = "3"
+        catalog = character_builder.load_catalog(manifest)
+        _, app, _, _, _ = character_builder.generate_documents(manifest, catalog)
+        appearance = character_builder.appearance_data(app)[0]
+        for mapping in character_builder.components_by_name(appearance):
+            self.assertEqual(mapping["t1_shirt"]["chunkMask"], "3")
+        layers, _ = character_ui.character_full_preview.visible_mesh_layers(app, manifest["namespace"])
+        self.assertEqual(next(row for row in layers if row["component"] == "t1_shirt")["chunk_mask"], "3")
+
+    def test_indexed_chunk_mask_rejects_invalid_uint64_values(self) -> None:
+        for value in (True, -1, 2**64, "1.5", "-1", " 3", 3.0, "٣", "9" * 5000):
+            with self.subTest(value=value), self.assertRaises(character_builder.CharacterBuildError):
+                character_builder.indexed_chunk_mask({"chunk_mask": value})
+        self.assertEqual(character_builder.indexed_chunk_mask({"chunk_mask": "0"}), "0")
+        self.assertEqual(character_builder.indexed_chunk_mask({"chunk_mask": 2**64 - 1}), str(2**64 - 1))
+
+    def test_velvet_blonde_bundle_keeps_rig_shadow_and_distinct_face(self) -> None:
+        manifest = character_builder.load_manifest(ROOT / "projects/ghostline/characters/velvet.character.json")
+        catalog = character_builder.load_catalog(manifest)
+        _, app, _, _, _ = character_builder.generate_documents(manifest, catalog)
+        mappings = character_builder.components_by_name(character_builder.appearance_data(app)[0])
+        for mapping in mappings:
+            self.assertEqual(character_builder.typed_value(mapping["hh_hair"]["meshAppearance"]), "blonde_golden")
+            self.assertIn("hh_081_wa__buns_02", mapping["hh_hair"]["mesh"]["DepotPath"]["$value"])
+            self.assertIn("hh_081_wa__buns_02_dangle", mapping["Animated1507"]["rig"]["DepotPath"]["$value"])
+            self.assertEqual(mapping["hh_hair_shadow"]["isEnabled"], 1)
+            self.assertIn("hh_080_wa__buns_01_shadow_npc", mapping["hh_hair_shadow"]["mesh"]["DepotPath"]["$value"])
+            self.assertEqual(mapping["h0_tattoo"]["isEnabled"], 0)
+            self.assertEqual(mapping["hx_makeup_freckles"]["isEnabled"], 0)
+            self.assertEqual(character_builder.typed_value(mapping["hx_makeup_eyes"]["meshAppearance"]), "black_01")
+        binding = mappings[1]["hh_hair"]["skinning"]["Data"]
+        self.assertEqual(character_builder.typed_value(binding["bindName"]), "Animated1507")
+        goth = character_builder.load_manifest(ROOT / "projects/test-quests/gqt006/characters/goth_baddie.character.json")
+        self.assertNotEqual(manifest["head"]["shapes"], goth["head"]["shapes"])
+
+    def test_ui_preserves_validated_indexed_chunk_mask(self) -> None:
+        manifest = character_builder.load_manifest(
+            ROOT / "projects/ghostline/characters/velvet.character.json"
+        )
+        with mock.patch.object(character_ui, "DEFAULT_MANIFEST", ROOT / "projects/ghostline/characters/velvet.character.json"):
+            cleaned = character_ui.editable_manifest(manifest)
+        self.assertEqual(cleaned["appearance"]["indexed_overrides"]["inner_torso"]["chunk_mask"], "3")
+
     def test_full_character_manifest_rebases_head_models(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1162,7 +1209,8 @@ class CharacterBuilderTests(unittest.TestCase):
             "h0_000_pwa_c__basehead.mesh",
         )
 
-    def test_local_ui_bootstrap_and_validation_api(self) -> None:
+    @mock.patch.object(character_ui, "validate_installed_overrides")
+    def test_local_ui_bootstrap_and_validation_api(self, installed_validation: mock.Mock) -> None:
         server = ThreadingHTTPServer(("127.0.0.1", 0), character_ui.CharacterUIHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -1187,8 +1235,10 @@ class CharacterBuilderTests(unittest.TestCase):
         self.assertEqual(len(bootstrap["catalog"]["categories"]), 6)
         self.assertIn("asset_index", bootstrap)
         self.assertTrue(validation["ok"])
+        installed_validation.assert_called_once()
 
-    def test_local_ui_bootstraps_selected_female_profile(self) -> None:
+    @mock.patch.object(character_ui, "validate_installed_overrides")
+    def test_local_ui_bootstraps_selected_female_profile(self, installed_validation: mock.Mock) -> None:
         with mock.patch.object(
             character_ui, "DEFAULT_MANIFEST", self.female_manifest_path
         ):
@@ -1214,6 +1264,7 @@ class CharacterBuilderTests(unittest.TestCase):
                 thread.join(timeout=5)
 
         self.assertTrue(bootstrap["validation"]["ok"])
+        installed_validation.assert_called_once()
         self.assertEqual(bootstrap["manifest"]["frame"], "female_average")
         self.assertEqual(bootstrap["frame_profile"]["player_token"], "pwa")
         self.assertEqual(bootstrap["frame_profile"]["head_shape_max"], 22)

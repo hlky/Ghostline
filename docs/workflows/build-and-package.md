@@ -31,6 +31,11 @@ files or silently convert working-tree binaries.
 Each project owns `packaging/profiles.json`. The root file only routes legacy
 profile names to those projects. These selections are available:
 
+A profile may explicitly list `additional_root_phases` for native migration or
+repair phases. Each must be a unique `.questphase` under an active quest's
+`mod/<quest>/` namespace and have exactly one ArchiveXL registration. The
+packager still requires exactly one primary root for each active quest.
+
 | Profile | Activation and contents |
 | --- | --- |
 | `story` | GQ001/GQ002 roots, GQ000 runtime support, Patch/Iris/Cinder and their dependencies; no test activation, base-character overrides or autosave suppression |
@@ -51,6 +56,13 @@ this also applies to characters reached transitively. The report records each
 fallback. Fine-grained character pruning requires decoding the embedded material
 buffers first. The static audit reports unresolved hashes and external game
 dependencies; dynamic runtime behavior still needs game validation.
+
+An add-on profile can declare `external_patch_targets` for specific optional
+ArchiveXL integration targets supplied by another installed mod. Each entry
+must occur as a target in the selected `resource.patch` registration and cannot
+be a patch source. This excludes that target only from registration dependency
+selection, and records it separately in the audit. A hard import to the same
+path still requires a declared project dependency and a packaged payload.
 
 Story/test profiles deduplicate byte-identical character meshes into deterministic
 shared paths and generate `resource.link` aliases for every original path. This
@@ -101,8 +113,10 @@ replaced files if publication fails. The standalone wrapper also accepts
 `--disable-ghostline`; it requires `--install` and preserves uniquely named
 backups of the combined archive, registration and tweaks.
 
-Install/ZIP roots are `archive`, `r6`, and (development only) `engine`, without
-an enclosing `packed` directory. `packed`, `generated`, and `.tmp` are ignored
+Install/ZIP roots are normally `archive`, `r6`, and (development only) `engine`,
+without an enclosing `packed` directory. A scoped profile can also explicitly
+select CET files under `bin` using `include_loose`; this does not include every
+loose file from its dependencies. `packed`, `generated`, and `.tmp` are ignored
 outputs; none is the source of truth. Record focused in-game results in
 [runtime testing](runtime-testing.md), and retain the corresponding verification
 receipt so observations identify the exact candidate.

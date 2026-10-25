@@ -112,7 +112,7 @@ export class CharacterViewer {
     const hair = shader.includes("hair.mt");
     const eye = shader.includes("eye_gradient");
     const material = new THREE.MeshPhysicalMaterial({
-      color: hair ? "#17131a" : entry ? "#ffffff" : model.color || "#d6a08a",
+      color: hair && !data.HairProfileGradient ? "#17131a" : entry ? "#ffffff" : model.color || "#d6a08a",
       roughness: skin ? 0.65 : 0.5,
       metalness: 0,
       side: THREE.DoubleSide,
@@ -172,6 +172,58 @@ export class CharacterViewer {
         texture.colorSpace = field === "map" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
         texture.anisotropy = Math.min(this.renderer.capabilities.getMaxAnisotropy(), 8);
         material[field] = texture;
+      }
+      if (hair && data.HairProfileGradient && data.Strand_Gradient?.endsWith(".png")) {
+        const gradient = [...data.HairProfileGradient].sort((a, b) => (a.value || 0) - (b.value || 0));
+        const texture = await this.textureLoader.loadAsync(new URL(data.Strand_Gradient, baseUrl).href);
+        const canvas = document.createElement("canvas");
+        canvas.width = texture.image.width;
+        canvas.height = texture.image.height;
+        const context = canvas.getContext("2d");
+        context.drawImage(texture.image, 0, 0);
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+        let strandPixels = null;
+        if (data.HairProfileIDGradient?.length && data.Strand_ID?.endsWith(".png")) {
+          const strand = await this.textureLoader.loadAsync(new URL(data.Strand_ID, baseUrl).href);
+          const idCanvas = document.createElement("canvas");
+          idCanvas.width = canvas.width;
+          idCanvas.height = canvas.height;
+          const idContext = idCanvas.getContext("2d");
+          idContext.drawImage(strand.image, 0, 0, canvas.width, canvas.height);
+          strandPixels = idContext.getImageData(0, 0, canvas.width, canvas.height).data;
+          strand.dispose();
+        }
+        const idGradient = [...(data.HairProfileIDGradient || [])].sort((a, b) => (a.value || 0) - (b.value || 0));
+        for (let i = 0; i < pixels.data.length; i += 4) {
+          const t = pixels.data[i] / 255;
+          let right = gradient.findIndex((entry) => (entry.value || 0) >= t);
+          if (right < 0) right = gradient.length - 1;
+          const a = gradient[Math.max(0, right - 1)];
+          const b = gradient[right];
+          const blend = Math.max(0, Math.min(1, (t - (a.value || 0)) / ((b.value || 0) - (a.value || 0) || 1)));
+          ["Red", "Green", "Blue"].forEach((channel, offset) => {
+            let value = a.color[channel] * (1 - blend) + b.color[channel] * blend;
+            if (strandPixels) {
+              const id = strandPixels[i] / 255;
+              let upper = idGradient.findIndex((entry) => (entry.value || 0) >= id);
+              if (upper < 0) upper = idGradient.length - 1;
+              const low = idGradient[Math.max(0, upper - 1)];
+              const high = idGradient[upper];
+              const weight = Math.max(0, Math.min(1, (id - (low.value || 0)) / ((high.value || 0) - (low.value || 0) || 1)));
+              value *= (low.color[channel] * (1 - weight) + high.color[channel] * weight) / 255;
+            }
+            pixels.data[i + offset] = Math.round(value);
+          });
+          pixels.data[i + 3] = 255;
+        }
+        context.putImageData(pixels, 0, 0);
+        texture.image = canvas;
+        texture.flipY = false;
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.needsUpdate = true;
+        material.map?.dispose();
+        material.map = texture;
       }
       if (material.normalMap) material.normalScale.set(decal ? 0.2 : 0.65, decal ? -0.2 : -0.65);
       if (material.alphaMap || entry?.EnableMask || hair) {

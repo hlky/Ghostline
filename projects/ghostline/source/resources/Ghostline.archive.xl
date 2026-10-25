@@ -4,14 +4,23 @@ quest:
     parent: base\quest\cyberpunk2077.quest
   - path: mod\gq002\phases\gq002.questphase
     parent: base\quest\cyberpunk2077.quest
+  - path: mod\gq004\phases\gq004.questphase
+    parent: base\quest\cyberpunk2077.quest
+  - path: mod\gq004\phases\gq004_reward_repair.questphase
+    parent: base\quest\cyberpunk2077.quest
+  - path: mod\gq004\phases\gq004_finish_and_epilogue.questphase
+    parent: base\quest\cyberpunk2077.quest
 journal:
 - mod\gq001\journal\gq001.journal
 - mod\gq002\journal\gq002.journal
+- mod\gq004\journal\gq004.journal
 localization:
   onscreens:
     en-us:
     - mod\gq001\localization\en-us\onscreens\gq001.json
     - mod\gq002\localization\en-us\onscreens\gq002.json
+    - mod\gq004\localization\en-us\onscreens\gq004.json
+    - mod\gq004\localization\en-us\onscreens\velvet.json
   subtitles:
     en-us:
     - mod\gq001\localization\en-us\subtitles\gq001_03_subtitles_map.json
@@ -24,10 +33,14 @@ localization:
     - mod\gq003\localization\en-us\subtitles\gq003_21_subtitles_map.json
     - mod\gq003\localization\en-us\subtitles\gq003_30_subtitles_map.json
     - mod\gq003\localization\en-us\subtitles\gq003_36_subtitles_map.json
+    - mod\gq004\localization\en-us\subtitles\gq004_01_subtitles_map.json
+    - mod\gq004\localization\en-us\subtitles\gq004_02_subtitles_map.json
+    - mod\gq004\localization\en-us\subtitles\gq004_03_subtitles_map.json
   lipmaps:
     en-us:
     - mod\gq001\localization\en-us\gq001.lipmap
     - mod\gq002\localization\en-us\gq002.lipmap
+    - mod\gq004\localization\en-us\gq004.lipmap
   vomaps:
     en-us:
     - mod\gq001\localization\en-us\vo\gq001_03.json
@@ -40,7 +53,15 @@ localization:
     - mod\gq003\localization\en-us\vo\gq003_21.json
     - mod\gq003\localization\en-us\vo\gq003_30.json
     - mod\gq003\localization\en-us\vo\gq003_36.json
+    - mod\gq004\localization\en-us\vo\gq004_01.json
+    - mod\gq004\localization\en-us\vo\gq004_02.json
+    - mod\gq004\localization\en-us\vo\gq004_03.json
 streaming:
   blocks:
   - mod\gq001\world\gq001_iris_meet.streamingblock
   - mod\gq002\world\gq002_machine_stops.streamingblock
+  - mod\gq004\world\love_actually.streamingblock
+resource:
+  patch:
+    mod\gq004\world\love_actually.devices:
+    - base\worlds\03_night_city\_compiled\default\03_night_city.devices

@@ -34,12 +34,48 @@
         "gq000"
       ],
       "exclude_prefixes": [
-        "mod/gq003/"
+        "mod/gq003/",
+        "mod/gq004/",
+        "mod/ghostline/characters/velvet/",
+        "base/localization/en-us/lipsync/mod/gq004/",
+        "mod/velvet_crash/"
       ],
       "exclude_loose": [
-        "r6/tweaks/ghostline/gq003_black_lantern.yaml"
+        "r6/tweaks/ghostline/gq003_black_lantern.yaml",
+        "r6/tweaks/ghostline/character_velvet.yaml",
+        "r6/tweaks/ghostline/velvet_crash_protocol.yaml",
+        "r6/tweaks/ghostline/gq004_love_actually.yaml",
+        "r6/tweaks/ghostline/z_gq004_heartbreaker_icon.yaml"
       ],
       "include_all": true,
+      "deduplicate_meshes": false
+    },
+    "love-actually": {
+      "archive_name": "Ghostline_LoveActually",
+      "active_quests": [
+        "gq004"
+      ],
+      "support_quests": [
+        "velvet_crash"
+      ],
+      "characters": [
+        "velvet"
+      ],
+      "additional_root_phases": [
+        "mod\\gq004\\phases\\gq004_reward_repair.questphase",
+        "mod\\gq004\\phases\\gq004_finish_and_epilogue.questphase"
+      ],
+      "tweaks": [
+        "character_velvet",
+        "faction_ghostline",
+        "gq004_love_actually",
+        "velvet_crash_protocol",
+        "z_gq004_heartbreaker_icon"
+      ],
+      "external_patch_targets": [
+        "mod/ghostline/characters/goth_baddie/goth_baddie.ent"
+      ],
+      "include_loose": [],
       "deduplicate_meshes": false
     }
   }

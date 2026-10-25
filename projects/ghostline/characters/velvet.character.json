@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "velvet",
+  "display_name": "Velvet Kade",
+  "namespace": "mod\\ghostline\\characters\\velvet",
+  "frame": "female_average",
+  "catalog": "quests/templates/characters/female-catalog.json",
+  "templates": {
+    "entity": "quests/templates/characters/templates/npv-female.ent-shell.json",
+    "appearance_shell": "quests/templates/characters/templates/npv-female.app-shell.json",
+    "component_library": "quests/templates/characters/components/npv-female.components.json",
+    "localization": "projects/shared/ghostline-runtime/source/raw/mod/ghostline/localization/en-us/onscreens/ghostline.json.json"
+  },
+  "template_identity": {
+    "frame": "female_average",
+    "namespace": "tutorial\\npv\\your_female_character"
+  },
+  "template_assets": {
+    "source_root": "@npv/source/archive/tutorial/npv/your_female_character",
+    "source_depot_root": "tutorial\\npv\\your_female_character",
+    "dependency_globs": [
+      "body/textures/*.xbm",
+      "head/textures/*.xbm"
+    ]
+  },
+  "outputs": {
+    "entity_raw": "projects/ghostline/source/raw/mod/ghostline/characters/velvet/velvet.ent.json",
+    "appearance_raw": "projects/ghostline/source/raw/mod/ghostline/characters/velvet/velvet.app.json",
+    "localization_raw": "projects/ghostline/source/raw/mod/gq004/localization/en-us/onscreens/velvet.json.json",
+    "tweak": "projects/ghostline/source/resources/r6/tweaks/ghostline/character_velvet.yaml"
+  },
+  "entity": {
+    "file_name": "velvet.ent",
+    "root_appearance": "ghostline_velvet_default",
+    "appearance_name": "default",
+    "appearance_file": "velvet.app"
+  },
+  "appearance": {
+    "name": "default",
+    "selections": {
+      "hair": "velvet_blonde_buns",
+      "inner_torso": "tutorial_casual_tank",
+      "legs": "tutorial_casual_pants",
+      "feet": "tutorial_casual_boots",
+      "outer_torso": "tutorial_business_outer",
+      "face_tattoos": "velvet_soft_rose"
+    },
+    "indexed_overrides": {
+      "inner_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t1_097_tank__corset_doll_prostitute\\t1_097_pwa_tank__corset_doll_prostitute.mesh",
+        "mesh_appearance": "black_red",
+        "chunk_mask": "3"
+      },
+      "legs": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\legs\\l1_078_pants__militech_small_caps\\l1_078_pwa_pants__militech.mesh",
+        "mesh_appearance": "maelstrom_leather"
+      },
+      "feet": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\feet\\s1_056_boot__biker\\s1_056_pwa_boot__biker.mesh",
+        "mesh_appearance": "black_glossy"
+      },
+      "outer_torso": {
+        "depot_path": "base\\characters\\garment\\player_equipment\\torso\\t2_047_jacket__bolero\\t2_047_pwa_jacket__bolero.mesh",
+        "mesh_appearance": "black_purple_puffy"
+      }
+    }
+  },
+  "head": {
+    "blend_template": "@npv/source/raw/tutorial/npv/your_female_character/head/head_import.blend",
+    "morphtarget_source": "@npv/source/archive/tutorial/npv/your_female_character/head/morphtargets",
+    "mesh_source": "@npv/source/archive/tutorial/npv/your_female_character/head",
+    "preview_morphtargets": [
+      "h0_000_pwa__morphs.morphtarget"
+    ],
+    "morphtargets": [
+      "h0_000_pwa__morphs.morphtarget",
+      "he_000_pwa__morphs.morphtarget",
+      "heb_000_pwa__morphs.morphtarget",
+      "ht_000_pwa__morphs.morphtarget"
+    ],
+    "shapes": {
+      "eyes": 12,
+      "nose": 6,
+      "mouth": 6,
+      "jaw": 7,
+      "ears": 2
+    }
+  },
+  "tweak": {
+    "record": "Character.GhostlineVelvet",
+    "base": "Character.Quest_NPC_Base",
+    "display_name": "gq_npc_velvet",
+    "affiliation": "Factions.Ghostline",
+    "voice_tag": "gq_velvet",
+    "protection": {
+      "attitude_group": "friendly",
+      "invulnerable": true
+    }
+  },
+  "localization": {
+    "secondary_key": "gq_npc_velvet",
+    "female_variant": "Velvet Kade",
+    "male_variant": ""
+  },
+  "requirements": {
+    "phantom_liberty": true
+  }
+}

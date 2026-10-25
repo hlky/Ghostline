@@ -14,6 +14,34 @@ from tests.test_package_project import ProfileFixture, cr2w
 
 
 class PackageDependencyTests(unittest.TestCase):
+    def test_explicit_external_patch_target_preserves_integration_without_shipping_foreign_mod(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = ProfileFixture(Path(directory))
+            source = "mod/gqt006/registration/heartbreaker.ent"
+            target = "mod/foreign/characters/target.ent"
+            fixture.write(source, cr2w())
+            fixture.document["resource"] = {"patch": {source: [target]}}
+            fixture.config["profiles"]["gqt006"]["external_patch_targets"] = [target]
+            fixture.save()
+            manifest = fixture.build("gqt006")
+            self.assertIn(source, manifest.payloads)
+            self.assertNotIn(target, manifest.payloads)
+            self.assertEqual(manifest.audit["external_patch_targets"], [target])
+            self.assertIn(target, manifest.registration["resource"]["patch"][source])
+            fixture.write(source, cr2w(target))
+            with self.assertRaisesRegex(package.PackageError, "Missing owned depot dependency"):
+                fixture.build("gqt006")
+
+    def test_external_patch_target_allowlist_cannot_hide_missing_patch_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = ProfileFixture(Path(directory))
+            source = "mod/gqt006/registration/missing.ent"
+            fixture.document["resource"] = {"patch": {source: ["base/characters/target.ent"]}}
+            fixture.config["profiles"]["gqt006"]["external_patch_targets"] = [source]
+            fixture.save()
+            with self.assertRaisesRegex(package.PackageError, "registered targets, never patch sources"):
+                fixture.build("gqt006")
+
     def test_authored_numeric_resource_paths_resolve_owned_payloads(self):
         path = "mod/ghostline/characters/patch/head/h0_000_pma_c__basehead.mesh"
         resource_hash = package.depot_hash(path)
@@ -74,7 +102,7 @@ class PackageDependencyTests(unittest.TestCase):
     def test_current_profiles_close_authored_paths_and_custom_tweak_references(self):
         root = package.ROOT
         registry = {key for path in (root / "projects").glob("**/source/resources/r6/tweaks/ghostline/*.yaml")
-                    for key in yaml.safe_load(path.read_text(encoding="utf-8"))}
+                   for key in package.read_tweak_dependencies(path)}
 
         def values(document):
             if isinstance(document, str):

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import copy
 import sys
+import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +14,22 @@ import character_face_preview as face
 
 
 class CharacterFacePreviewTests(unittest.TestCase):
+    def test_hair_profile_gradients_are_attached_to_every_matching_material(self):
+        profile = r"base\characters\common\hair\textures\hair_profiles\blonde_golden.hp"
+        models = [{"materials": [{"Data": {"HairProfile": profile}}, {"Data": {"HairProfile": profile}}]}]
+        gradient = [{"value": 0, "color": {"Red": 90, "Green": 70, "Blue": 50}},
+                    {"value": 1, "color": {"Red": 234, "Green": 220, "Blue": 198}}]
+        def export(command, _label):
+            jobs = builder.read_json(Path(command[2]))["jobs"]
+            self.assertEqual(len(jobs), 1)
+            self.assertEqual(jobs[0]["resource"], profile)
+            builder.write_json(Path(jobs[0]["output"]), {
+                "Data": {"RootChunk": {"$type": "CHairProfile", "gradientEntriesRootToTip": gradient}}})
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(face.full, "run_checked", side_effect=export):
+            face.attach_hair_profiles(models, Path(directory), Path(directory))
+        for material in models[0]["materials"]:
+            self.assertEqual(material["Data"]["HairProfileGradient"], gradient)
+
     def test_goth_baddie_has_no_tattoos_in_any_component_copy(self):
         manifest = builder.load_manifest(ROOT / "projects/test-quests/gqt006/characters/goth_baddie.character.json")
         catalog = builder.load_catalog(manifest)

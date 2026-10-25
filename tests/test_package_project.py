@@ -112,6 +112,21 @@ class ProfileFixture:
 
 
 class ManifestTests(unittest.TestCase):
+    def test_additional_roots_require_explicit_unique_owned_registration(self):
+        primary = {'path': 'mod/gq004/phases/gq004.questphase'}
+        repair = {'path': 'mod/gq004/phases/repair.questphase'}
+        document = {'quest': {'phases': [primary, repair]}}
+        profile = {'active_quests': ['gq004'], 'additional_root_phases': [repair['path']]}
+        self.assertEqual(manifests.filter_registration(document, profile, {'gq004'})['quest']['phases'],
+                         [primary, repair])
+        for extras, rows in (([], [primary,repair]), ([repair['path']], [primary]),
+                             ([repair['path']], [primary,repair,repair]),
+                             (['mod/gq002/phases/foreign.questphase'], [primary,repair]),
+                             ([repair['path'],repair['path']], [primary,repair])):
+            with self.subTest(extras=extras, rows=rows), self.assertRaises(manifests.PackageError):
+                manifests.filter_registration({'quest': {'phases': rows}},
+                    dict(profile, additional_root_phases=extras), {'gq004'})
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
@@ -145,6 +160,22 @@ class ManifestTests(unittest.TestCase):
                     {path.stem for path in result.loose_files.values()},
                     set(profile["tweaks"]),
                 )
+
+    def test_explicit_loose_files_do_not_include_other_project_scripts(self):
+        selected = self.fixture.resources / "r6/scripts/Prototype/Example.reds"
+        selected.parent.mkdir(parents=True)
+        selected.write_text("class Prototype {}", encoding="utf-8")
+        other = selected.with_name("Other.reds")
+        other.write_text("class Other {}", encoding="utf-8")
+        self.fixture.config["profiles"]["story"]["include_loose"] = ["r6/scripts/Prototype/Example.reds"]
+        self.fixture.save()
+        result = self.fixture.build()
+        self.assertEqual(result.loose_files["r6/scripts/prototype/example.reds"], selected)
+        self.assertNotIn(other, result.loose_files.values())
+        self.fixture.config["profiles"]["story"]["include_loose"] = ["r6/scripts/missing.reds"]
+        self.fixture.save()
+        with self.assertRaisesRegex(manifests.PackageError, "Missing explicit loose"):
+            self.fixture.build()
 
     def test_development_includes_tests_but_excludes_incomplete_story(self):
         result = self.fixture.build("development")

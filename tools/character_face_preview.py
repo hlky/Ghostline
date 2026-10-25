@@ -5,12 +5,14 @@ from __future__ import annotations
 import copy
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import Any
 
 import character_builder as builder
 import character_cache as cache
 import character_full_preview as full
+from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA
 
 
 def face_layers(manifest: dict, app: dict) -> list[dict]:
@@ -46,6 +48,38 @@ def selected_materials(document: dict, appearance: str) -> list[dict]:
         return [materials[name] for name in names]
     except KeyError as exc:
         raise builder.CharacterBuildError(f"Missing exported material {exc}") from exc
+
+
+def attach_hair_profiles(models: list[dict], output: Path, game: Path) -> None:
+    """Keep RED's authored dye gradients available to the PBR approximation."""
+    materials = [m for model in models for m in model.get("materials", [])
+                 if str(m.get("Data", {}).get("HairProfile", "")).endswith(".hp")]
+    profiles = sorted({m["Data"]["HairProfile"] for m in materials})
+    if not profiles:
+        return
+    output.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".hair-profiles.", dir=output) as directory:
+        staging = Path(directory)
+        jobs = [{"resource": profile, "output": str(staging / f"{i}.json")}
+                for i, profile in enumerate(profiles)]
+        builder.write_json(staging / "jobs.json", {"jobs": jobs})
+        full.run_checked([
+            str(DEFAULT_RED_CLI), "cr2w-serialize-batch", str(staging / "jobs.json"),
+            "--schema", str(DEFAULT_RED_SCHEMA), "--archives-root", str(game / "archive/pc"),
+            "--report", str(staging / "report.json"), "--threads", "1",
+        ], "Hair profile extraction")
+        for profile, job in zip(profiles, jobs, strict=True):
+            document = builder.read_json(Path(job["output"]))
+            root = document["Data"]["RootChunk"]
+            if root.get("$type") != "CHairProfile":
+                raise builder.CharacterBuildError(f"Invalid hair profile: {profile}")
+            gradient = root.get("gradientEntriesRootToTip", [])
+            if not gradient:
+                raise builder.CharacterBuildError(f"Hair profile has no root-to-tip gradient: {profile}")
+            for material in materials:
+                if material["Data"]["HairProfile"] == profile:
+                    material["Data"]["HairProfileGradient"] = gradient
+                    material["Data"]["HairProfileIDGradient"] = root.get("gradientEntriesID", [])
 
 
 def prepare_face_preview(manifest_path: Path, output: Path,
@@ -128,6 +162,7 @@ def prepare_face_preview(manifest_path: Path, output: Path,
                     else:
                         material["Data"].pop(param)
         models.append(model)
+    attach_hair_profiles(models, output, game)
     preview.update(models=models, preview_kind="face", material_quality="RED textures / PBR approximation")
     builder.write_json(output / "preview-manifest.json", preview)
     return {"ok": True, "models": len(models), "reused": reused,

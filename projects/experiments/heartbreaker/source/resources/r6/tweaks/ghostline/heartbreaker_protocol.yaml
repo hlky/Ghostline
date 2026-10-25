@@ -1,0 +1,99 @@
+# Native prototype for game 2.31. No CET or custom REDscript callbacks.
+GhostlineHeartbreaker.DurationValue:
+  $type: ConstantStatModifier
+  modifierType: Additive
+  statType: BaseStats.MaxDuration
+  value: 6.0
+GhostlineHeartbreaker.Duration:
+  $type: StatModifierGroup
+  statModsLimit: -1
+  statModifiers: [GhostlineHeartbreaker.DurationValue]
+GhostlineHeartbreaker.FX:
+  $type: StatusEffectFX
+  name: ghostline_heartbreaker_protocol
+  shouldReapply: false
+GhostlineHeartbreaker.UI:
+  $base: BaseStatusEffect.BaseBlindUI
+  displayName: ghostline_heartbreaker_name
+  description: ghostline_heartbreaker_description
+
+BaseStatusEffect.GhostlineHeartbreakerVision:
+  $base: BaseStatusEffect.QuickHackBlind
+  duration: GhostlineHeartbreaker.Duration
+  VFX: [GhostlineHeartbreaker.FX]
+  SFX: []
+  uiData: GhostlineHeartbreaker.UI
+BaseStatusEffect.GhostlineHeartbreakerShortBlind:
+  $base: BaseStatusEffect.ShortBlind
+  duration: GhostlineHeartbreaker.Duration
+
+GhostlineHeartbreaker.ApplyVision:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Target
+  statusEffect: BaseStatusEffect.GhostlineHeartbreakerVision
+GhostlineHeartbreaker.ApplyBlind:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Target
+  statusEffect: BaseStatusEffect.GhostlineHeartbreakerShortBlind
+GhostlineHeartbreaker.Interaction:
+  $base: Interactions.BlindHack
+  caption: ghostline_heartbreaker_name
+  description: ghostline_heartbreaker_description
+QuickHack.GhostlineHeartbreakerProtocol:
+  $base: QuickHack.BlindHack
+  objectActionUI: GhostlineHeartbreaker.Interaction
+  # Preserve the inherited upload/control effects; replace the two blindness
+  # payloads and remove the vanilla spread effector for this fixed-tier probe.
+  # These are verified 2.31 array selectors, never bases for new records.
+  completionEffects:
+    - !remove QuickHack.BlindHack_inline5
+    - !remove QuickHack.BlindHack_inline6
+    - !remove QuickHack.BlindHack_inline7
+    - !append-once GhostlineHeartbreaker.ApplyBlind
+    - !append-once GhostlineHeartbreaker.ApplyVision
+Items.GhostlineHeartbreakerProtocol:
+  $base: Items.BlindProgram
+  displayName: ghostline_heartbreaker_name
+  localizedDescription: ghostline_heartbreaker_description
+  objectActions: [ItemAction.ProgramDisassemble, QuickHack.GhostlineHeartbreakerProtocol]
+
+# V can trigger the same six-second FX through the native inventory Eat action.
+# No enemy AI assignments or automatic on-load status application are included.
+GhostlineHeartbreaker.ApplySelfVision:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.GhostlineHeartbreakerVision
+GhostlineHeartbreaker.ApplySelfBlind:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.GhostlineHeartbreakerShortBlind
+GhostlineHeartbreaker.SelfTestAction:
+  $base: ItemAction.Eat
+  completionEffects: [GhostlineHeartbreaker.ApplySelfBlind, GhostlineHeartbreaker.ApplySelfVision]
+Items.GhostlineHeartbreakerSelfTest:
+  $base: Items.LowQualityFood1
+  displayName: ghostline_heartbreaker_selftest_name
+  localizedDescription: ghostline_heartbreaker_selftest_description
+  objectActions: [GhostlineHeartbreaker.SelfTestAction, ItemAction.Drop]
+  itemSecondaryAction: GhostlineHeartbreaker.SelfTestAction
+  OnEquip: []
+  statModifierGroups: []
+  statModifiers: []
+
+GhostlineHeartbreaker.StockQuantity:
+  $type: ConstantStatModifier
+  modifierType: Additive
+  statType: BaseStats.Quantity
+  value: 10.0
+GhostlineHeartbreaker.HackStock:
+  $type: VendorItem
+  item: Items.GhostlineHeartbreakerProtocol
+  quantity: [Vendors.Always_Present]
+GhostlineHeartbreaker.SelfTestStock:
+  $type: VendorItem
+  item: Items.GhostlineHeartbreakerSelfTest
+  quantity: [GhostlineHeartbreaker.StockQuantity]
+Vendors.wat_lch_netrunner_01:
+  itemStock:
+    - !append-once GhostlineHeartbreaker.HackStock
+    - !append-once GhostlineHeartbreaker.SelfTestStock

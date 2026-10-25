@@ -1,0 +1,429 @@
+{
+  "schema_version": 1,
+  "id": "gq004",
+  "title": "Love, Actually.exe",
+  "description": "Velvet Kade side quest. 10\u201315 minutes. Captured placements and native runtime integration.",
+  "phase_prefabs": [
+    "#gq004_pr_love_actually"
+  ],
+  "stages": [
+    {
+      "id": "offer",
+      "type": "phone_job_offer",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_offer.questphase",
+      "phase_prefabs": [],
+      "contact": "velvet",
+      "message": "@contacts.velvet.threads.offer.entries.hello.path",
+      "choice_group": "@contacts.velvet.threads.offer.entries.respond.path",
+      "accept_choice": "@contacts.velvet.threads.offer.entries.respond.entries.accept.path",
+      "start_fact": "gq004_offer_sent",
+      "accepted_fact": "gq004_offer_accepted"
+    },
+    {
+      "id": "meet",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_meet.questphase",
+      "phase_prefabs": [
+        "#gq004_pr_love_actually"
+      ],
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "#gq004_com_velvet",
+        "#gq000_01_sm_patch_bridge": "#gq004_sm_velvet",
+        "#gq000_01_tr_setup": "#gq004_tr_setup",
+        "#gq000_pr_patch_meet": "#gq004_pr_love_actually",
+        "gq000_job_accepted": "gq004_job_accepted",
+        "gq000_patch_meet": "gq004_meet",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq004\\scenes\\gq004_01_velvet.scene",
+        "patch": "velvet",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.meet.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.meet.mappins.target.path"
+      },
+      "contact": "velvet",
+      "scene": "mod\\gq004\\scenes\\gq004_01_velvet.scene",
+      "community": "#gq004_com_velvet",
+      "appearance": "ghostline_velvet_default",
+      "objective": "@objectives.meet.path",
+      "description_entry": "@objectives.meet.description_entry",
+      "mappin": "@objectives.meet.mappins.target.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\velvet\\velvet.ent",
+        "mod\\gq004\\scenes\\gq004_01_velvet.scene"
+      ],
+      "notes": "Community-owned actor; deferred scene exit retries without accepting the job."
+    },
+    {
+      "id": "reach",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_reach.questphase",
+      "phase_prefabs": [],
+      "trigger": "#gq004_tr_operation",
+      "objective": "@objectives.reach.path",
+      "description_entry": "@objectives.reach.description_entry",
+      "mappin": "@objectives.reach.mappins.target.path"
+    },
+    {
+      "id": "recover",
+      "type": "hack_access_point",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_recover.questphase",
+      "phase_prefabs": [],
+      "device": "$/mod/gq004/#gq004_pr_love_actually/#gq004_ap_relay_link",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ToggleON",
+      "send_action": false,
+      "completion_function": "IsPersonalLinkConnected",
+      "objective": "@objectives.recover.path",
+      "description_entry": "@objectives.recover.description_entry",
+      "mappin": "@objectives.recover.mappins.target.path",
+      "success_fact": "gq004_prototype_recovered"
+    },
+    {
+      "id": "upload",
+      "type": "interact_device",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_upload.questphase",
+      "phase_prefabs": [
+        "#gq004_pr_love_actually"
+      ],
+      "device": "$/mod/gq004/#gq004_pr_love_actually/#gq004_ap_upload_link",
+      "controller_class": "AccessPointControllerPS",
+      "action": "ToggleON",
+      "send_action": false,
+      "completion_function": "IsPersonalLinkConnected",
+      "success_fact": "gq004_patch_uploaded",
+      "objective": "@objectives.upload.path",
+      "description_entry": "@objectives.upload.description_entry",
+      "mappin": "@objectives.upload.mappins.target.path"
+    },
+    {
+      "id": "leave",
+      "type": "leave_area",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_leave.questphase",
+      "phase_prefabs": [],
+      "trigger": "#gq004_tr_cleanup",
+      "objective": "@objectives.leave.path",
+      "description_entry": "@objectives.leave.description_entry",
+      "cleanup_community": "#gq004_com_claws",
+      "completion_fact": "gq004_operation_left"
+    },
+    {
+      "id": "return",
+      "type": "meet_contact",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_return.questphase",
+      "phase_prefabs": [
+        "#gq004_pr_love_actually"
+      ],
+      "phase_template": "mod\\gq000\\phases\\gq000_patch_meet.questphase",
+      "template_bindings": {
+        "#gq000_01_com_patch_bridge": "#gq004_com_velvet",
+        "#gq000_01_sm_patch_bridge": "#gq004_sm_velvet",
+        "#gq000_01_tr_setup": "#gq004_tr_setup",
+        "#gq000_pr_patch_meet": "#gq004_pr_love_actually",
+        "gq000_job_accepted": "gq004_debrief_done",
+        "gq000_patch_meet": "gq004_return",
+        "mod\\gq000\\scenes\\gq000_patch_meet.scene": "mod\\gq004\\scenes\\gq004_03_velvet.scene",
+        "patch": "velvet",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch": "@objectives.return.path",
+        "quests/minor_quest/gq000/gq000_01/gq000_01_obj_meet_patch/gq000_01_qmp_patch_bridge": "@objectives.return.mappins.target.path"
+      },
+      "contact": "velvet",
+      "scene": "mod\\gq004\\scenes\\gq004_03_velvet.scene",
+      "community": "#gq004_com_velvet",
+      "appearance": "ghostline_velvet_default",
+      "objective": "@objectives.return.path",
+      "description_entry": "@objectives.return.description_entry",
+      "mappin": "@objectives.return.mappins.target.path",
+      "required_assets": [
+        "mod\\ghostline\\characters\\velvet\\velvet.ent",
+        "mod\\gq004\\scenes\\gq004_03_velvet.scene"
+      ],
+      "notes": "Community-owned actor; deferred scene exit retries without accepting the job."
+    },
+    {
+      "id": "ending",
+      "type": "phone_conversation",
+      "status": "ready",
+      "phase_resource": "mod\\gq004\\phases\\gq004_ending.questphase",
+      "phase_prefabs": [],
+      "contact": "velvet",
+      "thread": "@contacts.velvet.threads.ending.path",
+      "messages": [
+        "@contacts.velvet.threads.ending.entries.goodbye.path"
+      ],
+      "choice_group": "@contacts.velvet.threads.ending.entries.reply.path",
+      "choices": [
+        {
+          "choice": "@contacts.velvet.threads.ending.entries.reply.entries.ack.path",
+          "reply": "@contacts.velvet.threads.ending.entries.response_a.path"
+        },
+        {
+          "choice": "@contacts.velvet.threads.ending.entries.reply.entries.tease.path",
+          "reply": "@contacts.velvet.threads.ending.entries.response_b.path"
+        }
+      ],
+      "final_message": "@contacts.velvet.threads.ending.entries.close.path",
+      "completion_fact": "gq004_epilogue_done"
+    }
+  ],
+  "composition": {
+    "namespace": "gq004",
+    "journal_template": "gq002_shapes",
+    "quest": {
+      "title": "Love, Actually.exe",
+      "localization_key": "gl_gq004_title"
+    },
+    "objectives": {
+      "meet": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_meet",
+        "text": "Meet Velvet in Kabuki.",
+        "localization_key": "gl_gq004_obj_meet",
+        "description": "A stolen heart, apparently. Meet the netrunner who sent the message.",
+        "description_id": "gq004_desc_meet",
+        "description_key": "gl_gq004_desc_meet",
+        "mappins": {
+          "target": {
+            "id": "gq004_mp_meet",
+            "ref": "#gq004_mp_velvet",
+            "text": "Meet Velvet in Kabuki.",
+            "localization_key": "gl_gq004_mp_meet",
+            "debug_caption": "Meet Velvet in Kabuki."
+          }
+        }
+      },
+      "reach": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_reach",
+        "text": "Find the Tyger Claw relay.",
+        "localization_key": "gl_gq004_obj_reach",
+        "description": "Follow Velvet's trace. The prototype and signing key must survive.",
+        "description_id": "gq004_desc_reach",
+        "description_key": "gl_gq004_desc_reach",
+        "mappins": {
+          "target": {
+            "id": "gq004_mp_reach",
+            "ref": "#gq004_mp_relay",
+            "text": "Find the Tyger Claw relay.",
+            "localization_key": "gl_gq004_mp_reach",
+            "debug_caption": "Find the Tyger Claw relay."
+          }
+        }
+      },
+      "recover": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_recover",
+        "text": "Recover the prototype and signing key.",
+        "localization_key": "gl_gq004_obj_recover",
+        "description": "Copy the stolen build before changing the distribution server.",
+        "description_id": "gq004_desc_recover",
+        "description_key": "gl_gq004_desc_recover",
+        "mappins": {
+          "target": {
+            "id": "gq004_mp_recover",
+            "ref": "#gq004_mp_recover",
+            "text": "Recover the prototype and signing key.",
+            "localization_key": "gl_gq004_mp_recover",
+            "debug_caption": "Recover the prototype and signing key."
+          }
+        }
+      },
+      "upload": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_upload",
+        "text": "Upload the corrected Heartbreaker Protocol.",
+        "localization_key": "gl_gq004_obj_upload",
+        "description": "Revoke the stolen batch and break the feedback loop.",
+        "description_id": "gq004_desc_upload",
+        "description_key": "gl_gq004_desc_upload",
+        "mappins": {
+          "target": {
+            "id": "gq004_mp_upload",
+            "ref": "#gq004_mp_upload",
+            "text": "Upload the corrected Heartbreaker Protocol.",
+            "localization_key": "gl_gq004_mp_upload",
+            "debug_caption": "Upload the corrected Heartbreaker Protocol."
+          }
+        }
+      },
+      "leave": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_leave",
+        "text": "Leave the operation.",
+        "localization_key": "gl_gq004_obj_leave",
+        "description": "Get clear while the Claws recover.",
+        "description_id": "gq004_desc_leave",
+        "description_key": "gl_gq004_desc_leave",
+        "mappins": {
+          "target": {
+            "id": "gq004_mp_leave",
+            "ref": "#gq004_mp_relay",
+            "text": "Leave the operation.",
+            "localization_key": "gl_gq004_mp_leave",
+            "debug_caption": "Leave the operation."
+          }
+        }
+      },
+      "return": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_return",
+        "text": "Return to Velvet.",
+        "localization_key": "gl_gq004_obj_return",
+        "description": "The code is safe. There is still something she has not told you.",
+        "description_id": "gq004_desc_return",
+        "description_key": "gl_gq004_desc_return",
+        "mappins": {
+          "target": {
+            "id": "gq004_mp_return",
+            "ref": "#gq004_mp_velvet",
+            "text": "Return to Velvet.",
+            "localization_key": "gl_gq004_mp_return",
+            "debug_caption": "Return to Velvet."
+          }
+        }
+      },
+      "read_sales": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_read_sales",
+        "text": "Read \"HEARTBREAKER / wholesale terms\" in Shards.",
+        "localization_key": "gl_gq004_obj_read_sales"
+      },
+      "read_archive": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_read_archive",
+        "text": "Read \"VK / conditioning-interrupt research\" in Shards.",
+        "localization_key": "gl_gq004_obj_read_archive"
+      },
+      "read_revocation": {
+        "phase_id": "gq004_01",
+        "id": "gq004_obj_read_revocation",
+        "text": "Read \"Deployment / preserve before patch\" in Shards.",
+        "localization_key": "gl_gq004_obj_read_revocation"
+      }
+    },
+    "locations": {},
+    "facts": {},
+    "contacts": {
+      "velvet": {
+        "id": "velvet",
+        "localization_key": "gq_npc_velvet",
+        "template": "morrow",
+        "threads": {
+          "offer": {
+            "id": "gq004_offer",
+            "title": "Somebody stole my heart",
+            "title_key": "gl_gq004_offer_title",
+            "entries": {
+              "hello": {
+                "type": "message",
+                "id": "01_hello",
+                "text": "Hey, gorgeous. Somebody stole my heart. Technically it's a prototype neural exploit, but that sounds less romantic. Need a favour? \u2661",
+                "localization_key": "gl_gq004_01_hello",
+                "delay": 1
+              },
+              "respond": {
+                "type": "choice_group",
+                "id": "02_respond",
+                "entries": {
+                  "accept": {
+                    "id": "01_accept",
+                    "text": "Send the location.",
+                    "localization_key": "gl_gq004_01_accept"
+                  }
+                }
+              }
+            }
+          },
+          "ending": {
+            "id": "gq004_ending",
+            "title": "Attachments",
+            "title_key": "gl_gq004_ending_title",
+            "entries": {
+              "goodbye": {
+                "type": "message",
+                "id": "01_goodbye",
+                "text": "Don't get too attached, V. I'm terrible at relationships.",
+                "localization_key": "gl_gq004_01_goodbye",
+                "delay": 1
+              },
+              "reply": {
+                "type": "choice_group",
+                "id": "02_reply",
+                "entries": {
+                  "ack": {
+                    "id": "01_ack",
+                    "text": "Could've fooled me.",
+                    "localization_key": "gl_gq004_01_ack"
+                  },
+                  "tease": {
+                    "id": "02_tease",
+                    "text": "I'll keep a backup.",
+                    "localization_key": "gl_gq004_02_tease"
+                  }
+                }
+              },
+              "response_a": {
+                "type": "message",
+                "id": "03_response_a",
+                "text": "Actually, I'm pretty good at attachments. It's the detaching that causes problems. \u2661",
+                "localization_key": "gl_gq004_03_response_a",
+                "delay": 1
+              },
+              "response_b": {
+                "type": "message",
+                "id": "03_response_b",
+                "text": "Actually, I'm pretty good at attachments. It's the detaching that causes problems. \u2661",
+                "localization_key": "gl_gq004_03_response_b",
+                "delay": 1
+              },
+              "close": {
+                "type": "message",
+                "id": "04_close",
+                "text": "And V? The bows are non-negotiable. \u2661",
+                "localization_key": "gl_gq004_04_close",
+                "delay": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "readables": {
+      "sales": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "sales",
+        "title": "HEARTBREAKER / wholesale terms",
+        "text": "BROKER: Baseline drops them for six seconds.\nCLIENT: Can it keep them agreeable?\nBROKER: We removed the interrupt watchdog. Longer loops available at a premium.\nCLIENT: Send a sample.\nBROKER: No refunds for affective damage.",
+        "title_key": "gl_gq004_sales_title",
+        "text_key": "gl_gq004_sales_body",
+        "tag": "technology"
+      },
+      "archive": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "archive",
+        "title": "VK / conditioning-interrupt research",
+        "text": "INTENT: interrupt abusive behavioural-conditioning feedback. Never write an emotional preference.\nSUCCESS: subject regains the ability to refuse.\nABORT: return all altered values on disconnect.\nNOTE: Heartbreaker is a working title. Stop laughing.\n\nUNSENT: You said you couldn't stay angry. I believe you. When you're ready, I have something that might help.",
+        "title_key": "gl_gq004_archive_title",
+        "text_key": "gl_gq004_archive_body",
+        "tag": "technology"
+      },
+      "revocation": {
+        "kind": "onscreen",
+        "group": "files",
+        "id": "revocation",
+        "title": "Deployment / preserve before patch",
+        "text": "1. Copy prototype and signing key to isolated storage.\n2. Verify checksum.\n3. Upload corrected build to distributor.\n4. Revoke this stolen batch.\n5. Remove conditioning loop; retain bounded combat-system interruption.\nSafety watchdog: six seconds. Cosmetic hearts and black bows: intentional.",
+        "title_key": "gl_gq004_revocation_title",
+        "text_key": "gl_gq004_revocation_body",
+        "tag": "technology"
+      }
+    }
+  }
+}

@@ -49,7 +49,8 @@ h2 { margin-bottom: .25rem; font-size: 1.1rem; text-transform: uppercase; letter
   text-transform: uppercase;
 }
 
-main { max-width: 1440px; margin: 0 auto; padding: 0 2rem 5rem; display: grid; gap: 1rem; }
+main { max-width: 1440px; margin: 0 auto; padding: 0 2rem 5rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+main > *, .field-grid > *, .catalog-grid > * { min-width: 0; }
 .panel { position: relative; padding: 1.4rem; border: 1px solid var(--line); background: var(--panel); backdrop-filter: blur(12px); }
 .panel::before { content: ""; position: absolute; inset: 0 auto auto 0; width: 52px; height: 3px; background: var(--cyan); }
 .panel-heading { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.3rem; }

@@ -11,6 +11,7 @@ collective uncovering the Quiet Spine identity-laundering network.
 | [`gq001`](gq001/README.md) | Ghostline | First canonical quest; extends and replaces `gq000` |
 | [`gq002`](gq002/README.md) | The Machine Stops | Canonical |
 | [`gq003`](gq003/README.md) | Black Lantern | Canonical preproduction |
+| [`gq004`](gq004/README.md) | Love, Actually.exe | Velvet Kade side quest; authoring candidate |
 
 `gq000` remains important because later quest specs reuse its validated phases,
 scene, and world resources as templates. In story continuity, however, `gq001`

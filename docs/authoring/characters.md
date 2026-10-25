@@ -304,6 +304,13 @@ provisional bridge: it replaces the primary mesh and real mesh-appearance name
 inside a reviewed catalog bundle while retaining that bundle's companion
 components.
 
+Indexed overrides may also specify `chunk_mask` as an unsigned 64-bit decimal
+string. The builder applies it to both component copies, the UI preserves it
+through installed-asset validation, and the full-character viewer hides the
+corresponding GLB submeshes. An omitted mask preserves the curated anchor.
+This controls the selected garment's submeshes; body hiding and companion fit
+still require separate review.
+
 ## Current Patch Design
 
 Patch's quest role is a low-profile signal broker: controlled, technically

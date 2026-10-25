@@ -1,0 +1,103 @@
+# Native prototype for game 2.31. No CET or custom REDscript callbacks.
+GhostlineVelvetCrash.DurationValue:
+  $type: ConstantStatModifier
+  modifierType: Additive
+  statType: BaseStats.MaxDuration
+  value: 6.0
+GhostlineVelvetCrash.Duration:
+  $type: StatModifierGroup
+  statModsLimit: -1
+  statModifiers: [GhostlineVelvetCrash.DurationValue]
+GhostlineVelvetCrash.FX:
+  $type: StatusEffectFX
+  name: ghostline_velvet_crash_protocol
+  shouldReapply: false
+GhostlineVelvetCrash.UI:
+  $base: BaseStatusEffect.BaseBlindUI
+  displayName: ghostline_velvet_crash_name
+  description: ghostline_velvet_crash_description
+
+BaseStatusEffect.GhostlineVelvetCrashVision:
+  $base: BaseStatusEffect.QuickHackBlind
+  duration: GhostlineVelvetCrash.Duration
+  VFX: []
+  SFX: []
+  uiData: GhostlineVelvetCrash.UI
+BaseStatusEffect.GhostlineVelvetCrashShortBlind:
+  $base: BaseStatusEffect.ShortBlind
+  duration: GhostlineVelvetCrash.Duration
+  # Bind cosmetics to the status responsible for the observed blinding payload,
+  # rather than relying on a second QuickHackBlind status being accepted.
+  VFX: [GhostlineVelvetCrash.FX]
+  uiData: GhostlineVelvetCrash.UI
+
+GhostlineVelvetCrash.ApplyVision:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Target
+  statusEffect: BaseStatusEffect.GhostlineVelvetCrashVision
+GhostlineVelvetCrash.ApplyBlind:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Target
+  statusEffect: BaseStatusEffect.GhostlineVelvetCrashShortBlind
+GhostlineVelvetCrash.Interaction:
+  $base: Interactions.BlindHack
+  caption: ghostline_velvet_crash_name
+  description: ghostline_velvet_crash_description
+QuickHack.GhostlineVelvetCrashProtocol:
+  $base: QuickHack.BlindHack
+  objectActionUI: GhostlineVelvetCrash.Interaction
+  # Preserve the inherited upload/control effects; replace the two blindness
+  # payloads and remove the vanilla spread effector for this fixed-tier probe.
+  # These are verified 2.31 array selectors, never bases for new records.
+  completionEffects:
+    - !remove QuickHack.BlindHack_inline5
+    - !remove QuickHack.BlindHack_inline6
+    - !remove QuickHack.BlindHack_inline7
+    - !append-once GhostlineVelvetCrash.ApplyBlind
+    - !append-once GhostlineVelvetCrash.ApplyVision
+Items.GhostlineVelvetCrashProtocol:
+  $base: Items.BlindProgram
+  displayName: ghostline_velvet_crash_name
+  localizedDescription: ghostline_velvet_crash_description
+  objectActions: [ItemAction.ProgramDisassemble, QuickHack.GhostlineVelvetCrashProtocol]
+
+# V can trigger the same six-second FX through the native inventory Eat action.
+# No enemy AI assignments or automatic on-load status application are included.
+GhostlineVelvetCrash.ApplySelfVision:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.GhostlineVelvetCrashVision
+GhostlineVelvetCrash.ApplySelfBlind:
+  $type: ObjectActionEffect
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.GhostlineVelvetCrashShortBlind
+GhostlineVelvetCrash.SelfTestAction:
+  $base: ItemAction.Eat
+  completionEffects: [GhostlineVelvetCrash.ApplySelfBlind, GhostlineVelvetCrash.ApplySelfVision]
+Items.GhostlineVelvetCrashSelfTest:
+  $base: Items.LowQualityFood1
+  displayName: ghostline_velvet_crash_selftest_name
+  localizedDescription: ghostline_velvet_crash_selftest_description
+  objectActions: [GhostlineVelvetCrash.SelfTestAction, ItemAction.Drop]
+  itemSecondaryAction: GhostlineVelvetCrash.SelfTestAction
+  OnEquip: []
+  statModifierGroups: []
+  statModifiers: []
+
+GhostlineVelvetCrash.StockQuantity:
+  $type: ConstantStatModifier
+  modifierType: Additive
+  statType: BaseStats.Quantity
+  value: 10.0
+GhostlineVelvetCrash.HackStock:
+  $type: VendorItem
+  item: Items.GhostlineVelvetCrashProtocol
+  quantity: [Vendors.Always_Present]
+GhostlineVelvetCrash.SelfTestStock:
+  $type: VendorItem
+  item: Items.GhostlineVelvetCrashSelfTest
+  quantity: [GhostlineVelvetCrash.StockQuantity]
+Vendors.wat_lch_netrunner_01:
+  itemStock:
+    - !append-once GhostlineVelvetCrash.HackStock
+    - !append-once GhostlineVelvetCrash.SelfTestStock

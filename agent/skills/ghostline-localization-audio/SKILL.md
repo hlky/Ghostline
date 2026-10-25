@@ -68,7 +68,30 @@ convert changed raw CR2W-JSON with the WolvenKit workflow in
   in the quest-owned voice-selection manifest.
 - For the Player Character, V, use voice clone only.
 - For custom characters, design a voice first, then clone it for repeated use.
+- Extract reference WAV/FLAC speaker embeddings through `ghostline-voice
+  extract-embedding`, using the Base checkpoint's `model.safetensors` and a
+  trusted speaker-encoder artifact. Store canonical `.safetensors` outputs;
+  `convert-embedding` can produce DinoML JSON when required.
+- For multi-reference auditions, compare concatenated audio against
+  `ghostline-voice merge-embeddings` (equal-weight arithmetic mean of
+  same-speaker embeddings) using identical text, seeds, and sampling settings.
+  Keep a single-reference baseline and separate candidate output directories.
+  A 30-second reference exceeds a 2,048-mel-frame speaker artifact; use a
+  sufficiently large artifact (4,096 frames supports about 43 seconds).
 - Cyberpunk stores voiceovers as Wwise `.wem` resources in archives.
+- Full reference-conditioned cloning uses `ghostline-voice encode-reference`
+  with a bounded-variable speech-tokenizer artifact, then `render-local
+  --reference-prompts` with exact transcripts and codec assets by speaker.
+  Keep normal VO and `vo_holocall` depot folders separate when preparing WAVs.
+  Normal `vo` does not guarantee an unfiltered or healthy performance. Inspect
+  scene provenance as well as the expression tag: Songbird's coffee line is in
+  normal `vo` but belongs to `q301_00_holocall_hook.scene`; her spaceport ride
+  dialogue is also unsuitable for a healthy neutral reference. Prefer physical,
+  calm conversations and audition the source; compare original exported audio
+  with the resampled model reference when filtering is suspected.
+- `render-local --instruction` uses DinoML's explicit Base delivery instruction
+  API. Keep instructions separate from the words to speak. Reference context
+  and instructions both consume generation prompt capacity.
 - Voiceover `.json` resources map subtitle String IDs to voice files.
 - Generate localization CR2W-JSON through `ghostline-voice localize` or its
   `localize-manifest` command. `tools/generate_dialogue_localization.py` is a

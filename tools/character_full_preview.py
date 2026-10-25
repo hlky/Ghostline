@@ -116,6 +116,7 @@ def visible_mesh_layers(
                 "depot_path": path,
                 "role": role,
                 "color": ROLE_COLORS[role],
+                "chunk_mask": str(component.get("chunkMask", 2**64 - 1)),
             }
         )
 

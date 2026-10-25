@@ -1008,7 +1008,11 @@ def build_section_node(
     for line_key in section_spec["lines"]:
         line = spoken_manifest[line_key]
         duration = int(line.get("duration_ms") or spec.get("default_line_duration_ms", 2500))
-        line_events.append(dialog_event(str(spec["name"]), str(section_spec["key"]), line_key, line_ids[line_key], start, duration, alloc))
+        event = dialog_event(str(spec["name"]), str(section_spec["key"]), line_key, line_ids[line_key], start, duration, alloc)
+        if line.get('holocall_speaker', False):
+            event['Data']['voParams']['isHolocallSpeaker'] = 1
+            event['Data']['voParams']['voExpression'] = 'Vo_Expression_Phone'
+        line_events.append(event)
         start += duration + gap
 
     actors = actor_lookup(spec)

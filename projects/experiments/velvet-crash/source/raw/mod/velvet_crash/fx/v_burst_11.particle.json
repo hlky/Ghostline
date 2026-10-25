@@ -1,0 +1,318 @@
+{
+  "Header": {
+    "WolvenKitVersion": "8.17.4",
+    "WKitJsonVersion": "0.0.9",
+    "GameVersion": 2310,
+    "ExportedDateTime": "1970-01-01T00:00:00Z",
+    "DataType": "CR2W",
+    "ArchiveFileName": "H:\\projects\\Ghostline\\projects\\experiments\\velvet-crash\\source\\archive\\mod\\velvet_crash\\fx\\v_burst_11.particle"
+  },
+  "Data": {
+    "Version": 195,
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "CParticleSystem",
+      "cookingPlatform": "PLATFORM_PC",
+      "emitters": [
+        {
+          "HandleId": "0",
+          "Data": {
+            "$type": "CParticleEmitter",
+            "editorName": "VelvetCrash v hearts burst_11",
+            "modules": [
+              {
+                "HandleId": "3",
+                "Data": {
+                  "$type": "CParticleInitializerLifeTime",
+                  "lifeTime": {
+                    "HandleId": "4",
+                    "Data": {
+                      "$type": "CEvaluatorFloatConst",
+                      "value": 0.05
+                    }
+                  }
+                }
+              },
+              {
+                "HandleId": "5",
+                "Data": {
+                  "$type": "CParticleInitializerSize",
+                  "size": {
+                    "HandleId": "6",
+                    "Data": {
+                      "$type": "CEvaluatorVectorConst",
+                      "value": {
+                        "$type": "Vector4",
+                        "X": 1.05,
+                        "Y": 1.05,
+                        "Z": 1.05,
+                        "W": 1.0
+                      }
+                    }
+                  },
+                  "scale": 1.0
+                }
+              },
+              {
+                "HandleId": "7",
+                "Data": {
+                  "$type": "CParticleInitializerVelocity",
+                  "velocity": {
+                    "HandleId": "8",
+                    "Data": {
+                      "$type": "CEvaluatorVectorConst"
+                    }
+                  },
+                  "worldSpace": false
+                }
+              },
+              {
+                "HandleId": "9",
+                "Data": {
+                  "$type": "CParticleModificatorAlphaOverLife",
+                  "isEnabled": false,
+                  "alpha": {
+                    "HandleId": "10",
+                    "Data": {
+                      "$type": "CEvaluatorFloatCurve",
+                      "curves": {
+                        "InterpolationType": "BezierCubic",
+                        "LinkType": "ESLT_Normal",
+                        "Elements": [
+                          {
+                            "Point": 0.0,
+                            "Value": 0.0
+                          },
+                          {
+                            "Point": 0.13266900181770325,
+                            "Value": 0.1763170063495636
+                          },
+                          {
+                            "Point": 0.17398400604724884,
+                            "Value": 0.6583060026168823
+                          },
+                          {
+                            "Point": 0.2559730112552643,
+                            "Value": 0.8033289909362793
+                          },
+                          {
+                            "Point": 0.27811500430107117,
+                            "Value": 0.8033289909362793
+                          },
+                          {
+                            "Point": 0.2791149914264679,
+                            "Value": 0.8029900193214417
+                          },
+                          {
+                            "Point": 0.3224000036716461,
+                            "Value": 0.8024920225143433
+                          },
+                          {
+                            "Point": 0.5114160180091858,
+                            "Value": 0.7461509704589844
+                          },
+                          {
+                            "Point": 0.6199139952659607,
+                            "Value": 0.12983299791812897
+                          },
+                          {
+                            "Point": 1.0,
+                            "Value": 0.0
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "HandleId": "11",
+                "Data": {
+                  "$type": "CParticleModificatorAlphaOverEffect"
+                }
+              }
+            ],
+            "material": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "engine\\materials\\particles_generic.remt"
+              },
+              "Flags": "Default"
+            },
+            "localMaterialInstance": {
+              "HandleId": "1",
+              "Data": {
+                "$type": "CMaterialInstance",
+                "baseMaterial": {
+                  "DepotPath": {
+                    "$type": "ResourcePath",
+                    "$storage": "string",
+                    "$value": "engine\\materials\\particles_generic.remt"
+                  },
+                  "Flags": "Default"
+                },
+                "resourceVersion": 4,
+                "values": [
+                  {
+                    "$type": "rRef:ITexture",
+                    "Diffuse": {
+                      "DepotPath": {
+                        "$type": "ResourcePath",
+                        "$storage": "string",
+                        "$value": "mod\\velvet_crash\\textures\\v_burst_11_d.xbm"
+                      },
+                      "Flags": "Default"
+                    }
+                  },
+                  {
+                    "$type": "rRef:ITexture",
+                    "AlphaMask": {
+                      "DepotPath": {
+                        "$type": "ResourcePath",
+                        "$storage": "string",
+                        "$value": "mod\\velvet_crash\\textures\\v_burst_11_m.xbm"
+                      },
+                      "Flags": "Default"
+                    }
+                  },
+                  {
+                    "$type": "Color",
+                    "Color": {
+                      "$type": "Color",
+                      "Red": 255,
+                      "Green": 255,
+                      "Blue": 255,
+                      "Alpha": 255
+                    }
+                  },
+                  {
+                    "$type": "Float",
+                    "ColorMultiplier": 1.35
+                  },
+                  {
+                    "$type": "Float",
+                    "UseAlphaMask": 1.0
+                  },
+                  {
+                    "$type": "Float",
+                    "SubUVWidth": 1.0
+                  },
+                  {
+                    "$type": "Float",
+                    "SubUVHeight": 1.0
+                  },
+                  {
+                    "$type": "Float",
+                    "AdditiveAlphaBlend": 1.0
+                  },
+                  {
+                    "$type": "Float",
+                    "DistortAmount": 0.0
+                  },
+                  {
+                    "$type": "Float",
+                    "AlphaGlobal": 0.95
+                  },
+                  {
+                    "$type": "Float",
+                    "AlphaSoft": 0.5
+                  },
+                  {
+                    "$type": "Vector4",
+                    "TexCoordSpeed": {
+                      "$type": "Vector4"
+                    }
+                  }
+                ]
+              }
+            },
+            "maxParticles": 1,
+            "particleDrawer": {
+              "HandleId": "12",
+              "Data": {
+                "$type": "CParticleDrawerScreen"
+              }
+            },
+            "keepSimulationLocal": true,
+            "lods": [
+              {
+                "$type": "SParticleEmitterLODLevel",
+                "burstList": [
+                  {
+                    "$type": "ParticleBurst",
+                    "spawnCount": 1
+                  }
+                ],
+                "birthRate": {
+                  "HandleId": "2",
+                  "Data": {
+                    "$type": "CEvaluatorFloatConst",
+                    "value": 0.0
+                  }
+                }
+              }
+            ],
+            "renderResourceBlob": {
+              "HandleId": "13",
+              "Data": {
+                "$type": "rendRenderParticleBlob",
+                "header": {
+                  "$type": "rendRenderParticleBlobHeader",
+                  "version": 5,
+                  "emitterInfo": {
+                    "$type": "rendRenderParticleBlobEmitterInfo",
+                    "backLightingFactor": 0.5,
+                    "maxParticles": 1,
+                    "keepSimulationLocal": true,
+                    "vertexDrawerType": 1,
+                    "renderObjectType": "ROT_Static",
+                    "numModifiers": 1,
+                    "modifierSetMask": "33554432",
+                    "numInitializers": 3,
+                    "initializerSetMask": "8454160",
+                    "seeds": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "lods": [
+                      {
+                        "$type": "rendEmitterLOD",
+                        "burstList": [
+                          {
+                            "$type": "rendParticleBurst",
+                            "spawnCount": 1
+                          }
+                        ],
+                        "birthRate": [
+                          0.0,
+                          0.0
+                        ],
+                        "isEnabled": true
+                      }
+                    ],
+                    "volumetricParticleSize": 1.0,
+                    "volumetricParticleDensity": 1.0,
+                    "volumetricParticleFalloff": 1.0,
+                    "emitterLoops": 1
+                  }
+                },
+                "updaterData": {
+                  "$type": "rendRenderParticleUpdaterData",
+                  "data": {
+                    "BufferId": "0",
+                    "Flags": 4063232,
+                    "Bytes": "AgAMAM3MTD3NzEw9AgAUAGZmhj9mZoY/ZmaGP2Zmhj8CABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+                  },
+                  "modifOffset": 61
+                }
+              }
+            },
+            "emitterLoops": 1
+          }
+        }
+      ]
+    }
+  }
+}

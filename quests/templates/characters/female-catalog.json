@@ -60,6 +60,69 @@
             "Animated1507"
           ],
           "changes": []
+        },
+        "velvet_blonde_buns": {
+          "label": "Velvet twin buns — golden blonde",
+          "description": "Vanilla buns 02 bundle: golden-blonde hair, native dangle graph/rig and the shared buns-01 NPC shadow used by its control entity.",
+          "component_names": [
+            "hh_hair",
+            "hh_hair_shadow",
+            "Animated1507"
+          ],
+          "bindings": [
+            {
+              "component": "hh_hair",
+              "field": "skinning",
+              "type": "entSkinningBinding",
+              "bind_name": "Animated1507"
+            },
+            {
+              "component": "Animated1507",
+              "field": "controlBinding",
+              "type": "entAnimationControlBinding",
+              "bind_name": "Component"
+            },
+            {
+              "component": "hh_hair_shadow",
+              "field": "skinning",
+              "type": "entSkinningBinding",
+              "bind_name": "Component"
+            },
+            {
+              "component": "hh_hair_shadow",
+              "field": "parentTransform",
+              "type": "entHardTransformBinding",
+              "bind_name": "Component",
+              "slot_name": "None"
+            }
+          ],
+          "changes": [
+            {
+              "component": "hh_hair",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\hh_081_wa__buns_02\\hh_081_wa__buns_02.mesh"
+            },
+            {
+              "component": "hh_hair",
+              "path": "meshAppearance.$value",
+              "value": "blonde_golden"
+            },
+            {
+              "component": "Animated1507",
+              "path": "graph.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\hh_081_wa__buns_02\\hh_081_wa__buns_02_dangle.animgraph"
+            },
+            {
+              "component": "Animated1507",
+              "path": "rig.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\hh_081_wa__buns_02\\hh_081_wa__buns_02_dangle_skeleton.rig"
+            },
+            {
+              "component": "hh_hair_shadow",
+              "path": "mesh.DepotPath.$value",
+              "value": "base\\characters\\common\\hair\\shadow_meshes\\hh_080_wa__buns_01_shadow_npc.mesh"
+            }
+          ]
         }
       }
     },
@@ -302,6 +365,36 @@
             "h0_tattoo"
           ],
           "changes": []
+        },
+        "velvet_soft_rose": {
+          "label": "Velvet - soft liner and rose gloss",
+          "description": "No skull tattoo or freckles; liner 01, brown brows, green eyes and glossy rose lips.",
+          "disable_components": [
+            "h0_tattoo",
+            "hx_makeup_freckles"
+          ],
+          "changes": [
+            {
+              "component": "hx_makeup_eyes",
+              "path": "meshAppearance.$value",
+              "value": "black_01"
+            },
+            {
+              "component": "hx_makeup_lips_01",
+              "path": "meshAppearance.$value",
+              "value": "pink_01_02"
+            },
+            {
+              "component": "heb_eyebrows",
+              "path": "meshAppearance.$value",
+              "value": "brown_liquorice__05"
+            },
+            {
+              "component": "he_eyes",
+              "path": "meshAppearance.$value",
+              "value": "gradient_green"
+            }
+          ]
         }
       }
     }
