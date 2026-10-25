@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "bundle": "gq004-gfx1201-model-artifacts-20261025",
+  "compatibility": {
+    "dinoml_commit": "baa6f17d5cd63fca2ac54ca4c3200a4bd5673efb",
+    "dinoml_checkout": "H:/dinoml_v2-worktrees/facet-voice-studio",
+    "architecture": "gfx1201",
+    "backend": "rocm",
+    "reference_encoder_samples": 190048,
+    "pytorch_python": "H:/dinoml_v2/.venv/rocm10/Scripts/python.exe",
+    "powershell_profile": "C:/Users/user/Documents/PowerShell/profile.ps1"
+  },
+  "entries": [
+    {
+      "id": "design_artifact",
+      "source": "H:/facet/.work/gui-engine/evidence/voice-studio/coherent/voice_design_generation_p256_f288",
+      "destination": "artifacts/voice_design_generation_p256_f288",
+      "exclude_names": [
+        "debug",
+        ".cache"
+      ]
+    },
+    {
+      "id": "design_decoder",
+      "source": "H:/facet/.work/gui-engine/evidence/voice-studio/coherent/tokenizer_decoder_f256",
+      "destination": "artifacts/design_tokenizer_decoder_f256",
+      "exclude_names": [
+        "debug",
+        ".cache"
+      ]
+    },
+    {
+      "id": "generation_artifact",
+      "source": "generated-voices/french-twins/artifacts/base_generation_p256_f288",
+      "destination": "artifacts/base_generation_p256_f288",
+      "exclude_names": [
+        "debug",
+        ".cache"
+      ]
+    },
+    {
+      "id": "decoder_artifact",
+      "source": "generated-voices/french-twins/artifacts/tokenizer_decoder_f256",
+      "destination": "artifacts/tokenizer_decoder_f256",
+      "exclude_names": [
+        "debug",
+        ".cache"
+      ]
+    },
+    {
+      "id": "reference_encoder_artifact",
+      "source": "generated-voices/french-twins/artifacts/tokenizer_encoder_s190048",
+      "destination": "artifacts/tokenizer_encoder_s190048",
+      "exclude_names": [
+        "debug",
+        ".cache"
+      ]
+    },
+    {
+      "id": "speaker_encoder_artifact",
+      "source": "generated-voices/french-twins/artifacts/base_speaker_encoder_mel4096",
+      "destination": "artifacts/base_speaker_encoder_mel4096",
+      "exclude_names": [
+        "debug",
+        ".cache"
+      ]
+    }
+  ]
+}

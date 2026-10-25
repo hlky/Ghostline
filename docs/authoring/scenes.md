@@ -12,6 +12,44 @@ implementation was incomplete or malformed. Do not replace a vanilla pattern
 with a workaround from a bad probe unless a matching vanilla counterexample has
 been found.
 
+## Progression and speaker lifecycle
+
+For new interactions, review the entire transition and its interruption path:
+prompt, action dispatch, connection, progress, commit, disconnect, and next
+objective. GQ004's [playtested phases](../../projects/ghostline/quests/gq004/implementation/phases.py)
+provide a concrete personal-link example with terminating success/retry exits.
+
+- Use `IsInside`/`IsOutside` when a phase must recognize an already-satisfied
+  position. `Entered`/`Exited` are appropriate only when a new crossing is
+  deliberately required. Fast travel and departure during earlier speech can
+  precede activation of the waiting phase.
+- Arm defer/re-entry checks immediately after the choice. A delay before
+  watching for departure can miss a quick step away and return. Keep the
+  rearm radius aligned with conversation range, and resume choices or a return
+  exchange instead of replaying the introduction. Radii are location-specific.
+- Ensure a required speaker is spawned/acquired before scheduling the first
+  speech event, especially a time-zero line in a freshly created remote scene.
+  Inspect the compiled actor/voice tag before attributing silence to a missing
+  tag. GQ004's success scene demonstrates the spawn-readiness wait.
+- A phone filter on VO does not establish a connected call. An audio call can
+  start without a video actor, but scene-delivered dialogue still needs its
+  actor. Author call start/end and speaker ownership explicitly; GQ004 ends its
+  field audio call before the in-person debrief.
+- Retire the successful transfer attempt before forced disconnection can reach
+  its retry branch. Verify both the HUD result and quest progression; do not
+  infer success from a committed fact alone.
+- Give community cleanup an explicit owner and departure condition. Scene end
+  or quest success alone should not make an NPC vanish in front of the player.
+  Apply friendly aiming protection and mortality settings when the design
+  requires a protected conversational NPC, including return meetings.
+
+For shard-dependent speech, wait on `questJournalEntryVisited_ConditionType`
+with `visited: true` against the shard's complete onscreen journal path.
+Vanilla `ma_wat_nid_15_investigation.scene` contains this pattern inside a
+scene; a search restricted to questphases misses it. GQ004 grants subsequent
+shards after the preceding read and exchange. Verify actual read behavior in
+game rather than treating item pickup as a read event.
+
 ## Source Of Truth
 
 - Fresh scene tooling should emit editable CR2W-JSON under `source/raw`.

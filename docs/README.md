@@ -16,6 +16,10 @@ under [`projects/ghostline/quests`](../projects/ghostline/quests/README.md).
 
 ## Workflows
 
+- [Quest production](workflows/quest-production.md) — environment preflight,
+  dialogue review, early playable route, and final acceptance.
+- [Voice environment](workflows/voice-environment.md) — preserved local artifacts
+  and compatible voice toolchain setup.
 - [Development](workflows/development.md) — normal edit, generate, validate,
   convert, test, and package loop.
 - [Automated testing](workflows/automated-testing.md) — full and focused test

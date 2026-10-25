@@ -46,6 +46,11 @@ Quest-specific onscreens should live under
 
 ## Scene And Localization Generation
 
+Review the final staged onscreen resource after all generators and staging
+steps. A stale source copy can overwrite newly generated objective strings
+while both individual files remain valid. Verify the final journal's referenced
+secondary keys against that staged resource, not only the generator output.
+
 The removed root-level scene/localization generator and scene template are not
 part of the current workflow. Regenerate `gq000_patch_meet.scene` through
 `tools/generate_scene.py` and
@@ -60,6 +65,13 @@ convert changed raw CR2W-JSON with the WolvenKit workflow in
 
 ## Voice Generation And WEM Conversion
 
+- Follow [voice environment](../../../docs/workflows/voice-environment.md) before
+  rebuilding tools or rendering a batch. Use `ghostline-voice`, preserve the
+  working artifact/runtime pairing, and check a short synthesis first. The
+  project-local cache is ignored; its inventory and recipes are tracked.
+- Review the full player-facing dialogue flow before bulk VO. Record the
+  required action/read state and speaker readiness; use the performer's
+  reviewed conditioning recipe rather than silently switching to embedding-only.
 - Shared Patch and V speaker embeddings live under
   `projects/ghostline/quests/shared/voice/embeddings`. SafeTensors files are
   canonical; do not reintroduce pickle-backed PyTorch copies.

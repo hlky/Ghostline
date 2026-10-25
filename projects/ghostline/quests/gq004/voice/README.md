@@ -6,6 +6,15 @@ reference conditioning: the exact transcript, acoustic codes and speaker
 embedding. V uses the previously selected female/male vanilla reference
 recordings, also with full conditioning. V is never voice-designed.
 
+The six compiled model artifact bundles are now copied into ignored
+`.local/voice/artifacts/`. `toolchain.json` selects these local copies while
+checkpoints, native libraries, executable, and reference inputs retain their
+existing locations. Verify the artifacts' tracked hashes
+with `python tools/cache_voice_artifacts.py verify`; see the
+[voice environment workflow](../../../../../docs/workflows/voice-environment.md).
+The external paths below explain the original recipe and compatible rebuild
+environment; current render wrappers select the project-local artifacts.
+
 The twins comparison's selected recipe is in
 `generated-voices/french-twins/preferred-recipe.json`. It selected full
 reference plus delivery instruction for those French-accented performers.
@@ -38,7 +47,8 @@ against it rejected existing decoder constants with storage kind
 the user's `.cargo/config.toml` intact. Record the resolved source commit and
 artifact identities in the run receipt before reproducing a render.
 `python projects/ghostline/quests/gq004/voice/build_tool.py` replays the compatible
-build with scoped overrides and checks the checkout revision first.
+build with scoped overrides and checks the checkout revision first. Preserve
+the recorded native-library environment when rebuilding.
 
 `ghostline-voice design-reference` creates an unreviewed custom-character WAV,
 with a fixed seed and reproducibility sidecar. Use `extract-embedding` and

@@ -83,6 +83,25 @@ The quest descriptor uses broad bounds during validation, matching the mq003
 quest-sector reference pattern and avoiding a too-tight streaming box while the
 location is still being tuned.
 
+## Location capture and wall mounts
+
+Capture positions and forward vectors with readable target hints, grouped
+co-located targets, progress/resume, and validation before import. Keep captures
+separate from derived mounting corrections. GQ004's
+[scout importer](../../projects/ghostline/quests/gq004/implementation/scout.py)
+validates all sixteen targets and invalidates an old wall correction when its
+source capture changes.
+
+A player's facing is not necessarily the placed object's front axis. The
+access-point plate used by GQ004 faces local `+X`; V's captured forward is
+local `+Y`. Inspect the template convention before converting yaw. For wall
+placement, use inspector node/actor identities to resolve the actual surface,
+then account for the device's local rear offset. Confirm visible contact in
+game because the collision surface can differ from the rendered wall.
+
+Use an area marker for approach and device markers for the active interaction.
+Derive the latter from the final device transforms, including mount corrections.
+
 ## Markers And Mappins
 
 - The scene marker is `#gq000_01_sm_patch_bridge`.

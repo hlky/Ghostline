@@ -1,14 +1,17 @@
 # Love, Actually.exe
 
-Ghostline side quest Â· Velvet Kade Â· target length 10-15 minutes.
+Ghostline side quest · Velvet Kade · target length 10-15 minutes.
 
 Velvet's stolen Heartbreaker Protocol has become a Tyger Claw product. The
 original interrupts abusive behavioural conditioning. The stolen fork disables
 its watchdog and traps victims in affective feedback. V must recover the live
 signing key, revoke the stolen batch, and distribute Velvet's corrected build.
 
-This is an **authoring candidate**, with all 16 CET-captured placements applied. It is
-installed through the dedicated `love-actually` profile and has not been tested in game.
+The final `love-actually-736fbdd18ed4` package is **playtested complete**. On
+2026-10-25 the user confirmed a successful playthrough of about ten minutes,
+including driving. All sixteen captured placements are applied. The dedicated
+`love-actually` profile activates GQ004 independently of the main story profile.
+See the [sprint retrospective](RETROSPECTIVE.md) for lessons and follow-ups.
 
 ## Quest flow
 
@@ -32,18 +35,23 @@ installed through the dedicated `love-actually` profile and has not been tested 
    sincere, tease the hearts-and-ribbons branding, or ask after the friend.
    The reward does not depend on flirting, V's gender, or a romance flag.
 5. **Attachments - under a minute.** Velvet sends the closing message and its
-   detaching joke. Both phone replies receive the same quickhack reward.
+   detaching joke after completion. The debrief delivers the same quickhack
+   regardless of the optional phone reply.
 
 ## Dialogue
 
-The [readable script](script/dialogue.md) and three machine manifests share
+The [complete dialogue flow](implementation/DIALOGUE-FLOW.md) includes all
+choices, shards, messages, and delivery order. The [readable script](script/dialogue.md)
+and three machine manifests share
 stable unsigned FNV-1a line IDs. There are 43 spoken lines, with separate
 female/male V audio paths, and nine unvoiced scene choices. Phone and terminal
 text lives in [quest.json](implementation/quest.json).
 
 The briefing and debrief have native scene specs and generated raw scenes.
-Field VO uses five native remote-voice scenes connected to the relay phases. Scene timings use the longest measured candidate take across player
-genders. Remeasure them after replacing a take.
+Field VO uses eight native scenes within an audio-only call from operation
+arrival until departure; the briefing and debrief bring the total to ten.
+Scene timings use the longest measured selected take across player genders.
+Remeasure them after replacing a take.
 
 ## Velvet's appearance
 
@@ -81,12 +89,12 @@ The main story profile still activates GQ001/GQ002; this separate profile adds
 only GQ004. It ships no REDscript, runtime CET or Audioware files. The CET scout
 remains an authoring tool and is unnecessary for playing the quest.
 
-All 16 captures are applied. Eleven phases (including two retry attempts), seven
-scenes, the world, cloned access-point controllers, journal/localization and the
-lipmap passed native authored-field readback checks: 37 resources. Sixty reviewed
-WEMs and 86 cooked lipsync variants are included. Archive extraction, ZIP contents
-and all six installed files passed hash checks. Package receipts are in
-`projects/ghostline/generated/packages/love-actually-81aeb68b8a08`.
+All sixteen captures are applied. Fourteen phases, ten scenes, world resources,
+cloned controllers, journal/localization and lipmap passed native authored-field
+readback: 44 resources. Sixty reviewed WEMs and 86 cooked lipsync variants are
+included, with ten approved Velvet take revisions. Archive and ZIP verification
+passed; all seven installed files matched their package hashes. See the tracked
+[install receipt](implementation/install-receipt.json) for the final package.
 
 Rebuild from the repository root:
 
@@ -96,8 +104,9 @@ Rebuild from the repository root:
 .venv/Scripts/python.exe tools/package_project.py --project ghostline --profile love-actually --install --game 'K:/Cyberpunk 2077'
 ```
 
-The recovery socket copies three readable archived-message items. Read them from
-inventory; opening a document cannot commit recovery or upload. Both sockets use
+Recovery grants the sales ledger first; later shards follow each preceding read
+and conversation. Read objectives wait on the onscreen entry becoming visited.
+Reading cannot commit either personal-link transfer. Both sockets use
 the stock personal-link controller with minigame skipping, so a cyberdeck is not
 required. Each five-second transfer runs in a child phase with terminating
 success/retry exits. A disconnect cancels the pending timer. Recovery retains
@@ -106,17 +115,21 @@ the verified local copy; upload commits only after its separate transfer.
 The corrected upload applies the native six-second blindness/hearts/bows effects
 to the three named quest guards without a kill requirement. Guard cleanup waits
 until V leaves the outer area. Deferring the briefing retains the meeting.
-The debrief grants the quest-owned Heartbreaker Protocol item; the inherited
-quickhack action displays Velvet Crash. Both closing replies complete the quest.
+The debrief grants the Tier 5/Iconic Heartbreaker Protocol item, verifies it in
+inventory, and completes the journal. The quickhack menu displays Velvet Crash.
+Closing messages follow independently after 45 seconds. Velvet remains until
+the player leaves her meeting area; returning after deferral skips the intro.
 
-## Validation still needed in game
+## Runtime evidence and remaining scope
 
-The installed build is a playtest candidate. Collision, device mounting, native
-link animation and interruption, distant field-scene actor acquisition, both V
-voices, clothing deformation, save/load, stealth/combat and reward replay have
-not been observed. Native conversion and package integrity do not prove those
-behaviours. Reference-specific hair bows, charms and tattoos remain a cosmetic
-backlog; the quickhack's native heart/bow effects are packaged.
+The final playthrough confirms the user's complete route, with earlier reports
+confirming body rendering, progression, reward, and visible quickhack FX. Final
+feedback accepted the audio call, return behavior, socket and icon polish.
+Exhaustive coverage of both V voices, all save/load states, stealth/combat
+branches, and clothing deformation remains separate from that confirmation.
+Reference-specific hair bows, charms and tattoos remain a cosmetic backlog.
+The quickhack's native heart/bow effects are included. Temporary link diagnostics
+are disabled in the optional scout; captures and logs remain available.
 
 See [the runtime contract](implementation/runtime.json) and
 [voice production notes](voice/README.md) for build evidence.

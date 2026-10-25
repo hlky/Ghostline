@@ -12,6 +12,13 @@ CR2W assets first. This file records ArchiveXL ownership rules; the packaging
 document owns the exact scoped build, extraction, payload-hash, and staging
 procedure.
 
+Before a playtest handoff, apply the
+[final integration checks](../../../docs/workflows/build-and-package.md#final-integration-checks)
+and name the package and required save state. Preserve compiler-owned strings,
+inspect embedded material dependencies and effective NPC template patches, and
+keep diagnostics out of the final runtime. Report package integrity separately
+from observed gameplay.
+
 ## ArchiveXL Resources
 
 - `projects/ghostline/source/resources/Ghostline.archive.xl` is the ArchiveXL registration file.

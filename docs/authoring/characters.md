@@ -19,6 +19,27 @@ the toolchain but was later shown to be a geometry no-op rather than Patch's
 intended face; shape 22 is present and supported by the female PWA
 morphtargets.
 
+## New character baseline review
+
+Start from a pinned neutral shell and reviewed bundles. When adapting an
+existing NPC, review its face values, hair, makeup, tattoos, skin overlays,
+and accessories explicitly; donor identity can survive a renamed manifest.
+
+Inspect body/head mesh dependencies inside embedded material buffers as well
+as visible resource fields. GQ004's black torso came from omitted tutorial
+textures; use character-owned references and include their payloads, or retain
+the original dependencies deliberately. A normal import-string scan alone
+does not prove material dependency closure.
+
+Keep component overrides and disabled layers consistent in normal and compiled
+appearance copies. The preview must honor the selected chunk masks and native
+hair color/profile; a hardcoded black material concealed Velvet's blonde choice.
+Inspect silhouette and textured face separately, then check speech, clothing,
+foot state, and deformation in game. Offline rendering remains an approximation.
+
+See the [GQ004 retrospective](../../projects/ghostline/quests/gq004/RETROSPECTIVE.md)
+for the failures that motivated this review.
+
 ## Current Reference Set
 
 The design is based on:
@@ -564,9 +585,11 @@ and applies those materials to the matching live morph GLBs. It respects chunk
 masks and disabled tattoo components. The viewer reconstructs RED's two-channel
 normals, reads roughness from red, repeats tiled UVs, and blends makeup decals.
 Front/three-quarter views, a hair visibility toggle, neutral studio lighting and
-Night City lighting support face review. This is a PBR approximation: RED skin
-scattering, eye refraction/gradients, hair profiles and multilayer jewelry remain
-in-game validation work. Full-body and indexed clothing previews remain neutral.
+Night City lighting support face review. The viewer uses selected native hair
+color/profile parameters, including root-to-tip variation. This remains a PBR
+approximation: RED skin scattering, eye refraction/gradients, exact hair shading
+and multilayer jewelry need in-game validation. Full-body and indexed clothing
+previews remain neutral.
 
 Goth Baddie's revised face uses eyes 8, nose 5, mouth 10, jaw 3 and ears 2,
 with `face_tattoos: none` in default, postfight and intimacy appearances. Her

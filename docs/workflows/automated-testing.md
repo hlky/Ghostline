@@ -32,6 +32,7 @@ resources:
 - [`gq001`](../../projects/ghostline/quests/gq001/README.md)
 - [`gq002`](../../projects/ghostline/quests/gq002/README.md)
 - [`gq003`](../../projects/ghostline/quests/gq003/README.md)
+- [`gq004`](../../projects/ghostline/quests/gq004/README.md)
 
 ## Native Tool
 
@@ -55,3 +56,9 @@ cargo test --manifest-path .\tools\ghostline-red\Cargo.toml
 
 Passing automated tests does not establish in-game behavior. Record runtime
 results separately in [runtime testing](runtime-testing.md).
+
+Test transition invariants where failures occurred: action dispatch, success
+retirement before retry/unplug, inventory confirmation before reward facts,
+and final staged localization coverage. Assertions that merely mirror node
+values cannot prove the interaction works. Separate these checks from named
+in-game scenarios in the [playtest handoff contract](runtime-testing.md#playtest-handoff-contract).

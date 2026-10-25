@@ -5,6 +5,32 @@ installed Cyberpunk 2077 data without launching the game. Generated vanilla
 metadata, meshes, textures, renders, SQLite files, and caption jobs stay under
 ignored `converted/item-database`; they are derived local data, not mod source.
 
+## Quest rewards and custom quickhacks
+
+Validate a reward's base record and inheritance before granting it; inspect
+TweakXL load errors as well as authored YAML. Mark a once-only reward granted
+only after an inventory condition confirms delivery. Complete the journal
+independently of optional closing texts/replies unless answering is an explicit
+quest requirement. Design any repair for existing saves to preserve once-only
+delivery. GQ004's [phases](../../projects/ghostline/quests/gq004/implementation/phases.py)
+include inventory verification and a native missing-reward repair path.
+
+Inventory name, quickhack action caption, item description, and ability tooltip
+can come from different records. Trace inherited `OnAttach` gameplay packages
+and their UIData when vanilla description bullets survive an item-text change.
+
+Measure the exact vanilla atlas texture and part used by each context before
+authoring icons. GQ004 uses separate inventory and HUD parts: its vanilla-derived
+1080p footprints are 50x65 and 32x32 respectively. Those are measured examples,
+not universal dimensions. Check the received-item popup, inventory grid,
+equipped list, scanner row, and active-target indicator separately. UV bindings
+and correct texture bytes alone do not establish correct display size.
+
+For NPC-attached FX, identify the effective entity template used by the target
+record, including Phantom Liberty replacements. A status applying successfully
+does not establish the presence of the required FX component/attachment slot.
+GQ004's visible effects required patching the replacement entities too.
+
 ## What It Joins
 
 `tools/item_database.py` keeps gameplay items and render variants separate:

@@ -7,6 +7,10 @@ Ghostline has several authoring pipelines rather than one global regeneration
 command. Start from the owning quest README or authoring guide and run only the
 generators for the resources you changed.
 
+For a new quest, follow [quest production](quest-production.md): review the
+complete player-facing flow and prove a small playable route before full
+presentation production. This document owns the implementation commands.
+
 ## 1. Choose The Source Of Truth
 
 | Change | Edit |

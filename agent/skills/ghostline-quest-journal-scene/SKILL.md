@@ -7,6 +7,9 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
 
 ## Before Editing
 
+- For new quest behavior, follow [quest production](../../../docs/workflows/quest-production.md):
+  review the complete dialogue flow and prove an early installed route through
+  reward and completion. Keep runtime claims separate from native readback.
 - Use `docs/reference/tool-catalog.md` explorer commands before loading full
   CR2W-JSON files into context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal
@@ -27,11 +30,20 @@ Useful docs:
 
 ## Questphase And Scene Rules
 
+- Apply the [scene lifecycle rules](../../../docs/authoring/scenes.md#progression-and-speaker-lifecycle)
+  for already-inside/outside gates, immediate deferred re-entry, actor readiness,
+  personal-link success/retry retirement, and delayed community cleanup.
+- Gate reactions to shards on the onscreen journal entry becoming visited;
+  sequence later grants after the relevant read and dialogue, as the story needs.
+- Confirm item delivery before reward facts and completion; optional closing
+  texts should have an independent lifecycle. See
+  [quest rewards](../../../docs/authoring/items-and-equipment.md#quest-rewards-and-custom-quickhacks).
 - `.questphase` resources are graph-style quest flow files. They can reference
   scenes and other resources through graph nodes, noderefs, sockets, and
   handlerefs. Use WolvenKit's graph editor for structural inspection.
 - Quest facts are signed integer state values. They default to `0` until set.
-  Prefer `gq000_` prefixes for Ghostline quest facts.
+  Use the owning quest's prefix (for example `gq004_`); `gq000_` belongs to the
+  reusable baseline. Retarget facts deliberately when adapting a tested phase.
 - Fresh `gq000` scene tooling should follow `docs/authoring/scenes.md`
   rather than preserving generated-scene probe workarounds.
 - Emit editable scene resources under `source/raw` and use WolvenKit to produce

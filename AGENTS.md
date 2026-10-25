@@ -8,6 +8,9 @@ skill-style files under `agent/skills`.
 ## First Rules
 
 - Work from the repository root unless a command says otherwise.
+- For a new quest or substantial quest behavior, read
+  `docs/workflows/quest-production.md` for the early playable-route milestone,
+  dialogue review, environment preflight, and playtest handoff.
 - Read `docs/reference/project-layout.md` for project ownership and build paths.
   `source`, `generated`, and `packed` are project-relative. There is no shared
   repository-root `source` tree. Use `tools/project_layout.py` to resolve projects

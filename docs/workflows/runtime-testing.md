@@ -1,12 +1,52 @@
 # Runtime Testing And Evidence
 
-The latest recorded installation follows. Earlier candidates and failures are
-kept in the linked evidence archive. Installation evidence does not imply that
-later working-tree changes have been tested in game.
+Recorded installations and scoped evidence follow. Installation evidence does
+not imply that later working-tree changes have been tested in game.
 
 Use a fresh save when validating questphase, scene, journal, or world-trigger
 changes. Prefer a manual save made before any version of Ghostline was
 installed or registered.
+
+## Playtest handoff contract
+
+For each candidate, name the package/profile and installed hash receipt,
+the behavior changed, the suitable starting save, the exact action to test,
+and the expected visible result. Explain restart requirements and persisted
+state: an archive replacement cannot reset facts, visited journals, saved
+controllers, or a scene already in progress. Use a pre-registration save for
+new lifecycle proof; use an affected existing save deliberately for migration
+or repair tests. Do not require a full replay when a focused save is sufficient.
+
+Include applicable transition scenarios early:
+
+| Scenario | Check |
+| --- | --- |
+| Fast travel inside setup | The already-inside player can start the conversation. |
+| Defer, step away briefly, return | Choices or a return exchange reappear without repeating the full introduction. |
+| Kill guards or approach quietly | Progression follows the intended combat/stealth policy. |
+| Interrupt and retry the link | No false commit, stuck prompt, or duplicate reward. |
+| Successful link and unplug | HUD completes once, without a late failure; next objective activates. |
+| Leave while dialogue plays | The later departure gate accepts an already-outside player. |
+| First remote line | Speaker readiness preserves its setup for the player's reply. |
+| Read shards in sequence | Grants, read objectives, comments, and upload instructions match player knowledge. |
+| Receive reward and finish | Inventory confirms delivery; journal completes independently of optional messages. |
+| Finish beside the NPC | NPC remains until the intended departure cleanup. |
+
+Record observed outcomes separately from authoring/readback and package tests.
+For a regression, compare the previous working build and distinguish observed
+facts from a proposed cause. Include presentation checks from the
+[item guide](../authoring/items-and-equipment.md#quest-rewards-and-custom-quickhacks).
+
+## GQ004 completed playthrough (2026-10-25)
+
+The user confirmed the final `love-actually-736fbdd18ed4` package was all good
+and reported a complete playthrough of about ten minutes including driving.
+See its [playtest route](../../projects/ghostline/quests/gq004/implementation/PLAYTEST.md),
+[installed hashes](../../projects/ghostline/quests/gq004/implementation/install-receipt.json),
+and [retrospective](../../projects/ghostline/quests/gq004/RETROSPECTIVE.md).
+That confirmation does not establish exhaustive save/load, both-V-voice, or
+every stealth/combat scenario coverage. The optional link diagnostic loader and
+update hook were subsequently disabled; the location chooser and logs remain.
 
 ## Isolated Story Project Install (2026-10-07)
 

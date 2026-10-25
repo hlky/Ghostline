@@ -8,11 +8,11 @@
   "powershell_profile": "C:/Users/user/Documents/PowerShell/profile.ps1",
   "checkpoint": "X:/checkpoints/Qwen/Qwen3-TTS-12Hz-1.7B-Base",
   "design_checkpoint": "X:/checkpoints/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
-  "design_artifact": "H:/facet/.work/gui-engine/evidence/voice-studio/coherent/voice_design_generation_p256_f288",
-  "design_decoder": "H:/facet/.work/gui-engine/evidence/voice-studio/coherent/tokenizer_decoder_f256",
-  "generation_artifact": "generated-voices/french-twins/artifacts/base_generation_p256_f288",
-  "decoder_artifact": "generated-voices/french-twins/artifacts/tokenizer_decoder_f256",
-  "reference_encoder_artifact": "generated-voices/french-twins/artifacts/tokenizer_encoder_s190048",
+  "design_artifact": ".local/voice/artifacts/voice_design_generation_p256_f288",
+  "design_decoder": ".local/voice/artifacts/design_tokenizer_decoder_f256",
+  "generation_artifact": ".local/voice/artifacts/base_generation_p256_f288",
+  "decoder_artifact": ".local/voice/artifacts/tokenizer_decoder_f256",
+  "reference_encoder_artifact": ".local/voice/artifacts/tokenizer_encoder_s190048",
   "reference_encoder_samples": 190048,
   "velvet_reference": "generated-voices/gq004/design/velvet-clone-reference.wav",
   "velvet_reference_text": "Okay, gorgeous. The hearts are intentional.",
@@ -23,10 +23,13 @@
   "versions": 1,
   "review": {
     "voice_direction": "keep this direction, user 2026-10-25",
-    "individual_takes": "unreviewed"
+    "individual_takes": "60 source performances approved; ten revised Velvet takes approved in dialogue-review-02.json"
   },
   "notes": [
     "Older runtime uses exact-size static tokenizer encoding. Reference receives trailing silence to 190048 samples; no speech is removed.",
-    "The newer bounded-variable tokenizer artifact needs a matching newer runtime; it is not silently used with this checkout."
-  ]
+    "The newer bounded-variable tokenizer artifact needs a matching newer runtime; it is not silently used with this checkout.",
+    "Compiled model artifact bundles are copied into ignored .local/voice/artifacts. Checkpoints, native libraries, references and executable retain their existing locations."
+  ],
+  "speaker_encoder_artifact": ".local/voice/artifacts/base_speaker_encoder_mel4096",
+  "artifact_inventory": "tools/voice-artifacts.lock.json"
 }

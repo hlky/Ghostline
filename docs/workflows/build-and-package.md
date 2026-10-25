@@ -162,6 +162,28 @@ cause of that old crash. The later scene-start failure was resolved separately
 as a lipsync slot cardinality problem. Neither finding makes the base overrides
 safe to ship.
 
+## Final integration checks
+
+Inspect the final staged inputs after all generator and copy steps. Preserve
+compiler-owned objective localization; GQ004's strings were once replaced by
+an older source copy after successful generation. Check referenced keys against
+the staged resource. Inspect embedded character material dependencies and the
+effective base/EP1 NPC templates needed by FX, as described in the
+[character](../authoring/characters.md#new-character-baseline-review) and
+[item](../authoring/items-and-equipment.md#quest-rewards-and-custom-quickhacks) guides.
+
+For an isolated playtest, inventory the intended active Ghostline archives,
+registrations, tweaks, scripts, and CET/audio helpers; preserve disabled packages
+with backups when isolation is authorized. Bundled FX dependencies do not
+require a second independently activated experiment package. Verify sibling
+profiles still exclude quest-specific patches.
+
+At final acceptance, disable temporary diagnostic imports/update hooks in both
+source and installed helpers, retain logs/captures, and restart to unload
+existing callbacks when needed. A renamed folder inside CET's scanned `mods`
+directory can still be discovered; remove its active entrypoint or move it
+outside that directory. See the [playtest handoff](runtime-testing.md#playtest-handoff-contract).
+
 ## Runtime Checks
 
 After installing the staged tree, verify:

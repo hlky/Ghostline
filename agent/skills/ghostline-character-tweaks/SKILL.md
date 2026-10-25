@@ -21,6 +21,11 @@ missing or failed Patch spawn as a character-resource defect.
 
 ## Character Resources
 
+For a new NPC, use the [character baseline review](../../../docs/authoring/characters.md#new-character-baseline-review)
+before carrying a previous character's appearance forward. Inspect embedded
+material dependencies and both component copies; preview success does not
+establish packed texture closure or runtime fit.
+
 Read `docs/authoring/characters.md` before building or restructuring a
 player-derived NPC. It records the audited NPV template relationship, proposed
 character manifest/catalog boundary, headless Blender path, validation contract,
