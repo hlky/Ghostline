@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "namespace": "relay_demo",
+  "title": "Relay Recovery",
+  "phase_prefabs": ["#relay_demo_pr_quest"],
+  "giver": {
+    "community": "#relay_demo_com_giver",
+    "entry": "giver",
+    "scene_origin": "#relay_demo_sm_giver",
+    "setup_trigger": "#relay_demo_tr_setup",
+    "rearm_trigger": "#relay_demo_tr_engage",
+    "cleanup_trigger": "#relay_demo_tr_cleanup",
+    "meeting_scene": "mod\\relay_demo\\scenes\\relay_demo_meet.scene",
+    "return_scene": "mod\\relay_demo\\scenes\\relay_demo_return.scene"
+  },
+  "objectives": {
+    "meet": {"text": "Meet the contact.", "description": "Hear the job and decide whether to help.", "marker": "#relay_demo_mp_meet"},
+    "recover": {"text": "Recover the prototype.", "description": "Keep the access point intact and copy the data.", "marker": "#relay_demo_mp_recover"},
+    "upload": {"text": "Upload the correction.", "description": "Use the distribution endpoint to apply the corrected build.", "marker": "#relay_demo_mp_upload"},
+    "return": {"text": "Return to the contact.", "description": "Report back and collect the reward.", "marker": "#relay_demo_mp_meet"}
+  },
+  "transfers": [
+    {"id": "recover", "device": "$/mod/relay_demo/#relay_demo_pr_quest/#relay_demo_ap_recover", "label": "Recover prototype", "duration_seconds": 5},
+    {"id": "upload", "device": "$/mod/relay_demo/#relay_demo_pr_quest/#relay_demo_ap_upload", "label": "Upload correction", "duration_seconds": 5}
+  ],
+  "reward": {"item": "Items.RelayDemoPrototype", "quantity": 1, "repair_completed_saves": false}
+}

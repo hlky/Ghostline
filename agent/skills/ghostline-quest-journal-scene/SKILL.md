@@ -10,6 +10,10 @@ description: Use for Ghostline questphase, scene, journal, quest UI, NodeRef, qu
 - For new quest behavior, follow [quest production](../../../docs/workflows/quest-production.md):
   review the complete dialogue flow and prove an early installed route through
   reward and completion. Keep runtime claims separate from native readback.
+- For a meeting/personal-link/reward route, start from the
+  [native template](../../../docs/authoring/native-quest-template.md) and
+  `tools/quest_native_lifecycle.py`; supply content bindings and scene/world
+  contracts rather than copying GQ004's quest-specific generator.
 - Use `docs/reference/tool-catalog.md` explorer commands before loading full
   CR2W-JSON files into context.
 - Check `modding_docs` before guessing at Cyberpunk quest, scene, or journal

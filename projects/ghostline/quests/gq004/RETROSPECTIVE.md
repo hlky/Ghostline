@@ -106,6 +106,6 @@ The dated history remains here.
 | Earlier complete playable route, dialogue review, evidence levels | Adopted in the quest production workflow. |
 | Trigger, actor, transfer, reward, and cleanup lessons | Adopted in the scene, item, world, runtime-test, and packaging guidance. |
 | Preserve working voice artifacts locally | Six compiled model artifact bundles in a project-local ignored cache with a tracked hash inventory; existing checkpoints and native libraries remain in place. See the voice environment workflow. |
-| Generic native meeting/transfer/completion template | Proposed tooling work; GQ004 is a playtested reference implementation, not a newly extracted generic template. |
+| Generic native meeting/transfer/completion template | Extracted into shared lifecycle builders and the [native template](../../../../docs/authoring/native-quest-template.md), with exact seven-graph GQ004 parity and independent example bindings. New bindings still need runtime testing. |
 | Automatically generated dialogue walkthrough | Proposed tooling work; the current GQ004 walkthrough is maintained manually. |
 | Automated checks of final localization, embedded textures, and resolved item records | Proposed extensions to existing validators; documentation checks do not constitute implemented automation. |

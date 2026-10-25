@@ -7,7 +7,7 @@ import copy
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Mapping
+from typing import Callable, Mapping
 
 from artifact_io import publish_json_artifacts
 from ghostline_red import deserialize as native_deserialize
@@ -77,6 +77,7 @@ def _convert(
     raw: Path, candidate: Path, template: Path | None, *,
     serializer: str, wolvenkit: Path | None,
     red_cli: Path | None = None, schema_path: Path | None = None,
+    value_normalizer: Callable[[dict], dict] | None = None,
 ) -> None:
     """Require typed read-back parity; native layout loss triggers a fresh writer."""
     import json
@@ -84,6 +85,11 @@ def _convert(
     from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA, ensure_schema
 
     expected = json.loads(raw.read_text(encoding="utf-8"))
+    def compare(decoded, *, fresh_defaults=False):
+        left = value_normalizer(expected) if value_normalizer else expected
+        right = value_normalizer(decoded) if value_normalizer else decoded
+        return compare_documents(left, right, schema=schema,
+            **({'fresh_wolvenkit_defaults': right} if fresh_defaults else {}))
     schema_file = (
         ensure_schema(red_cli or DEFAULT_RED_CLI, schema_path or DEFAULT_RED_SCHEMA)
         if red_cli is not None or schema_path is not None else ensure_schema()
@@ -117,7 +123,7 @@ def _convert(
             native_deserialize(raw, candidate, template=template, **native_options)
             if candidate.is_file() and candidate.read_bytes()[:4] == b"CR2W":
                 decoded = read_back("native")
-                if compare_documents(expected, decoded, schema=schema).ok:
+                if compare(decoded).ok:
                     return
         except (subprocess.CalledProcessError, FileNotFoundError, RuntimeError, ValueError, KeyError):
             # Unsupported native layouts and failed semantic reads need the
@@ -132,9 +138,7 @@ def _convert(
     if not candidate.is_file() or candidate.read_bytes()[:4] != b"CR2W":
         raise RuntimeError(f"Missing or invalid WolvenKit CR2W output: {candidate}")
     decoded = read_back("wolvenkit")
-    comparison = compare_documents(
-        expected, decoded, schema=schema, fresh_wolvenkit_defaults=decoded,
-    )
+    comparison = compare(decoded, fresh_defaults=True)
     if not comparison.ok:
         details = "; ".join(item["path"] for item in comparison.errors[:8])
         raise RuntimeError(f"CR2W semantic verification failed for {candidate}: {details}")
@@ -150,6 +154,7 @@ def publish_build(
     serializer: str = "native", wolvenkit: Path | None = None,
     binary_assets: Mapping[Path, Path] | None = None,
     project_root: Path | None = None,
+    value_normalizers: Mapping[Path, Callable[[dict], dict]] | None = None,
 ) -> list[tuple[Path, Path]]:
     """Convert everything first, then publish raw/binary assets with rollback.
 
@@ -181,6 +186,7 @@ def publish_build(
     )
     binary_output: dict[Path, bytes] = {}
     templates = {path.resolve(): donor for path, donor in (binary_templates or {}).items()}
+    normalizers = {path.resolve(): fn for path, fn in (value_normalizers or {}).items()}
     if deserialize:
         for archive, source in (binary_assets or {}).items():
             destination = archive.resolve()
@@ -204,7 +210,8 @@ def publish_build(
                 publish_json_artifacts({raw: artifact.document})
                 original = _source_archive(target, output_root, project)
                 template = templates.get(original, original if original.is_file() else None)
-                _convert(raw, candidate, template, serializer=serializer, wolvenkit=wolvenkit)
+                options = {'value_normalizer': normalizers[original]} if original in normalizers else {}
+                _convert(raw, candidate, template, serializer=serializer, wolvenkit=wolvenkit, **options)
                 binary_output[target] = candidate.read_bytes()
     report = publish_json_artifacts(
         documents,

@@ -47,10 +47,11 @@ frameworks. Preserve the requested interaction, including whether it has a
 minigame. If native behavior cannot meet a requirement, record that concrete
 limitation and the fallback's lifecycle/dependencies.
 
-Use GQ004's [phases](../../projects/ghostline/quests/gq004/implementation/phases.py)
-and [dialogue flow](../../projects/ghostline/quests/gq004/implementation/DIALOGUE-FLOW.md)
-as evidence for its meeting, transfer, reward, and call patterns. Adapt ownership
-and facts deliberately; its quest-specific code is not a generic template API.
+For a meeting/transfer/reward route, use the extracted
+[native quest template](../authoring/native-quest-template.md). It supplies
+the shared lifecycle and an isolated preview builder with explicit integration
+contracts. GQ004's [dialogue flow](../../projects/ghostline/quests/gq004/implementation/DIALOGUE-FLOW.md)
+remains the story example; its shard/guard logic is quest-owned.
 
 ## Exercise transitions before presentation polish
 

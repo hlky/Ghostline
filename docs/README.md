@@ -33,6 +33,8 @@ under [`projects/ghostline/quests`](../projects/ghostline/quests/README.md).
 
 ## Authoring Guides
 
+- [Native meeting and personal-link quest template](authoring/native-quest-template.md) —
+  GQ004-derived meeting, interruptible transfers, verified reward and completion.
 - [Quest composition and complete builds](authoring/quest-composition.md) —
   shared declarations, recipes, preserved journal metadata, and scratch builds
   used by all ten active story/test quests.

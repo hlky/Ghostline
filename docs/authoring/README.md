@@ -2,6 +2,7 @@
 
 These guides own reusable construction rules:
 
+- [Native meeting and personal-link quest template](native-quest-template.md)
 - [Scenes](scenes.md)
 - [World resources and NodeRefs](world-resources.md)
 - [World asset discovery](world-assets.md)
