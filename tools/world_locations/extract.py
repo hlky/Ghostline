@@ -248,6 +248,14 @@ def _descriptor(
     if not isinstance(data, Mapping):
         return None
     node_type = str(unwrap(data.get("$type")) or "")
+    # Collision and other noncandidate nodes can contain enormous nested
+    # arrays. Reject their type before walking those arrays for resource/text.
+    if not any(
+        not rule.get("node_types")
+        or node_type.lower() in {str(kind).lower() for kind in rule["node_types"]}
+        for rule in rules
+    ):
+        return None
     resource = _resource_path(data)
     debug_name = _text(data.get("debugName"))
     appearance = _text(data.get("appearanceName")) or _text(data.get("meshAppearance"))
@@ -351,6 +359,7 @@ def extract_sector(
     instance_counters: dict[int, int] = {}
     corrections = list(config.get("orientation_corrections", []))
     version = str(config["extraction_rule_version"])
+    identity_version = str(config.get("feature_identity_version", version))
     for instance in _items(path, "Data.RootChunk.nodeData.Data.item"):
         if not isinstance(instance, Mapping):
             continue
@@ -411,7 +420,7 @@ def extract_sector(
             str(instance_id) if instance_id is not None else None,
             identity_transform,
             descriptor["rule_id"],
-            version,
+            identity_version,
         )
         metadata = dict(descriptor["metadata"])
         area_outline = metadata.get("area_outline", [])

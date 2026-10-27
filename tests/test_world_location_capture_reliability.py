@@ -30,6 +30,7 @@ from world_locations.protocol import (
     RuntimeProtocol,
     atomic_write_json,
     read_json,
+    exclusive_controller,
 )
 from world_locations.database import transaction
 from world_locations.extract import index_sectors
@@ -60,9 +61,11 @@ def ready_event(place, width=1920, height=1080):
                     "camera_attached",
                     "position_valid",
                     "position_stable",
-                    "ground_probe",
+                    "freefly_active",
                     "ui_suppressed",
                     "weapon_suppressed",
+                    "player_protected",
+                    "combat_clear",
                 ),
                 True,
             ),
@@ -79,7 +82,32 @@ def ready_event(place, width=1920, height=1080):
 PLACE = {f"requested_{axis}": 0.0 for axis in ("x", "y", "z", "yaw", "pitch", "roll")}
 
 
+class ControllerLockTests(unittest.TestCase):
+    def test_collision_is_rejected_and_exception_releases_lock(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "controller.lock"
+            with self.assertRaisesRegex(RuntimeError, "fixture abort"):
+                with exclusive_controller(path):
+                    with self.assertRaisesRegex(ProtocolError, "another capture controller"):
+                        with exclusive_controller(path):
+                            self.fail("second controller acquired an owned lock")
+                    raise RuntimeError("fixture abort")
+            with exclusive_controller(path):
+                self.assertTrue(path.exists())
+
+
 class ReadyEvidenceTests(unittest.TestCase):
+    def test_airborne_pose_requires_flight_and_preserves_requested_height(self):
+        airborne = {**PLACE, "requested_z": 100.0}
+        event = ready_event(airborne)
+        self.assertNotIn("ground_probe", event["readiness"])
+        self.assertTrue(validate_ready_event(event, airborne, {})["valid"])
+        event["readiness"]["freefly_active"] = False
+        self.assertFalse(validate_ready_event(event, airborne, {})["valid"])
+        event["readiness"]["freefly_active"] = True
+        event["effective_pose"]["z"] = event["actual_pose"]["z"] = 0.0
+        self.assertFalse(validate_ready_event(event, airborne, {})["valid"])
+
     def test_ui_weapon_display_frame_and_numeric_pose_are_enforced(self):
         for change in (
             "ui",
@@ -89,9 +117,13 @@ class ReadyEvidenceTests(unittest.TestCase):
             "nan",
             "distance",
             "redirected",
+            "player_protected",
+            "combat_clear",
         ):
             event = ready_event(PLACE)
-            if change == "ui":
+            if change in ("player_protected", "combat_clear"):
+                event["readiness"][change] = False
+            elif change == "ui":
                 event["readiness"]["ui_suppressed"] = False
             elif change == "weapon":
                 event["readiness"]["weapon_suppressed"] = False
@@ -313,6 +345,63 @@ class CapturePersistenceTests(unittest.TestCase):
 
         return Runtime()
 
+    def test_setup_failure_restores_and_stops_before_retry_or_queue_exhaustion(self):
+        controller = self.controller()
+        place = self.connection.execute("SELECT * FROM places LIMIT 1").fetchone()
+        controller.runtime = self.runtime(place)
+        controller.capture_config["maximum_attempts"] = 3
+        controller.runtime.wait_for_event = mock.Mock(
+            side_effect=ProtocolError("protection failed", code="capture_mode_failed")
+        )
+        with self.assertRaisesRegex(SessionProtocolError, "runtime is unhealthy"):
+            controller._capture_place("session-test", place)
+        self.assertFalse(controller.runtime.success)
+        self.assertEqual(controller.runtime.wait_for_event.call_count, 1)
+        status = self.connection.execute(
+            "SELECT queue_status FROM places WHERE location_id=?", (place["location_id"],)
+        ).fetchone()[0]
+        self.assertEqual(status, "in_progress")
+
+    def test_busy_or_old_runtime_cannot_clear_protocol_or_recover_queue(self):
+        controller = self.controller()
+        controller.runtime = mock.Mock(spec=RuntimeProtocol)
+        controller.runtime.root = self.root / "runtime"
+        controller.runtime.assert_runtime_alive.return_value = {
+            "stage": "idle", "capture_mode_active": False,
+        }
+        with mock.patch.object(capture, "recover_interrupted_queue") as recover:
+            with self.assertRaisesRegex(ProtocolError, "current protection runtime"):
+                controller.run(limit=1)
+        controller.runtime.prepare.assert_not_called()
+        recover.assert_not_called()
+
+    def test_consecutive_location_failures_continue_through_remaining_queue(self):
+        controller = self.controller()
+        row = dict(self.connection.execute("SELECT * FROM places LIMIT 1").fetchone())
+        row.pop("place_pk")
+        for index in range(6):
+            row["location_id"] = f"extra-fixture-{index}"
+            with transaction(self.connection):
+                self.connection.execute(
+                    f"INSERT INTO places({','.join(row)}) VALUES({','.join('?' for _ in row)})",
+                    list(row.values()),
+                )
+        controller.runtime = mock.Mock(spec=RuntimeProtocol)
+        controller.runtime.root = self.root / "runtime"
+        controller.runtime.assert_runtime_alive.return_value = {
+            "stage": "idle", "capture_mode_active": False,
+            "restoration_verified": True, "protection_contract_version": 1, "freefly_active": True,
+        }
+        controller._capture_place = mock.Mock(return_value=(False, "fixture"))
+        controller._restore = mock.Mock(return_value=True)
+        with mock.patch.object(capture, "refresh_session_publication"):
+            result = controller.run()
+        self.assertGreater(result["selected"], 5)
+        self.assertEqual(controller._capture_place.call_count, result["selected"])
+        self.assertEqual(result["failed"], result["selected"])
+        self.assertTrue(result["restoration_verified"])
+        controller._restore.assert_called_once()
+
     def test_rejected_blur_keeps_ready_pose_reason_and_image(self):
         from PIL import Image
 
@@ -502,6 +591,10 @@ class CapturePersistenceTests(unittest.TestCase):
         ).fetchall()
         selected = rows[0]
         controller.runtime.root = self.root / "runtime"
+        controller.runtime.assert_runtime_alive.return_value = {
+            "stage": "idle", "capture_mode_active": False,
+            "restoration_verified": True, "protection_contract_version": 1, "freefly_active": True,
+        }
         controller._restore = mock.Mock(return_value=True)
         controller._capture_place = mock.Mock(return_value=(False, "fixture"))
         with mock.patch.object(capture, "refresh_session_publication") as refresh:
@@ -546,20 +639,127 @@ state.command = {session_id='s', command_id='c',pose={},effective_pose={}}
 local build = up(update,'buildReadiness')
 local player = {IsAttached=function() return true end,GetFPPCameraComponent=function() return {GetFOV=function() return 80 end} end}
 Game = {GetPlayer=function() return player end,GetSystemRequestsHandler=function() return {IsPreGame=function() return false end} end}
+-- Accepted effect requests may become observable on a later update.
+local enter=up(up(update,'beginCaptureWhenGameplayIsReady'),'enterCaptureMode')
+local applyEffects=up(enter,'applyCaptureEffects')
+up(update,'config').restrictions={'GameplayRestriction.NoCombat'}
+TweakDB={GetRecord=function() return {} end}
+TweakDBID={new=function(value) return value end}
+Vector4={new=function(...) return {...} end}
+player.GetEntityID=function() return {hash='player'} end
+player.GetRecordID=function() return 'Player.Record' end
+local appliedCount=0
+local effectPresent=false
+local effectSystem={
+ HasStatusEffect=function() return effectPresent end,
+ ApplyStatusEffect=function(_,id,effect,record,instigator,count,direction,savable)
+  assert(effect=='GameplayRestriction.NoCombat','invulnerability must use GodMode only')
+  assert(count==1 and record=='Player.Record' and instigator.hash=='player' and savable==false)
+  appliedCount=appliedCount+1;return true
+ end,
+}
+Game.GetStatusEffectSystem=function() return effectSystem end
+local effects,effectError=applyEffects(player)
+assert(effects and not effectError and appliedCount==1,'accepted effect must wait for readiness')
+state.snapshot={effects=effects}
+local effectsReady=up(up(build,'uiIsSuppressed'),'effectsAreApplied')
+assert(not effectsReady(player),'unobserved effects must block readiness')
+effectPresent=true;assert(effectsReady(player))
+local cleanupEffects=up(up(up(update,'pollAck'),'restoreCaptureMode'),'restoreEffects')
+local removalRequests=0
+effectSystem.RemoveStatusEffect=function(_,id,effect,count)
+ assert(count==1);removalRequests=removalRequests+1;return true
+end
+assert(not cleanupEffects(player),'cleanup must await native effect disappearance')
+effectPresent=false
+assert(cleanupEffects(player) and removalRequests==1,'absent owned effects need no repeated removal')
+
+effectPresent=false
+effectSystem.ApplyStatusEffect=function() error('native application failure') end
+local _,nativeError=applyEffects(player)
+assert(nativeError:find('native application failure'),'retain native error diagnostics')
+state.snapshot=nil
 up(build,'getActualPose',function() return {x=0,y=0,z=0,yaw=0} end)
 up(build,'positionIsValid',function() return true,0,0 end)
 up(build,'playerPositionIsStable',function() return true,0,10,1 end)
 up(build,'runtimeLocation',function() return {} end)
-up(build,'groundProbe',function() return true,nil,'Static' end)
-up(build,'streamingIsComplete',function() return true,'ground' end)
 up(build,'getMenuOpen',function() return false end)
 up(build,'getPaused',function() return false end)
+-- Popup lifecycle flags do not prove pixels are visible.
+local realUi=up(build,'uiIsSuppressed')
+up(realUi,'settingsAreSuppressed',function() return true end)
+up(realUi,'effectsAreApplied',function() return true end)
+up(realUi,'hideCurrentWeapon',function() return true end)
+GetDisplayResolution=function() return 1920,1080 end
+local popupVisible=false
+state.popupControllers={test={GetRootWidget=function() return {IsVisible=function() return popupVisible end} end}}
+state.phonePresentationActive=true;state.notificationSuppressionActive=true
+assert(realUi(player),'hidden popup must not reject a clean frame because of lifecycle state')
+popupVisible=true;assert(realUi(player),'visible empty controller container is diagnostic, not proof of phone pixels')
+state.popupControllers={};state.phonePresentationActive=false
+local phoneMute=up(up(up(update,'pollAck'),'restoreCaptureMode'),'setPhoneMessageNotificationsHidden')
+local contactsActive=false
+Game.GetAllBlackboardDefs=function() return {UI_ComDevice={ContactsActive='contacts'}} end
+Game.GetBlackboardSystem=function() return {Get=function() return {
+ GetBool=function() return contactsActive end,
+ SetBool=function(_,key,value) contactsActive=value end,
+} end} end
+state.snapshot={}
+assert(phoneMute(true) and contactsActive==false,'suppression must not open contacts')
+assert(phoneMute(false) and contactsActive==false)
+state.snapshot=nil
+-- Flight can hold a pose without any collision/floor probe. It owns its
+-- protections; capture must never toggle or remove them.
+local flight={runtimeData={active=true,inGame=true,inMenu=false}}
+GetMod=function(name) assert(name=='freefly');return flight end
+gameGodModeType={Invulnerable='invulnerable'}
+local invisible,combat,invulnerable=true,false,true
+player.IsInvisible=function() return invisible end
+player.IsInCombat=function() return combat end
+Game.GetGodModeSystem=function() return {HasGodMode=function() return invulnerable end} end
+local maintain=up(build,'maintainProtection')
+assert(maintain(player))
+flight.runtimeData.active=false
+local protected,reason,fatal=maintain(player)
+assert(not protected and fatal and reason:find('Activate FreeFly'))
+flight.runtimeData.active=true
+invisible=false;assert(not maintain(player));invisible=true
+invulnerable=false;assert(not maintain(player));invulnerable=true
+assert(maintain(player))
+local combatClear=up(build,'combatIsClear')
+local preventionEnabled,heat=false,0
+state.snapshot={prevention={system={
+ IsSystemEnabled=function() return preventionEnabled end,
+ GetHeatStageAsInt=function() return heat end,
+}}}
+assert(combatClear(player))
+combat=true;assert(not combatClear(player));combat=false
+heat=1;assert(not combatClear(player));heat=0
+state.snapshot=nil
+up(build,'maintainProtection',function() return true end)
+up(build,'combatIsClear',function() return true end)
+local begin=up(update,'beginCaptureWhenGameplayIsReady')
+up(begin,'enterCaptureMode',function() return true end)
+up(begin,'effectsAreApplied',function() return true end)
+local teleports=0
+up(begin,'teleport',function() teleports=teleports+1;return true end)
+state.stage='preflight'
+up(begin,'maintainProtection',function() return false,'waiting',false end)
+begin();assert(teleports==0 and state.stage=='preflight','must wait for protection before teleport')
+up(begin,'maintainProtection',function() return true end)
+begin();assert(teleports==1 and state.stage=='waiting')
 up(build,'uiIsSuppressed',function() return false,1920,1080,true end)
 local _, ready = build(0.01)
 assert(ready == false,'UI-visible state must never arm')
 up(build,'uiIsSuppressed',function() return true,1920,1080,true end)
 _, ready = build(0.01)
 assert(ready == true)
+up(build,'combatIsClear',function() return false end)
+_,ready=build(0.01);assert(not ready,'combat must block readiness')
+up(build,'combatIsClear',function() return true end)
+up(build,'maintainProtection',function() return false end)
+_,ready=build(0.01);assert(not ready,'missing protection must block readiness')
+up(build,'maintainProtection',function() return true end)
 state.stage='armed'; state.readyEvidence={evidence={},actual={}}
 up(draw,'buildReadiness',function() return {},false,{} end)
 draw()
@@ -569,6 +769,21 @@ local restore = up(ack,'restoreCaptureMode')
 for _, name in ipairs({'restoreEffects','restoreWeapon','restoreControllers','setPhoneMessageNotificationsHidden','restorePrevention'}) do
     up(restore,name,function() return true end)
 end
+-- Return to the original point before releasing protection or restoring UI.
+local returnPosition={x=100,y=200,z=30}
+local currentPosition={x=0,y=0,z=0}
+player.GetWorldPosition=function() return currentPosition end
+local returnTeleports=0
+Game.GetTeleportationFacility=function() return {Teleport=function(_,entity,position,rotation)
+ returnTeleports=returnTeleports+1
+end} end
+state.active=true;state.snapshot={returnPosition=returnPosition,returnRotation={}}
+local returned=restore('return test')
+assert(not returned and returnTeleports==1)
+assert(state.lastRestoration.return_position==false)
+currentPosition=returnPosition
+returned=restore('return settled')
+assert(returned)
 up(restore,'restoreSettings',function() return false end)
 up(restore,'log',function(...) end)
 state.active=true;state.snapshot={}
@@ -577,7 +792,14 @@ assert(restored==false and state.snapshot~=nil,'failed restore must retain snaps
 up(restore,'restoreSettings',function() return true end)
 restored = restore('test recovery')
 assert(restored==true and state.snapshot==nil)
-state.command={session_id='s',command_id='c'};state.stage='ready';state.active=true
+up(restore,'restoreControllers',function() return false end)
+state.active=true;state.snapshot={}
+local released,cosmetic=restore('stale popup')
+assert(released and cosmetic.controllers==false and state.snapshot==nil,'cosmetic cleanup must not block release')
+assert(#state.cleanupWarnings==1)
+up(restore,'restoreControllers',function() return true end)
+
+state.command={session_id='s',command_id='c'};state.stage='ready';state.active=false
 up(ack,'readJson',function() return {schema_version=1,session_id='other',command_id='c',success=false} end)
 ack(); assert(state.stage=='ready','foreign ack must be ignored')
 up(ack,'readJson',function() return {schema_version=1,session_id='s',command_id='c',success=false} end)
@@ -585,10 +807,13 @@ up(ack,'restoreCaptureMode',function() return false,{settings=false} end)
 local completed
 up(ack,'writeEvent',function(kind,event) completed=event end)
 ack()
-assert(completed.restoration_verified==false and completed.restoration.settings==false)
+assert(completed==nil and state.stage=='ready','pending cleanup must not emit a premature negative completion')
+up(ack,'restoreCaptureMode',function() return true,{settings=true,effects=true} end)
+ack()
+assert(completed.restoration_verified==true and completed.restoration.effects==true)
 assert(state.stage=='idle' and state.command==nil)
 local heartbeat = up(update,'controllerHeartbeatIsAlive')
-state.captureSessionId='s';state.lastControllerHeartbeatUnix=nil
+state.active=true;state.captureSessionId='s';state.lastControllerHeartbeatUnix=nil
 up(heartbeat,'readJson',function() return {schema_version=1,session_id='s',unix_seconds=os.time()} end)
 assert(heartbeat()==true,'idle capture mode must retain its session heartbeat')
 local watchdogRestores=0
@@ -600,6 +825,21 @@ assert(watchdogRestores==1,'heartbeat loss between destinations must restore cap
 state.snapshot={}
 update(0.01)
 assert(watchdogRestores==2,'heartbeat loss must retry pending restoration snapshots')
+-- Final explicit restoration follows the same asynchronous barrier.
+up(update,'controllerHeartbeatIsAlive',function() return true end)
+up(update,'pollAck',function() end)
+up(update,'pollCommand',function() end)
+local cleanupComplete=false
+up(update,'restoreCaptureMode',function() return cleanupComplete,{return_position=cleanupComplete,effects=cleanupComplete} end)
+local restoreEvent=nil
+up(update,'writeEvent',function(kind,event) restoreEvent={kind=kind,event=event} end)
+state.stage='restoring';state.command={kind='restore',session_id='s',command_id='r'}
+state.active=false;state.snapshot=nil;state.heartbeatElapsed=0
+update(0.01)
+assert(restoreEvent==nil and state.stage=='restoring','final restore must await cleanup')
+cleanupComplete=true
+update(0.01)
+assert(restoreEvent.kind=='restored' and restoreEvent.event.restoration_verified and state.stage=='idle')
 print('CET state machine checks passed')
 """
         result = subprocess.run(

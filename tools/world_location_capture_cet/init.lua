@@ -30,6 +30,7 @@ local state = {
     hiddenWeapon = nil,
     restorationVerified = true,
     lastRestoration = {},
+    cleanupWarnings = {},
 }
 
 local function log(level, message)
@@ -240,7 +241,8 @@ end
 
 local function applyCaptureEffects(player)
     local snapshot = {}
-    local effects = { 'BaseStatusEffect.Invulnerable' }
+    -- Invulnerability is owned and verified through GodMode, not a stat buff.
+    local effects = {}
     for _, name in ipairs(config.restrictions or {}) do table.insert(effects, name) end
     local system = Game.GetStatusEffectSystem()
     if not system then return nil, 'status effect system unavailable' end
@@ -253,24 +255,22 @@ local function applyCaptureEffects(player)
             alreadyApplied = hasStatusEffect(player, effectName),
         })
     end
-    for index, effect in ipairs(snapshot) do
+    for _, effect in ipairs(snapshot) do
         if not effect.alreadyApplied then
-            local ok = pcall(function()
-                system:ApplyStatusEffect(player:GetEntityID(), TweakDBID.new(effect.name))
+            local ok, applied = pcall(function()
+                return system:ApplyStatusEffect(
+                    player:GetEntityID(), TweakDBID.new(effect.name),
+                    player:GetRecordID(), player:GetEntityID(), 1,
+                    Vector4.new(0, 0, 0, 0), false
+                )
             end)
-            if not ok or not hasStatusEffect(player, effect.name) then
-                for restoreIndex = 1, index - 1 do
-                    local prior = snapshot[restoreIndex]
-                    if not prior.alreadyApplied then
-                        pcall(function()
-                            system:RemoveStatusEffect(
-                                player:GetEntityID(), TweakDBID.new(prior.name)
-                            )
-                        end)
-                    end
-                end
-                return nil, 'failed to apply ' .. effect.name
+            if not ok or applied ~= true then
+                -- Caller retains this snapshot and verifies cleanup, including
+                -- the failing effect if Apply succeeded but verification failed.
+                return snapshot, 'failed to apply ' .. effect.name .. ': ' .. tostring(applied)
             end
+            -- Readiness verifies HasStatusEffect on subsequent updates. A native
+            -- accepted request need not be observable in the same Lua call.
         end
     end
     return snapshot, nil
@@ -291,15 +291,49 @@ local function restoreEffects(player)
     if not system then return false end
     local restored = true
     for _, effect in ipairs(state.snapshot.effects) do
-        if not effect.alreadyApplied then
+        if not effect.alreadyApplied and hasStatusEffect(player, effect.name) then
             local removed = pcall(function()
-                system:RemoveStatusEffect(player:GetEntityID(), TweakDBID.new(effect.name))
+                system:RemoveStatusEffect(player:GetEntityID(), TweakDBID.new(effect.name), 1)
             end)
             if not removed then restored = false end
         end
         if hasStatusEffect(player, effect.name) ~= effect.alreadyApplied then restored = false end
     end
     return restored
+end
+
+-- FreeFly owns flight, invulnerability and AI invisibility. Capture only
+-- verifies them; it never toggles flight or removes FreeFly's protections.
+local function freeflyIsActive()
+    local ok, mod = pcall(function() return GetMod('freefly') end)
+    return ok and mod ~= nil and mod.runtimeData ~= nil
+        and mod.runtimeData.active == true and mod.runtimeData.inGame == true
+        and mod.runtimeData.inMenu ~= true
+end
+
+local function maintainProtection(player)
+    if not freeflyIsActive() then return false, 'Activate FreeFly before starting capture', true end
+    if not player then return false, 'player unavailable', true end
+    local ok, protected = pcall(function()
+        local prevention = state.snapshot and state.snapshot.prevention
+        if prevention and prevention.system:IsSystemEnabled() then
+            prevention.system:TogglePreventionSystem(false)
+        end
+        return Game.GetGodModeSystem():HasGodMode(player:GetEntityID(), gameGodModeType.Invulnerable)
+            and player:IsInvisible()
+    end)
+    if not ok then return false, tostring(protected), true end
+    return protected == true, protected and nil or 'waiting for FreeFly scouting protections', false
+end
+
+local function combatIsClear(player)
+    local ok, clear = pcall(function()
+        local prevention = state.snapshot and state.snapshot.prevention
+        return player:IsInCombat() == false
+            and prevention ~= nil and prevention.system:IsSystemEnabled() == false
+            and prevention.system:GetHeatStageAsInt() == 0
+    end)
+    return ok and clear == true
 end
 
 local function snapshotPrevention()
@@ -396,7 +430,12 @@ local function rememberPopupController(controller)
 end
 
 local function forgetPopupController(controller)
-    if controller then state.popupControllers[tostring(controller)] = nil end
+    if controller then
+        local key = tostring(controller)
+        state.popupControllers[key] = nil
+        -- A destroyed popup has no visible state left to restore.
+        state.hiddenControllers[key] = nil
+    end
 end
 
 local function suppressPopupController(controller)
@@ -412,7 +451,9 @@ local function setPhoneMessageNotificationsHidden(hidden)
         if state.snapshot and state.snapshot.contactsActive == nil then
             state.snapshot.contactsActive = board:GetBool(definitions.UI_ComDevice.ContactsActive)
         end
-        local value = hidden
+        -- ContactsActive=true opens the phone dialer. Never use that flag as
+        -- a notification mute; capture closes contacts and hides popup roots.
+        local value = false
         if not hidden and state.snapshot and state.snapshot.contactsActive ~= nil then
             value = state.snapshot.contactsActive
         end
@@ -482,7 +523,28 @@ local function restoreCaptureMode(reason)
     if not state.active and not state.snapshot then
         return state.restorationVerified, state.lastRestoration
     end
-    local player = Game.GetPlayer()
+    local player = state.snapshot and state.snapshot.player or Game.GetPlayer()
+    -- Keep V protected until back at the original position and all other
+    -- cleanup has completed. A rejected border/hostile capture is not a safe
+    -- place to hand control back to the player.
+    state.active = false
+    if state.snapshot then maintainProtection(player) end
+    if state.snapshot and state.snapshot.returnPosition then
+        local saved = state.snapshot
+        local ok, returned = pcall(function()
+            local current = player:GetWorldPosition()
+            local target = saved.returnPosition
+            local distance = math.sqrt((current.x-target.x)^2 + (current.y-target.y)^2 + (current.z-target.z)^2)
+            if distance <= 0.5 then return true end
+            Game.GetTeleportationFacility():Teleport(player, target, saved.returnRotation)
+            return false -- verify the native teleport on a later update
+        end)
+        if not ok or not returned then
+            state.restorationVerified = false
+            state.lastRestoration = { return_position = false, protection_retained = true }
+            return false, state.lastRestoration
+        end
+    end
     local effectsRestored = restoreEffects(player)
     local weaponRestored = restoreWeapon()
     local controllersRestored = restoreControllers()
@@ -492,6 +554,7 @@ local function restoreCaptureMode(reason)
         controllers = controllersRestored,
         phone_notifications = phoneNotificationsRestored,
         effects = effectsRestored,
+        return_position = true,
         settings = restoreSettings(),
         prevention = restorePrevention(),
         camera = true,
@@ -517,10 +580,23 @@ local function restoreCaptureMode(reason)
     state.active = false
     state.phonePresentationActive = false
     state.notificationSuppressionActive = false
-    log('info', 'capture mode restored: ' .. tostring(reason))
     local restored = true
-    for _, value in pairs(verification) do
-        if value ~= true then restored = false end
+    for key, value in pairs(verification) do
+        -- Popup widgets can be destroyed while teleporting. Their restoration
+        -- is cosmetic and must not block the queue or retain player GodMode.
+        if key ~= 'controllers' and value ~= true then restored = false end
+    end
+    state.cleanupWarnings = controllersRestored and {} or { 'popup widget restoration incomplete' }
+    -- Releasing GodMode/AI invisibility is the last cleanup step.
+    verification.protection = true -- FreeFly remains enabled and owns its protections.
+    restored = restored and verification.protection
+    if restored or state.restorationVerified ~= restored then
+        log(restored and 'info' or 'warning',
+            (restored and 'capture mode restored: ' or 'capture restoration pending: ') .. tostring(reason))
+    end
+    if restored and not controllersRestored then
+        log('warning', 'critical capture state restored; popup widget cleanup incomplete')
+        state.hiddenControllers = {}
     end
     state.restorationVerified = restored
     state.lastRestoration = verification
@@ -532,13 +608,26 @@ local function restoreCaptureMode(reason)
 end
 
 local function enterCaptureMode(profile)
-    if state.active then return setProfile(profile) end
+    if state.active then
+        local _, reason, fatal = maintainProtection(Game.GetPlayer())
+        if fatal then return false, reason end
+        return setProfile(profile)
+    end
     if state.snapshot or not state.restorationVerified then
         return false, 'previous capture restoration is not verified'
     end
     local player = Game.GetPlayer()
     if not player or not player:IsAttached() then return false, 'player is not attached' end
-    state.snapshot = {}
+    state.snapshot = { player = player }
+    local returnOk, returnError = pcall(function()
+        local position = player:GetWorldPosition()
+        state.snapshot.returnPosition = Vector4.new(position.x, position.y, position.z, 1)
+        state.snapshot.returnRotation = Quaternion.ToEulerAngles(player:GetWorldOrientation())
+    end)
+    if not returnOk then
+        state.snapshot = nil
+        return false, 'could not snapshot return position: ' .. tostring(returnError)
+    end
     local settings, settingsError = snapshotAndDisableSettings()
     if not settings then
         state.snapshot = nil
@@ -549,6 +638,21 @@ local function enterCaptureMode(profile)
     state.snapshot.effects = effects
     state.snapshot.prevention = snapshotPrevention()
     state.active = true
+    -- Keep partial setup in the restoration snapshot even when setup fails.
+    if effectsError or not effects then
+        restoreCaptureMode('status effect setup failed')
+        return false, effectsError
+    end
+    local protectionOk, protectionError = pcall(function()
+        local protected, reason, fatal = maintainProtection(player)
+        if fatal then error(reason) end
+        if not protected then log('info', 'protection setup accepted: ' .. tostring(reason)) end
+        if not state.snapshot.prevention then error('prevention system unavailable') end
+    end)
+    if not protectionOk then
+        restoreCaptureMode('protection setup failed')
+        return false, tostring(protectionError)
+    end
     dismissNotifications()
     local ok, profileError = setProfile(profile)
     if not ok then
@@ -620,69 +724,6 @@ local function playerPositionIsStable(position, frameDeltaSeconds)
         state.positionStableSeconds
 end
 
-local function raycast(from, to, collisionGroup)
-    local ok, success, result = pcall(function()
-        return Game.GetSpatialQueriesSystem():SyncRaycastByCollisionGroup(
-            from, to, collisionGroup, false, false
-        )
-    end)
-    if not ok or not success then return false, nil end
-    return true, result
-end
-
-local function groundProbe(position)
-    local from = Vector4.new(position.x, position.y, position.z + config.ground_probe_up_m, 1.0)
-    local to = Vector4.new(position.x, position.y, position.z - config.ground_probe_down_m, 1.0)
-    local groups = config.ground_probe_collision_groups or { 'Static', 'Terrain' }
-    for _, group in ipairs(groups) do
-        local success, result = raycast(from, to, group)
-        if success then return true, result, group end
-    end
-    return false, nil, nil
-end
-
-local function hitPosition(result)
-    if not result then return nil end
-    if result.position then return result.position end
-    if result.hitPosition then return result.hitPosition end
-    if result.worldPosition then return result.worldPosition end
-    return nil
-end
-
-local function resolvedGroundSurface(position)
-    local radius = tonumber(config.ground_probe_sample_radius_m or 0.35)
-    local offsets = {
-        { x = 0.0, y = 0.0 },
-        { x = radius, y = 0.0 },
-        { x = -radius, y = 0.0 },
-        { x = 0.0, y = radius },
-        { x = 0.0, y = -radius },
-    }
-    local hits = {}
-    for _, offset in ipairs(offsets) do
-        local sample = {
-            x = position.x + offset.x,
-            y = position.y + offset.y,
-            z = position.z,
-        }
-        local success, result, group = groundProbe(sample)
-        local hit = success and hitPosition(result) or nil
-        if hit then table.insert(hits, { z = hit.z, group = group }) end
-    end
-    if #hits == 0 then return false, nil, nil, 0 end
-    table.sort(hits, function(left, right) return left.z < right.z end)
-    local median = hits[math.floor((#hits + 1) / 2)]
-    return true, median.z, median.group, #hits
-end
-
-local function streamingIsComplete(groundReady, groundGroup)
-    -- Destination collision is the streaming fence.  Do not query an
-    -- undocumented GameOptions path here: missing options log an error on
-    -- every update even when the Lua call is protected with pcall.
-    return groundReady, groundGroup and ('downward ground probe: ' .. groundGroup)
-        or 'downward ground probe'
-end
-
 local function runtimeLocation()
     local result = {}
     pcall(function()
@@ -709,15 +750,27 @@ end
 local function uiIsSuppressed(player)
     local width, height = GetDisplayResolution()
     local weaponHidden = hideCurrentWeapon(player)
-    return settingsAreSuppressed()
-        and effectsAreApplied(player)
-        and state.notificationSuppressionActive
-        and not state.phonePresentationActive
-        and not state.overlayOpen
-        and weaponHidden
-        and width == config.expected_width
-        and height == config.expected_height,
-        width, height, weaponHidden
+    local popupsHidden = true
+    for _, controller in pairs(state.popupControllers) do
+        local ok, hidden = pcall(function()
+            local widget = controller:GetRootWidget()
+            return widget == nil or not widget:IsVisible()
+        end)
+        if not ok or not hidden then popupsHidden = false end
+    end
+    local details = {
+        settings = settingsAreSuppressed(), effects = effectsAreApplied(player),
+        notifications = state.notificationSuppressionActive,
+        phone_clear = popupsHidden, overlay_closed = not state.overlayOpen,
+        weapon = weaponHidden, resolution = width == config.expected_width and height == config.expected_height,
+    }
+    local suppressed = true
+    -- A phone controller's container can be visible with no phone pixels.
+    -- Keep this diagnostic, but gate on HUD settings and active suppression.
+    for key, value in pairs(details) do
+        if key ~= 'phone_clear' and value ~= true then suppressed = false end
+    end
+    return suppressed, width, height, weaponHidden, details
 end
 
 local function buildReadiness(delta)
@@ -734,12 +787,17 @@ local function buildReadiness(delta)
     for key, value in pairs(observedLocation) do
         if value ~= nil and value ~= '' then state.runtimeLocation[key] = value end
     end
-    local groundReady, _, groundGroup = groundProbe(actual)
-    local streamingComplete, streamingSource = streamingIsComplete(groundReady, groundGroup)
+    local flightActive = freeflyIsActive()
+    -- There is deliberately no floor/collision fence in flight. The Python
+    -- controller checks advancing rendered frames and visual settling next.
+    local streamingComplete = attached and flightActive and positionValid and stable
+    local streamingSource = 'stationary FreeFly pose; rendered frames settle in controller'
     state.menuOpen = getMenuOpen()
     local paused = getPaused()
-    local uiSuppressed, width, height, weaponHidden = uiIsSuppressed(player)
+    local uiSuppressed, width, height, weaponHidden, uiDetails = uiIsSuppressed(player)
     local cameraAttached = player:GetFPPCameraComponent() ~= nil
+    local protected, protectionError = maintainProtection(player)
+    local combatClear = combatIsClear(player)
     local evidence = {
         streaming_complete = streamingComplete,
         streaming_source = streamingSource,
@@ -748,6 +806,9 @@ local function buildReadiness(delta)
         paused = paused,
         player_attached = attached,
         camera_attached = cameraAttached,
+        player_protected = protected,
+        protection_detail = protectionError,
+        combat_clear = combatClear,
         position_valid = positionValid,
         position_delta_m = positionDelta,
         heading_delta_degrees = headingDelta,
@@ -755,16 +816,18 @@ local function buildReadiness(delta)
         position_frame_delta_m = frameDelta,
         position_stable_frames = stableFrames,
         position_stable_seconds = stableSeconds,
-        ground_probe = groundReady,
-        ground_probe_group = groundGroup,
+        freefly_active = flightActive,
+        placement_mode = 'freefly',
         ui_suppressed = uiSuppressed,
+        ui_details = uiDetails,
         weapon_suppressed = weaponHidden,
         display_width = width,
         display_height = height,
     }
     state.lastReadiness = evidence
     local ready = streamingComplete and not state.loadingScreen and not state.menuOpen and not paused
-        and attached and cameraAttached and positionValid and stable and groundReady and weaponHidden and uiSuppressed
+        and attached and cameraAttached and protected and combatClear
+        and positionValid and stable and flightActive and weaponHidden and uiSuppressed
     return evidence, ready, actual
 end
 
@@ -786,31 +849,6 @@ local function teleport(command)
     return true, nil
 end
 
-local function prepareGroundPose()
-    local command = state.command
-    if not command or command.ground_snap_complete then return true end
-    local success, groundZ, group, sampleCount = resolvedGroundSurface(command.effective_pose)
-    if not success then return false end
-
-    command.effective_pose = copyTable(command.pose)
-    command.effective_pose.z = groundZ + tonumber(config.ground_offset_m or 0.0)
-    command.ground_snap_complete = true
-    command.ground_snap_group = group
-    command.ground_snap_z = groundZ
-    command.ground_snap_sample_count = sampleCount
-    state.lastStabilityPosition = nil
-    state.positionStableFrames = 0
-    state.positionStableSeconds = 0.0
-
-    local teleported, teleportError = teleport(command)
-    if not teleported then
-        failCommand('ground_snap_teleport_failed', teleportError)
-    end
-    -- Readiness starts on the next update, after the corrected teleport has
-    -- actually been applied to the player.
-    return false
-end
-
 local function acceptCommand(command)
     if command.schema_version ~= 1 then
         state.command = command
@@ -824,13 +862,8 @@ local function acceptCommand(command)
     state.lastCommandId = command.command_id
     state.lastControllerHeartbeatUnix = nil
     if command.kind == 'restore' then
-        local restored, verification = restoreCaptureMode('controller request')
-        writeEvent('restored', {
-            restoration_verified = restored == true,
-            restoration = verification or {},
-        })
-        state.stage = 'idle'
-        state.command = nil
+        state.stage = 'restoring'
+        state.elapsed = 0
         return
     end
     if command.kind ~= 'capture' or type(command.pose) ~= 'table' or type(command.profile) ~= 'table' then
@@ -839,9 +872,6 @@ local function acceptCommand(command)
     end
     state.captureSessionId = command.session_id
     command.effective_pose = copyTable(command.pose)
-    command.ground_snap_complete = false
-    command.effective_pose.z = command.pose.z
-        + tonumber(config.ground_probe_staging_height_m or 3.0)
     state.lastStabilityPosition = nil
     state.positionStableFrames = 0
     state.positionStableSeconds = 0.0
@@ -883,11 +913,26 @@ local function beginCaptureWhenGameplayIsReady()
     if not attached or not requests or pregame then
         return
     end
+    if not freeflyIsActive() then
+        failCommand('capture_mode_failed', 'Activate FreeFly before starting capture')
+        return
+    end
     local entered, enterError = enterCaptureMode(state.command.profile)
     if not entered then
         failCommand('capture_mode_failed', enterError)
         return
     end
+    -- Do not teleport until accepted native protection/effect requests have
+    -- actually become observable. The controller bounds this preflight wait.
+    local protected, protectionDetail, protectionFatal = maintainProtection(player)
+    state.preflightEvidence.player_protected = protected
+    state.preflightEvidence.protection_detail = protectionDetail
+    state.preflightEvidence.effects_applied = effectsAreApplied(player)
+    if protectionFatal then
+        failCommand('capture_mode_failed', protectionDetail)
+        return
+    end
+    if not protected or not state.preflightEvidence.effects_applied then return end
     local teleported, teleportError = teleport(state.command)
     if not teleported then
         failCommand('teleport_failed', teleportError)
@@ -915,12 +960,20 @@ local function pollAck()
         or ack.command_id ~= state.command.command_id or type(ack.success) ~= 'boolean' then return end
     if ack.success ~= false and state.stage ~= 'ready' and state.stage ~= 'error' then return end
     local restored, verification = nil, nil
-    if ack.success == false then
+    local deferred = ack.success == false and state.active
+        and maintainProtection(Game.GetPlayer()) == true
+    if ack.success == false and not deferred then
         restored, verification = restoreCaptureMode('controller rejected capture')
+        -- Native effect removal can settle on a later update. Keep consuming
+        -- this same ack until cleanup is verified; Python bounds this barrier.
+        if not restored then return end
     end
     writeEvent('completed', {
         success = ack.success == true, detail = ack.detail or {},
         restoration_verified = restored, restoration = verification,
+        cleanup_warnings = state.cleanupWarnings,
+        cleanup_deferred = deferred,
+        protection_verified = deferred,
     })
     state.stage = 'idle'
     state.command = nil
@@ -954,6 +1007,12 @@ local function writeHeartbeat()
         timestamp = now(),
         unix_seconds = os.time(),
         capture_mode_active = state.active,
+        placement_mode = 'freefly',
+        freefly_active = freeflyIsActive(),
+        protection_contract_version = 1,
+        restoration_verified = state.restorationVerified and state.snapshot == nil,
+        restoration = state.lastRestoration,
+        cleanup_warnings = state.cleanupWarnings,
         session_id = state.command and state.command.session_id or nil,
         command_id = state.command and state.command.command_id or nil,
         stage = state.stage,
@@ -1063,7 +1122,7 @@ local function installObservers()
         Observe('PhoneMessagePopupGameController', 'SetTimeDilatation', function(controller, active)
             if state.active then
                 state.phonePresentationActive = active == true
-                if active then hideController(controller) end
+                if active then suppressPopupController(controller) end
             end
         end)
     end)
@@ -1098,9 +1157,27 @@ registerForEvent('onUpdate', function(delta)
         state.command = nil
         return
     end
-    if state.active then dismissNotifications() end
+    if state.active then
+        maintainProtection(Game.GetPlayer())
+        dismissNotifications()
+    end
     pollAck()
     pollCommand()
+    if state.stage == 'restoring' and state.command then
+        state.elapsed = state.elapsed + delta
+        local restored, verification = restoreCaptureMode('controller request')
+        -- Return teleport may need another update. Other final cleanup is
+        -- best effort and must not turn saved captures into a failed run.
+        if restored or not (verification and verification.return_position == false) or state.elapsed >= 2 then
+            writeEvent('restored', {
+                restoration_verified = restored == true, restoration = verification or {},
+                cleanup_warnings = state.cleanupWarnings,
+            })
+            state.stage = 'idle'
+            state.command = nil
+        end
+        return
+    end
     beginCaptureWhenGameplayIsReady()
     if state.stage == 'ready' and state.command then
         local evidence, ready, actual = buildReadiness(delta)
@@ -1110,19 +1187,18 @@ registerForEvent('onUpdate', function(delta)
     end
     if state.stage == 'waiting' and state.command then
         state.elapsed = state.elapsed + delta
-        if prepareGroundPose() then
-            local evidence, ready, actual = buildReadiness(delta)
-            if ready then
-                state.readyEvidence = { evidence = evidence, actual = actual }
-                state.stage = 'armed'
-            elseif state.elapsed >= tonumber(config.loading_timeout_seconds or 45) then
-                failCommand('streaming_timeout', json.encode(evidence))
-            end
+        local evidence, ready, actual = buildReadiness(delta)
+        if not evidence.freefly_active then
+            failCommand('capture_mode_failed', 'FreeFly must remain active throughout capture')
+        elseif ready then
+            state.readyEvidence = { evidence = evidence, actual = actual }
+            state.stage = 'armed'
+        elseif state.elapsed >= tonumber(config.pose_timeout_seconds or 5)
+            and not evidence.loading_screen and not evidence.menu_open and not evidence.paused
+            and (not evidence.position_valid or not evidence.position_stable) then
+            failCommand('pose_timeout', json.encode(evidence))
         elseif state.elapsed >= tonumber(config.loading_timeout_seconds or 45) then
-            failCommand('ground_snap_timeout', json.encode({
-                effective_pose = state.command.effective_pose,
-                ground_probe_groups = config.ground_probe_collision_groups,
-            }))
+            failCommand('streaming_timeout', json.encode(evidence))
         end
     end
 end)

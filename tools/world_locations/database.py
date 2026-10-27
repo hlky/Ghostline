@@ -437,7 +437,7 @@ def sector_is_current(
 
 
 def prepare_sector_feature_deletion(
-    connection: sqlite3.Connection, sector_id: int
+    connection: sqlite3.Connection, sector_id: int, feature_ids: tuple[str, ...] | None = None
 ) -> None:
     """Detach durable place history from replaceable features in one sector.
 
@@ -447,26 +447,38 @@ def prepare_sector_feature_deletion(
     fast-travel links must also be cleared before their feature-backed rows can
     cascade away; planning restores them from the refreshed feature set.
     """
+    if feature_ids is not None:
+        if not feature_ids:
+            return
+        if len(feature_ids) > 500:
+            for offset in range(0, len(feature_ids), 500):
+                prepare_sector_feature_deletion(connection, sector_id, feature_ids[offset:offset+500])
+            return
+    selector = "SELECT feature_id FROM features WHERE sector_id=?"
+    parameters = (sector_id,)
+    if feature_ids is not None:
+        selector += " AND feature_id IN (" + ",".join("?" for _ in feature_ids) + ")"
+        parameters = (sector_id, *feature_ids)
     connection.execute(
-        """UPDATE places SET nearest_fast_travel_id=NULL
+        f"""UPDATE places SET nearest_fast_travel_id=NULL
            WHERE nearest_fast_travel_id IN (
              SELECT fast_travel_id FROM fast_travel_points
              WHERE feature_id IN (
-               SELECT feature_id FROM features WHERE sector_id=?
+               {selector}
              )
            )""",
-        (sector_id,),
+        parameters,
     )
     connection.execute(
-        """UPDATE places SET anchor_feature_id=NULL
+        f"""UPDATE places SET anchor_feature_id=NULL
            WHERE anchor_feature_id IN (
-             SELECT feature_id FROM features WHERE sector_id=?
+             {selector}
            )
            AND EXISTS (
              SELECT 1 FROM capture_attempts
              WHERE capture_attempts.location_id=places.location_id
            )""",
-        (sector_id,),
+        parameters,
     )
 
 
@@ -507,8 +519,17 @@ def replace_sector(
             "SELECT sector_id FROM source_sectors WHERE relative_path=?",
             (relative_path,),
         ).fetchone()[0]
-        prepare_sector_feature_deletion(connection, sector_id)
-        connection.execute("DELETE FROM features WHERE sector_id=?", (sector_id,))
+        previous = {
+            row["feature_id"]: dict(row)
+            for row in connection.execute("SELECT * FROM features WHERE sector_id=?", (sector_id,))
+        }
+        incoming = {feature["feature_id"] for feature in features}
+        obsolete = previous.keys() - incoming
+        if obsolete:
+            prepare_sector_feature_deletion(connection, sector_id, tuple(obsolete))
+            connection.executemany(
+                "DELETE FROM features WHERE feature_id=?", ((value,) for value in obsolete),
+            )
         statement = """INSERT INTO features(
             feature_id,sector_id,source_sector,node_index,instance_index,instance_id,
             category,node_type,resource_path,debug_name,appearance,x,y,z,q_i,q_j,q_k,q_r,
@@ -523,7 +544,24 @@ def replace_sector(
         for feature in features:
             row = dict(feature)
             row["sector_id"] = sector_id
-            connection.execute(statement, row)
+            old = previous.get(row["feature_id"])
+            # Reuse identical extracted evidence during an additive classifier
+            # refresh. Deleting it cascades into the queue and needlessly
+            # rewrites FTS/R-tree indexes. Its original extraction provenance
+            # remains accurate; the sector records the new cache version.
+            if old is not None and all(
+                old[key] == value for key, value in row.items()
+                if key != "extraction_rule_version"
+            ):
+                continue
+            if old is None:
+                connection.execute(statement, row)
+            else:
+                fields = [key for key in row if key != "feature_id"]
+                connection.execute(
+                    "UPDATE features SET " + ",".join(f"{key}=:{key}" for key in fields)
+                    + " WHERE feature_id=:feature_id", row,
+                )
 
 
 def record_sector_error(

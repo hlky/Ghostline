@@ -1,5 +1,64 @@
 # In-Game World Location Database
 
+## Active Category Workspace (2026-10-27)
+
+The default configuration is now `tools/world-location-capture-roads-v1.json`.
+Its output is `converted/world-location-database/category-runs/roads-v1`.
+Only the `road` category may be planned/captured in this workspace. The launcher
+writes logs under that workspace's reports directory and accepts `-Category road`.
+
+The previous `full-world` directory is the archive: 2,099 captures and the original
+database remain at their existing paths. `ARCHIVED.json` records the database
+hash/counts and points to the successor. CLI write operations reject archived
+workspaces; status/export can still read them. The fresh database reused the
+world index but contains no old captures, attempts, sessions, or place overrides.
+
+The original 2,816 proxy-center road proposals remain disabled. Road geometry now
+comes from native `worldBendedMeshNode` instances with `isBendedRoad=true`:
+`deformationData[].W.xyz` supplies local centerline stations and `.Y.xyz` supplies
+longitudinal directions. Apply instance scale, quaternion rotation, then position
+to stations; directions receive scale/rotation only. The local `deformedBox`
+validates stations, with 0.25 m tolerance; it never substitutes for the curve.
+Positions interpolate adjacent baked stations by arc length. Headings interpolate
+their native directions. Each segment stays independent, so shared template
+meshes or nearby endpoints cannot create shortcuts through buildings. Metro/rail
+templates, malformed frames and stations outside their local envelope are excluded.
+
+The user confirmed the eight-view sample in game. The active workspace now enables
+broader road coverage with 250 m minimum separation across native segments, using
+3D distance and retaining opposing views together. Existing captured sample
+positions take priority and retain their capture history. The deformation method
+is approved; individual captures still require ordinary metadata/image review.
+Other categories and the old proxy proposals remain disabled.
+
+Run the expanded queue with FreeFly active and the CET overlay closed:
+
+```powershell
+.\tools\run_world_location_overnight.ps1 -Category road
+```
+
+`prepare-road-sample` can deliberately return to a small calibration queue. It
+rebuilds this derived road geometry from read-only sectors
+and enables four separated city-road positions, with opposing views at each.
+In sample mode, only `workspace.calibration_capture_road_ids` enter that queue;
+all eight views retain `needs_calibration` until reviewed in game. Replanning
+retains the sample selection. The native source sector, node, mesh and stable pair
+IDs accompany each view. Hazard exclusions remain in force.
+
+Activate FreeFly, close the CET overlay, then run:
+
+```powershell
+.\tools\run_world_location_road_sample.ps1
+```
+
+The sample manifest is `reports/road-calibration-sample.json` in `roads-v1`.
+`reports/road-deformation-build.json` records the decoded road count and rejected
+instances. To rebuild the sample deliberately (reads the whole sector collection):
+
+```powershell
+.venv\Scripts\python.exe -B tools/world_location_capture.py prepare-road-sample
+```
+
 The world-location pipeline turns the serialized Night City streaming sectors
 into deterministic in-game capture destinations. It keeps the serialized
 sectors read-only, processes one sector at a time, and stores searchable
@@ -159,6 +218,143 @@ classification cache. Stop any active capture session before running `index`
 with a new rule version, then run `plan` and inspect the category counts before
 starting another capture batch.
 
+`feature_identity_version` separately controls the identity salt for extracted
+features. It is pinned to `1.1.0` while the additive Fake Door classifiers refresh
+the extraction cache (`1.2.0` for regular doors, `1.3.0` for fake garage doors,
+and `1.4.0` for site surveys and the security-path correction).
+This preserves existing feature/location IDs and
+capture history. Deliberately change the identity version when old anchors must
+be replaced; coordinate, rotation, source identity, and classification-rule ID
+are already part of each feature's identity.
+
+### Fake Door retrofit surveys
+
+The `fake_door` family matches placed `worldEntityNode` instances of
+`single_door_decorative.ent`, `double_door_decorative.ent`, and
+`gate_decorative.ent` under `base/gameplay/devices/doors/final`. Native inspection
+confirms that the gate template contains a `FakeDoor` with garage/shutter and
+decorative gate appearances. Its separate `fake_garage_door_v1` classifier adds
+`fake-garage-door` tags and `door_kind: garage_gate` planning provenance while
+using the same pair IDs, offsets, and capture category. It excludes proxy meshes, functional doors,
+and quest-specific resources merely named "fake door". Each entity produces:
+
+- `outward`: 1.5 m along the door's transformed local +Y, facing outward;
+- `building`: 15 m along that same axis, facing back toward the doorway.
+
+Distances are configurable in `fake_door_rules`. Both views retain the source
+door height for direct FreeFly placement. Local +Y is the
+initial exterior-side convention; validate representative door appearances in
+the smoke batch and use `orientation_corrections` for reversed families. Ground
+readiness does not establish unobstructed façade visibility or retrofit suitability.
+
+These surveys bypass ordinary category/global spacing and do not contribute to
+sparse-road coverage, so neither their partner nor an existing ordinary capture
+can suppress them. Geographic queue ordering uses the common doorway anchor.
+The normal scope boundary still applies independently to each requested viewpoint.
+
+The views have distinct `location_id` values and a shared stable
+`capture_pair_id`. Planning provenance, captured JSON sidecars, and JSON/JSONL
+exports retain the pair ID, `capture_view` (`outward` or `building`, named `view`
+inside planning provenance), and reciprocal `paired_location_id`. Captioners
+should group by non-null `capture_pair_id`, then select the latest current capture
+for each of the two view labels. Retries keep
+that identity; a failed partner remains an incomplete pair rather than being
+silently substituted. Provenance also retains the door anchor, outward vector,
+offset distance, source node/instance identity, and orientation-review requirement.
+
+On an existing database, use `plan --category fake_door` after indexing to add or
+refresh only this family using the existing geographic metadata tables. This
+leaves every other category's queue and capture state unchanged, including legacy
+captures with retired anchors. A full `plan` intentionally reconciles all families
+and can disable historical locations that no longer match the current planner.
+
+```powershell
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py plan --category fake_door
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py capture --category fake_door --limit 20
+```
+
+The 2026-10-27 queue addition indexed all 16,256 sectors without errors and found
+7,633 decorative doors (5,434 single, 2,199 double). It planned 15,266 views:
+15,112 pending and 154 outside scope. The snapshot audit verified all 1,603 prior
+captures and the prior queue state were preserved. Total pending work became
+27,973 places, plus one interrupted place recovered automatically on capture.
+The audit and paired planning manifest are generated at
+`converted/world-location-database/full-world/reports/fake-door-queue-audit.json`
+and `fake-door-capture-pairs.jsonl` in the same directory. The manifest includes
+both planned views and their queue/scope states, including incomplete eligible
+pairs near the scope boundary. No in-game capture was started by this addition.
+
+The subsequent fake garage/gate addition found 271 `gate_decorative.ent`
+placements across 128 sectors and added 542 in-scope pending views. The combined
+family now contains 7,904 pairs, with 15,654 queued views and 154 outside scope.
+Total pending work is 28,515 places plus the interrupted place. Snapshot checks
+verified the 1,603 existing captures, existing pair IDs, and previous queue states;
+all unrelated location records remained unchanged. The pair manifest and audit
+above were refreshed with these garage/gate pairs.
+
+### Entrance, route, and installation surveys
+
+`site_survey_rules` adds paired views for these categories:
+
+| Category | Views | Initial placement |
+|---|---|---|
+| `intercom` | `entrance`, `approach` | 2 m and 12 m outward, facing the entrance |
+| `elevator` | `entrance`, `lobby` | 3 m outward, opposing headings |
+| `security_checkpoint` | `approach`, `reverse_approach` | Opposing sides, 6 m from the anchor |
+| `road_barrier` | `approach`, `reverse_approach` | Opposing sides, 8 m from the anchor |
+| `security_device` | `device_context`, `surroundings` | Opposing headings at a nearby ground reference |
+| `antenna` | `installation`, `surroundings` | Opposing headings at a nearby ground reference |
+
+Security indexing accepts the actual `gameplay/devices/security_systems/` path
+as well as the older singular and alternate paths. Checkpoint gates and lockers
+are classified separately before the broader security rule. Both classifications
+retain `ownership_risk`; capturing a device does not establish that it can be
+reused by a quest. Elevator doors, lift entities and floor terminals, intercoms,
+and traffic road-blockade entities have dedicated classifiers. Existing physical
+access-point antennas keep their source feature classification and original queue;
+the antenna survey also selects those resources for the additional context pair.
+
+Each family has a configurable 3D anchor-spacing pass, applied before producing
+both views. It never drops one partner alone or competes with other categories.
+Identical opposing ground viewpoints are deduplicated together. Captured survey
+representatives have preference when planning the same family again.
+
+Elevated installations use nearby calibrated workspots, parking, doors,
+fast-travel points, terminals, or utility devices as candidate floor references.
+The initial search is within 25 m horizontally and at most 30 m below the target.
+References must be at least 4 m away and at least twice the vertical separation
+away horizontally, avoiding a view directly underneath an overhead device.
+The source reference and target positions are retained in provenance. These are
+candidate floor heights; CET still resolves the actual local surface and gates
+capture readiness. No line-of-sight or accessibility verification is implied.
+Anchors without a suitable reference are omitted from the capture queue and
+reported in `reports/site-survey-ground-gaps.json`.
+
+```powershell
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py plan --category site_surveys
+# Or update one survey family:
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py plan --category security_device
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py capture --category security_device --limit 20
+```
+
+The scoped planning commands leave earlier capture families unchanged. The
+overnight launcher already captures these new pending locations without extra
+arguments. All survey pairs use the same `capture_pair_id`, `capture_view`, and
+`paired_location_id` sidecar/export fields as Fake Doors. Generated handoff
+manifests are `reports/site-capture-pairs.jsonl` for the new site families and
+`reports/capture-pairs.jsonl` for all paired families together. Their rows retain
+queue and scope status so captioners can identify incomplete pairs.
+
+The 2026-10-27 addition indexed 5,327 security devices and queued 7,846 new views:
+432 intercom, 440 elevator, 14 checkpoint, 6,324 security-device, 230 road-barrier,
+and 406 antenna views. Another 34 planned views were disabled by the scope
+boundary. Ground-reference gaps excluded 560 security and 10 antenna anchors;
+these remain in the index and the gap report for later review. The snapshot audit
+at `reports/site-survey-queue-audit.json` verified all earlier location records
+and captures remained unchanged. Total pending work became 36,361 locations plus
+one interrupted location; the existing 1,603 captures were preserved. All 144
+world-location tests passed. No in-game capture was started.
+
 Capture eligibility is independent from extraction. Every matched feature is
 kept, while a feature is queued only when both `capture_enabled` and
 `calibrated` are true. A standard family rule establishes its normal forward
@@ -182,12 +378,9 @@ machines add 1 m clearance, loot containers add
 Candidates can define a category-specific 3D minimum separation. Vending
 machines use 10 m, while dense workspot, parking, shop, fast-travel, and road
 families use larger category-specific spacing before the global 10 m pass.
-CET resolves the final ground height at runtime from the median of five nearby
-downward collision probes, starts the player 0.3 m above that result, and lets
-normal physics settle onto the surface; it does not search laterally. Starting
-above the surface avoids the persistent camera blur triggered when an
-inconsistent collision probe places the player slightly below the true standing
-height.
+CET captures the planned XYZ directly with FreeFly enabled. It does not ground
+snap, stage above a surface, or require collision beneath the viewpoint. This
+preserves elevated building-facing and other aerial views.
 
 Road proxy nodes are grouped by their road-spline resource folder. That folder
 is treated as an independent branch; discontinuities become explicit branch
@@ -271,6 +464,7 @@ Prepare the game as follows:
 
 - load the dedicated free-roam capture save;
 - use first person;
+- activate the installed FreeFly mod before starting the batch and leave it active;
 - use borderless-windowed mode with a 1920×1080 client area;
 - close the CET overlay and disable Steam, Discord, driver, recording, or other
   overlays that could appear in the client rectangle;
@@ -288,25 +482,24 @@ changes. Capture mode remains active across the batch. It:
 - disables all Boolean HUD and subtitle settings in their settings groups;
 - clears onscreen/warning notification blackboards and hides observed phone,
   message, holocall, and generic-notification controllers;
-- applies invulnerability plus available no-combat, no-movement, no-phone,
-  no-scanning, and no-weapon-wheel restrictions;
+- requires FreeFly to be active and verifies its invulnerability/AI invisibility;
+- applies no-combat, no-movement, no-phone, no-scanning, and no-radial-menu restrictions;
 - hides the currently drawn weapon entity and blocks combat-driven drawing;
 - snapshots and suppresses prevention-system heat/escalation;
 - applies time and weather without writing live camera zoom or FOV state;
-- stages above the immutable world-derived pose, resolves the local ground
-  surface, and teleports to that effective height.
+- teleports directly to the immutable world-derived XYZ pose.
 
 For every destination, `ready` requires all of the following in the same game
 update:
 
-- the downward destination ground probe forms the streaming fence;
+- FreeFly is active, GodMode and AI invisibility are verified, V is out of combat, police
+  prevention is disabled, and heat is zero;
 - there is no loading screen, menu, pause, or CET overlay;
 - the player and first-person camera are attached in the destination world;
 - actual position meets the configured tolerance; heading drift is recorded as
   capture metadata but does not block the frame;
 - player position remains within the configured stability tolerance for the
   configured duration;
-- a downward static-or-terrain ground probe succeeds at the destination;
 - HUD, subtitle, notification, phone, weapon, and input restrictions are active;
 - `GetDisplayResolution()` reports exactly 1920×1080.
 
@@ -320,9 +513,38 @@ and the visual capture wait, including a window that never delivers a frame.
 Capture requires at least two advancing WGC presentation timestamps. CET keeps
 checking readiness while frames settle; an opened overlay, movement, loading
 screen, or other lost predicate rejects the attempt. Python independently
-checks UI/weapon suppression, display dimensions, finite pose values, and the
+checks protection/combat evidence, UI/weapon suppression, display dimensions, finite pose values, and the
 actual distance from the effective destination. Heading and FOV differences
 remain recorded diagnostics and do not reject a frame.
+
+The readiness/visual timeout is 45 seconds. An incorrect or moving flight pose
+has a separate 5-second timeout (`pose_timeout_seconds`). The stationary-pose
+predicate is followed by the existing rendered-frame settling interval; it does
+not claim that a floor collision proves streaming is complete. All three requested
+coordinates are immutable and checked independently by Python.
+
+Ordinary failed attempts retry while protected capture mode remains active.
+Final cleanup attempts to return to the starting pose and restore capture-owned
+HUD/settings/restrictions; incomplete final cleanup is a warning. FreeFly remains
+active, and its GodMode/AI invisibility are never removed by the capture runtime.
+Do not toggle FreeFly or move during a batch. The runtime checks flight on every
+update and before the draw that authorizes an image.
+
+Readiness includes `ui_details`; phone-container visibility is diagnostic only,
+because visible containers need not contain any visible phone pixels. Native
+Border Crossing and lethal-volume exclusions remain applied independently of
+flight. `-LocationId <id>` selects a smoke test without changing the queue.
+
+OS-owned exclusive locks protect both the runtime directory and queue database.
+A second controller fails before deleting protocol files or recovering interrupted
+rows; process termination releases locks automatically. Startup requires a fresh,
+idle, restored CET heartbeat advertising protection contract version 1, so an old
+loaded Lua runtime cannot consume the queue after files are updated.
+
+API signatures were checked against the installed REDmod
+`core/systems/godModeSystem.script` and `cyberpunk/player/player.script`.
+Native damage, hostile NPC/camera detection, and shutdown restoration still need
+a live smoke test after CET reload before the unattended run.
 
 Commands, events, and acknowledgements carry schema, session, and command IDs.
 Controller heartbeats identify the session; CET heartbeats identify the active
@@ -466,6 +688,59 @@ py -B .\tools\world_location_capture.py capture `
 Rebuild the report after captures or metadata changes; it is a static snapshot.
 
 ## Verification
+
+### Overnight launch
+
+Use the repository environment consistently; a system Python can import an
+unrelated installed `tests` package or lack the Windows capture backend.
+
+```powershell
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p 'test_world_location*.py' -q
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py preflight --game-root 'K:\Cyberpunk 2077'
+```
+
+`preflight` is read-only and returns exit code 1 for blockers. It checks imports,
+SQLite integrity, free space, installed bridge/configuration (with `--game-root`),
+the descriptor, a fresh idle CET heartbeat with capture mode inactive, and the
+1920×1080 game client. It does not establish that the loaded save is suitable,
+that every anchor is calibrated, or that a smoke batch has passed. Missing HUD
+templates are a warning: captures remain subject to UI review before publication.
+The disk check uses a 10 GiB startup floor, not a full-queue storage guarantee.
+
+The 2026-10-26 review found that the game moved from `H:` to `K:` and its bridge
+was disabled. The current bridge was installed at `K:\Cyberpunk 2077` and the
+descriptor updated; the previous `init.lua.disabled` was preserved. Reload CET
+mods or restart the game to load the installed bridge. Load the dedicated capture
+save, close overlays, and bind the emergency restore hotkey before the smoke batch:
+
+```powershell
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py capture --limit 20
+.\.venv\Scripts\python.exe -B tools/world_location_capture.py review --limit 50 --verify-files
+```
+
+Inspect the new images and restoration, then launch later with:
+
+```powershell
+.\tools\run_world_location_overnight.ps1
+# Optional bounded batch:
+.\tools\run_world_location_overnight.ps1 -Limit 1000
+```
+
+The launcher requires passing preflight and writes a timestamped combined log
+under the configured default `full-world/reports` directory. Run only one capture
+controller at a time. Capture prevents automatic system/display sleep for its
+duration, releases the request on exit, and returns a nonzero exit code when
+final restoration is unverified. Keep the desktop unlocked and the game in the
+foreground. Ctrl+C uses the controller's restoration path; force termination
+relies on CET's heartbeat watchdog. Resume with the same launcher; an interrupted
+destination is recovered automatically. Failed destinations remain failed until
+explicitly retried, and successful captures are preserved.
+
+At review time the queue contained 12,861 pending places, one interrupted place,
+161 failures, and 1,603 captures. Existing PNGs averaged 2.63 MiB, suggesting
+roughly 33 GiB for remaining originals, plus sidecars, thumbnails, rejected
+previews, and database growth. Free space was about 355 GiB. These are observations,
+not a completion-time or storage guarantee; the full queue may span several nights.
 
 Run the focused suite:
 

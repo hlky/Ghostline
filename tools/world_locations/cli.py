@@ -47,6 +47,8 @@ def _resolved_paths(
 
 
 def _materialize(paths: Mapping[str, Path], config: Mapping[str, Any]) -> None:
+    if (paths["root"] / "ARCHIVED.json").is_file() or (paths.get("database", paths["root"] / "locations.sqlite3").parent / "ARCHIVED.json").is_file():
+        raise CliError("This capture workspace is archived; use the fresh category workspace")
     for path in (
         paths["root"],
         paths["runtime"],
@@ -64,6 +66,8 @@ def _materialize(paths: Mapping[str, Path], config: Mapping[str, Any]) -> None:
 def _connection(
     args: argparse.Namespace, paths: Mapping[str, Path]
 ) -> sqlite3.Connection:
+    if (paths["root"] / "ARCHIVED.json").is_file() or (paths["database"].parent / "ARCHIVED.json").is_file():
+        raise CliError("This capture workspace is archived; use the fresh category workspace")
     return connect(paths["database"])
 
 
@@ -106,11 +110,66 @@ def command_index(
 def command_plan(
     args: argparse.Namespace, config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
+    active_category = config.get("workspace", {}).get("active_category")
+    if active_category and args.category and args.category != active_category:
+        raise CliError(f"This workspace plans one category: {active_category}")
     connection = _connection(args, paths)
     try:
         require_idle(connection)
         _materialize(paths, config)
-        return plan_locations(connection, config)
+        category = args.category or config.get("workspace", {}).get("active_category")
+        result = plan_locations(connection, config, category=category) if category else plan_locations(connection, config)
+        if "unresolved_ground_references" in result:
+            gaps = result.pop("unresolved_ground_references")
+            report = paths["reports"] / "site-survey-ground-gaps.json"
+            atomic_write_json(report, {"generated_at": utc_now(), "count": len(gaps), "anchors": gaps})
+            result["unresolved_ground_reference_count"] = len(gaps)
+            result["ground_gap_report"] = str(report)
+        return result
+    finally:
+        connection.close()
+
+
+def command_prepare_road_sample(
+    args: argparse.Namespace, config: dict[str, Any], paths: Mapping[str, Path],
+) -> dict[str, Any]:
+    from .road_geometry import rebuild_deformed_roads, select_calibration_roads
+
+    if config.get("workspace", {}).get("active_category") != "road":
+        raise CliError("Road sample preparation requires a road category workspace")
+    connection = _connection(args, paths)
+    try:
+        require_idle(connection)
+        _materialize(paths, config)
+        if args.reuse_geometry:
+            geometry = json.loads((paths["reports"] / "road-deformation-build.json").read_text(encoding="utf-8"))
+            methods = {json.loads(row[0]).get("geometry") for row in connection.execute("SELECT provenance_json FROM roads")}
+            if methods != {"bended_deformation_frames_v1"}:
+                raise CliError("Existing roads do not all have deformation geometry; omit --reuse-geometry")
+        else:
+            geometry = rebuild_deformed_roads(
+                connection, resolve_project_path(config["source_root"]), str(config["placement_rule_version"]),
+                progress=lambda current, total: print(f"[roads] {current}/{total} sectors", file=sys.stderr, flush=True),
+            )
+            atomic_write_json(paths["reports"] / "road-deformation-build.json", geometry)
+        selection = select_calibration_roads(connection, config)
+        config["road_rules"]["geometry_source"] = "bended_deformation"
+        config["workspace"]["require_road_calibration"] = True
+        config["workspace"]["calibration_capture_road_ids"] = selection
+        config["workspace"]["geometry_policy"] = "Native deformation frames; only the four-pair calibration sample is enabled"
+        result = plan_locations(connection, config, category="road")
+        sample = [dict(row) for row in connection.execute(
+            "SELECT location_id,road_id,direction,requested_x,requested_y,requested_z,requested_yaw,queue_status,provenance_json FROM places WHERE queue_status='pending' AND category='road' ORDER BY road_id,direction"
+        )]
+        if len(sample) != 8:
+            raise CliError(f"Expected eight in-scope sample views; got {len(sample)}. Inspect the deformation build report")
+        for view in sample:
+            view["provenance"] = json.loads(view.pop("provenance_json"))
+        manifest = {"generated_at": utc_now(), "geometry": geometry["geometry"], "views": sample}
+        atomic_write_json(paths["reports"] / "road-calibration-sample.json", manifest)
+        atomic_write_json(Path(config["_config_path"]), {k: v for k, v in config.items() if not k.startswith("_") and k != "hazard_rules"})
+        _materialize(paths, config)
+        return {**result, "derived_roads": geometry["roads"], "sample_views": len(sample), "manifest": str(paths["reports"] / "road-calibration-sample.json")}
     finally:
         connection.close()
 
@@ -128,6 +187,9 @@ def _runtime_from_descriptor(paths: Mapping[str, Path]) -> Path:
 def command_capture(
     args: argparse.Namespace, config: dict[str, Any], paths: Mapping[str, Path]
 ) -> dict[str, Any]:
+    active_category = config.get("workspace", {}).get("active_category")
+    if active_category and args.category and args.category != [active_category]:
+        raise CliError(f"This workspace captures one category: {active_category}")
     _materialize(paths, config)
     runtime = (
         Path(args.runtime).resolve()
@@ -147,9 +209,15 @@ def command_capture(
         selection = {}
         if args.location_id:
             selection["location_ids"] = args.location_id
-        if args.category:
-            selection["categories"] = args.category
-        return controller.run(limit=args.limit, **selection)
+        if args.category or active_category:
+            selection["categories"] = args.category or [active_category]
+        from .preflight import keep_awake
+
+        with keep_awake():
+            result = controller.run(limit=args.limit, **selection)
+        if not result["restoration_verified"]:
+            print("[capture] warning: final game cleanup incomplete; captures are retained", file=sys.stderr)
+        return result
     finally:
         connection.close()
 
@@ -172,6 +240,15 @@ def command_status(
         return result
     finally:
         connection.close()
+
+
+def command_preflight(
+    args: argparse.Namespace, config: dict[str, Any], paths: Mapping[str, Path]
+) -> dict[str, Any]:
+    from .preflight import check_preflight
+
+    runtime = Path(args.runtime).resolve() if args.runtime else _runtime_from_descriptor(paths)
+    return check_preflight(config, paths, runtime, game_root=args.game_root)
 
 
 def command_retry(
@@ -220,6 +297,9 @@ def command_export(
                 continue
             value = dict(row)
             sidecar = assessment["sidecar"]
+            value["capture_pair_id"] = sidecar.get("capture_pair_id")
+            value["capture_view"] = sidecar.get("capture_view", sidecar.get("anchor", {}).get("direction"))
+            value["paired_location_id"] = sidecar.get("paired_location_id")
             actual = sidecar.get("actual_pose", {})
             for axis in ("x", "y", "z", "yaw", "pitch", "roll"):
                 value[f"actual_{axis}"] = (
@@ -396,7 +476,14 @@ def create_parser() -> argparse.ArgumentParser:
     plan = commands.add_parser(
         "plan", help="Build deterministic object and road capture poses"
     )
+    from .site_surveys import SURVEY_CATEGORIES
+
+    plan.add_argument("--category", choices=["road", "fake_door", "site_surveys", *SURVEY_CATEGORIES], help="Update only the selected category using existing geographic metadata")
     plan.set_defaults(handler=command_plan)
+
+    road_sample = commands.add_parser("prepare-road-sample", help="Decode native road deformation and enable four calibration pairs")
+    road_sample.add_argument("--reuse-geometry", action="store_true", help="Reselect the sample from already decoded native roads")
+    road_sample.set_defaults(handler=command_prepare_road_sample)
 
     capture = commands.add_parser(
         "capture", help="Run or resume the CET-driven capture queue"
@@ -418,6 +505,11 @@ def create_parser() -> argparse.ArgumentParser:
         "status", help="Report index, queue, review, and capture counts"
     )
     status.set_defaults(handler=command_status)
+
+    preflight = commands.add_parser("preflight", help="Read-only overnight readiness checks")
+    preflight.add_argument("--runtime", type=Path)
+    preflight.add_argument("--game-root", type=Path, help="Also compare the installed CET bridge")
+    preflight.set_defaults(handler=command_preflight)
 
     retry = commands.add_parser(
         "retry", help="Requeue failures or selected location IDs"
@@ -479,4 +571,6 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     _print(result)
+    if args.command == "preflight" and not result["ready"]:
+        return 1
     return 0

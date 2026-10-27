@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "world-location-capture-v1.json"
+DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "world-location-capture-roads-v1.json"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -17,6 +17,9 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
     config = json.loads(selected.read_text(encoding="utf-8"))
     if config.get("schema_version") != 1:
         raise ValueError(f"unsupported config schema: {config.get('schema_version')!r}")
+    if config.get("hazard_exclusions_file") and "hazard_rules" not in config:
+        hazards = json.loads((selected.parent / config["hazard_exclusions_file"]).read_text(encoding="utf-8"))
+        config.update(hazards)
     validate_planning_config(config)
     config["_config_path"] = str(selected)
     return config
@@ -24,6 +27,8 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
 
 def validate_planning_config(config: Mapping[str, Any]) -> None:
     """Reject distances that cannot produce a finite, terminating capture plan."""
+    from .hazards import validate_hazard_rules
+    validate_hazard_rules(config)
     groups = {
         "road_rules": (
             "short_road_threshold_m",
@@ -31,10 +36,12 @@ def validate_planning_config(config: Mapping[str, Any]) -> None:
             "interval_m",
             "minimum_arc_separation_m",
             "minimum_straight_separation_m",
+            "global_minimum_separation_m",
         ),
         "sparse_road_rules": ("object_proximity_m", "minimum_separation_m"),
         "location_spacing_rules": ("minimum_separation_m",),
         "metadata_rules": ("runtime_area_fallback_m",),
+        "fake_door_rules": ("outward_distance_m", "building_distance_m"),
     }
     for group, fields in groups.items():
         for field in fields:
@@ -47,15 +54,37 @@ def validate_planning_config(config: Mapping[str, Any]) -> None:
                 raise ValueError(
                     f"{group}.{field} must be a finite distance"
                 ) from error
+            positive = field in ("interval_m", "outward_distance_m", "building_distance_m")
             if (
                 isinstance(value, bool)
                 or not math.isfinite(number)
                 or number < 0
-                or (field == "interval_m" and number == 0)
+                or (positive and number == 0)
             ):
                 raise ValueError(
-                    f"{group}.{field} must be finite and {'positive' if field == 'interval_m' else 'nonnegative'}"
+                    f"{group}.{field} must be finite and {'positive' if positive else 'nonnegative'}"
                 )
+    fake_doors = config.get("fake_door_rules", {})
+    if float(fake_doors.get("building_distance_m", 15)) <= float(fake_doors.get("outward_distance_m", 1.5)):
+        raise ValueError("fake_door_rules.building_distance_m must exceed outward_distance_m")
+    for category, profile in config.get("site_survey_rules", {}).items():
+        if profile.get("mode") not in {"detail_approach", "entrance_lobby", "two_sides", "ground_context"}:
+            raise ValueError(f"Unknown site survey mode for {category}")
+        labels = profile.get("view_labels", [])
+        if len(labels) != 2 or any(not isinstance(label, str) or not label.strip() for label in labels) or labels[0] == labels[1]:
+            raise ValueError(f"Site survey {category} needs two distinct view labels")
+        for field in ("near_distance_m", "far_distance_m", "minimum_anchor_separation_m", "minimum_ground_reference_distance_m", "maximum_ground_reference_distance_m", "maximum_ground_reference_drop_m", "ground_reference_height_ratio"):
+            value = profile.get(field, 0 if field == "minimum_anchor_separation_m" else 1)
+            try:
+                number = float(value)
+            except (TypeError, ValueError) as error:
+                raise ValueError(f"Invalid site survey distance: {category}.{field}") from error
+            if isinstance(value, bool) or not math.isfinite(number) or number < 0 or (number == 0 and field != "minimum_anchor_separation_m"):
+                raise ValueError(f"Invalid site survey distance: {category}.{field}")
+        if profile["mode"] == "detail_approach" and float(profile.get("far_distance_m", 12)) <= float(profile.get("near_distance_m", 3)):
+            raise ValueError(f"Site survey {category} far distance must exceed near distance")
+        if profile["mode"] == "ground_context" and float(profile.get("minimum_ground_reference_distance_m", 4)) > float(profile.get("maximum_ground_reference_distance_m", 25)):
+            raise ValueError(f"Site survey {category} ground-reference minimum exceeds maximum")
     for rule in config.get("classification_rules", ()):
         for field in (
             "front_extent_m",

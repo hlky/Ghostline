@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ctypes
+from contextlib import ExitStack
 from ctypes import wintypes
 import hashlib
 import json
@@ -24,7 +25,7 @@ from .capture_evidence import refresh_session_publication
 from .database import json_text, transaction, utc_now
 from .model import stable_id
 from .planning import REQUIRED_NAME_FIELDS, resolve_metadata
-from .protocol import ProtocolError, RuntimeProtocol, RuntimeTimeout, atomic_write_json
+from .protocol import ProtocolError, RuntimeProtocol, RuntimeTimeout, atomic_write_json, exclusive_controller
 
 
 class CaptureError(RuntimeError):
@@ -72,9 +73,11 @@ def validate_ready_event(
         "camera_attached",
         "position_valid",
         "position_stable",
-        "ground_probe",
+        "freefly_active",
         "ui_suppressed",
         "weapon_suppressed",
+        "player_protected",
+        "combat_clear",
     )
     errors = [
         f"readiness predicate is false: {name}"
@@ -139,11 +142,11 @@ def validate_ready_event(
                 abs_tol=1e-6,
                 rel_tol=0,
             )
-            for axis in ("x", "y")
+            for axis in ("x", "y", "z")
         ):
-            errors.append("runtime changed the requested horizontal destination")
+            errors.append("runtime changed the requested destination")
     except (KeyError, TypeError, ValueError):
-        errors.append("effective horizontal destination is invalid")
+        errors.append("effective destination is invalid")
     expected_fov = capture_config.get("profile", {}).get("fov")
     actual_fov = event.get("actual_fov")
     if expected_fov is not None:
@@ -177,6 +180,30 @@ class GameWindow:
         self.process_name = process_name.lower()
         self.user32 = ctypes.windll.user32
         self.kernel32 = ctypes.windll.kernel32
+        # ctypes defaults to C int, which truncates 64-bit Windows handles.
+        self.kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        self.kernel32.OpenProcess.restype = wintypes.HANDLE
+        self.kernel32.QueryFullProcessImageNameW.argtypes = [
+            wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR,
+            ctypes.POINTER(wintypes.DWORD),
+        ]
+        self.kernel32.QueryFullProcessImageNameW.restype = wintypes.BOOL
+        self.kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        self.kernel32.CloseHandle.restype = wintypes.BOOL
+        self.user32.GetClientRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+        self.user32.GetClientRect.restype = wintypes.BOOL
+        self.user32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.POINT)]
+        self.user32.ClientToScreen.restype = wintypes.BOOL
+        self.user32.GetWindowTextLengthW.argtypes = [wintypes.HWND]
+        self.user32.GetWindowTextLengthW.restype = ctypes.c_int
+        self.user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+        self.user32.GetWindowTextW.restype = ctypes.c_int
+        self.user32.IsWindowVisible.argtypes = [wintypes.HWND]
+        self.user32.IsWindowVisible.restype = wintypes.BOOL
+        self.user32.GetWindowThreadProcessId.argtypes = [
+            wintypes.HWND, ctypes.POINTER(wintypes.DWORD),
+        ]
+        self.user32.GetWindowThreadProcessId.restype = wintypes.DWORD
 
     def _process_matches(self, hwnd: int) -> bool:
         process_id = wintypes.DWORD()
@@ -728,7 +755,10 @@ class CaptureController:
                 f"CET completed command {command_id} with success={event.get('success')!r}; "
                 f"expected {expected_success!r}"
             )
-        if not expected_success and event.get("restoration_verified") is not True:
+        for warning in event.get("cleanup_warnings", []):
+            print(f"[capture] cleanup warning: {warning}", file=sys.stderr, flush=True)
+        protected_retry = event.get("cleanup_deferred") is True and event.get("protection_verified") is True
+        if not expected_success and not protected_retry and event.get("restoration_verified") is not True:
             raise SessionProtocolError(
                 f"CET did not verify restoration after rejecting {command_id}; aborting retry: "
                 f"{event.get('restoration', {})}"
@@ -1126,6 +1156,10 @@ class CaptureController:
                     command_id=command_id,
                     expected_success=False,
                 )
+                if last_code in {"capture_mode_failed", "controller_heartbeat_lost"}:
+                    raise SessionProtocolError(
+                        f"capture runtime is unhealthy; queue preserved: {last_error}"
+                    ) from error
             finally:
                 # Validation, image encoding, writes, and both acknowledgement
                 # paths are still part of the active CET command lifecycle.
@@ -1156,6 +1190,8 @@ class CaptureController:
                 timeout_seconds=5.0,
                 session_id=session_id,
             )
+            for warning in event.get("cleanup_warnings", []):
+                print(f"[capture] cleanup warning: {warning}", file=sys.stderr, flush=True)
             return event.get("restoration_verified") is True
         except (OSError, ProtocolError):
             return False
@@ -1216,95 +1252,110 @@ class CaptureController:
                 "failed": 0,
                 "restoration_verified": True,
             }
-        maximum_age = float(self.capture_config.get("heartbeat_timeout_seconds", 5.0))
-        self.runtime.assert_runtime_alive(maximum_age_seconds=maximum_age)
-        self.runtime.prepare()
-        recover_interrupted_queue(self.connection)
-        places = self.connection.execute(query, parameters).fetchall()
-        session_id = f"session_{uuid.uuid4().hex}"
-        with transaction(self.connection):
-            self.connection.execute(
-                """INSERT INTO capture_sessions(session_id,game_profile,capture_profile_json,
-                       runtime_path,started_at,status) VALUES(?,?,?,?,?,'running')""",
-                (
-                    session_id,
-                    self.game_profile,
-                    json_text(self.capture_config["profile"]),
-                    str(self.runtime.root),
-                    utc_now(),
-                ),
-            )
-        captured = 0
-        failed = 0
-        fatal_error: str | None = None
-        progress_started = time.monotonic()
-        progress_width = 0
-
-        def show_progress(
-            completed: int, activity: str, *, final: bool = False
-        ) -> None:
-            nonlocal progress_width
-            total = len(places)
-            elapsed = time.monotonic() - progress_started
-            percent = (completed / total * 100.0) if total else 100.0
-            eta = (
-                elapsed / completed * (total - completed)
-                if completed and completed < total
-                else 0.0
-            )
-            line = (
-                f"[capture] {completed}/{total} ({percent:5.1f}%) "
-                f"captured={captured} failed={failed} "
-                f"elapsed={elapsed:.1f}s eta={eta:.1f}s | {activity}"
-            )
-            if sys.stderr.isatty():
-                progress_width = max(progress_width, len(line))
-                print(
-                    "\r" + line.ljust(progress_width),
-                    end="\n" if final else "",
-                    file=sys.stderr,
-                    flush=True,
+        with ExitStack() as locks:
+            locks.enter_context(exclusive_controller(self.runtime.root / "controller.lock"))
+            database_path = self.connection.execute("PRAGMA database_list").fetchone()[2]
+            if database_path:
+                locks.enter_context(exclusive_controller(Path(database_path + ".capture.lock")))
+            maximum_age = float(self.capture_config.get("heartbeat_timeout_seconds", 5.0))
+            heartbeat = self.runtime.assert_runtime_alive(maximum_age_seconds=maximum_age)
+            if (
+                heartbeat.get("stage") != "idle"
+                or heartbeat.get("capture_mode_active") is not False
+                or heartbeat.get("restoration_verified") is not True
+                or heartbeat.get("protection_contract_version") != 1
+                or heartbeat.get("freefly_active") is not True
+            ):
+                raise ProtocolError(
+                    "CET must be idle, restored, and running the current protection runtime; reload CET and check its heartbeat"
                 )
-            else:
-                print(line, file=sys.stderr, flush=True)
-
-        try:
-            for index, place in enumerate(places, start=1):
-                show_progress(
-                    index - 1,
-                    f"capturing {index}/{len(places)} {place['location_id']}",
-                )
-                success, _detail = self._capture_place(session_id, place)
-                captured += int(success)
-                failed += int(not success)
-        except BaseException as error:
-            fatal_error = f"{type(error).__name__}: {error}"
-            raise
-        finally:
-            show_progress(captured + failed, "restoring game state")
-            restored = self._restore(session_id)
+            self.runtime.prepare()
+            recover_interrupted_queue(self.connection)
+            places = self.connection.execute(query, parameters).fetchall()
+            session_id = f"session_{uuid.uuid4().hex}"
             with transaction(self.connection):
                 self.connection.execute(
-                    """UPDATE capture_sessions SET ended_at=?,status=?,restoration_verified=?,error=?
-                       WHERE session_id=?""",
+                    """INSERT INTO capture_sessions(session_id,game_profile,capture_profile_json,
+                           runtime_path,started_at,status) VALUES(?,?,?,?,?,'running')""",
                     (
-                        utc_now(),
-                        "completed" if restored and fatal_error is None else "error",
-                        int(restored),
-                        fatal_error,
                         session_id,
+                        self.game_profile,
+                        json_text(self.capture_config["profile"]),
+                        str(self.runtime.root),
+                        utc_now(),
                     ),
                 )
-            refresh_session_publication(self.connection, session_id)
-            show_progress(
-                captured + failed,
-                "complete" if restored else "complete; restoration not verified",
-                final=True,
-            )
-        return {
-            "session_id": session_id,
-            "selected": len(places),
-            "captured": captured,
-            "failed": failed,
-            "restoration_verified": restored,
-        }
+            captured = 0
+            failed = 0
+            fatal_error: str | None = None
+            progress_started = time.monotonic()
+            progress_width = 0
+
+            def show_progress(
+                completed: int, activity: str, *, final: bool = False
+            ) -> None:
+                nonlocal progress_width
+                total = len(places)
+                elapsed = time.monotonic() - progress_started
+                percent = (completed / total * 100.0) if total else 100.0
+                eta = (
+                    elapsed / completed * (total - completed)
+                    if completed and completed < total
+                    else 0.0
+                )
+                line = (
+                    f"[capture] {completed}/{total} ({percent:5.1f}%) "
+                    f"captured={captured} failed={failed} "
+                    f"elapsed={elapsed:.1f}s eta={eta:.1f}s | {activity}"
+                )
+                if sys.stderr.isatty():
+                    progress_width = max(progress_width, len(line))
+                    print(
+                        "\r" + line.ljust(progress_width),
+                        end="\n" if final else "",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                else:
+                    print(line, file=sys.stderr, flush=True)
+
+            try:
+                for index, place in enumerate(places, start=1):
+                    show_progress(
+                        index - 1,
+                        f"capturing {index}/{len(places)} {place['location_id']}",
+                    )
+                    success, _detail = self._capture_place(session_id, place)
+                    captured += int(success)
+                    failed += int(not success)
+            except BaseException as error:
+                fatal_error = f"{type(error).__name__}: {error}"
+                raise
+            finally:
+                show_progress(captured + failed, "restoring game state")
+                restored = self._restore(session_id)
+                with transaction(self.connection):
+                    self.connection.execute(
+                        """UPDATE capture_sessions SET ended_at=?,status=?,restoration_verified=?,error=?
+                           WHERE session_id=?""",
+                        (
+                            utc_now(),
+                            "completed" if restored and fatal_error is None else "error",
+                            int(restored),
+                            fatal_error,
+                            session_id,
+                        ),
+                    )
+                refresh_session_publication(self.connection, session_id)
+                show_progress(
+                    captured + failed,
+                    "complete" if restored else "complete; restoration not verified",
+                    final=True,
+                )
+            return {
+                "session_id": session_id,
+                "selected": len(places),
+                "captured": captured,
+                "failed": failed,
+                "restoration_verified": restored,
+            }

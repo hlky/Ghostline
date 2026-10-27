@@ -204,6 +204,7 @@ class GeometryTests(unittest.TestCase):
 
     def test_q000_border_rule_separates_outside_from_night_city(self) -> None:
         config = load_config()
+        config["hazard_rules"] = []  # Test the original half-plane independently.
         outside = evaluate_scope(
             Vec3(-2845.607666015625, -5675.216796875, 100.12057495117188),
             config,
@@ -232,7 +233,9 @@ class IndexAndPlanTests(unittest.TestCase):
         self.source.mkdir()
         self.sector = self.source / "fixture.streamingsector.json"
         self.sector.write_text(json.dumps(sector_document()), encoding="utf-8")
-        self.config = load_config()
+        # These fixtures describe the legacy mixed/proxy index, independently
+        # of the user's active category and calibration sample selection.
+        self.config = load_config(TOOLS / "world-location-capture-v1.json")
         self.connection = connect(self.root / "locations.sqlite3")
 
     def tearDown(self) -> None:
@@ -344,6 +347,7 @@ class IndexAndPlanTests(unittest.TestCase):
 
         changed_config = dict(self.config)
         changed_config["extraction_rule_version"] = "reindex-test"
+        changed_config["feature_identity_version"] = "reindex-test"
         counts = index_sectors(self.connection, self.source, changed_config)
 
         self.assertEqual(0, counts["errors"])
@@ -544,6 +548,7 @@ class IndexAndPlanTests(unittest.TestCase):
                 "access_point",
                 "virtual_access_point",
                 "door_gate",
+                "fake_door",
                 "utility_device",
                 "drop_point",
                 "antenna",
@@ -827,9 +832,11 @@ class ProtocolTests(unittest.TestCase):
             "paused": False,
             "position_valid": True,
             "position_stable": True,
-            "ground_probe": True,
+            "freefly_active": True,
             "ui_suppressed": True,
             "weapon_suppressed": True,
+                    "player_protected": True,
+                    "combat_clear": True,
             "presented_frame": 1,
             "display_width": 1920,
             "display_height": 1080,
@@ -866,9 +873,11 @@ class ProtocolTests(unittest.TestCase):
                     "paused": False,
                     "position_valid": True,
                     "position_stable": True,
-                    "ground_probe": True,
+                    "freefly_active": True,
                     "ui_suppressed": True,
                     "weapon_suppressed": True,
+                    "player_protected": True,
+                    "combat_clear": True,
                     "presented_frame": 1,
                     "display_width": 1920,
                     "display_height": 1080,
@@ -1029,22 +1038,16 @@ class ProtocolTests(unittest.TestCase):
         self.assertIn("preflight = state.preflightEvidence", lua)
         self.assertIn("readiness = state.lastReadiness", lua)
         self.assertNotIn("failCommand('obstructed'", lua)
-        self.assertIn("streamingIsComplete(groundReady, groundGroup)", lua)
-        self.assertIn("cameraAttached and positionValid and stable", lua)
+        self.assertIn("stationary FreeFly pose", lua)
+        self.assertIn("cameraAttached and protected and combatClear", lua)
         self.assertIn("playerPositionIsStable(actual, delta)", lua)
         self.assertIn("positionStableSeconds + frameDeltaSeconds", lua)
         self.assertNotIn("GetVelocity()", lua)
-        self.assertIn("'Static', 'Terrain'", lua)
-        self.assertIn("prepareGroundPose", lua)
-        self.assertIn("ground_probe_staging_height_m", lua)
-        self.assertIn("ground_probe_sample_radius_m", lua)
-        self.assertIn("ground_offset_m", lua)
-        self.assertIn(
-            '"ground_offset_m": 0.3',
-            (ROOT / "tools" / "world_location_capture_cet" / "config.example.json").read_text(),
-        )
-        self.assertIn("ground_snap_timeout", lua)
-        self.assertIn("table.sort(hits", lua)
+        self.assertNotIn("prepareGroundPose", lua)
+        self.assertNotIn("ground_probe_staging_height_m", lua)
+        self.assertNotIn("ground_snap_timeout", lua)
+        self.assertIn("freefly_active = flightActive", lua)
+        self.assertIn("GetMod('freefly')", lua)
         self.assertNotIn("tryNextLateralPose", lua)
         self.assertNotIn("anchorProbe", lua)
         self.assertIn("state.lastControllerHeartbeatUnix = heartbeat.unix_seconds", lua)

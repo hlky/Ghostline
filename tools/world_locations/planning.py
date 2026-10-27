@@ -496,6 +496,10 @@ def evaluate_scope(point: Vec3, config: Mapping[str, Any]) -> dict[str, Any]:
     tangent. An explicit in-scope reference chooses the normal direction; an
     out-of-scope reference guards against an accidentally reversed rule.
     """
+    from .hazards import hazard_at_point
+    hazard = hazard_at_point(point, config)
+    if hazard:
+        return hazard
     version = str(config.get("scope_rule_version", "none"))
     evaluations: list[dict[str, Any]] = []
     for rule in config.get("scope_rules", []):
@@ -594,6 +598,22 @@ def _apply_scope(
                 config,
             )
         )
+        from .hazards import record_hazard
+        hazard = record_hazard(record, config)
+        if hazard:
+            record.update(hazard)
+    hazard_ids = {rule["id"] for rule in config.get("hazard_rules", ())}
+    excluded_pairs = {}
+    for record in values:
+        pair = json.loads(record.get("provenance_json", "{}")).get("capture_pair_id")
+        if pair and record.get("scope_rule_id") in hazard_ids:
+            excluded_pairs[pair] = {key: record[key] for key in (
+                "scope_status", "scope_rule_id", "scope_rule_version", "scope_detail_json"
+            )}
+    for record in values:
+        pair = json.loads(record.get("provenance_json", "{}")).get("capture_pair_id")
+        if pair in excluded_pairs:
+            record.update(excluded_pairs[pair])
     return values
 
 
@@ -607,9 +627,10 @@ def _object_places(
         config.get("metadata_rules", {}).get("runtime_area_fallback_m", 500.0)
     )
     records: list[dict[str, Any]] = []
+    excluded = ("road", "area", "fake_door", *config.get("site_survey_rules", {}))
     rows = connection.execute(
-        """SELECT * FROM features
-           WHERE capture_enabled=1 AND calibrated=1 AND category NOT IN ('road','area')"""
+        "SELECT * FROM features WHERE capture_enabled=1 AND calibrated=1 "
+        f"AND category NOT IN ({','.join('?' for _ in excluded)})", excluded,
     )
     for row in rows:
         anchor = _row_vec(row)
@@ -657,6 +678,63 @@ def _object_places(
                 review_status="needs_metadata" if missing else "resolved",
             )
         )
+    return records
+
+
+def _fake_door_places(
+    connection: sqlite3.Connection,
+    config: Mapping[str, Any],
+    runtime_area_observations: Sequence[Mapping[str, Any]] = (),
+) -> list[dict[str, Any]]:
+    """Retain two survey views of every decorative doorway, without spacing loss."""
+    version = str(config["placement_rule_version"])
+    rules = config.get("fake_door_rules", {})
+    area_fallback = float(config.get("metadata_rules", {}).get("runtime_area_fallback_m", 500))
+    records: list[dict[str, Any]] = []
+    for row in connection.execute(
+        "SELECT * FROM features WHERE category='fake_door' AND capture_enabled=1 AND calibrated=1 ORDER BY feature_id"
+    ):
+        anchor = _row_vec(row)
+        outward = Vec3(row["forward_x"], row["forward_y"], row["forward_z"]).normalized(horizontal=True)
+        for direction, distance, forward in (
+            ("outward", float(rules.get("outward_distance_m", 1.5)), outward),
+            ("building", float(rules.get("building_distance_m", 15)), outward * -1),
+        ):
+            requested = anchor + outward * distance
+            location_id = stable_id("place", row["feature_id"], direction, version)
+            resolved, provenance = _metadata_for_point(
+                connection, requested, location_id, area_fallback, runtime_area_observations,
+            )
+            provenance.update({
+                "anchor": f"feature:{row['feature_id']}",
+                "pose": f"placement_rule:{version}:{row['rule_id']}",
+                "door_kind": "garage_gate" if row["rule_id"] == "fake_garage_door_v1" else "door",
+                "view": direction,
+                "capture_pair_id": stable_id("pair", row["feature_id"], "fake_door", version),
+                "door_anchor": anchor.as_dict(),
+                "door_outward": outward.as_dict(),
+                "distance_from_door_m": distance,
+                "paired_location_id": stable_id(
+                    "place", row["feature_id"], "building" if direction == "outward" else "outward", version,
+                ),
+                "source_node_index": row["node_index"],
+                "source_instance_index": row["instance_index"],
+                "source_instance_id": row["instance_id"],
+                "orientation": "entity local axis from extraction rule; exterior side needs runtime review",
+                "ground_z": "serialized door height; CET resolves ground surface at each viewpoint",
+            })
+            record = _place_record(
+                location_id=location_id, anchor_feature_id=row["feature_id"],
+                category="fake_door", direction=direction, requested=requested,
+                forward=forward, resource_path=row["resource_path"],
+                source_sector=row["source_sector"], road_id=None,
+                extraction_version=row["extraction_rule_version"], placement_version=version,
+                metadata=resolved, provenance=provenance,
+                review_status="needs_metadata" if any(not resolved.get(field) for field in REQUIRED_NAME_FIELDS) else "resolved",
+            )
+            # Survey both views near the same point in the geographic queue.
+            record["queue_order"] = morton_key_2d(anchor.x, anchor.y)
+            records.append(record)
     return records
 
 
@@ -959,7 +1037,21 @@ def _road_places(
         config.get("metadata_rules", {}).get("runtime_area_fallback_m", 500.0)
     )
     records: list[dict[str, Any]] = []
-    for road in connection.execute("SELECT * FROM roads ORDER BY road_id"):
+    separation = float(rules.get("global_minimum_separation_m", 0))
+    grid: dict[tuple[int, int, int], list[Vec3]] = defaultdict(list)
+    captured = list(connection.execute("SELECT DISTINCT p.road_id,p.requested_x,p.requested_y,p.requested_z FROM places p JOIN captures c ON c.location_id=p.location_id WHERE p.category='road'"))
+    preferred_roads = {row["road_id"] for row in captured}
+    captured_coordinates = {tuple(round(float(row[field]), 6) for field in ("requested_x", "requested_y", "requested_z")) for row in captured}
+    roads = list(connection.execute("SELECT * FROM roads ORDER BY road_id"))
+    roads.sort(key=lambda road: (road["road_id"] not in preferred_roads, road["road_id"]))
+    for road in roads:
+        road_provenance = json.loads(road["provenance_json"])
+        calibration_roads = config.get("workspace", {}).get("calibration_capture_road_ids", [])
+        if calibration_roads and road["road_id"] not in calibration_roads:
+            continue
+        native_geometry = road_provenance.get("geometry") == "bended_deformation_frames_v1"
+        if rules.get("geometry_source") == "bended_deformation" and not native_geometry:
+            raise ValueError("Roads still use proxy geometry; run prepare-road-sample first")
         points = [
             Vec3(float(value["x"]), float(value["y"]), float(value["z"]))
             for value in json.loads(road["points_json"])
@@ -967,6 +1059,22 @@ def _road_places(
         for sample_index, (arc_distance, point, tangent) in enumerate(
             sample_road_points(points, rules)
         ):
+            if separation > 0:
+                if evaluate_scope(point, config)["scope_status"] != "in_scope":
+                    continue
+                cell = tuple(math.floor(value / separation) for value in (point.x, point.y, point.z))
+                coordinate = tuple(round(value, 6) for value in (point.x, point.y, point.z))
+                if coordinate not in captured_coordinates and any(
+                    (point - other).length() < separation
+                    for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)
+                    for other in grid.get((cell[0]+dx, cell[1]+dy, cell[2]+dz), ())
+                ):
+                    continue
+                grid[cell].append(point)
+            if native_geometry:
+                from .road_geometry import deformation_tangent
+
+                tangent = deformation_tangent(points, [Vec3(**v) for v in road_provenance["native_tangents"]], arc_distance)
             for direction, forward in (("along", tangent), ("against", tangent * -1.0)):
                 location_id = stable_id(
                     "place",
@@ -992,9 +1100,17 @@ def _road_places(
                 provenance.update(
                     {
                         "road_geometry": f"road:{road['road_id']}",
+                        "capture_pair_id": stable_id("pair", road["road_id"], round(arc_distance, 6), version),
+                        "paired_location_id": stable_id(
+                            "place", road["road_id"], round(arc_distance, 6),
+                            "against" if direction == "along" else "along",
+                            [round(point.x, 6), round(point.y, 6), round(point.z, 6)], version,
+                        ),
                         "arc_distance_m": arc_distance,
                         "sample_index": sample_index,
-                        "ground_z": "proxy-center height; CET resolves road surface at runtime",
+                        "geometry_method": road_provenance.get("geometry"),
+                        "geometry_source": road_provenance.get("source"),
+                        "ground_z": "native deformation station height; FreeFly preserves XYZ" if native_geometry else "proxy-center height; unvalidated for deformed/curved roads",
                     }
                 )
                 records.append(
@@ -1005,8 +1121,8 @@ def _road_places(
                         direction=direction,
                         requested=point,
                         forward=forward,
-                        resource_path=None,
-                        source_sector=None,
+                        resource_path=(road_provenance.get("source") or {}).get("mesh"),
+                        source_sector=(road_provenance.get("source") or {}).get("sector"),
                         road_id=road["road_id"],
                         extraction_version=extraction_version,
                         placement_version=version,
@@ -1153,12 +1269,18 @@ def _same_pose_binding(previous: Mapping[str, Any], planned: Mapping[str, Any]) 
 
 
 def _upsert_places(
-    connection: sqlite3.Connection, records: Iterable[Mapping[str, Any]]
+    connection: sqlite3.Connection, records: Iterable[Mapping[str, Any]],
+    *, category: str | None = None,
 ) -> int:
     values = list(records)
+    if category is not None and any(record["category"] != category for record in values):
+        raise ValueError("Scoped planning cannot modify another category")
     previous = {
         row["location_id"]: dict(row)
-        for row in connection.execute("SELECT * FROM places")
+        for row in connection.execute(
+            "SELECT * FROM places" + (" WHERE category=?" if category is not None else ""),
+            (category,) if category is not None else (),
+        )
     }
     now = utc_now()
     state_columns = (
@@ -1179,8 +1301,9 @@ def _upsert_places(
         # Captures and attempts remain historical evidence. An obsolete plan
         # must not stay eligible for capture or publication.
         connection.execute(
-            "UPDATE places SET queue_status='disabled',publishable=0,updated_at=?",
-            (now,),
+            "UPDATE places SET queue_status='disabled',publishable=0,updated_at=?"
+            + (" WHERE category=?" if category is not None else ""),
+            (now, category) if category is not None else (now,),
         )
         for record in values:
             row = dict(record)
@@ -1208,6 +1331,9 @@ def _upsert_places(
                         provenance[field] = "runtime"
                 row["provenance_json"] = json_text(provenance)
                 row["review_status"] = (
+                    "needs_calibration"
+                    if row["review_status"] == "needs_calibration"
+                    else
                     old["review_status"]
                     if old["review_status"] in {"rejected", "needs_calibration"}
                     else "resolved"
@@ -1225,10 +1351,68 @@ def _upsert_places(
 
 
 def plan_locations(
-    connection: sqlite3.Connection, config: Mapping[str, Any]
-) -> dict[str, int]:
+    connection: sqlite3.Connection, config: Mapping[str, Any],
+    *, category: str | None = None,
+) -> dict[str, Any]:
     validate_planning_config(config)
     evaluate_scope(Vec3(0, 0, 0), config)
+    if category == "road":
+        records = _apply_scope(_road_places(connection, config, _runtime_area_observations(connection)), config)
+        calibration = config.get("workspace", {}).get("require_road_calibration", False)
+        if calibration:
+            for record in records:
+                record["review_status"] = "needs_calibration"
+                provenance = json.loads(record["provenance_json"])
+                provenance["geometry_status"] = "awaiting_in_game_review" if provenance.get("geometry_method") == "bended_deformation_frames_v1" else "unvalidated_proxy_centerline"
+                record["provenance_json"] = json_text(provenance)
+        elif config.get("workspace", {}).get("deformation_method_validated"):
+            for record in records:
+                provenance = json.loads(record["provenance_json"])
+                provenance["geometry_status"] = "deformation_method_validated_on_sample"
+                record["provenance_json"] = json_text(provenance)
+        count = _upsert_places(connection, records, category="road")
+        if not calibration and config.get("workspace", {}).get("deformation_method_validated"):
+            with transaction(connection):
+                connection.executemany("UPDATE places SET review_status=? WHERE location_id=? AND review_status='needs_calibration'", ((record["review_status"], record["location_id"]) for record in records))
+        if calibration:
+            with transaction(connection):
+                connection.execute("UPDATE places SET queue_status='disabled' WHERE category='road' AND review_status='needs_calibration' AND queue_status!='captured'")
+                # An explicit, bounded calibration sample can be captured before
+                # the entire category is approved. Keep its review status honest.
+                for road_id in config.get("workspace", {}).get("calibration_capture_road_ids", []):
+                    connection.execute("""UPDATE places SET queue_status='pending'
+                        WHERE category='road' AND road_id=? AND scope_status='in_scope'
+                        AND queue_status='disabled' AND review_status='needs_calibration'
+                        AND NOT EXISTS(SELECT 1 FROM captures c WHERE c.location_id=places.location_id)""", (road_id,))
+        return {"category": "road", "places": count, "requires_geometry_calibration": calibration}
+    if category == "site_surveys" or category in config.get("site_survey_rules", {}):
+        from .site_surveys import build_site_surveys
+
+        records, unresolved, summaries = build_site_surveys(
+            connection, config, _runtime_area_observations(connection),
+            category=None if category == "site_surveys" else category,
+        )
+        records = _apply_scope(records, config)
+        for family in summaries:
+            _upsert_places(connection, [record for record in records if record["category"] == family], category=family)
+        return {
+            "site_survey_pairs": len(records)//2, "site_survey_places": len(records),
+            "in_scope": sum(record["scope_status"] == "in_scope" for record in records),
+            "out_of_scope": sum(record["scope_status"] != "in_scope" for record in records),
+            "categories": summaries, "unresolved_ground_references": unresolved,
+        }
+    if category is not None:
+        if category != "fake_door":
+            raise ValueError("Scoped planning currently supports only fake_door")
+        fake_doors = _apply_scope(
+            _fake_door_places(connection, config, _runtime_area_observations(connection)), config,
+        )
+        count = _upsert_places(connection, fake_doors, category=category)
+        return {
+            "fake_door_pairs": count // 2, "fake_door_places": count,
+            "in_scope": sum(record["scope_status"] == "in_scope" for record in fake_doors),
+            "out_of_scope": sum(record["scope_status"] != "in_scope" for record in fake_doors),
+        }
     fast_travel_count = rebuild_fast_travel(connection)
     road_count = rebuild_roads(connection, str(config["placement_rule_version"]))
     area_count = rebuild_areas(connection)
@@ -1273,6 +1457,15 @@ def plan_locations(
         [str(category) for category in spacing_rules.get("category_priority", ())],
         preferred_ids=preferred_ids,
     )
+    # Retrofit surveys need both views of each doorway. They neither compete
+    # with ordinary anchors nor change sparse-road coverage and prior captures.
+    fake_doors = _apply_scope(_fake_door_places(connection, config, runtime_areas), config)
+    places.extend(fake_doors)
+    from .site_surveys import build_site_surveys
+
+    site_surveys, unresolved, summaries = build_site_surveys(connection, config, runtime_areas)
+    site_surveys = _apply_scope(site_surveys, config)
+    places.extend(site_surveys)
     place_count = _upsert_places(connection, places)
     in_scope = sum(record["scope_status"] == "in_scope" for record in places)
     out_of_scope = sum(record["scope_status"] == "out_of_scope" for record in places)
@@ -1283,12 +1476,17 @@ def plan_locations(
         "roads": road_count,
         "areas": area_count,
         "object_places": object_places,
-        "object_candidates": len(object_candidates),
+        "object_candidates": len(object_candidates) + len(fake_doors) + len(site_surveys),
+        "fake_door_places": len(fake_doors),
+        "fake_door_pairs": len(fake_doors) // 2,
+        "site_survey_pairs": len(site_surveys) // 2,
+        "site_survey_categories": summaries,
+        "unresolved_ground_references": unresolved,
         "deduplicated_object_places": deduplicated_objects,
         "road_places": road_places,
         "road_candidates": len(road_candidates),
         "deduplicated_road_places": deduplicated_roads,
-        "physical_place_candidates": len(scoped_candidates),
+        "physical_place_candidates": len(scoped_candidates) + len(fake_doors) + len(site_surveys),
         "deduplicated_physical_places": deduplicated_physical_places,
         "places": place_count,
         "in_scope": in_scope,

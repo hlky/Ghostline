@@ -38,6 +38,7 @@ class CaptureContext:
 
 
 def build_sidecar(context: CaptureContext) -> dict[str, Any]:
+    provenance = json.loads(context.place["provenance_json"])
     return {
         "schema_version": 1,
         "capture_id": context.capture_id,
@@ -45,6 +46,9 @@ def build_sidecar(context: CaptureContext) -> dict[str, Any]:
         "attempt_id": context.attempt_id,
         "command_id": context.command_id,
         "location_id": context.place["location_id"],
+        "capture_pair_id": provenance.get("capture_pair_id"),
+        "capture_view": context.place["direction"],
+        "paired_location_id": provenance.get("paired_location_id"),
         "planned_pose": {
             "x": context.place["requested_x"],
             "y": context.place["requested_y"],
@@ -115,7 +119,7 @@ def build_sidecar(context: CaptureContext) -> dict[str, Any]:
             "placement": context.place["placement_rule_version"],
         },
         "metadata_provenance": {
-            **json.loads(context.place["provenance_json"]),
+            **provenance,
             **context.runtime_provenance,
         },
         "files": {
