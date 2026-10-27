@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "id": "rancho-residential-house-01",
+  "status": "Floor-plan revision installed; moving garage shutter and return stairs awaiting live checks",
+  "origin": {
+    "x": 18.46063804626465,
+    "y": -2129.806640625,
+    "z": 6.116471290588379,
+    "yaw": 235.56897157757874
+  },
+  "source": {
+    "source": "projects/experiments/building-lab/generated/house-search/current-game/exterior_0_-17_-1_1.streamingsector.json",
+    "sha256": "69097ecf0b151e6328171d59dd6b58e003409c57f196bfe7347f9bfe55904b97",
+    "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_0_-17_-1_1.streamingsector",
+    "expectedNodes": 468,
+    "nodeDeletions": []
+  },
+  "entrances": [
+    {
+      "placement": 154,
+      "local_position": [
+        0,
+        0,
+        0
+      ],
+      "mesh": "std_rcr_house_a_wall_a_gf_door_single_l300_b.mesh"
+    },
+    {
+      "placement": 153,
+      "local_position": [
+        2,
+        -14,
+        0
+      ],
+      "mesh": "std_rcr_house_a_wall_a_gf_door_single_l300_a.mesh"
+    }
+  ],
+  "approximate_ground_footprint": {
+    "outer_envelope_m": [
+      20,
+      14
+    ],
+    "polygon_local": [
+      [
+        -9,
+        0
+      ],
+      [
+        11,
+        0
+      ],
+      [
+        11,
+        -14
+      ],
+      [
+        2,
+        -14
+      ],
+      [
+        2,
+        -10
+      ],
+      [
+        -9,
+        -10
+      ]
+    ],
+    "gross_area_m2": 236,
+    "precision": "Estimated from perimeter module pivots; includes wall thickness, not measured usable floor area."
+  },
+  "navigation": {
+    "nearby_human_faces": 451,
+    "front_ground_height": 5.4,
+    "threshold_height": 6.116471290588379,
+    "height_difference_m": 0.7164712905883786,
+    "inspection_point": [
+      23.46924134601124,
+      -2131.89990234375,
+      5.6000010172526045
+    ],
+    "inspection_face": {
+      "source": "navigation_0_-9_0_3.streamingsector.json",
+      "resource": 2,
+      "buffer": 4,
+      "face": 77,
+      "points": [
+        [
+          22.0,
+          -2130.699951171875,
+          5.400001525878906
+        ],
+        [
+          25.200000762939453,
+          -2133.099853515625,
+          5.700000762939453
+        ],
+        [
+          24.899999618530273,
+          -2133.2998046875,
+          5.700000762939453
+        ]
+      ],
+      "distance": 2.2368248584197166
+    },
+    "warning": "Existing Human navigation nearby does not establish doorstep or interior connectivity.",
+    "terrain_mask": {
+      "source_archive": "ep1_1_nightcity.archive",
+      "resource": "navigation_0_-14_0.navmesh",
+      "disabled_polygons": 43,
+      "preserved_tile_buffers": 25,
+      "method": "Only flags of fully enclosed terrain polygons within \u00b12 m of the ground floor disabled; original topology and metadata preserved."
+    }
+  },
+  "ownership_screen": {
+    "indexed_features_within_approximate_footprint": [],
+    "result": "No indexed gameplay feature inside the estimated ground footprint; not a complete quest/variant ownership audit."
+  },
+  "preview": "H:\\projects\\Ghostline\\projects\\experiments\\building-lab\\generated\\house-search\\house-exterior.png",
+  "remaining_checks": [
+    "Revised rear bedroom roof clearance and flat plaster joins",
+    "V and NPC upstairs/downstairs traversal, both new rooms and foot/top points",
+    "Two clear-glass windows: visibility, alignment and fixed collision",
+    "Save/load and distance streaming"
+  ],
+  "playable_layout": "projects/experiments/building-lab/buildings/rancho-residential-house.building.json",
+  "installed_candidate": "building-lab-test-779affa2310c",
+  "runtime_verified": false,
+  "current_survey": "projects/experiments/building-lab/surveys/rancho-residential-house-corner-stair.json",
+  "current_access_revision": {
+    "survey": "rancho-residential-house-corner-stair.json",
+    "candidate": "building-lab-test-779affa2310c",
+    "installation": "generated/runtime-installs/20261026-145855-house-corner-stair/installation.json",
+    "runtime_verified": false
+  }
+}

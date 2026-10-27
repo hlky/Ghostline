@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "navigation-lab",
+  "name": "Navigation and stairs lab",
+  "kit": "industrial-3m",
+  "origin": {
+    "x": 100,
+    "y": 100,
+    "z": 700,
+    "yaw": 0
+  },
+  "wall_appearance": "default",
+  "floor_appearance": "tiles_grey",
+  "rooms": [
+    {
+      "id": "ground",
+      "name": "Ground workshop",
+      "x": 0,
+      "y": 0,
+      "width": 9,
+      "depth": 15,
+      "level": 0
+    },
+    {
+      "id": "upper",
+      "name": "Upper workshop",
+      "x": 0,
+      "y": 0,
+      "width": 9,
+      "depth": 15,
+      "level": 1
+    },
+    {
+      "id": "service",
+      "name": "Ground service",
+      "x": 9,
+      "y": 0,
+      "width": 6,
+      "depth": 6,
+      "level": 0
+    }
+  ],
+  "openings": {
+    "0:y:3:1": "door_auto",
+    "0:x:1:0": "door_manual"
+  },
+  "navigation": {
+    "export": true,
+    "radius": 0.3,
+    "height": 1.8,
+    "layer": 200
+  },
+  "stairs": [
+    {
+      "id": "main",
+      "level": 0,
+      "x": 3,
+      "y": 3,
+      "width": 3,
+      "run": 9
+    }
+  ]
+}

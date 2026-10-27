@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "selection": {
+    "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/exterior_-9_10_0_1.streamingsector.json",
+    "sha256": "f206c367dcab0d9cde7fbe33dff58909425b98a451f3ab85dad3ec771ca6a22e",
+    "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-9_10_0_1.streamingsector",
+    "expectedNodes": 3599,
+    "nodeDeletions": []
+  },
+  "candidates": [
+    {
+      "index": 3579,
+      "type": "worldCollisionNode",
+      "expectedActors": 128,
+      "actor": 48,
+      "shape_count": 1,
+      "world_position": [
+        -1106.8994140625,
+        1377.3619384765625,
+        5.8590087890625
+      ],
+      "actor_orientation": [
+        0.0,
+        0.0,
+        0.7002707123756409,
+        -0.7138774991035461
+      ],
+      "shapes": [
+        {
+          "relative_index": 0,
+          "type_code": 0,
+          "box_half_extents_collision_axes": [
+            0.7215472459793091,
+            1.2164628505706787,
+            0.028190063312649727
+          ]
+        }
+      ]
+    }
+  ],
+  "indexing": "ArchiveXL indices and expectedNodes address nodeData placements, not node definitions.",
+  "notes": [
+    "Copy the selection into layout.retrofit.sectors and populate nodeDeletions with reviewed candidate indices.",
+    "Actor pivots are candidate hints, not mesh extents. A large triangle-mesh actor can extend beyond the search radius.",
+    "Remove visual geometry and its separate collision. Replace the removed bay with your doorway module.",
+    "Occlusion may be separate; removing the visible mesh alone does not establish a working entrance."
+  ]
+}

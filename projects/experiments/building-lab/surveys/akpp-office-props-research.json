@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "status": "researched-not-placed-or-installed",
+  "scope": "Small AKPP logistics office; preserve current floor/door playtest package",
+  "assets": [
+    {
+      "role": "desk",
+      "name": "entropy_office_desk_a.mesh",
+      "bounds_min": [
+        -0.0903749093413353,
+        -0.6256232261657715,
+        0.0006871672812849283
+      ],
+      "bounds_max": [
+        1.0016952753067017,
+        0.007978778332471848,
+        0.7999998331069946
+      ],
+      "dimensions": [
+        1.092070184648037,
+        0.6336020044982433,
+        0.7993126658257097
+      ],
+      "raw_evidence": "generated\\office-props-research\\entropy_office_desk_a.mesh.json",
+      "raw_sha256": "cfaa081f44f7130bbfa84e9b4a1ce172ef1ab6aec9e1741c3fad404f1e39f5da",
+      "appearances": [
+        null,
+        "white"
+      ]
+    },
+    {
+      "role": "larger-desk-alternative",
+      "name": "entropy_office_desk_d.mesh",
+      "bounds_min": [
+        -1.0660613775253296,
+        -7.817242294549942e-05,
+        -0.00023513428459409624
+      ],
+      "bounds_max": [
+        0.9999633431434631,
+        0.9730057120323181,
+        0.80281001329422
+      ],
+      "dimensions": [
+        2.0660247206687927,
+        0.9730838844552636,
+        0.8030451475788141
+      ],
+      "raw_evidence": "generated\\office-props-research\\entropy_office_desk_d.mesh.json",
+      "raw_sha256": "87c6d2ac34ed06815baa68ec75b544f4180e18b79a6b7140e108a3013d8dfa93",
+      "appearances": [
+        null,
+        "white"
+      ]
+    },
+    {
+      "role": "office-chair",
+      "name": "poor_office_chair_a.mesh",
+      "bounds_min": [
+        -0.3262295424938202,
+        -0.33731207251548767,
+        -0.00453571230173111
+      ],
+      "bounds_max": [
+        0.34857451915740967,
+        0.37556174397468567,
+        0.9132947325706482
+      ],
+      "dimensions": [
+        0.6748040616512299,
+        0.7128738164901733,
+        0.9178304448723793
+      ],
+      "raw_evidence": "generated\\office-props-research\\poor_office_chair_a.mesh.json",
+      "raw_sha256": "6f2e4342d016094a159149cab86e71b5bb1ac176ac075a1b2e9f6ff4a5d4003e",
+      "appearances": [
+        null
+      ]
+    },
+    {
+      "role": "compact-chair-alternative",
+      "name": "poor_office_chair_b.mesh",
+      "bounds_min": [
+        -0.23086769878864288,
+        -0.2523644268512726,
+        -4.8719469006605436e-17
+      ],
+      "bounds_max": [
+        0.2241898626089096,
+        0.31882232427597046,
+        0.9124696850776672
+      ],
+      "dimensions": [
+        0.4550575613975525,
+        0.571186751127243,
+        0.9124696850776672
+      ],
+      "raw_evidence": "generated\\office-props-research\\poor_office_chair_b.mesh.json",
+      "raw_sha256": "c31b90767c21f19fb573463522e3dc4b5a860b1fd77e60d739a428ea777ea38d",
+      "appearances": [
+        null
+      ]
+    },
+    {
+      "role": "filing-cabinet",
+      "name": "entropy_file_cabinet_a_hollow.mesh",
+      "bounds_min": [
+        -0.2720493972301483,
+        -0.31532156467437744,
+        -4.768371297814156e-08
+      ],
+      "bounds_max": [
+        0.2720048129558563,
+        0.31732675433158875,
+        1.6129202842712402
+      ],
+      "dimensions": [
+        0.5440542101860046,
+        0.6326483190059662,
+        1.6129203319549532
+      ],
+      "raw_evidence": "generated\\office-props-research\\entropy_file_cabinet_a_hollow.mesh.json",
+      "raw_sha256": "4d8f5fd26fd2b7fd09eb10c4b02e17eca6b432117e8112ef1a08f91a8d1999f0",
+      "appearances": [
+        null,
+        "hospital"
+      ]
+    }
+  ],
+  "computer": {
+    "template": "base\\gameplay\\devices\\masters\\computers\\computer_1.ent",
+    "appearance": "computer_computer_1",
+    "appearance_resource": "base\\gameplay\\devices\\masters\\computers\\appearances\\computer.app",
+    "evidence": "generated/office-props-research/computer_1.ent.json",
+    "native_components": [
+      "computer physical mesh",
+      "terminalui WorldWidgetComponent",
+      "frame physical mesh",
+      "cameraZoomComponent",
+      "IKslots"
+    ],
+    "limitations": [
+      "Building editor currently exports mesh modules and door devices, not native computers.",
+      "Computer body and frame use hash-only mesh references; resolve and prepare composite preview before placement.",
+      "Quest mails/files and sit interactions are separate configuration, not supplied by decorative meshes."
+    ]
+  },
+  "placement_proposal": {
+    "floor_top": 0.05,
+    "desk_base_center": [
+      1.6,
+      5.1,
+      0.05
+    ],
+    "desk_top_estimate": 0.8493,
+    "chair_base_center": [
+      1.6,
+      4.15,
+      0.05
+    ],
+    "entrance_clearance": "Keep local X=3.89..5.2, Y=3.21..4.61 free; check chair pullback and player/NPC path",
+    "orientation": "Confirm facing with prepared geometry previews; no yaw claim from filenames"
+  },
+  "editor": {
+    "existing": [
+      "Plan placement",
+      "X/Y/Z and yaw edits",
+      "Appearance selection",
+      "Static native mesh node export"
+    ],
+    "missing": [
+      "Curated furniture catalogue with measured bounds and GLB previews",
+      "Support for furniture collision footprints without filling desk knee space",
+      "Desktop device placement, persistent device registry and terminal preview",
+      "Optional chair workspot and seated interaction",
+      "Tabletop height snapping and grouped workstation movement"
+    ]
+  },
+  "installed_files_modified": false
+}

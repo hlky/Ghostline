@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "storeys": 2,
+  "upper_floor_local_z": 4,
+  "upper_floor_footprint": [
+    3,
+    -9,
+    9,
+    0
+  ],
+  "upper_usable_area_m2": 54,
+  "ground_floor_area_m2": 171,
+  "total_area_m2": 225,
+  "rear_bedroom_footprint": [
+    6,
+    -12,
+    9,
+    -6
+  ],
+  "rear_bedroom_ceiling": 3.5,
+  "roof_intrusion_avoided": {
+    "placement": 125,
+    "source": "exterior_0_-17_-1_1.streamingsector",
+    "bounds_local": [
+      [
+        0.974,
+        -11.528,
+        3.127
+      ],
+      [
+        3.978,
+        -9.643,
+        4.353
+      ]
+    ],
+    "method": "Room footprint moved beyond x=6; ceiling not lowered."
+  },
+  "stairs": [
+    {
+      "id": "house",
+      "x": 3.3,
+      "y": -7.5,
+      "width": 1.2,
+      "run": 6,
+      "level": 0,
+      "landing": 1.5,
+      "railings": true
+    }
+  ],
+  "windows": {
+    "lining_apertures": {
+      "0:x:2:0": {
+        "width": 1.5,
+        "sill": 1.2,
+        "height": 0.8
+      },
+      "1:x:2:0": {
+        "width": 1.5,
+        "sill": 0.9,
+        "height": 0.6
+      }
+    },
+    "glass_shader": "base\\materials\\glass.mt",
+    "material": "base\\environment\\architecture\\common\\windows\\window_generic\\textures\\window_generic_glass.mi",
+    "original_shader": "base\\materials\\window_parallax_interior.mt",
+    "original_geometry": {
+      "min": [
+        -3.0,
+        -0.013138897716999054,
+        -0.2988109588623047
+      ],
+      "max": [
+        2.384185791015625e-06,
+        0.21368305385112762,
+        3.999999523162842
+      ],
+      "dimensions": [
+        3.000002384185791,
+        0.22682195156812668,
+        4.2988104820251465
+      ],
+      "vertices": 501,
+      "triangles": 458
+    },
+    "clone_geometry": {
+      "min": [
+        -3.0,
+        -0.013138897716999054,
+        -0.2988109588623047
+      ],
+      "max": [
+        2.384185791015625e-06,
+        0.21368305385112762,
+        3.999999523162842
+      ],
+      "dimensions": [
+        3.000002384185791,
+        0.22682195156812668,
+        4.2988104820251465
+      ],
+      "vertices": 501,
+      "triangles": 458
+    },
+    "clone_raw_sha256": "36c8c25b9a435c52a3cfde8783af4ee36de0b73d22e51bb67598f8bfd9f4c5f4",
+    "facade_render_removals": {
+      "399": [
+        1
+      ],
+      "387": [
+        6,
+        7
+      ]
+    },
+    "collision": "Retained full glass/window wall collision; windows are not walkable."
+  },
+  "validation": {
+    "offline_controls": 112,
+    "python_tests": 55,
+    "native_resources": 6,
+    "runtime_verified": false
+  },
+  "prior_playtest": "User confirmed occlusion and casing fixes; reported joins and low roof-edge intrusion."
+}

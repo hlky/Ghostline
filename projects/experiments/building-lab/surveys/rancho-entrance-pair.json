@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "runtime_verified": false,
+  "status": "source-verified candidate pair; no active layout or installed patch",
+  "visual_candidate": {
+    "index": 530,
+    "definition_index": 471,
+    "type": "worldInstancedMeshNode",
+    "render_instance": 0,
+    "expectedInstances": 4,
+    "world_position": [
+      -692.7279663085938,
+      -1415.521240234375,
+      7.552642822265625
+    ],
+    "mesh": {
+      "DepotPath": {
+        "$type": "ResourcePath",
+        "$storage": "string",
+        "$value": "base\\environment\\architecture\\santo_domingo\\rancho_coronado\\std_rcr_house_a_wall_a_gf_l300_a.mesh"
+      },
+      "Flags": "Soft"
+    }
+  },
+  "collision_candidate": {
+    "index": 850,
+    "type": "worldCollisionNode",
+    "expectedActors": 128,
+    "actor": 119,
+    "shape_count": 1,
+    "world_position": [
+      -692.7279663085938,
+      -1415.521240234375,
+      7.552642822265625
+    ],
+    "actor_orientation": [
+      0.0,
+      0.0,
+      0.4617483913898468,
+      0.8870110511779785
+    ],
+    "shapes": [
+      {
+        "relative_index": 0,
+        "type_code": 0,
+        "box_half_extents_collision_axes": [
+          1.5000011920928955,
+          2.1494054794311523,
+          0.0874941349029541
+        ]
+      }
+    ]
+  },
+  "retrofit": {
+    "sectors": [
+      {
+        "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/exterior_-11_-23_0_0.streamingsector.json",
+        "sha256": "6f34b7e3f5c07def20d40f66286acfceb9af1f7950df50e2b4f1b5c3b7c915c3",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-11_-23_0_0.streamingsector",
+        "expectedNodes": 558,
+        "nodeDeletions": [
+          {
+            "index": 530,
+            "type": "worldInstancedMeshNode",
+            "expectedInstances": 4,
+            "instanceDeletions": [
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/exterior_-2_-3_0_3.streamingsector.json",
+        "sha256": "febc797c96eb56491a012cc4f04b537cd38993f6123f2f53d9ab24c5eb5dd64f",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-2_-3_0_3.streamingsector",
+        "expectedNodes": 872,
+        "nodeDeletions": [
+          {
+            "index": 850,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              [
+                119,
+                0
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "Visible bay and collision actor share the exact fixed-point world pivot. Collision is a separate 3 m-wide box in a level-3 sector.",
+    "The collision half-extents include height 2.149405 m (4.298811 m total); review replacement headroom and overlap rather than assuming mesh bounds equal collision.",
+    "This removes a full bay and its specific shape only. Replace it with doorway geometry and collision, inspect occlusion and verify player and NPC traversal before use."
+  ]
+}

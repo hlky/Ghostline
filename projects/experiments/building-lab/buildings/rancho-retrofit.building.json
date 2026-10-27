@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "id": "rancho-retrofit",
+  "name": "Rancho shell retrofit",
+  "kit": "rancho-3m",
+  "origin": {
+    "x": -692.7279663085938,
+    "y": -1415.521240234375,
+    "z": 7.552642822265625,
+    "yaw": 54.99997525275386
+  },
+  "wall_appearance": "plaster_blue",
+  "floor_appearance": "Wood",
+  "rooms": [
+    {
+      "id": "interior",
+      "name": "Rancho interior",
+      "x": -3,
+      "y": -3,
+      "width": 6,
+      "depth": 3,
+      "level": 0,
+      "ceiling_height": 3.5
+    }
+  ],
+  "openings": {
+    "0:x:-1:-1": "door_auto"
+  },
+  "stairs": [],
+  "navigation": {
+    "export": true,
+    "radius": 0.3,
+    "height": 1.8,
+    "layer": 200,
+    "door_connections": {
+      "0:x:-1:-1": {
+        "from": [
+          -1.5,
+          -2.1,
+          0
+        ],
+        "to": [
+          -1.5,
+          -4.5,
+          -0.052641868591308594
+        ]
+      }
+    },
+    "test_points": [
+      {
+        "name": "Street approach",
+        "position": [
+          -1.5,
+          -4.5,
+          -0.052641868591308594
+        ]
+      },
+      {
+        "name": "Just inside entrance",
+        "position": [
+          -1.5,
+          -1.9,
+          0
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "id": "retained-interior",
+        "from": [
+          1.5,
+          -1.5,
+          0
+        ],
+        "to": [
+          1.7,
+          -1.5,
+          -0.052641868591308594
+        ]
+      }
+    ]
+  },
+  "modules": [],
+  "retrofit": {
+    "sectors": [
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-11_-23_0_0.streamingsector.json",
+        "sha256": "966e2aa9f5247edc765d57e2995e9e49c2371e436d5f00971356e101a5d59910",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-11_-23_0_0.streamingsector",
+        "expectedNodes": 558,
+        "nodeDeletions": [
+          {
+            "index": 398,
+            "type": "worldStaticMeshNode"
+          },
+          {
+            "index": 419,
+            "type": "worldStaticMeshNode"
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-2_-3_0_3.streamingsector.json",
+        "sha256": "c9950b49efc9521b46a3cec01529c272ec24721b36fc1001d43d60f918bbb377",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-2_-3_0_3.streamingsector",
+        "expectedNodes": 872,
+        "nodeDeletions": [
+          {
+            "index": 856,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              124
+            ]
+          },
+          {
+            "index": 850,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              [
+                123,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-6_-12_0_1.streamingsector.json",
+        "sha256": "0092b64685dadd9b50909a0ec1409ae914d4958177389f067f4160e879d431ce",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-6_-12_0_1.streamingsector",
+        "expectedNodes": 1389,
+        "nodeDeletions": [
+          {
+            "index": 1377,
+            "type": "worldCollisionNode",
+            "expectedActors": 64,
+            "actorDeletions": [
+              17
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "purpose": "Replace original white static door and casing at the existing long-fa\u00e7ade aperture with the matching vanilla hinged_h native device. Restore original side wall and generator. Replace the selected door-bay collision with generated aperture collision and native physical casing/leaf.",
+    "runtime_verified": false,
+    "survey": "projects/experiments/building-lab/surveys/rancho-original-door.json",
+    "archive_selection": "Current archive/pc set including content, expansion, hotfix and installed mod archives. Base-content-only collision sector differs and is not this test target."
+  },
+  "door_devices": {
+    "0:x:-1:-1": {
+      "preset": "hinged_h",
+      "yaw_offset": 180,
+      "offset": [
+        0.0008654808444946,
+        -0.070199086592818,
+        0
+      ]
+    }
+  }
+}

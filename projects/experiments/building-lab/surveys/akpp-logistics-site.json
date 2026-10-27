@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "name": "AKPP Logistics candidate",
+  "status": "AKPP interior lining and occlusion repair installed; live verification pending",
+  "world_position": [
+    -1106.8994140625,
+    1377.3619384765625,
+    5.859007835388184
+  ],
+  "yaw_degrees": 271.10255401550415,
+  "entrance": {
+    "visual_survey": "akpp-logistics-entrance-visual.survey.json",
+    "visual_placement": 4738,
+    "mesh": "base\\environment\\decoration\\doors\\swinging\\door_swinging_e.mesh",
+    "collision_survey": "akpp-logistics-door.survey.json",
+    "collision_placement": 3579,
+    "collision_definition": 3356,
+    "actor": 48,
+    "relative_shape": 0,
+    "source_prefab_hash": "14867752268622539079",
+    "replacement_preset": "hinged_e",
+    "replacement_mode": "INTERACTIVE"
+  },
+  "active_removals": true,
+  "installed": true,
+  "notes": [
+    "Visible door and collision actor pivots match to under 1 mm.",
+    "AKPP Logistics identity supplied by user; sign not visible in initial close-up.",
+    "Nearby facade pieces belong to Kabuki architecture; footprint and interior obstacles not yet established.",
+    "Door traversal confirmed in previous build; camera-dependent world disappearance and exposed facade backs reported.",
+    "New build adds interior lining and entrance returns; removes AKPP two-matrix occluder group 2521 only. Runtime retest pending.",
+    "User accepted small office footprint and reported remaining yellow return, inside-only slit and floating original Moon Explorer sticker. Prior occlusion/lining repair described as good; exhaustive camera sweep not separately recorded."
+  ],
+  "rear_boundary": {
+    "collision_placement": 3536,
+    "definition": 3313,
+    "actor": 118,
+    "world_position": [
+      -1112.1275634765625,
+      1380.207275390625,
+      5.58978271484375
+    ],
+    "visual_placement": 5860,
+    "visual_render_instance": 0,
+    "evidence": "akpp-ru-lai-rear-wall.png",
+    "preserve": true
+  },
+  "scope": "AKPP bay only; keep Ru Lai intact",
+  "layout": "buildings/akpp-logistics-open-shell.building.json",
+  "shell_import": "surveys/akpp-logistics-shell-import.json",
+  "candidate": "building-lab-b497ea2279bc"
+}

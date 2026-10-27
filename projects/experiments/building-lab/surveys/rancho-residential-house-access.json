@@ -1,0 +1,664 @@
+{
+  "schema_version": 1,
+  "id": "rancho-residential-house-access",
+  "layout": "buildings/rancho-residential-house.building.json",
+  "status": "offline-validated; live playtest pending",
+  "photos": [
+    {
+      "name": "Cyberpunk2077_ldJNM2Zd3j.jpg",
+      "sha256": "c1bb735b37e130f53c9a1620b2b6a1fc02cf4781c4872e8670da478d835834e6"
+    },
+    {
+      "name": "Cyberpunk2077_X8oq6FoCiz.jpg",
+      "sha256": "c20f14b94ac1e0921da21d1bd33d3946645b1643c0634d4eb5b57857ce2b144b"
+    },
+    {
+      "name": "Cyberpunk2077_EITomzvktw.jpg",
+      "sha256": "1f670623fbbff18805658987b45653e73b7dfca9586e6d885427389a1706f606"
+    },
+    {
+      "name": "Cyberpunk2077_kcrDaL1ArL.jpg",
+      "sha256": "bf6887127fe1bc1a1d60fc7fad6e019055211eb9f65344239f7790433a69734c"
+    },
+    {
+      "name": "Cyberpunk2077_j8A3rwWRCC.jpg",
+      "sha256": "2240b798bdcdb6f8cd23388e23a606f3d23b21ab2ad736a4757bdfbedb7b69b5"
+    },
+    {
+      "name": "Cyberpunk2077_mr7irpStHN.jpg",
+      "sha256": "e781625e88b16ae027e341b25e623a158cbb5a2f08e967a515e42d30192a81f6"
+    },
+    {
+      "name": "Cyberpunk2077_EC1Fg7ov2x.jpg",
+      "sha256": "d1f8619cd4b83538d0dcc91e5958b3d949dc62e819d6f4aec6afe79da8960a45"
+    },
+    {
+      "name": "Cyberpunk2077_97eY6W9ygD.jpg",
+      "sha256": "7a51dfa597796daa2af000ffc329419994a47fe937c96a6bf5e0735c625c6b05"
+    },
+    {
+      "name": "Cyberpunk2077_3y2Q61awRM.jpg",
+      "sha256": "37b583f3c5d8ec6c2ccc2dae0340f1ff28c76271057431afef0b2cc0c911833e"
+    },
+    {
+      "name": "Cyberpunk2077_MWlbicK1fI.jpg",
+      "sha256": "227439519af5a3ebd178490bc4cdd67c0f4e055c5ee5a11b6fd3a51c6ca48dfc"
+    }
+  ],
+  "plan": {
+    "storeys": 2,
+    "rooms": 14,
+    "ground_area_m2": 197,
+    "upper_area_m2": 90,
+    "garage": "fixed-open native bay; original shutter mesh and its dedicated collision removed, frame retained",
+    "rear_entrance": "original rear porch aperture with native sliding door",
+    "balcony": "retained wraparound floor, side sliding door from upstairs lounge; three stacked clutter objects and their exact collision removed",
+    "stairs": "1.2m wide, 6m run, reversed; foot at front, top at rear"
+  },
+  "shell_rooms": [
+    {
+      "id": "garage",
+      "name": "Garage workshop",
+      "position": [
+        -9,
+        -10,
+        -0.6
+      ],
+      "width": 6,
+      "depth": 7,
+      "height": 3.5,
+      "level": 0,
+      "walls": {
+        "south": {
+          "openings": [
+            {
+              "center": 2.988,
+              "width": 3,
+              "height": 2.5
+            }
+          ]
+        },
+        "north": false,
+        "east": false
+      }
+    },
+    {
+      "id": "rear_vestibule",
+      "name": "Rear vestibule",
+      "position": [
+        2,
+        -14,
+        0
+      ],
+      "width": 4,
+      "depth": 5,
+      "height": 2.7,
+      "level": 0,
+      "walls": {
+        "south": {
+          "openings": [
+            {
+              "center": 1.521,
+              "width": 1.5,
+              "height": 2.4
+            }
+          ]
+        },
+        "north": false
+      }
+    }
+  ],
+  "shell_liners": [
+    {
+      "start": [
+        -9,
+        0,
+        4
+      ],
+      "end": [
+        -9,
+        -3,
+        4
+      ],
+      "height": 2.8,
+      "level": 1,
+      "openings": [
+        {
+          "center": 1.987,
+          "width": 1.5,
+          "height": 2.4
+        }
+      ]
+    },
+    {
+      "start": [
+        -3,
+        -10,
+        -0.6
+      ],
+      "end": [
+        -3,
+        -9,
+        -0.6
+      ],
+      "height": 3.6,
+      "level": 0,
+      "openings": []
+    }
+  ],
+  "shell_doors": [
+    {
+      "id": "rear-entrance",
+      "position": [
+        2.771,
+        -13.949,
+        0.011
+      ],
+      "yaw": 180,
+      "preset": "sliding_entropy_c",
+      "level": 0,
+      "from": [
+        3.521,
+        -13.15,
+        0
+      ],
+      "to": [
+        3.521,
+        -14.75,
+        0.012
+      ],
+      "gate": [
+        2.5,
+        -14.04,
+        4.5,
+        -13.96
+      ]
+    },
+    {
+      "id": "balcony-door",
+      "position": [
+        -8.938,
+        -1.237,
+        4
+      ],
+      "yaw": 90,
+      "preset": "sliding_entropy_c",
+      "level": 1,
+      "from": [
+        -8.2,
+        -1.987,
+        4
+      ],
+      "to": [
+        -9.8,
+        -1.987,
+        4.006
+      ],
+      "gate": [
+        -9.04,
+        -2.9,
+        -8.96,
+        -1.1
+      ]
+    }
+  ],
+  "shell_steps": [
+    {
+      "id": "garage-house",
+      "position": [
+        -5.25,
+        -5,
+        -0.6
+      ],
+      "width": 1.5,
+      "run": 1.2,
+      "rise": 0.6,
+      "landing": 0.8,
+      "level": 0
+    }
+  ],
+  "shell_plinths": [
+    {
+      "center": [
+        -6,
+        -3.0875,
+        -0.3
+      ],
+      "size": [
+        6,
+        0.175,
+        0.6
+      ],
+      "level": 0
+    },
+    {
+      "center": [
+        -3.0875,
+        -6.5,
+        -0.3
+      ],
+      "size": [
+        0.175,
+        7,
+        0.6
+      ],
+      "level": 0
+    }
+  ],
+  "roof_support": {
+    "source_placement": 414,
+    "instance": 1,
+    "source_sector": "exterior_0_-34_0_0.streamingsector",
+    "original_local_bounds": [
+      [
+        0.625,
+        -8.333,
+        5.168
+      ],
+      [
+        4.425,
+        -7.977,
+        5.523
+      ]
+    ],
+    "replacement_length_scale": 0.58,
+    "retained_end_x": 2.829,
+    "landing_wall_x": 3,
+    "collision_replacement": [
+      {
+        "center": [
+          1.727,
+          -8.155,
+          5.345
+        ],
+        "size": [
+          2.204,
+          0.356,
+          0.355
+        ],
+        "level": 1
+      }
+    ]
+  },
+  "navigation": {
+    "controls": 176,
+    "passed": 176,
+    "method": "adapted upstream Detour; generated and retained Human buffer4, both directions/load orders, unlocked and sealed-house negative controls",
+    "open_hinged_leaf": "measured stock +90 pose subtracted before 0.3m clearance erosion, including garage landing",
+    "retained_floor_survey": [
+      {
+        "id": "balcony",
+        "z": 4.006,
+        "area": 10.83717096131261,
+        "source_pieces": [
+          {
+            "placement": 98,
+            "instance": null
+          },
+          {
+            "placement": 101,
+            "instance": null
+          },
+          {
+            "placement": 104,
+            "instance": null
+          },
+          {
+            "placement": 105,
+            "instance": null
+          },
+          {
+            "placement": 415,
+            "instance": 0
+          },
+          {
+            "placement": 415,
+            "instance": 1
+          }
+        ],
+        "triangles": 28
+      },
+      {
+        "id": "rear-porch",
+        "z": 0.018,
+        "area": 11.549367285146493,
+        "source_pieces": [
+          {
+            "placement": 99,
+            "instance": null
+          },
+          {
+            "placement": 102,
+            "instance": null
+          },
+          {
+            "placement": 106,
+            "instance": null
+          },
+          {
+            "placement": 414,
+            "instance": 0
+          },
+          {
+            "placement": 414,
+            "instance": 1
+          }
+        ],
+        "triangles": 23
+      },
+      {
+        "id": "Garage approach",
+        "local": [
+          -6.012000000000013,
+          -12.100000000000007,
+          -0.5363540183188222
+        ],
+        "buffer": 4,
+        "face": 189
+      },
+      {
+        "id": "Rear approach",
+        "local": [
+          3.620000000000015,
+          -17.99999999999999,
+          -0.7369675874734742
+        ],
+        "buffer": 4,
+        "face": 110
+      }
+    ],
+    "balcony_barrel_keepout": "approximate rectangle [-10.45,.78,-9.55,1.6], must inspect clearance live",
+    "terrain_mask": {
+      "name": "rancho-residential-house_retained_navigation.streamingsector",
+      "bounds": [
+        [
+          0.0,
+          -2268.0,
+          4.5
+        ],
+        [
+          162.0,
+          -2106.0,
+          33.30000305175781
+        ]
+      ],
+      "changes": [
+        {
+          "buffer": 4,
+          "polygons": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126
+          ],
+          "before_sha256": "fcbd5f2ccd6540529fb54368fbd2ce07a55a904e15b00b8ea786c2d7ab525a00",
+          "after_sha256": "561bf616e180dd71b6ca9816160d2a7e4b94fe53fa3ff4a622280126d268b81b"
+        }
+      ],
+      "original_resource": "base\\worlds\\03_night_city\\sectors\\_generated\\navigation\\resources\\navigation_0_-14_0.navmesh",
+      "preserved_buffers": 25
+    }
+  },
+  "fixes": [
+    "Normalize 3.005m floor lips to exact rectangle bounds",
+    "Clip downstairs wall tops below upper slab; remove buried upper wall foundation",
+    "Trim exact original roof support instance and replace its dedicated collision",
+    "Centre casing on measured infill/shared wall volumes"
+  ],
+  "retrofit_source_pins": {
+    "sectors": [
+      {
+        "source": "projects/experiments/building-lab/generated/residential-house/evidence/current-game/exterior_0_-34_0_0.streamingsector.json",
+        "sha256": "21999f240384219f4a52aca4400f627a0e0b18d1a6a1e519e026665130b2c1d3",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_0_-34_0_0.streamingsector",
+        "expectedNodes": 470,
+        "nodeDeletions": [
+          {
+            "index": 212,
+            "type": "worldEntityNode",
+            "expectedTemplate": "base\\gameplay\\devices\\doors\\final\\single_door_decorative.ent"
+          },
+          {
+            "index": 214,
+            "type": "worldEntityNode",
+            "expectedTemplate": "base\\gameplay\\devices\\doors\\final\\single_door_decorative.ent"
+          },
+          {
+            "index": 216,
+            "type": "worldEntityNode",
+            "expectedTemplate": "base\\gameplay\\devices\\doors\\final\\single_door_decorative.ent"
+          },
+          {
+            "index": 467,
+            "type": "worldCollisionNode",
+            "expectedActors": 64,
+            "actorDeletions": [
+              [
+                44,
+                0
+              ]
+            ]
+          },
+          {
+            "index": 464,
+            "type": "worldCollisionNode",
+            "expectedActors": 64,
+            "actorDeletions": [
+              [
+                15,
+                0
+              ]
+            ]
+          },
+          {
+            "index": 414,
+            "type": "worldInstancedMeshNode",
+            "expectedInstances": 4,
+            "instanceDeletions": [
+              1
+            ]
+          },
+          {
+            "index": 337,
+            "type": "worldStaticMeshNode"
+          },
+          {
+            "index": 338,
+            "type": "worldStaticMeshNode"
+          },
+          {
+            "index": 339,
+            "type": "worldStaticMeshNode"
+          },
+          {
+            "index": 459,
+            "type": "worldCollisionNode",
+            "expectedActors": 7,
+            "actorDeletions": [
+              [
+                0,
+                0
+              ]
+            ]
+          },
+          {
+            "index": 465,
+            "type": "worldCollisionNode",
+            "expectedActors": 32,
+            "actorDeletions": [
+              [
+                10,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/residential-house/evidence/current-game/exterior_0_-17_0_1.streamingsector.json",
+        "sha256": "35caec2baa4a48b8dff6297cf96ee85cfa787382dadc09bc318d4429a5af2f59",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_0_-17_0_1.streamingsector",
+        "expectedNodes": 650,
+        "nodeDeletions": [
+          {
+            "index": 98,
+            "type": "worldEntityProxyMeshNode",
+            "expectedOwnerGlobalId": "15517176256055994014"
+          },
+          {
+            "index": 425,
+            "type": "worldInstancedOccluderNode",
+            "expectedInstances": 3,
+            "removeWholeGroup": true
+          },
+          {
+            "index": 102,
+            "type": "worldEntityProxyMeshNode",
+            "expectedOwnerGlobalId": "13459647677527759162"
+          },
+          {
+            "index": 103,
+            "type": "worldEntityProxyMeshNode",
+            "expectedOwnerGlobalId": "556414404371767374"
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/residential-house/evidence/current-navigation/navigation_0_-9_0_3.streamingsector.json",
+        "sha256": "858eaae56ae86e68947cc5bf5719b8e44e798dbbf0ae41d61fbcb58021408e69",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\navigation_0_-9_0_3.streamingsector",
+        "expectedNodes": 4,
+        "nodeDeletions": [
+          {
+            "index": 2,
+            "type": "worldNavigationNode",
+            "expectedNavigationResource": "base\\worlds\\03_night_city\\sectors\\_generated\\navigation\\resources\\navigation_0_-14_0.navmesh"
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/residential-house/evidence/current-game/exterior_0_-5_0_3.streamingsector.json",
+        "sha256": "5af6d74bc8b645a412cfa48a2272c13957436b86d2e908e764c56c27cfebe4ad",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_0_-5_0_3.streamingsector",
+        "expectedNodes": 568,
+        "nodeDeletions": [
+          {
+            "index": 524,
+            "type": "worldInstancedOccluderNode",
+            "expectedInstances": 2,
+            "removeWholeGroup": true
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/residential-house/evidence/current-game/exterior_0_-9_0_2.streamingsector.json",
+        "sha256": "7935b38c7b6a913bb145adf656e080a9984929c88feebffce8f340a04c35e723",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_0_-9_0_2.streamingsector",
+        "expectedNodes": 672,
+        "nodeDeletions": [
+          {
+            "index": 571,
+            "type": "worldInstancedOccluderNode",
+            "expectedInstances": 3,
+            "removeWholeGroup": true
+          },
+          {
+            "index": 668,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              [
+                2,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/residential-house/evidence/current-game/exterior_0_-17_-1_1.streamingsector.json",
+        "sha256": "69097ecf0b151e6328171d59dd6b58e003409c57f196bfe7347f9bfe55904b97",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_0_-17_-1_1.streamingsector",
+        "expectedNodes": 468,
+        "nodeDeletions": [
+          {
+            "index": 399,
+            "type": "worldInstancedMeshNode",
+            "expectedInstances": 2,
+            "instanceDeletions": [
+              1
+            ]
+          },
+          {
+            "index": 387,
+            "type": "worldInstancedMeshNode",
+            "expectedInstances": 9,
+            "instanceDeletions": [
+              6,
+              7
+            ]
+          },
+          {
+            "index": 94,
+            "type": "worldStaticMeshNode"
+          }
+        ]
+      }
+    ]
+  },
+  "live_checklist": [
+    "Walk V through front, rear and garage entrances, step up from garage",
+    "Inspect floor joins and upstairs landing intrusion",
+    "Walk V from upstairs lounge onto balcony and around corner, inspect rail/floor collision",
+    "NPC front entry: observe path around open hinged leaf",
+    "NPC Street approach to Garage workshop, Rear vestibule, Upstairs lounge and Balcony front, then reverse",
+    "NPC house stairs foot to top, then reverse; inspect headroom and low-end guard"
+  ]
+}

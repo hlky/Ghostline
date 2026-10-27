@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "runtime_verified": false,
+  "status": "source-verified side entrance prepared for first playtest",
+  "original_front_bay_status": "not patched: low barrier blocks approach",
+  "visual_selection": {
+    "sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-11_-23_0_0.streamingsector",
+    "placement": 530,
+    "definition": 471,
+    "render_instance": 3,
+    "expected_instances": 4,
+    "position": [
+      -694.4476318359375,
+      -1417.975341796875,
+      7.552642822265625
+    ],
+    "yaw": 145.00000244926684,
+    "appearance": "Brick_a"
+  },
+  "collision_selection": {
+    "sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-2_-3_0_3.streamingsector",
+    "placement": 850,
+    "actor": 118,
+    "shape": 0,
+    "expected_actors": 128
+  },
+  "generator_selection": {
+    "visible_sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-11_-23_0_0.streamingsector",
+    "visible_placement": 427,
+    "mesh": "base\\environment\\decoration\\small_shops\\stands\\market_stand_01\\stand_generator.mesh",
+    "collision_sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-6_-12_0_1.streamingsector",
+    "collision_placement": 1377,
+    "actor": 48,
+    "shape_count": 2,
+    "expected_actors": 64,
+    "position": [
+      -693.905029296875,
+      -1419.030029296875,
+      7.279998779296875
+    ]
+  },
+  "street_navigation": {
+    "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/navigation_-3_-6_0_3.streamingsector.json",
+    "sha256": "69ce188e061a35bce2a6a4d4bd41e5bb366cba0fe50841638b9c8c057d034af7",
+    "agent": "Human",
+    "resource_index": 0,
+    "buffer_index": 16,
+    "point_local": [
+      -4.7,
+      -1.5,
+      -0.052641868591308594
+    ],
+    "height_difference": 0.052641868591308594,
+    "interior_layer_bridge": {
+      "id": "retained-interior",
+      "from": [
+        1.5,
+        -1.5,
+        0
+      ],
+      "to": [
+        1.7,
+        -1.5,
+        -0.052641868591308594
+      ]
+    }
+  },
+  "retrofit": {
+    "sectors": [
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-11_-23_0_0.streamingsector.json",
+        "sha256": "966e2aa9f5247edc765d57e2995e9e49c2371e436d5f00971356e101a5d59910",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-11_-23_0_0.streamingsector",
+        "expectedNodes": 558,
+        "nodeDeletions": [
+          {
+            "index": 530,
+            "type": "worldInstancedMeshNode",
+            "expectedInstances": 4,
+            "instanceDeletions": [
+              3
+            ]
+          },
+          {
+            "index": 427,
+            "type": "worldStaticMeshNode"
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-2_-3_0_3.streamingsector.json",
+        "sha256": "c9950b49efc9521b46a3cec01529c272ec24721b36fc1001d43d60f918bbb377",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-2_-3_0_3.streamingsector",
+        "expectedNodes": 872,
+        "nodeDeletions": [
+          {
+            "index": 850,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              [
+                118,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-6_-12_0_1.streamingsector.json",
+        "sha256": "0092b64685dadd9b50909a0ec1409ae914d4958177389f067f4160e879d431ce",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-6_-12_0_1.streamingsector",
+        "expectedNodes": 1389,
+        "nodeDeletions": [
+          {
+            "index": 1377,
+            "type": "worldCollisionNode",
+            "expectedActors": 64,
+            "actorDeletions": [
+              48
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "Outer doorway retains the removed bay pivot/yaw and Brick_a material. Interior faces are separate and face inward.",
+    "New ceiling is 3.5 m above floor, below the retained roof.",
+    "The interior already has vanilla floor navigation nearby. The custom layer is additive and does not carve vanilla tiles. Verify actual NPC paths and collision in game.",
+    "Only one instanced wall bay and one static generator are hidden. Collision deletion selects the matching wall shape and the whole two-shape generator actor.",
+    "Original fake rear door remains externally unchanged; generated rear interior wall blocks that untested route.",
+    "An explicit Regular/Floor bridge joins the retained layer-0 interior to the custom layer; its semantics are walking, not Jump area 12.",
+    "All four selected nodes match a fresh read of the complete installed archive/pc set. The base-content-only collision sector has 871 placements; the installed archive set supplies the surveyed 872-placement version. Do not substitute base-only placement indices."
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "runtime_verified": false,
+  "method": "independent adapted upstream Detour",
+  "build": {
+    "upstream": "https://github.com/recastnavigation/recastnavigation",
+    "revision": "9f4ce64458dfae86e1239c525ddc219c4e9e06f1",
+    "adaptations": [
+      "DT_VERTS_PER_POLYGON=3",
+      "DT_NAVMESH_VERSION=8",
+      "DT_POLYREF64=1",
+      "dtOffMeshConnection.userId=uint64_t"
+    ],
+    "executable_sha256": "a6283374a1a52dc6524f70238983149c7fc26e64528fd81371d28fb85829ae6a",
+    "compiler": "H:\\rocm-sdk\\10.0.0\\therock-dist-windows-multiarch-10.0.0\\lib\\llvm\\bin\\clang++.EXE"
+  },
+  "layout": "projects/experiments/building-lab/buildings/navigation-lab.building.json",
+  "layout_sha256": "1642340f6cf635cbe82e39700c8316c3618e5c85f83fe38919145dee8a9cc8a3",
+  "vanilla_reference": {
+    "sector": "base\\worlds\\03_night_city\\_compiled\\default\\navigation_1_-7_0_3.streamingsector",
+    "embedded_resource_index": 0,
+    "buffer_index": 0,
+    "vand_sha256": "3e21e02c143fc7b7ad5a2497dfd949e11f0d4f8085e5a12686d1086c6e866c8a"
+  },
+  "checks": {
+    "stairs": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": true,
+      "reachable": true,
+      "start_layer": 200,
+      "end_layer": 200,
+      "start_height_error": 0,
+      "end_height_error": 0,
+      "path_polygons": 19,
+      "status": 1073741824,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 1,
+      "start": [
+        1.5,
+        1.5,
+        0
+      ],
+      "end": [
+        1.5,
+        1.5,
+        4.4
+      ]
+    },
+    "door_openable": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": true,
+      "reachable": true,
+      "start_layer": 200,
+      "end_layer": 200,
+      "start_height_error": 0,
+      "end_height_error": 0,
+      "path_polygons": 3,
+      "status": 1073741824,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 1,
+      "start": [
+        7.5,
+        4.5,
+        0
+      ],
+      "end": [
+        10.5,
+        4.5,
+        0
+      ]
+    },
+    "door_locked": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": true,
+      "reachable": false,
+      "start_layer": 200,
+      "end_layer": 200,
+      "start_height_error": 0,
+      "end_height_error": 0,
+      "path_polygons": 3,
+      "status": 1073741888,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 1,
+      "start": [
+        7.5,
+        4.5,
+        0
+      ],
+      "end": [
+        10.5,
+        4.5,
+        0
+      ]
+    },
+    "rotated_tile_boundaries": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": true,
+      "reachable": true,
+      "start_layer": 200,
+      "end_layer": 200,
+      "start_height_error": 0,
+      "end_height_error": 0,
+      "path_polygons": 26,
+      "status": 1073741824,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 4,
+      "start": [
+        1.5,
+        1.5,
+        0
+      ],
+      "end": [
+        1.5,
+        1.5,
+        4.4
+      ]
+    },
+    "vanilla_bridge": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": true,
+      "reachable": true,
+      "start_layer": 200,
+      "end_layer": 0,
+      "start_height_error": 0,
+      "end_height_error": 0,
+      "path_polygons": 3,
+      "status": 1073741824,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 2,
+      "start": [
+        1.5,
+        1.5,
+        0
+      ],
+      "end": [
+        -1.2999979654948106,
+        0.6333414713542425,
+        -0.40000000000000036
+      ]
+    },
+    "vanilla_without_link": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": true,
+      "reachable": false,
+      "start_layer": 200,
+      "end_layer": 0,
+      "start_height_error": 0,
+      "end_height_error": 0,
+      "path_polygons": 4,
+      "status": 1073741888,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 2,
+      "start": [
+        1.5,
+        1.5,
+        0
+      ],
+      "end": [
+        -1.2999979654948106,
+        0.6333414713542425,
+        -0.40000000000000036
+      ]
+    },
+    "bridge_without_vanilla": {
+      "loaded": true,
+      "start_found": true,
+      "end_found": false,
+      "reachable": false,
+      "start_layer": 200,
+      "end_layer": -1,
+      "start_height_error": 0,
+      "end_height_error": 9.7,
+      "path_polygons": 0,
+      "status": 0,
+      "runtime_verified": false,
+      "method": "adapted upstream Detour",
+      "tiles": 1,
+      "start": [
+        1.5,
+        1.5,
+        0
+      ],
+      "end": [
+        -1.2999979654948106,
+        0.6333414713542425,
+        -0.40000000000000036
+      ]
+    }
+  }
+}

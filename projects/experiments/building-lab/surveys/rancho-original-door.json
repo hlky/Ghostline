@@ -1,0 +1,398 @@
+{
+  "schema_version": 1,
+  "runtime_verified": false,
+  "status": "User confirms V crosses after separate fake-leaf collision removal; NPC not yet tested",
+  "visual_selections": [
+    {
+      "placement": 398,
+      "mesh": "base\\environment\\decoration\\doors\\swinging\\door_swinging_casing_single_a.mesh",
+      "position": {
+        "$type": "Vector4",
+        "W": 0.0,
+        "X": -691.0728759765625,
+        "Y": -1418.51025390625,
+        "Z": 7.552639961242676
+      },
+      "orientation": {
+        "$type": "Quaternion",
+        "i": 0.0,
+        "j": 0.0,
+        "k": 0.8870110511779785,
+        "r": -0.4617483913898468
+      },
+      "action": "replace"
+    },
+    {
+      "placement": 419,
+      "mesh": "base\\environment\\decoration\\doors\\swinging\\door_swinging_h.mesh",
+      "position": {
+        "$type": "Vector4",
+        "W": 0.0,
+        "X": -691.4869384765625,
+        "Y": -1419.06787109375,
+        "Z": 7.552639961242676
+      },
+      "orientation": {
+        "$type": "Quaternion",
+        "i": 0.0,
+        "j": 0.0,
+        "k": 0.8917035460472107,
+        "r": -0.45261991024017334
+      },
+      "action": "replace"
+    },
+    {
+      "placement": 444,
+      "mesh": "base\\environment\\architecture\\santo_domingo\\rancho_coronado\\std_rcr_house_a_wall_a_gf_door_single_l300_a.mesh",
+      "position": {
+        "$type": "Vector4",
+        "W": 0.0,
+        "X": -691.9937744140625,
+        "Y": -1419.6978759765625,
+        "Z": 7.552639961242676
+      },
+      "orientation": {
+        "$type": "Quaternion",
+        "i": 0.0,
+        "j": 0.0,
+        "k": 0.8870110511779785,
+        "r": -0.4617483913898468
+      },
+      "action": "retain"
+    }
+  ],
+  "retrofit": {
+    "sectors": [
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-11_-23_0_0.streamingsector.json",
+        "sha256": "966e2aa9f5247edc765d57e2995e9e49c2371e436d5f00971356e101a5d59910",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-11_-23_0_0.streamingsector",
+        "expectedNodes": 558,
+        "nodeDeletions": [
+          {
+            "index": 398,
+            "type": "worldStaticMeshNode"
+          },
+          {
+            "index": 419,
+            "type": "worldStaticMeshNode"
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-2_-3_0_3.streamingsector.json",
+        "sha256": "c9950b49efc9521b46a3cec01529c272ec24721b36fc1001d43d60f918bbb377",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-2_-3_0_3.streamingsector",
+        "expectedNodes": 872,
+        "nodeDeletions": [
+          {
+            "index": 856,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              124
+            ]
+          },
+          {
+            "index": 850,
+            "type": "worldCollisionNode",
+            "expectedActors": 128,
+            "actorDeletions": [
+              [
+                123,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "source": "projects/experiments/building-lab/generated/rancho-retrofit/evidence/current-game/exterior_-6_-12_0_1.streamingsector.json",
+        "sha256": "0092b64685dadd9b50909a0ec1409ae914d4958177389f067f4160e879d431ce",
+        "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-6_-12_0_1.streamingsector",
+        "expectedNodes": 1389,
+        "nodeDeletions": [
+          {
+            "index": 1377,
+            "type": "worldCollisionNode",
+            "expectedActors": 64,
+            "actorDeletions": [
+              17
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "device": {
+    "id": "0:x:-1:-1",
+    "level": 0,
+    "mode": "AUTOMATIC",
+    "state": "CLOSED",
+    "position": [
+      -2.1791348243312867,
+      -3.070199086592818,
+      0.0
+    ],
+    "world_position": [
+      -691.462908368913,
+      -1419.0672773778888,
+      7.552642822265625
+    ],
+    "yaw": 180,
+    "world_yaw": 234.99997525275387,
+    "ref": "$/03_night_city/#building_rancho-retrofit_door_0_x_m1_m1",
+    "template": "base\\gameplay\\devices\\doors\\final\\single_door_hinged.ent",
+    "appearance": "doors_single_hinged_h",
+    "connection_ref": "$/03_night_city/#building_rancho-retrofit_door_0_x_m1_m1_connection",
+    "endpoints": [
+      [
+        -1.5,
+        -2.1,
+        0
+      ],
+      [
+        -1.5,
+        -4.5,
+        -0.052641868591308594
+      ]
+    ],
+    "world_endpoints": [
+      [
+        -691.8681127210801,
+        -1417.9544791885346,
+        7.552642822265625
+      ],
+      [
+        -689.902148409362,
+        -1419.3310634849183,
+        7.500000953674316
+      ]
+    ]
+  },
+  "matching_meshes": {
+    "leaf": "base\\environment\\decoration\\doors\\swinging\\door_swinging_h.mesh",
+    "casing": "base\\environment\\decoration\\doors\\swinging\\door_swinging_casing_single_a.mesh"
+  },
+  "motion": {
+    "source": "base\\gameplay\\devices\\doors\\final\\single_door_hinged.ent",
+    "clip": "doorOpenHinged",
+    "rotations": 0.25,
+    "sweep_degrees": [
+      0,
+      90
+    ],
+    "leaf_bounds_with_component_offset": [
+      [
+        -1.4050682735443114,
+        -0.09126460552215576,
+        0.02000001795589924
+      ],
+      [
+        0.03502822771668434,
+        0.08732765167951584,
+        2.455001583099365
+      ]
+    ],
+    "casing_centre_native_x": -0.6800003051757812,
+    "casing_matches_removed_placement": 398,
+    "clear_height": 2.5
+  },
+  "collision_replacement": {
+    "old_casing_actor": 17,
+    "old_door_bay_actor": 124,
+    "replacement": "generated jambs/header plus vanilla native physical casing and leaf; other shell actors retained",
+    "old_fake_leaf_box": {
+      "sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-2_-3_0_3.streamingsector",
+      "placement": 850,
+      "actor": 123,
+      "shape": 0,
+      "bounds_local": [
+        [
+          -2.2540605623523233,
+          -3.113297517724517,
+          0.030004028142796457
+        ],
+        [
+          -0.7529988035803445,
+          -3.0147179824399886,
+          2.470004078088893
+        ]
+      ],
+      "reason": "Separate fixed collision for original static fake leaf spans the entire clear opening."
+    }
+  },
+  "offline_navigation_controls": [
+    {
+      "locked": false,
+      "reverse": false,
+      "vanilla_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": true,
+        "start_layer": 0,
+        "end_layer": 0,
+        "start_height_error": 0,
+        "end_height_error": 0.0526419,
+        "path_polygons": 9,
+        "status": 1073741824,
+        "runtime_verified": false,
+        "method": "adapted upstream Detour",
+        "tiles": 2,
+        "start": [
+          -1.5,
+          -4.5,
+          -0.052641868591308594
+        ],
+        "end": [
+          0.49166666666666675,
+          -1.841666666666667,
+          0.0
+        ]
+      },
+      "custom_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": true,
+        "start_layer": 0,
+        "end_layer": 200,
+        "start_height_error": 0,
+        "end_height_error": 0,
+        "path_polygons": 5,
+        "status": 1073741824
+      }
+    },
+    {
+      "locked": false,
+      "reverse": true,
+      "vanilla_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": true,
+        "start_layer": 0,
+        "end_layer": 0,
+        "start_height_error": 0.0526419,
+        "end_height_error": 0,
+        "path_polygons": 9,
+        "status": 1073741824,
+        "runtime_verified": false,
+        "method": "adapted upstream Detour",
+        "tiles": 2,
+        "start": [
+          0.49166666666666675,
+          -1.841666666666667,
+          0.0
+        ],
+        "end": [
+          -1.5,
+          -4.5,
+          -0.052641868591308594
+        ]
+      },
+      "custom_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": true,
+        "start_layer": 200,
+        "end_layer": 0,
+        "start_height_error": 0,
+        "end_height_error": 0,
+        "path_polygons": 5,
+        "status": 1073741824
+      }
+    },
+    {
+      "locked": true,
+      "reverse": false,
+      "vanilla_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": false,
+        "start_layer": 0,
+        "end_layer": 0,
+        "start_height_error": 0,
+        "end_height_error": 0.0526419,
+        "path_polygons": 2,
+        "status": 1073741888,
+        "runtime_verified": false,
+        "method": "adapted upstream Detour",
+        "tiles": 2,
+        "start": [
+          -1.5,
+          -4.5,
+          -0.052641868591308594
+        ],
+        "end": [
+          0.49166666666666675,
+          -1.841666666666667,
+          0.0
+        ]
+      },
+      "custom_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": false,
+        "start_layer": 0,
+        "end_layer": 200,
+        "start_height_error": 0,
+        "end_height_error": 0,
+        "path_polygons": 2,
+        "status": 1073741888
+      }
+    },
+    {
+      "locked": true,
+      "reverse": true,
+      "vanilla_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": false,
+        "start_layer": 0,
+        "end_layer": 0,
+        "start_height_error": 0.0526419,
+        "end_height_error": 0,
+        "path_polygons": 9,
+        "status": 1073741888,
+        "runtime_verified": false,
+        "method": "adapted upstream Detour",
+        "tiles": 2,
+        "start": [
+          0.49166666666666675,
+          -1.841666666666667,
+          0.0
+        ],
+        "end": [
+          -1.5,
+          -4.5,
+          -0.052641868591308594
+        ]
+      },
+      "custom_last": {
+        "loaded": true,
+        "start_found": true,
+        "end_found": true,
+        "reachable": false,
+        "start_layer": 200,
+        "end_layer": 0,
+        "start_height_error": 0,
+        "end_height_error": 0,
+        "path_polygons": 5,
+        "status": 1073741888
+      }
+    }
+  ],
+  "runtime_observations": {
+    "door_opens": true,
+    "v_crossing_prior_revision": false,
+    "new_revision_crossing": null,
+    "v_crossing_current_revision": true,
+    "npc_crossing_current_revision": null
+  }
+}

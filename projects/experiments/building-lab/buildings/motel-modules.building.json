@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "id": "motel-modules",
+  "name": "Motel module lab",
+  "kit": "kit-88b76e34a5f5",
+  "origin": {
+    "x": 100.0,
+    "y": 100.0,
+    "z": 700.0,
+    "yaw": 0.0
+  },
+  "wall_appearance": "default",
+  "floor_appearance": "tiles_grey",
+  "rooms": [
+    {
+      "id": "ground",
+      "name": "Ground workshop",
+      "x": 0,
+      "y": 0,
+      "width": 9,
+      "depth": 15,
+      "level": 0
+    },
+    {
+      "id": "upper",
+      "name": "Upper workshop",
+      "x": 0,
+      "y": 0,
+      "width": 9,
+      "depth": 15,
+      "level": 1
+    },
+    {
+      "id": "service",
+      "name": "Ground service",
+      "x": 9,
+      "y": 0,
+      "width": 6,
+      "depth": 6,
+      "level": 0
+    }
+  ],
+  "openings": {
+    "0:y:3:1": "door_auto",
+    "0:x:1:0": "door_manual"
+  },
+  "navigation": {
+    "export": true,
+    "radius": 0.3,
+    "height": 1.8,
+    "layer": 200
+  },
+  "stairs": [
+    {
+      "id": "main",
+      "level": 0,
+      "x": 3,
+      "y": 3,
+      "width": 3,
+      "run": 9
+    }
+  ],
+  "modules": [
+    {
+      "id": "sample_handrail",
+      "asset": "a1cfe2cdd37d30bd00ec",
+      "position": [
+        13.5,
+        1.5,
+        0.0
+      ],
+      "yaw": 0,
+      "level": 0,
+      "appearance": "default",
+      "collision": "none",
+      "anchor": "base-center",
+      "source_sha256": "c9a2641538daa98ef87313d47292a307ac377061a9ea8deac6dc8d48a5680ab8",
+      "geometry_sha256": "b0e28cad5f34c99cd747226d4d77497838a50b7f06deceeba4ccbe963a57f3dc"
+    }
+  ]
+}

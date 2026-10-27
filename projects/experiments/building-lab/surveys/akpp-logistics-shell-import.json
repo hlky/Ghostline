@@ -1,0 +1,743 @@
+{
+  "schema_version": 1,
+  "name": "AKPP Logistics shop bay",
+  "layout": {
+    "schema_version": 1,
+    "id": "akpp-logistics-open-shell",
+    "name": "AKPP Logistics \u00b7 open shell",
+    "kit": "common-3m",
+    "origin": {
+      "x": -1112.02099609375,
+      "y": 1374.010498046875,
+      "z": 5.859007835388184,
+      "yaw": 1.3305869281602503
+    },
+    "rooms": [
+      {
+        "id": "akpp",
+        "name": "AKPP Logistics \u00b7 open interior",
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "depth": 6,
+        "level": 0,
+        "ceiling_height": 3.5
+      }
+    ],
+    "openings": {
+      "0:x:0:0": "passage",
+      "0:x:1:0": "passage",
+      "0:x:0:2": "passage",
+      "0:x:1:2": "passage",
+      "0:y:0:0": "passage",
+      "0:y:0:1": "passage",
+      "0:y:2:0": "passage",
+      "0:y:2:1": "passage"
+    },
+    "stairs": [],
+    "modules": [
+      {
+        "id": "office-desk",
+        "asset": "f9f0850dd0a8667e46b3",
+        "position": [
+          2.1,
+          2.0,
+          0.05
+        ],
+        "yaw": 0,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "source_sha256": "87df9366f8638b20ff2a9d639370b9d3cf19ed686e697bc5c50a0b154b3d1fc4",
+        "geometry_sha256": "6ab055bee48338e5252ebee0ade0711a89e0a21139d5336febd083915e598cf6",
+        "appearance": "default"
+      },
+      {
+        "id": "office-chair",
+        "asset": "b65b13d08280634a8090",
+        "position": [
+          2.1,
+          1.05,
+          0.05
+        ],
+        "yaw": 0,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "source_sha256": "3db719c5e0bf23f024719cc5b7774c6528f9b49310e2c2a6615ac081a0f68d17",
+        "geometry_sha256": "089785fa8b92619555b586632e48d0f2fd7a56a1b9efea6cfe7486a133e39b85",
+        "appearance": "default"
+      },
+      {
+        "id": "office-files-west-a",
+        "asset": "554befd3c3276b482057",
+        "position": [
+          0.85,
+          3.95,
+          0.05
+        ],
+        "yaw": -90,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "0384373b0687030db4b41760d119ede59cc0f872232e162fb3234969143fd3b5",
+        "geometry_sha256": "bdbc1325ec902ad5d8e4a83a35c000dbd81a11b004be5ff499f8eec42b643c84"
+      },
+      {
+        "id": "office-files-west-b",
+        "asset": "554befd3c3276b482057",
+        "position": [
+          0.85,
+          4.65,
+          0.05
+        ],
+        "yaw": -90,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "0384373b0687030db4b41760d119ede59cc0f872232e162fb3234969143fd3b5",
+        "geometry_sha256": "bdbc1325ec902ad5d8e4a83a35c000dbd81a11b004be5ff499f8eec42b643c84"
+      },
+      {
+        "id": "office-low-files",
+        "asset": "bfa9442390e3fdee1418",
+        "position": [
+          2.95,
+          5.13,
+          0.05
+        ],
+        "yaw": 180,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "983553db260c8ebff646c27124f698eb012dc6fd1231faa480c2637ea28a38b3",
+        "geometry_sha256": "38340d61197c1c1a839fb5add14b1d2c9d150d86e8cfbb0a965813c7c2d112c8"
+      },
+      {
+        "id": "office-parcel-a",
+        "asset": "70c8d041842140e5f6df",
+        "position": [
+          1.5,
+          5.12,
+          0.05
+        ],
+        "yaw": 0,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "5bfed55a9bbebd18d13b88b754bdea60803a3689a461a2655fad8ad15d56475e",
+        "geometry_sha256": "809c389de76da87e22f66576857368c61d631882c669cad7f8157ec09b6073d6"
+      },
+      {
+        "id": "office-parcel-b",
+        "asset": "70c8d041842140e5f6df",
+        "position": [
+          2.08,
+          5.12,
+          0.05
+        ],
+        "yaw": 0,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "5bfed55a9bbebd18d13b88b754bdea60803a3689a461a2655fad8ad15d56475e",
+        "geometry_sha256": "809c389de76da87e22f66576857368c61d631882c669cad7f8157ec09b6073d6"
+      },
+      {
+        "id": "office-parcel-stacked",
+        "asset": "70c8d041842140e5f6df",
+        "position": [
+          1.5,
+          5.12,
+          0.51
+        ],
+        "yaw": 7,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "5bfed55a9bbebd18d13b88b754bdea60803a3689a461a2655fad8ad15d56475e",
+        "geometry_sha256": "809c389de76da87e22f66576857368c61d631882c669cad7f8157ec09b6073d6"
+      },
+      {
+        "id": "office-paperwork",
+        "asset": "8c19776074348cd39c07",
+        "position": [
+          1.92,
+          1.86,
+          0.85
+        ],
+        "yaw": -8,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "default",
+        "source_sha256": "8d5da29616a021b3d02eb5d2d141645f1ec28041428aa44307d161730df701fe",
+        "geometry_sha256": "eaffb55e6b3e8efe93fd8368ae44896ad7598dad27c510496ff2ee3022c508a3"
+      },
+      {
+        "id": "office-coffee-mug",
+        "asset": "cac5fb021e9c548d1ca8",
+        "position": [
+          2.48,
+          1.82,
+          0.85
+        ],
+        "yaw": 25,
+        "level": 0,
+        "anchor": "base-center",
+        "collision": "none",
+        "appearance": "black",
+        "source_sha256": "6f3dcc446303fceaaffd33fa7fa67a91688371d92c4a04ea0364d0acd9e6977c",
+        "geometry_sha256": "f7d68ed1707b839cb2b3587b0598811e41e6dc255855ea9757c9f418a7c82f6c"
+      }
+    ],
+    "navigation": {
+      "export": false
+    },
+    "retrofit": {
+      "sectors": [
+        {
+          "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/exterior_-18_21_0_0.streamingsector.json",
+          "sha256": "60207a9b759142899eb3b621defd3170dc4cf928ef8781874ef3b9bfe0ba2123",
+          "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-18_21_0_0.streamingsector",
+          "expectedNodes": 6232,
+          "nodeDeletions": [
+            {
+              "index": 4738,
+              "type": "worldStaticMeshNode"
+            },
+            {
+              "index": 4739,
+              "type": "worldStaticMeshNode"
+            },
+            {
+              "index": 4362,
+              "type": "worldStaticMeshNode"
+            },
+            {
+              "index": 4741,
+              "type": "worldStaticMeshNode"
+            }
+          ]
+        },
+        {
+          "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/exterior_-9_10_0_1.streamingsector.json",
+          "sha256": "f206c367dcab0d9cde7fbe33dff58909425b98a451f3ab85dad3ec771ca6a22e",
+          "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-9_10_0_1.streamingsector",
+          "expectedNodes": 3599,
+          "nodeDeletions": [
+            {
+              "index": 3579,
+              "type": "worldCollisionNode",
+              "expectedActors": 128,
+              "actorDeletions": [
+                48
+              ]
+            },
+            {
+              "index": 3526,
+              "type": "worldCollisionNode",
+              "expectedActors": 64,
+              "actorDeletions": [
+                22
+              ]
+            },
+            {
+              "index": 3581,
+              "type": "worldCollisionNode",
+              "expectedActors": 128,
+              "actorDeletions": [
+                121
+              ]
+            },
+            {
+              "index": 2521,
+              "type": "worldInstancedOccluderNode",
+              "expectedInstances": 2,
+              "removeWholeGroup": true
+            }
+          ]
+        }
+      ]
+    },
+    "shell_doors": [
+      {
+        "id": "akpp-entrance",
+        "preset": "hinged_e",
+        "mode": "INTERACTIVE",
+        "position": [
+          5.198024941553059,
+          3.231608293645616,
+          0.01000213623046875
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0,
+        "from": [
+          4.400731284710523,
+          3.9116032132927185,
+          0
+        ],
+        "to": [
+          5.650731284710523,
+          3.9116032132927185,
+          0
+        ],
+        "gate": [
+          5.140731284710523,
+          3.0816032132927185,
+          5.2607312847105225,
+          4.741603213292718
+        ]
+      }
+    ],
+    "archive_name": "Ghostline_AKPPLogistics",
+    "shell_blockers": [
+      {
+        "center": [
+          5.851429623606921,
+          5.318965626574006,
+          2
+        ],
+        "size": [
+          1.4000000000000004,
+          0.67,
+          4
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0
+      },
+      {
+        "center": [
+          5.833122016346192,
+          0.7190020580751886,
+          2
+        ],
+        "size": [
+          1.4,
+          0.67,
+          4
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0
+      },
+      {
+        "center": [
+          5.192280967906071,
+          3.021570786828831,
+          3.26
+        ],
+        "size": [
+          3.1999999999999997,
+          1.97,
+          1.48
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0
+      },
+      {
+        "center": [
+          4.93875038833846,
+          4.647592694806738,
+          1.26
+        ],
+        "size": [
+          0.05000000000000071,
+          1.45,
+          2.52
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0
+      },
+      {
+        "center": [
+          4.925895264109731,
+          1.4176182760564804,
+          1.26
+        ],
+        "size": [
+          0.04999999999999982,
+          1.45,
+          2.52
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0
+      },
+      {
+        "center": [
+          4.254303437038258,
+          2.2752979469189762,
+          1.26
+        ],
+        "size": [
+          1.7000000000000002,
+          0.09999999999999987,
+          2.52
+        ],
+        "yaw": -90.22803291265609,
+        "level": 0
+      },
+      {
+        "center": [
+          2.1,
+          2,
+          0.45
+        ],
+        "size": [
+          1.09,
+          0.63,
+          0.8
+        ],
+        "level": 0
+      },
+      {
+        "id": "office-decor-office-files-west-a",
+        "center": [
+          0.85,
+          3.95,
+          0.856458592414856
+        ],
+        "size": [
+          0.5440087914466858,
+          0.6036987006664276,
+          1.612917184829712
+        ],
+        "yaw": -90,
+        "level": 0
+      },
+      {
+        "id": "office-decor-office-files-west-b",
+        "center": [
+          0.85,
+          4.65,
+          0.856458592414856
+        ],
+        "size": [
+          0.5440087914466858,
+          0.6036987006664276,
+          1.612917184829712
+        ],
+        "yaw": -90,
+        "level": 0
+      },
+      {
+        "id": "office-decor-office-low-files",
+        "center": [
+          2.95,
+          5.13,
+          0.46265389323234557
+        ],
+        "size": [
+          0.5440087914466858,
+          0.6036987006664276,
+          0.8253077864646912
+        ],
+        "yaw": 180,
+        "level": 0
+      },
+      {
+        "id": "office-decor-office-parcel-a",
+        "center": [
+          1.5,
+          5.12,
+          0.279919895529747
+        ],
+        "size": [
+          0.5310730040073395,
+          0.6073026657104492,
+          0.459839791059494
+        ],
+        "yaw": 0,
+        "level": 0
+      },
+      {
+        "id": "office-decor-office-parcel-b",
+        "center": [
+          2.08,
+          5.12,
+          0.279919895529747
+        ],
+        "size": [
+          0.5310730040073395,
+          0.6073026657104492,
+          0.459839791059494
+        ],
+        "yaw": 0,
+        "level": 0
+      },
+      {
+        "id": "office-decor-office-parcel-stacked",
+        "center": [
+          1.5,
+          5.12,
+          0.739919895529747
+        ],
+        "size": [
+          0.5310730040073395,
+          0.6073026657104492,
+          0.459839791059494
+        ],
+        "yaw": 7,
+        "level": 0
+      }
+    ],
+    "shell_liners": [
+      {
+        "start": [
+          0.25,
+          0.25,
+          0
+        ],
+        "end": [
+          4.12,
+          0.25,
+          0
+        ],
+        "height": 3.6,
+        "level": 0,
+        "double_sided": true
+      },
+      {
+        "start": [
+          0.25,
+          5.75,
+          0
+        ],
+        "end": [
+          0.25,
+          0.25,
+          0
+        ],
+        "height": 3.6,
+        "level": 0,
+        "double_sided": true
+      },
+      {
+        "start": [
+          4.12,
+          5.75,
+          0
+        ],
+        "end": [
+          0.25,
+          5.75,
+          0
+        ],
+        "height": 3.6,
+        "level": 0,
+        "double_sided": true
+      },
+      {
+        "start": [
+          4.12,
+          0.25,
+          0
+        ],
+        "end": [
+          4.12,
+          5.75,
+          0
+        ],
+        "height": 3.6,
+        "level": 0,
+        "double_sided": true,
+        "openings": [
+          {
+            "center": 3.6616032132927185,
+            "width": 1.4,
+            "height": 2.48
+          }
+        ]
+      },
+      {
+        "start": [
+          5.075,
+          3.211603213292719,
+          0
+        ],
+        "end": [
+          3.89,
+          3.211603213292719,
+          0
+        ],
+        "height": 3.6,
+        "level": 0,
+        "double_sided": true
+      },
+      {
+        "start": [
+          3.89,
+          4.611603213292718,
+          0
+        ],
+        "end": [
+          5.075,
+          4.611603213292718,
+          0
+        ],
+        "height": 3.6,
+        "level": 0,
+        "double_sided": true
+      }
+    ],
+    "shell_plinths": [
+      {
+        "center": [
+          2.18,
+          3,
+          0.025
+        ],
+        "size": [
+          3.5,
+          5.1,
+          0.05
+        ],
+        "level": 0,
+        "walkable": true
+      }
+    ],
+    "workstations": [
+      {
+        "id": "office",
+        "desk": "office-desk",
+        "chair": "office-chair",
+        "actor": {
+          "record": "Character.WorkerSpecialistMale",
+          "appearance": "service__worker_ma_generic_worker_01",
+          "active_on_start": true,
+          "workspot": "base\\workspots\\common\\chair\\generic__sit_chair__sit_around__01.workspot",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "yaw_offset": 0
+        },
+        "computer": {
+          "offset": [
+            0,
+            0.02,
+            1.011
+          ],
+          "yaw_offset": 90
+        }
+      }
+    ]
+  },
+  "sources": [
+    {
+      "source": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default/exterior_-18_21_0_0.streamingsector.json",
+      "path": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-18_21_0_0.streamingsector",
+      "sha256": "60207a9b759142899eb3b621defd3170dc4cf928ef8781874ef3b9bfe0ba2123",
+      "expectedNodes": 6232,
+      "placements": [
+        {
+          "id": "shell-4362",
+          "index": 4362,
+          "mesh": "base\\environment\\architecture\\common\\shop\\shop_aj_gf_w600_h400_aa.mesh",
+          "level": 0,
+          "side": "east",
+          "replacement_asset": "1c34a4960e1d3e59b3c0"
+        },
+        {
+          "id": "shell-5858-0",
+          "index": 5858,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_wall_w600_h400_aa.mesh",
+          "level": 0,
+          "side": "north",
+          "instance": 0
+        },
+        {
+          "id": "shell-5858-1",
+          "index": 5858,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_wall_w600_h400_aa.mesh",
+          "level": 0,
+          "side": "south",
+          "instance": 1
+        },
+        {
+          "id": "shell-5860-0",
+          "index": 5860,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_wall_w600_h400_aa.mesh",
+          "level": 0,
+          "side": "west",
+          "instance": 0
+        },
+        {
+          "id": "shell-5860-1",
+          "index": 5860,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_wall_w600_h400_aa.mesh",
+          "level": 0,
+          "side": "south",
+          "instance": 1
+        },
+        {
+          "id": "shell-5860-2",
+          "index": 5860,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_wall_w600_h400_aa.mesh",
+          "level": 0,
+          "side": "north",
+          "instance": 2
+        },
+        {
+          "id": "shell-4596",
+          "index": 4596,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_roof_w600_ab.mesh",
+          "level": 2
+        },
+        {
+          "id": "shell-4597",
+          "index": 4597,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_wall_w600_h200_gf_aa.mesh",
+          "level": 1,
+          "side": "south"
+        },
+        {
+          "id": "shell-4598",
+          "index": 4598,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_window_corner_w300_ab_merged.mesh",
+          "level": 1,
+          "side": "north"
+        },
+        {
+          "id": "shell-4599",
+          "index": 4599,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_window_corner_w300_ab_merged.mesh",
+          "level": 1,
+          "side": "east"
+        },
+        {
+          "id": "shell-5859-0",
+          "index": 5859,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_window_corner_w300_ab_merged.mesh",
+          "level": 1,
+          "side": "south",
+          "instance": 0
+        },
+        {
+          "id": "shell-5859-1",
+          "index": 5859,
+          "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_d_window_corner_w300_ab_merged.mesh",
+          "level": 1,
+          "side": "west",
+          "instance": 1
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "AKPP bay only; preserve Ru Lai rear wall.",
+    "Native hinged_e door replaces matching static leaf and casing at surveyed entrance.",
+    "Exact leaf/casing collision actors selected; no whole facade or collision group removal.",
+    "AKPP backing panel opened in all three LODs; only facade placement 4362 replaced with mod-owned variant and actor 3581:121 replaced by aperture-preserving boxes.",
+    "Six double-sided interior liners hide retained exterior backs and close the entrance returns.",
+    "Remove only AKPP occluder group 2521 (ground strip plus upper AKPP volume); Ru Lai group 2518 remains. Runtime verification pending.",
+    "Lining mouth narrowed to 1.40 m by 2.48 m to overlap the fixed casing; returns stop at X=5.075 behind the moving leaf. Static door sticker placement 4741 removed.",
+    "Inset 5 cm office floor cap covers retained sidewalk intersection; original sidewalk rendering and collision remain unchanged. Offline nav uses underlying room plane within 5 cm; native nav export disabled."
+  ]
+}

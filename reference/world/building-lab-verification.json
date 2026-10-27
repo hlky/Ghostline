@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-26",
+  "runtime_verified": false,
+  "tests": {
+    "command": ".venv/Scripts/python.exe -B -m unittest discover -s tests -q",
+    "count": 872,
+    "result": "OK"
+  },
+  "native_export": {
+    "layout": "projects/experiments/building-lab/buildings/navigation-lab.building.json",
+    "directory": "projects/experiments/building-lab/generated/v2-ready",
+    "resource_count": 4,
+    "embedded_navigation": true,
+    "serialization": "WolvenKit 8.17.4, independent ghostline-red readback",
+    "checks": [
+      "placements and NodeRefs",
+      "collision bytes",
+      "door component CRUIDs and initial states",
+      "device registry identities",
+      "navigation metadata and buffer bytes"
+    ]
+  },
+  "packages": {
+    "building-lab": {
+      "archive": "H:\\projects\\Ghostline\\projects\\experiments\\building-lab\\generated\\v2-ready\\generated\\packages\\building-lab-20c22f936414\\install\\archive\\pc\\mod\\Ghostline_BuildingLab.archive",
+      "zip": "H:\\projects\\Ghostline\\projects\\experiments\\building-lab\\generated\\v2-ready\\generated\\packages\\building-lab-20c22f936414\\Ghostline_BuildingLab.zip",
+      "archive_sha256": "5de778de1a342cbd46d78b24f64e95249f73e28933f56db7e5d677b1ec98d875",
+      "zip_sha256": "adab117da0da856a37e3c22f7b1103eae3107af29a26df45d7e084ba78e2ad25",
+      "install_payloads": {
+        "archive/pc/mod/Ghostline_BuildingLab.archive": "5de778de1a342cbd46d78b24f64e95249f73e28933f56db7e5d677b1ec98d875",
+        "archive/pc/mod/Ghostline_BuildingLab.archive.xl": "7323a86438ea468416d0ba82e46c56419866b04202bb04427c492cbca34fa714"
+      },
+      "verified": true,
+      "runtime_tested": false
+    },
+    "building-lab-test": {
+      "archive": "H:\\projects\\Ghostline\\projects\\experiments\\building-lab\\generated\\v2-ready\\generated\\packages\\building-lab-test-358ababcb392\\install\\archive\\pc\\mod\\Ghostline_BuildingLab.archive",
+      "zip": "H:\\projects\\Ghostline\\projects\\experiments\\building-lab\\generated\\v2-ready\\generated\\packages\\building-lab-test-358ababcb392\\Ghostline_BuildingLab.zip",
+      "archive_sha256": "4aafec52393f2289055d390f008e98850b99a42626e5963c23d6899476ea4145",
+      "zip_sha256": "06434ddc39cb0ee724d3da6ad8fbb2dc1c8021942898df7966e52be9032f9ba7",
+      "install_payloads": {
+        "archive/pc/mod/Ghostline_BuildingLab.archive": "4aafec52393f2289055d390f008e98850b99a42626e5963c23d6899476ea4145",
+        "archive/pc/mod/Ghostline_BuildingLab.archive.xl": "7323a86438ea468416d0ba82e46c56419866b04202bb04427c492cbca34fa714",
+        "bin/x64/plugins/cyber_engine_tweaks/mods/ghostline_building_lab/contract.json": "e89c24db4121a2c7691121a3e8e90ec2bdb734189e7bfe57e48e7b020a9a5936",
+        "bin/x64/plugins/cyber_engine_tweaks/mods/ghostline_building_lab/init.lua": "c2256134c778472d5ea4cfa17834064ffc7a765c0d19c19842974a0139482f04"
+      },
+      "verified": true,
+      "runtime_tested": false
+    }
+  },
+  "retrofit": {
+    "evidence": "projects/experiments/building-lab/surveys/rancho-entrance-pair.json",
+    "registered_sector_patches": 2,
+    "minimum_archivexl": "1.27.0",
+    "package_verified": true,
+    "installed": false
+  },
+  "navigation_oracle": "reference/world/building-navigation-proof.json",
+  "browser_checks": [
+    "three measured kit families and upper-floor stair guards",
+    "locked doorway rejects route",
+    "stair route reaches upper floor",
+    "precise facade-instance patch selection validates",
+    "native project export completes"
+  ],
+  "live_test": {
+    "status": "pending test-save selection",
+    "required_save": "dedicated manual test save predating installation",
+    "anchor": [
+      100,
+      100,
+      700
+    ],
+    "harness": "building-lab-test CET diagnostic profile",
+    "required_observations": [
+      "player collision and shaft guards",
+      "native game navigation queries",
+      "NPC through unlocked doorway",
+      "NPC up and down stairs",
+      "locked/unlocked door transitions",
+      "leave/return and save/load"
+    ]
+  }
+}
