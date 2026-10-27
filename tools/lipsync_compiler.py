@@ -509,16 +509,13 @@ class AlignedLine:
     device: str
 
 
-def compile_aligned_line(
-    document: dict[str, Any],
-    chunks: list[tuple[int, bytes]],
+def synthesize_aligned_line(
     model: dict[str, Any],
     line: AlignedLine,
     settings: CompileSettings,
-    source: str,
     provenance: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Append one generated clip; shared by single-line and manifest commands."""
+) -> tuple[dict[str, Any], np.ndarray, np.ndarray]:
+    """Produce the shared speech curves without serializing an animation resource."""
     if not 0 <= line.locstring <= 0xFFFFFFFFFFFFFFFF:
         raise ValueError("locstring must fit an unsigned 64-bit integer")
     if not np.isfinite(line.duration) or line.duration <= 0 or not line.alignment:
@@ -537,7 +534,6 @@ def compile_aligned_line(
         "alignment": [asdict(item) for item in line.alignment],
         "alignment_score": float(np.mean([item.score for item in line.alignment])),
         "device": line.device,
-        "source_animation": source,
         "settings": asdict(settings),
     }
     times = frame_times(line.duration, settings.fps)
@@ -561,6 +557,21 @@ def compile_aligned_line(
         settings.release_ms,
     )
     report["zeroed_tracks"] = zeroed
+    return report, times, values
+
+
+def compile_aligned_line(
+    document: dict[str, Any],
+    chunks: list[tuple[int, bytes]],
+    model: dict[str, Any],
+    line: AlignedLine,
+    settings: CompileSettings,
+    source: str,
+    provenance: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Append one generated clip; shared by single-line and manifest commands."""
+    report, times, values = synthesize_aligned_line(model, line, settings, provenance)
+    report["source_animation"] = source
     report.update(
         replace_lipsync_tracks(
             document,

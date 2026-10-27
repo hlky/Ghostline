@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "job_id": "gq_runtime_theft",
+  "title": "Borrowed Credentials",
+  "stages": [
+    {
+      "id": "reach_target",
+      "type": "reach_area",
+      "contract": {
+        "id": "reach_target",
+        "type": "reach_area",
+        "status": "ready",
+        "phase_resource": "mod\\npc_runtime\\phases\\gq_runtime_theft_reach.questphase",
+        "trigger": "#gq_runtime_theft_arrival",
+        "objective": "quests/minor_quest/gq_runtime_theft/reach_target",
+        "description_entry": "quests/minor_quest/gq_runtime_theft/reach_target/description",
+        "mappin": "quests/minor_quest/gq_runtime_theft/reach_target/mappin"
+      }
+    },
+    {
+      "id": "steal_credentials",
+      "type": "interact_device",
+      "contract": {
+        "id": "steal_credentials",
+        "type": "interact_device",
+        "status": "ready",
+        "phase_resource": "mod\\npc_runtime\\phases\\gq_runtime_theft_transfer.questphase",
+        "device": "#gq_runtime_theft_target",
+        "success_fact": "gq_runtime_theft_transferred",
+        "controller_class": "ScriptableDeviceComponentPS",
+        "action": "TogglePersonalLink",
+        "send_action": false,
+        "completion_function": "GhostlineDataTheftTransferred"
+      }
+    },
+    {
+      "id": "resolve_delivery",
+      "type": "choice_gate",
+      "contract": {
+        "id": "resolve_delivery",
+        "type": "choice_gate",
+        "status": "ready",
+        "phase_resource": "mod\\npc_runtime\\phases\\gq_runtime_theft_choice.questphase",
+        "gate_kind": "fact",
+        "join": true,
+        "branches": [
+          {
+            "id": "deliver",
+            "condition": "gq_runtime_theft_choose_deliver",
+            "set_fact": "gq_runtime_theft_delivered"
+          },
+          {
+            "id": "keep_copy",
+            "condition": "gq_runtime_theft_choose_keep_copy",
+            "set_fact": "gq_runtime_theft_kept_copy"
+          }
+        ]
+      }
+    }
+  ],
+  "binding": {
+    "mode": "catalog_access_point",
+    "device": "#gq_runtime_theft_target",
+    "trigger": "#gq_runtime_theft_arrival",
+    "catalog": "reference/world/antenna-access-points.json",
+    "debug_name": "{ma_wat_ich_01_dvc_access_point_backalley}"
+  },
+  "reach_radius": 10.0,
+  "reward_amount": 500,
+  "offer": "Extract credentials from this access point. Deliver them, or deliver them while retaining a private copy. Payment: 500 eddies.",
+  "choice_labels": {
+    "deliver": "Deliver the credentials.",
+    "keep_copy": "Deliver them and keep a private copy."
+  },
+  "transfer_duration": 5.0,
+  "target": {
+    "node_ref": "$/03_night_city/c_watson/little_china/loc_ma_wat_lch_01_prefabEW7QTTA/loc_ma_wat_lch_01_gameplay_prefabX3U35KQ/loc_ma_wat_lch_01_devices_prefabLDMVKYI/ma_wat_ich_01_dvc_access_point_backalley",
+    "position": {
+      "x": -1527.83411,
+      "y": 1809.90979,
+      "z": 31.5499973
+    },
+    "debug_name": "{ma_wat_ich_01_dvc_access_point_backalley}",
+    "resource": "base\\gameplay\\devices\\masters\\access_points\\antenna_access_point_small.ent",
+    "sector": "base\\worlds\\03_night_city\\_compiled\\default\\exterior_-24_28_0_0.streamingsector",
+    "catalog_sha256": "d21dc6bbe01683499088b8393fed8f2239b16c0fa2cf59ecb5a9d133faf2e788"
+  },
+  "sha256": "98d2d0af8f8aa192484bb62f85682887c199ff2f52d75a20195b5ea3363dd7c5",
+  "revision": 416469167,
+  "runtime_tested": false,
+  "presentation": "native temporary mappin, notifications and choices; no journal resource"
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "runtime_tested": false,
+  "package_receipt": "generated/packages/npc-runtime-cd7171733c10/verification.json",
+  "checks": {
+    "spawn": "untested",
+    "jaw_input": "untested",
+    "facial_release": "untested",
+    "native_choices": "untested",
+    "loose_audio_replacement": "untested",
+    "subtitles": "untested",
+    "synchronization": "untested",
+    "interruption": "untested",
+    "pause_resume": "untested",
+    "npc_removal": "untested",
+    "session_load": "untested",
+    "authored_dialogue_priority": "untested",
+    "catalogue_target": "untested",
+    "download_prompt": "untested",
+    "personal_link_animation": "untested",
+    "transfer_progress": "untested",
+    "transfer_interruption": "untested",
+    "job_outcomes": "untested",
+    "job_save_resume": "untested",
+    "job_payment_idempotence": "untested"
+  },
+  "observations": [],
+  "offline_checks": {
+    "redscript": "passed (final staged package, isolated cache)",
+    "lua_lifecycle": "passed (mock API)",
+    "graph_roundtrip": "passed (154 curve inputs and speech gate)",
+    "loose_slot_replacement": "passed (why_you, client, why_you; copied install-stage inputs)",
+    "package_hashes": "passed",
+    "runtime_tested": false,
+    "job_contract": "passed (10 tests)",
+    "job_choices": "passed (mock API)",
+    "dialogue_ownership": "passed (mock API)"
+  },
+  "installation": {
+    "installed": true,
+    "receipt": "generated/installation.json",
+    "audioware_version": "1.9.9",
+    "script_compilation": "passed (shipped release scripts, isolated cache)",
+    "installed_file_hashes": "passed (17 prototype files; Audioware unchanged)",
+    "game_launch": "untested"
+  }
+}

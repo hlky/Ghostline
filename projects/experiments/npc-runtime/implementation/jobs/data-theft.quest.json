@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "gq_runtime_theft",
+  "title": "Borrowed Credentials",
+  "description": "Fixed runtime proof: download credentials from a catalogue access point, then deliver them or retain a copy.",
+  "stages": [
+    {
+      "id": "reach_target",
+      "type": "reach_area",
+      "status": "ready",
+      "phase_resource": "mod\\npc_runtime\\phases\\gq_runtime_theft_reach.questphase",
+      "trigger": "#gq_runtime_theft_arrival",
+      "objective": "quests/minor_quest/gq_runtime_theft/reach_target",
+      "description_entry": "quests/minor_quest/gq_runtime_theft/reach_target/description",
+      "mappin": "quests/minor_quest/gq_runtime_theft/reach_target/mappin"
+    },
+    {
+      "id": "steal_credentials",
+      "type": "interact_device",
+      "status": "ready",
+      "phase_resource": "mod\\npc_runtime\\phases\\gq_runtime_theft_transfer.questphase",
+      "device": "#gq_runtime_theft_target",
+      "success_fact": "gq_runtime_theft_transferred",
+      "controller_class": "ScriptableDeviceComponentPS",
+      "action": "TogglePersonalLink",
+      "send_action": false,
+      "completion_function": "GhostlineDataTheftTransferred"
+    },
+    {
+      "id": "resolve_delivery",
+      "type": "choice_gate",
+      "status": "ready",
+      "phase_resource": "mod\\npc_runtime\\phases\\gq_runtime_theft_choice.questphase",
+      "gate_kind": "fact",
+      "join": true,
+      "branches": [
+        {
+          "id": "deliver",
+          "condition": "gq_runtime_theft_choose_deliver",
+          "set_fact": "gq_runtime_theft_delivered"
+        },
+        {
+          "id": "keep_copy",
+          "condition": "gq_runtime_theft_choose_keep_copy",
+          "set_fact": "gq_runtime_theft_kept_copy"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "binding": {
+    "mode": "catalog_access_point",
+    "device": "#gq_runtime_theft_target",
+    "trigger": "#gq_runtime_theft_arrival",
+    "catalog": "reference/world/antenna-access-points.json",
+    "debug_name": "{ma_wat_ich_01_dvc_access_point_backalley}"
+  },
+  "reach_radius": 10.0,
+  "reward_amount": 500,
+  "offer": "Extract credentials from this access point. Deliver them, or deliver them while retaining a private copy. Payment: 500 eddies.",
+  "choice_labels": {
+    "deliver": "Deliver the credentials.",
+    "keep_copy": "Deliver them and keep a private copy."
+  },
+  "transfer_duration": 5.0
+}
