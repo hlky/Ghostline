@@ -1,0 +1,480 @@
+{
+  "research_date": "2026-10-26",
+  "scope": "Read-only feasibility investigation; no new gameplay observation, packing or installation.",
+  "corpus_summary_reused_from": "generated/building-interiors/evidence.json",
+  "corpus_method": "Lexical counts of serialized $type and architecture $value fields; neither count is a placed-instance count. Resources are referenced paths, not archive-existence certification.",
+  "corpus_files": 16256,
+  "node_type_occurrences": {
+    "worldInstancedDestructibleMeshNode": 458351,
+    "worldPhysicalDestructionNode": 17548,
+    "worldBakedDestructionNode": 1817,
+    "worldFoliageDestructionNode": 16798
+  },
+  "freshly_inspected_serialized_sector_samples": {
+    "worldPhysicalDestructionNode": {
+      "file": "converted\\world-location-database\\full-world\\serialized-sectors\\base\\worlds\\03_night_city\\_compiled\\default\\exterior_-100_-94_1_0.streamingsector.json",
+      "index": 3,
+      "node": {
+        "$type": "worldPhysicalDestructionNode",
+        "debugName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "physical_destruction"
+        },
+        "sourcePrefabHash": "8816502975254842975",
+        "mesh": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_shack_a_wall_window_l300_ab_glass_dst.mesh"
+          },
+          "Flags": "Soft"
+        },
+        "destructionParams": {
+          "$type": "physicsDestructionParams",
+          "markEdgeChunks": true,
+          "damageThreshold": 1.0,
+          "bondEndurance": 10.0,
+          "impulseDiminishingFactor": 0.47999998927116394,
+          "debrisTimeout": true,
+          "debrisTimeoutMin": 10.0,
+          "debrisTimeoutMax": 20.0,
+          "visualsRemain": true
+        },
+        "destructionLevelData": [
+          {
+            "$type": "physicsDestructionLevelData",
+            "filterData": {
+              "HandleId": "10",
+              "Data": {
+                "$type": "physicsFilterData",
+                "simulationFilter": {
+                  "$type": "physicsSimulationFilter",
+                  "mask1": "16448",
+                  "mask2": "765"
+                },
+                "queryFilter": {
+                  "$type": "physicsQueryFilter",
+                  "mask2": "67649600"
+                },
+                "preset": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "Destructible"
+                }
+              }
+            },
+            "fracturingEffect": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\fx\\environment\\destructibles\\windows\\dest_int_ent_industrial_a_skylight_ceiling_l100_w100_a_glass_dst.effect"
+              },
+              "Flags": "Soft"
+            }
+          },
+          {
+            "$type": "physicsDestructionLevelData",
+            "filterData": {
+              "HandleId": "11",
+              "Data": {
+                "$type": "physicsFilterData",
+                "simulationFilter": {
+                  "$type": "physicsSimulationFilter",
+                  "mask1": "4096",
+                  "mask2": "236"
+                },
+                "queryFilter": {
+                  "$type": "physicsQueryFilter",
+                  "mask2": "528384"
+                },
+                "preset": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "Debris"
+                }
+              }
+            },
+            "fracturingEffect": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\fx\\environment\\destructibles\\windows\\dest_int_ent_industrial_a_skylight_ceiling_l100_w100_a_glass_dst_small.effect"
+              },
+              "Flags": "Soft"
+            }
+          },
+          {
+            "$type": "physicsDestructionLevelData",
+            "filterData": {
+              "HandleId": "12",
+              "Data": {
+                "$type": "physicsFilterData",
+                "simulationFilter": {
+                  "$type": "physicsSimulationFilter",
+                  "mask1": "4096",
+                  "mask2": "236"
+                },
+                "queryFilter": {
+                  "$type": "physicsQueryFilter",
+                  "mask2": "528384"
+                },
+                "preset": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "Debris"
+                }
+              }
+            },
+            "fracturingEffect": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\fx\\environment\\destructibles\\windows\\dest_int_ent_industrial_a_skylight_ceiling_l100_w100_a_glass_dst_small.effect"
+              },
+              "Flags": "Soft"
+            }
+          },
+          {
+            "$type": "physicsDestructionLevelData",
+            "filterData": {
+              "HandleId": "13",
+              "Data": {
+                "$type": "physicsFilterData",
+                "simulationFilter": {
+                  "$type": "physicsSimulationFilter",
+                  "mask1": "16448",
+                  "mask2": "765"
+                },
+                "queryFilter": {
+                  "$type": "physicsQueryFilter",
+                  "mask2": "67649600"
+                },
+                "preset": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "Destructible"
+                }
+              }
+            },
+            "fracturingEffect": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\fx\\environment\\destructibles\\windows\\dest_int_ent_industrial_a_skylight_ceiling_l100_w100_a_glass_dst_small.effect"
+              },
+              "Flags": "Soft"
+            }
+          }
+        ],
+        "audioMetadata": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "phys_set_dst_glass_window_small"
+        },
+        "systemsToNotifyFlags": 15
+      }
+    },
+    "worldInstancedDestructibleMeshNode": {
+      "file": "converted\\world-location-database\\full-world\\serialized-sectors\\base\\worlds\\03_night_city\\_compiled\\default\\exterior_-101_-50_0_0.streamingsector.json",
+      "index": 17,
+      "node": {
+        "$type": "worldInstancedDestructibleMeshNode",
+        "debugName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "trash_packaging_c_005"
+        },
+        "sourcePrefabHash": "6687836693091691414",
+        "mesh": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\environment\\decoration\\garbage\\trash\\trash_packaging\\trash_packaging_c.mesh"
+          },
+          "Flags": "Soft"
+        },
+        "forceAutoHideDistance": 50.088443756103516,
+        "occluderType": "None",
+        "castShadows": "Always",
+        "castLocalShadows": "Always",
+        "castRayTracedGlobalShadows": "Always",
+        "castRayTracedLocalShadows": "Always",
+        "version": 2,
+        "simulationType": "Kinematic",
+        "startInactive": false,
+        "turnDynamicOnImpulse": true,
+        "useAggregate": true,
+        "isDestructible": true,
+        "filterData": {
+          "HandleId": "23",
+          "Data": {
+            "$type": "physicsFilterData",
+            "simulationFilter": {
+              "$type": "physicsSimulationFilter",
+              "mask1": "4096",
+              "mask2": "236"
+            },
+            "queryFilter": {
+              "$type": "physicsQueryFilter",
+              "mask2": "528384"
+            },
+            "preset": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "Debris"
+            }
+          }
+        },
+        "fracturingEffect": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\fx\\environment\\destructibles\\trash\\dest_trash_packaging_c.effect"
+          },
+          "Flags": "Soft"
+        },
+        "cookedInstanceTransforms": {
+          "$type": "worldTransformBuffer",
+          "sharedDataBuffer": {
+            "HandleId": "22",
+            "Data": {
+              "$type": "worldSharedDataBuffer",
+              "buffer": {
+                "BufferId": "1",
+                "Flags": 4063232,
+                "Bytes": {
+                  "encoded_length": 2092,
+                  "sha256_text": "24aa0582ac646c370b89018a3d187f9a6795489ed55838a83d0c14e198fc7173"
+                }
+              }
+            }
+          },
+          "numElements": 5
+        }
+      }
+    },
+    "worldBakedDestructionNode": {
+      "file": "converted\\world-location-database\\full-world\\serialized-sectors\\base\\worlds\\03_night_city\\_compiled\\default\\exterior_-10_-13_0_0.streamingsector.json",
+      "index": 382,
+      "node": {
+        "$type": "worldBakedDestructionNode",
+        "debugName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "blockade_d"
+        },
+        "sourcePrefabHash": "12764360037779294002",
+        "mesh": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\environment\\decoration\\public_utility\\roadblock\\blockade\\blockade_d.mesh"
+          },
+          "Flags": "Soft"
+        },
+        "forceAutoHideDistance": 59.3214111328125,
+        "castShadows": "Always",
+        "castLocalShadows": "Always",
+        "castRayTracedGlobalShadows": "Always",
+        "castRayTracedLocalShadows": "Always",
+        "version": 2,
+        "meshFractured": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\environment\\decoration\\public_utility\\roadblock\\blockade\\destruction\\blockade_d_dst_dynamic.mesh"
+          },
+          "Flags": "Soft"
+        },
+        "numFrames": 90.0,
+        "filterData": {
+          "HandleId": "498",
+          "Data": {
+            "$type": "physicsFilterData",
+            "simulationFilter": {
+              "$type": "physicsSimulationFilter",
+              "mask1": "16448",
+              "mask2": "765"
+            },
+            "queryFilter": {
+              "$type": "physicsQueryFilter",
+              "mask2": "67649600"
+            },
+            "preset": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "Destructible"
+            }
+          }
+        },
+        "destructionEffect": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\fx\\environment\\destructibles\\blockade\\dest_blockade.effect"
+          },
+          "Flags": "Soft"
+        },
+        "audioMetadata": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "phys_set_dst_concrete_surface"
+        }
+      }
+    }
+  },
+  "fresh_archive_mesh_reads": [
+    {
+      "file": "generated\\environmental-damage\\blockade_d.mesh.json",
+      "serialized_json_sha256": "fcc7cc72b39dc63bae309e2c7458aafb5bb293768235999ccea5f1dce450f467",
+      "parameters": [
+        {
+          "type": "meshMeshParamPhysics",
+          "array_lengths": {}
+        },
+        {
+          "type": "meshMeshParamOccluderData",
+          "array_lengths": {}
+        }
+      ],
+      "bone_count": 0
+    },
+    {
+      "file": "generated\\environmental-damage\\blockade_d_dst_dynamic.mesh.json",
+      "serialized_json_sha256": "f29b3b6ee16d556c9df3ac70668a4b98ed99dc239d0e6205f4d3baffb2e98aa8",
+      "parameters": [
+        {
+          "type": "meshMeshParamBakedDestructionData",
+          "array_lengths": {
+            "regionData": 11,
+            "indices": 8
+          }
+        },
+        {
+          "type": "meshMeshParamPhysics",
+          "array_lengths": {}
+        },
+        {
+          "type": "meshMeshParamGpuBuffer",
+          "array_lengths": {}
+        }
+      ],
+      "bone_count": 0
+    },
+    {
+      "file": "generated\\environmental-damage\\cinder_block.mesh.json",
+      "serialized_json_sha256": "5817e4ff9343a9181ad930ef49c2f66286ac9f16c5f62cb856464eafdffd91ea",
+      "parameters": [
+        {
+          "type": "meshMeshParamPhysics",
+          "array_lengths": {}
+        }
+      ],
+      "bone_count": 0
+    },
+    {
+      "file": "generated\\environmental-damage\\trash_packaging_c.mesh.json",
+      "serialized_json_sha256": "7d01f2a2c32a8227ff1893fa985831ef0cbc8387b153f05a10477fb3d22ebcfb",
+      "parameters": [
+        {
+          "type": "meshMeshParamPhysics",
+          "array_lengths": {}
+        }
+      ],
+      "bone_count": 0
+    },
+    {
+      "file": "generated\\environmental-damage\\wat_kab_shack_a_wall_window_l300_ab_glass_dst.mesh.json",
+      "serialized_json_sha256": "fe9b34b528dc611a39acb5de3cb75f53087024d6905e42fbe679fb62b0a6b55a",
+      "parameters": [
+        {
+          "type": "meshMeshParamPhysics",
+          "array_lengths": {}
+        },
+        {
+          "type": "meshMeshParamDestructionStepData",
+          "array_lengths": {
+            "offsets": 74
+          }
+        },
+        {
+          "type": "meshMeshParamDestructionBonds",
+          "array_lengths": {
+            "bonds": 105
+          }
+        },
+        {
+          "type": "meshMeshParamDestructionBoneChunkMapping",
+          "array_lengths": {
+            "boneChunkMasks": 74
+          }
+        },
+        {
+          "type": "meshMeshParamDestructionChunkIndicesOffsets",
+          "array_lengths": {
+            "offsets": 543,
+            "chunkOffsets": 5,
+            "indices": 5
+          }
+        }
+      ],
+      "bone_count": 74
+    }
+  ],
+  "archive_reads_report": [
+    {
+      "resource": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_shack_a_wall_window_l300_ab_glass_dst.mesh",
+      "output": "H:\\projects\\Ghostline\\generated\\environmental-damage\\wat_kab_shack_a_wall_window_l300_ab_glass_dst.mesh.json",
+      "error": null
+    },
+    {
+      "resource": "base\\environment\\decoration\\garbage\\trash\\trash_packaging\\trash_packaging_c.mesh",
+      "output": "H:\\projects\\Ghostline\\generated\\environmental-damage\\trash_packaging_c.mesh.json",
+      "error": null
+    },
+    {
+      "resource": "base\\environment\\decoration\\public_utility\\roadblock\\blockade\\blockade_d.mesh",
+      "output": "H:\\projects\\Ghostline\\generated\\environmental-damage\\blockade_d.mesh.json",
+      "error": null
+    },
+    {
+      "resource": "base\\environment\\decoration\\public_utility\\roadblock\\blockade\\destruction\\blockade_d_dst_dynamic.mesh",
+      "output": "H:\\projects\\Ghostline\\generated\\environmental-damage\\blockade_d_dst_dynamic.mesh.json",
+      "error": null
+    },
+    {
+      "resource": "base\\environment\\architecture\\common\\destroyed_wall\\cinder_block.mesh",
+      "output": "H:\\projects\\Ghostline\\generated\\environmental-damage\\cinder_block.mesh.json",
+      "error": null
+    }
+  ],
+  "world_builder_fork": {
+    "revision": "de6fa54b6a892df142f014963c287e1cfc1a544e",
+    "repository": "https://github.com/Akiway/CP77_entSpawner",
+    "installed_physics_modules": [
+      "dynamicMesh.lua"
+    ],
+    "inspection": "Three destruction exporters are present in the cached fork, absent from the installed editor physics directory; in-game fracture preview is explicitly unsupported."
+  },
+  "cached_script_evidence": {
+    "path": ".tmp/final.reds",
+    "sha256": "156ba686bf5a507f59fd604abf679a377edb4f2032df7620fb40c366794041b8",
+    "caveat": "Cached decompilation; game version and freshness not independently established in this investigation.",
+    "locations": {
+      "ExplosiveDevice.Explode": 120621,
+      "ExplosiveDevice.DoAttack": 120666,
+      "EnvironmentDamageReceiverComponent.DealDamageFromParticle": 241534,
+      "DestructibleMasterDeviceControllerPS": 259079,
+      "DestructibleMasterDevice.OnPhysicalDestructionEvent": 279959,
+      "AOEArea.ActivateEffect": 487085
+    }
+  },
+  "unproven": [
+    "New Ghostline destruction placement in game",
+    "New custom fracture-data authoring pipeline",
+    "Automatic collision/navmesh updates for opened routes",
+    "Destruction persistence and restore behavior",
+    "Target filtering and balance for custom environmental attacks"
+  ]
+}
