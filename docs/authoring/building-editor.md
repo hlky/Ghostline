@@ -1,6 +1,6 @@
 # Building Lab
 
-For a visual introduction, open the [screenshot walkthrough](building-ui-walkthrough.html),
+For a visual introduction, open the [screenshot walkthrough](building-ui-walkthrough.md),
 which tours the workspace, room and object inspectors, module library, quest
 bindings, project files, world placement, validation and export review.
 
