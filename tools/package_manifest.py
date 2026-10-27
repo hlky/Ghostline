@@ -110,6 +110,42 @@ def depot_hash(path: str) -> int:
     return value
 
 
+def cr2w_embedded_paths(path: Path) -> set[str]:
+    """Read actual embedded imports, so raw declarations cannot hide missing files."""
+    with path.open("rb") as stream:
+        header = stream.read(160)
+        if header[:4] != b"CR2W":
+            return set()
+        if len(header) != 160:
+            raise PackageError(f"Truncated CR2W header: {path}")
+        file_size = path.stat().st_size
+
+        def table(index: int, stride: int) -> bytes:
+            offset, count = struct.unpack_from("<II", header, 40 + index * 12)
+            if not count:
+                return b""
+            if offset < 160 or offset + count * stride > file_size:
+                raise PackageError(f"Invalid embedded dependency table {index}: {path}")
+            stream.seek(offset)
+            return stream.read(count * stride)
+
+        embedded = table(6, 16)
+        if not embedded:
+            return set()
+        imports, strings = table(2, 8), table(0, 1)
+        result = set()
+        for offset in range(0, len(embedded), 16):
+            import_index = struct.unpack_from("<I", embedded, offset)[0] - 1
+            if not 0 <= import_index < len(imports) // 8:
+                raise PackageError(f"Invalid embedded import index: {path}")
+            string_offset = struct.unpack_from("<I", imports, import_index * 8)[0]
+            end = strings.find(b"\0", string_offset)
+            if not 0 <= string_offset < len(strings) or end < 0:
+                raise PackageError(f"Invalid embedded resource name: {path}")
+            result.add(depot_path(strings[string_offset:end].decode("utf-8")))
+        return result
+
+
 def inventory_hashes(inventory: Mapping[str, Path]) -> dict[int, str]:
     result: dict[int, str] = {}
     for path in inventory:
@@ -169,6 +205,14 @@ def archive_inventory(root: Path) -> dict[str, Path]:
     return result
 
 
+def minimum_archive_version(profile, aliases):
+    declared = profile.get("minimum_archivexl")
+    if declared is not None and (not isinstance(declared, str) or not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?", declared)):
+        raise PackageError("minimum_archivexl must be a numeric version")
+    versions = [value for value in (declared, "1.14" if aliases else None) if value]
+    return max(versions, key=lambda value: tuple(int(part) for part in value.split("."))) if versions else None
+
+
 def filter_registration(document: dict, profile: dict, quests: set[str]) -> dict:
     def keep(path: str) -> bool:
         parts = depot_path(path).split("/")
@@ -196,6 +240,15 @@ def filter_registration(document: dict, profile: dict, quests: set[str]) -> dict
         for category, locales in document.get("localization", {}).items()
     }
     result["streaming"] = {"blocks": [path for path in document.get("streaming", {}).get("blocks", []) if keep(path)]}
+    requested_sectors = profile.get("streaming_sectors", [])
+    if not isinstance(requested_sectors, list) or any(not isinstance(path, str) for path in requested_sectors) or len(requested_sectors) != len(set(requested_sectors)):
+        raise PackageError("Streaming sector selections must be unique depot paths")
+    available_sectors = document.get("streaming", {}).get("sectors", [])
+    selected_sectors = [entry for entry in available_sectors if entry.get("path") in requested_sectors]
+    if Counter(entry["path"] for entry in selected_sectors) != Counter(requested_sectors):
+        raise PackageError("Each selected streaming sector patch must have exactly one registration")
+    if selected_sectors:
+        result["streaming"]["sectors"] = selected_sectors
     patches = {source: targets for source, targets in document.get("resource", {}).get("patch", {}).items() if keep(source)}
     if patches:
         result["resource"] = {"patch": patches}
@@ -378,6 +431,7 @@ def build_manifest(profile_name: str | None = None, *, root: Path = ROOT, projec
                     "retained_file_count": len(bundle),
                 }
                 require(bundle)
+        dependencies.difference_update(cr2w_embedded_paths(inventory[path]))
         require(dependencies)
     payloads = {path: inventory[path] for path in sorted(selected)}
     groups: dict[str, list[str]] = defaultdict(list)
@@ -420,6 +474,6 @@ def build_manifest(profile_name: str | None = None, *, root: Path = ROOT, projec
         "excluded_paths": sorted(set(inventory) - selected), "mesh_aliases": aliases,
         "deduplicated_bytes": bytes_removed,
         "dependency_scope": "Packed string-table paths plus conservative authored raw/loose paths and inventory-resolved ResourcePath hashes; unresolved hashes, embedded binary-only references and external game paths still require validation.",
-        "minimum_archivexl": "1.14" if aliases else None,
+        "minimum_archivexl": minimum_archive_version(profile, aliases),
     }
     return PackageManifest(profile_name, profile["archive_name"], payloads, loose, registration, audit)

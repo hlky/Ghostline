@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import struct
 import sys
 import tempfile
 import unittest
@@ -14,6 +15,28 @@ from tests.test_package_project import ProfileFixture, cr2w
 
 
 class PackageDependencyTests(unittest.TestCase):
+    def test_only_binary_embedded_resources_are_removed_from_dependencies(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = ProfileFixture(Path(directory))
+            embedded, external = "mod/gq001/local.navmesh", "mod/shared/floor.mesh"
+            strings = (embedded + "\0" + external + "\0").encode()
+            header = bytearray(160); header[:4] = b"CR2W"
+            struct.pack_into("<II", header, 40, 160, len(strings))
+            struct.pack_into("<II", header, 64, 160 + len(strings), 1)
+            struct.pack_into("<II", header, 112, 168 + len(strings), 1)
+            binary = bytes(header) + strings + struct.pack("<IHH", 0, 0, 8) + struct.pack("<IIQ", 1, 1, 0)
+            source = "mod/gqt006/phases/gqt006.questphase"
+            fixture.write(source, binary)
+            fixture.write(external, cr2w())
+            manifest = fixture.build("gqt006")
+            self.assertIn(external, manifest.payloads)
+            self.assertNotIn(embedded, manifest.payloads)
+            self.assertEqual(package.cr2w_embedded_paths(fixture.root / "source/archive" / source), {embedded})
+            fixture.write(source, cr2w(embedded))
+            self.assertEqual(package.cr2w_embedded_paths(fixture.root / "source/archive" / source), set())
+            with self.assertRaisesRegex(package.PackageError, "Missing owned depot dependency"):
+                fixture.build("gqt006")
+
     def test_explicit_external_patch_target_preserves_integration_without_shipping_foreign_mod(self):
         with tempfile.TemporaryDirectory() as directory:
             fixture = ProfileFixture(Path(directory))
