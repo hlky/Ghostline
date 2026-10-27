@@ -1,5 +1,4 @@
 """Compare neutral V references with fixed text, seeds and sampling controls."""
-import hashlib
 import html
 import json
 import re
