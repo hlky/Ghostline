@@ -32,7 +32,8 @@ class PlanningReliabilityTests(unittest.TestCase):
         (self.source / "fixture.streamingsector.json").write_text(
             json.dumps(sector_document()), encoding="utf-8"
         )
-        self.config = load_config()
+        # Queue reliability uses the proxy-road fixture rather than the native-road workspace.
+        self.config = load_config(ROOT / "tools/world-location-capture-v1.json")
         self.config["scope_rules"] = []
         index_sectors(self.connection, self.source, self.config)
 

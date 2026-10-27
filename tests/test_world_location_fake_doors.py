@@ -27,7 +27,8 @@ class FakeDoorTests(unittest.TestCase):
         self.source = self.root / "sectors"
         self.source.mkdir()
         self.file = self.source / "doors.streamingsector.json"
-        self.config = load_config()
+        # This fixture contains proxy roads, not native deformation frames.
+        self.config = load_config(Path(__file__).resolve().parents[1] / "tools/world-location-capture-v1.json")
         self.document = sector_document()
         chunk = self.document["Data"]["RootChunk"]
         for offset, name in enumerate(("single", "double")):
