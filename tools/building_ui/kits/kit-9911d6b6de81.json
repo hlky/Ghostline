@@ -1,0 +1,65 @@
+{
+  "id": "kit-9911d6b6de81",
+  "name": "Watson / Kabuki",
+  "grid": 3,
+  "wall_height": 4.0,
+  "storey_height": 4.4,
+  "wall_thickness": 0.2378,
+  "door_clearance": [
+    1.5,
+    2.4
+  ],
+  "wall_appearances": [
+    "default",
+    "ap1",
+    "ap2",
+    "red"
+  ],
+  "floor_appearances": [
+    "tiles_grey",
+    "carpet",
+    "tiles_terracotta",
+    "tiles_black_large",
+    "linoleum",
+    "Wood"
+  ],
+  "pieces": {
+    "floor": {
+      "mesh": "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_floor_l300_a.mesh",
+      "preview_appearance": "tiles_grey",
+      "catalog_asset": "bd9123c7bd64764cdbac"
+    },
+    "ceiling": {
+      "mesh": "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_ceiling_l300_a.mesh",
+      "preview_appearance": "concrete",
+      "catalog_asset": "890463079290c1d5eabf"
+    },
+    "wall": {
+      "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_a_wall_w300_h400_aa.mesh",
+      "preview_appearance": "default",
+      "catalog_asset": "9911d6b6de8145fa4ca0",
+      "offset": [
+        0.0,
+        7.309019565582275e-06,
+        -9.5367431640625e-07
+      ],
+      "source_json_sha256": "294b1d92d7d73071448fe4d0dd6bad565c2cb6b99b13342923274715dff7dd13",
+      "preview_sha256": "7f762c13ffffec630967c3a170c110aac0916e282a5610ff5acab0fcd93b5f56"
+    },
+    "doorway": {
+      "mesh": "base\\environment\\architecture\\watson\\kabuki\\wat_kab_building_a_wall_door_w300_h400_aa.mesh",
+      "preview_appearance": "default",
+      "catalog_asset": "eb5edab0e778326b1801",
+      "offset": [
+        0.0,
+        8.143484592437744e-06,
+        7.152557373046875e-06
+      ],
+      "source_json_sha256": "61e911c844e42d2a0cac8901947450a664d603ebdd3d3e4e9cd5188edc9df2c2",
+      "preview_sha256": "5a9c0d504f0f4d4d4f1b79e51027ee0153007c9fe2efef53371948b5954fdd83"
+    }
+  },
+  "family": "base\\environment\\architecture\\watson\\kabuki",
+  "status": "geometry-checked",
+  "provenance": "Measured vanilla geometry. Closed-wall coverage sampled; centred 1.5 x 2.4 m aperture checked against projected triangle intersections. Shared common floors/ceilings. Live gameplay remains unverified."
+}

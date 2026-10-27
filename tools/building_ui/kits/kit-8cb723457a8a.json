@@ -1,0 +1,62 @@
+{
+  "id": "kit-8cb723457a8a",
+  "name": "Common / Station Metro",
+  "grid": 3,
+  "wall_height": 3.8,
+  "storey_height": 4.2,
+  "wall_thickness": 0.2,
+  "door_clearance": [
+    1.5,
+    2.4
+  ],
+  "wall_appearances": [
+    "default"
+  ],
+  "floor_appearances": [
+    "tiles_grey",
+    "carpet",
+    "tiles_terracotta",
+    "tiles_black_large",
+    "linoleum",
+    "Wood"
+  ],
+  "pieces": {
+    "floor": {
+      "mesh": "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_floor_l300_a.mesh",
+      "preview_appearance": "tiles_grey",
+      "catalog_asset": "bd9123c7bd64764cdbac"
+    },
+    "ceiling": {
+      "mesh": "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_ceiling_l300_a.mesh",
+      "preview_appearance": "concrete",
+      "catalog_asset": "890463079290c1d5eabf"
+    },
+    "wall": {
+      "mesh": "base\\environment\\architecture\\common\\station_metro\\station_metro_a_wall_l300_a.mesh",
+      "preview_appearance": "default",
+      "catalog_asset": "8cb723457a8aca1ae4a9",
+      "offset": [
+        1.5497207641601562e-06,
+        6.48200511932373e-07,
+        2.384185791015625e-07
+      ],
+      "source_json_sha256": "bd08fb040851ae9d3a5cab056df3035aafd7c1bdf8f22906db8390a6946fb47e",
+      "preview_sha256": "9330371a53f67daa6510ee6b65dd1f054845110da6d705186eee54582eaf2546"
+    },
+    "doorway": {
+      "mesh": "base\\environment\\architecture\\common\\station_metro\\station_metro_a_wall_door_single_l300_a.mesh",
+      "preview_appearance": "default",
+      "catalog_asset": "affa82b38832bb653f81",
+      "offset": [
+        0.0,
+        1.0654330253601074e-06,
+        1.1920928955078125e-06
+      ],
+      "source_json_sha256": "2757447bad86f250324b2f078a42f884f88d25c09f1d0ed93e4ab78a4799c695",
+      "preview_sha256": "9dca0e0753063db5ee747224755bbfdb5c0cf47223b560b1f1a64013fc0dfa07"
+    }
+  },
+  "family": "base\\environment\\architecture\\common\\station_metro",
+  "status": "geometry-checked",
+  "provenance": "Measured vanilla geometry. Closed-wall coverage sampled; centred 1.5 x 2.4 m aperture checked against projected triangle intersections. Shared common floors/ceilings. Live gameplay remains unverified."
+}

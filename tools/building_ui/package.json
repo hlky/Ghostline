@@ -1,0 +1,37 @@
+{
+  "name": "ghostline-building-ui",
+  "private": true,
+  "type": "module",
+  "version": "0.2.0",
+  "description": "React and TypeScript editor for Ghostline native building and quest fixtures.",
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "0.185.1"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/store.test.ts viewer.test.mjs ../../tests/building_wall_controls.test.mjs",
+    "format": "prettier --write src vite.config.ts",
+    "format:check": "prettier --check src vite.config.ts"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.185.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "prettier": "^3.9.10",
+    "tailwindcss": "^4.1.18",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  },
+  "engines": {
+    "node": ">=20.17.0"
+  }
+}
