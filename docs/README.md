@@ -6,6 +6,8 @@ under [`projects/ghostline/quests`](../projects/ghostline/quests/README.md).
 
 ## First Steps
 
+Watch the [demo videos](demo-videos.md) for quests, buildings and retrofits.
+
 1. Read the repository [README](../README.md).
 2. Follow the [development workflow](workflows/development.md).
 3. Open the owning quest README or authoring guide before changing generated

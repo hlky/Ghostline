@@ -47,6 +47,7 @@ before producing an installable archive.
 ## Documentation
 
 - [Documentation map](docs/README.md) — choose a guide by task.
+- [Demo videos](docs/demo-videos.md) — quests, buildings and retrofits on YouTube.
 - [Quest series](projects/ghostline/quests/README.md) — narrative and per-quest
   implementation ownership.
 - [Automated testing](docs/workflows/automated-testing.md) — repository and
