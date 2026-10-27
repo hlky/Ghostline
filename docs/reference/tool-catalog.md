@@ -1166,6 +1166,51 @@ py -B .\tools\gq003_black_lantern_scout.py import-log `
 The import validates the runtime schema and writes
 `projects/ghostline/quests/gq003/implementation/world-candidates.json`.
 
+## Workspot Database
+
+`tools/workspot_catalog.py` extracts vanilla `.workspot` resources, decodes
+their trees, and builds a searchable SQLite/JSON database and offline HTML
+browser. Search includes actual animation names, rigs, animation sets, entry
+types and separate human annotations. Optional scene/entity/world usage scans
+retain source hashes and exact JSON pointers. Visual labels and runtime
+compatibility remain separate review evidence.
+
+```powershell
+py -B tools/workspot_catalog.py extract
+py -B tools/workspot_catalog.py serialize --workers 8
+py -B tools/workspot_catalog.py build
+py -B tools/workspot_catalog.py search "hands knees"
+py -B tools/workspot_catalog.py review
+```
+
+See [workspot discovery and reuse](../authoring/workspots.md) for the resource
+model, coverage boundaries, annotation contract, and quest acceptance checks.
+
+`tools/workspot_preview.py` adds rig-matched dependency extraction, body-clip
+decoding, local Blender mannequin videos, contact sheets, resumable receipts,
+and uncaptioned JSONL jobs. See [rendering and captioning](../authoring/workspot-captioning.md).
+
+`tools/workspot_preview_batch.py` merges a checked diversity selection into the
+pilot, prepares only missing dependencies, resumes source-skinned rendering,
+and exports paired visual-only / filename-assisted caption inputs. Its default
+selection lives in `reference/workspots/render-batches/diversity-v1.json`.
+
+`tools/workspot_full_batch.py` prepares the full base-human clip inventory,
+deduplicates exact resolved source motion, renders matching male/female skins,
+and checkpoints progress with bounded temporary frame storage. Its caption
+export and explicit coverage gaps live under `generated/workspots/full-batch`.
+`--resume-plan --workers 4` reuses the resolved plan and existing media. Remaining
+clips use `workspot_render_fast.py` and `workspot_preview_fast_blender.py` for
+bounded Blender/encoder threading and faster lossless frame output.
+
+`tools/workspot_caption.py` runs source-bound Transformers video caption jobs;
+`tools/workspot_caption_vllm.py` adds vLLM continuous batching and a separate
+same-clip benchmark. Both retain raw responses and unreviewed annotation status.
+
+`tools/workspot_caption_review.py` serves the local video/caption review UI on
+port 8877. Review decisions and corrections are saved separately under
+`reference/workspots/caption-reviews.json`, tied to caption and media identities.
+
 ## Vanilla Sex RID Catalog
 
 `tools/sex_rid_catalog.py` builds a depot-path-preserving technical catalog of

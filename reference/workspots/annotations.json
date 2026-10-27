@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "workspots": {
+    "base\\workspots\\common\\ground\\generic__stand_ground__wait__01.workspot": {
+      "label": "Standing wait with fidgets and directional entries/exits",
+      "description": "The tree names hands-at-sides idles, looking around, rubbing hands, scratching the neck and sighing. Includes nine entry animations, nine exit animations, a fast exit, and bump reactions. Description follows authored clip names; visual motion is pending review.",
+      "status": "structure_reviewed",
+      "source_sha256": "ee4b3752217395e3df1214927c650808deda7de6c2f75f383df496f37a0ce4a4",
+      "tags": ["standing", "waiting", "fidgets", "reactions"],
+      "notes": "No explicit loopInfinitely entry is authored. Check the world/quest infinite settings separately. Four rigs are registered; compatibility has not been tested here.",
+      "evidence": ["generated/workspots/raw/base/workspots/common/ground/generic__stand_ground__wait__01.workspot.json"]
+    },
+    "base\\workspots\\quest\\main_quests\\prologue\\q000\\q000_corpo_04_lizzies_club\\corpo__stand_lean_front_hands_on_knees__01.workspot": {
+      "label": "Hands-on-knees idle with a pause",
+      "description": "Two sequences and a pause use the idle stand_lean0__2h_on_knees__01. The pause is authored for 3–5 seconds. No explicit entry or exit animation is present. Description follows tree data; body posture is pending visual review.",
+      "status": "structure_reviewed",
+      "source_sha256": "d5ef3078274b8b1998207d1d6a9105d30f60146c9dcf7a65447ed22b938dc4f9",
+      "tags": ["hands on knees", "idle", "pause"],
+      "notes": "Registers man_base.rig and the Q000 Corpo Lizzie's Club male-average animation set. This is a useful example of meaningful performance living in idleAnim rather than workAnimClip.",
+      "evidence": ["generated/workspots/raw/base/workspots/quest/main_quests/prologue/q000/q000_corpo_04_lizzies_club/corpo__stand_lean_front_hands_on_knees__01.workspot.json"]
+    },
+    "base\\gameplay\\workspots\\devices\\device_personal_link_connect.workspot": {
+      "label": "Personal-link device: default, bottom and right variants",
+      "description": "Names plugin start/loop/end animations for three variants. Explicit loop sequence IDs are 8, 18 and 23; exit IDs are 10, 20 and 25. These are authored tree variants, pending visual and device-integration review.",
+      "status": "structure_reviewed",
+      "source_sha256": "8c9d226fadea994c9793fd29cea3a1a625f9276e99fe9053e9a98a2085678758",
+      "tags": ["personal link", "device", "plug in"],
+      "notes": "This is the device-side resource. Do not mistake its name or registered actor rigs for a complete player interaction or working breach sequence.",
+      "evidence": ["generated/workspots/raw/base/gameplay/workspots/devices/device_personal_link_connect.workspot.json"]
+    },
+    "base\\gameplay\\workspots\\devices\\npc\\synced_npc_netrunner_chair_sit_connected.workspot": {
+      "label": "Netrunner chair actor: enter, idle, exit and death",
+      "description": "Names netrunner_chair_enter, netrunner_chair_idle, netrunner_chair_exit and netrunner_chair_death. Contains synchronized clips, entry ID 4 and exit ID 11. Playback and chair alignment are pending visual review.",
+      "status": "structure_reviewed",
+      "source_sha256": "40e015beb647ca05af23d6dd71c1a1f1e560d1b4eec597400710a83a66f97c45",
+      "tags": ["netrunner", "chair", "synchronized", "death"],
+      "notes": "Inspect the paired chair/device resource and synchronization before reusing. Loop IDs 2 and 13 identify tree sequences, not JSON handles.",
+      "evidence": ["generated/workspots/raw/base/gameplay/workspots/devices/npc/synced_npc_netrunner_chair_sit_connected.workspot.json"]
+    },
+    "base\\cinematics\\workspots\\male\\ma_stand__phone__talk.workspot": {
+      "label": "Standing phone talk loop",
+      "description": "A loop sequence at entry ID 2 contains stand__rh_phone__03__talk__01. No explicit entry or exit animation is authored. Description follows the clip name; phone placement and hand motion are pending visual review.",
+      "status": "structure_reviewed",
+      "source_sha256": "d1d7f9bd1aaaf0b46175b589349c6595ef1222d0e51bbbffbdbaf78fe8227f2b",
+      "tags": ["standing", "phone", "talking", "loop"],
+      "notes": "The male folder name is not a complete compatibility constraint: man_base, man_big and woman_base rigs are registered. Verify props and body compatibility in the target use.",
+      "evidence": ["generated/workspots/raw/base/cinematics/workspots/male/ma_stand__phone__talk.workspot.json"]
+    }
+  }
+}
