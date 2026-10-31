@@ -20,6 +20,7 @@ from typing import Any, Iterator
 
 from cr2w_helpers import load_json, print_json
 from scene_validation import validate_reference_tables
+from scene_performance import apply_blocks, expand_moves, validate_blocks
 from ghostline_red import DEFAULT_RED_CLI, DEFAULT_RED_SCHEMA
 
 
@@ -1196,8 +1197,9 @@ def build_use_workspot_node(
     node_id = int(node_spec["node_id"])
     function = str(node_spec.get("function", "UseWorkspot"))
     stopping = function == "StopWorkspot"
+    starting = function == "UseWorkspot"
     inputs = ["CutDestination", "In"]
-    outputs = ["Success"] if stopping else ["Success", "Work Started"]
+    outputs = ["Success", "Work Started"] if starting else ["Success"]
     data, quest = build_quest_node_base(
         node_id,
         "questUseWorkspotNodeDefinition",
@@ -1220,7 +1222,7 @@ def build_use_workspot_node(
             ],
         )
     ]
-    if not stopping:
+    if starting:
         data["outputSockets"].append(
             output_socket(
                 0,
@@ -1246,14 +1248,14 @@ def build_use_workspot_node(
             "changeWorkspot": 1,
             "continueInCombat": 0,
             "dangleResetSimulation": 0,
-            "enableIdleMode": 0,
+            "enableIdleMode": int(bool(node_spec.get("enable_idle_mode", False))),
             "entryId": {
                 "$type": "workWorkEntryId",
                 "id": int(node_spec.get("entry_id", UINT32_NONE)),
             },
             "entryTag": cname(str(node_spec.get("entry_tag", "None"))),
-            "exitAnimName": cname("None"),
-            "exitEntryId": {"$type": "workWorkEntryId", "id": UINT32_NONE},
+            "exitAnimName": cname(str(node_spec.get("exit_animation", "None"))),
+            "exitEntryId": {"$type": "workWorkEntryId", "id": int(node_spec.get("exit_entry_id", UINT32_NONE))},
             "finishAnimation": int(bool(node_spec.get("finish_animation", True))),
             "forceEntryAnimName": cname(
                 str(node_spec.get("force_entry_animation", "None"))
@@ -1292,7 +1294,7 @@ def build_use_workspot_node(
             ),
             "teleport": int(bool(node_spec.get("teleport", not stopping))),
             "workExcludedGestures": [],
-            "workspotNode": node_ref(str(node_spec["workspot_ref"])),
+            "workspotNode": node_ref(0, storage="uint64") if node_spec.get("workspot_ref") == 0 else node_ref(str(node_spec["workspot_ref"])),
         }
     )
     add_quest_sockets(quest, inputs, outputs, alloc)
@@ -2162,6 +2164,10 @@ def build_exit_points(spec: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def build_scene(spec: dict[str, Any]) -> dict[str, Any]:
+    try:
+        spec = expand_moves(spec)
+    except ValueError as exc:
+        raise SceneBuildError(str(exc)) from exc
     base = load_json(path_from_spec(spec, "base_scene"))
     base_root = base["Data"]["RootChunk"]
     spoken_manifest, choice_manifest = load_manifest(spec)
@@ -2216,6 +2222,10 @@ def build_scene(spec: dict[str, Any]) -> dict[str, Any]:
             "sceneSolutionHashDate": str(fnv1a64(str(spec["name"]))),
         },
     }
+    try:
+        apply_blocks(root, spec, alloc, deterministic_event_id, output_socket)
+    except ValueError as exc:
+        raise SceneBuildError(str(exc)) from exc
     return scene
 
 
@@ -2235,9 +2245,14 @@ def iter_journal_paths(value: Any) -> Iterator[dict[str, Any]]:
 
 
 def validate_scene(scene: dict[str, Any], spec: dict[str, Any]) -> list[str]:
+    try:
+        spec = expand_moves(spec)
+    except ValueError as exc:
+        return [str(exc)]
     errors: list[str] = []
     root = scene.get("Data", {}).get("RootChunk", {})
     errors.extend(validate_reference_tables(root))
+    errors.extend(validate_blocks(root, spec))
     if root.get("version") != 5:
         errors.append("Root version must be 5")
     if root.get("cookingPlatform") != "PLATFORM_PC":

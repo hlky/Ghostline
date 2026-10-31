@@ -23,5 +23,9 @@ Generic compilers and scene/world generators remain under the repository's
 `tools`. Shared assets are explicit dependencies in `project.json`; GQT007 is
 self-contained. See [project layout](../../docs/reference/project-layout.md).
 
+[GQT008](gqt008/README.md) is the self-contained floating interaction lab:
+Barry's seated reactions, native workspot movement, interruption/return and
+activity restoration. Its installed behavior is pending validation.
+
 From the repository root, audit a package with
 `uv run python -B tools/package_project.py --project gqt006 --plan`.

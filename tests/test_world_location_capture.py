@@ -1286,7 +1286,8 @@ class ResumeAndRetryTests(unittest.TestCase):
         success, _error = controller._capture_place("session-test", place)
         self.assertFalse(success)
         self.assertEqual(3, controller.runtime.sends)
-        self.assertEqual(3, controller.runtime.heartbeats)
+        # The background lease can also tick during each attempt.
+        self.assertGreaterEqual(controller.runtime.heartbeats, 3)
         self.assertLess(time.monotonic() - started, 0.5)
         attempts = self.connection.execute(
             "SELECT COUNT(*) FROM capture_attempts WHERE location_id=?",

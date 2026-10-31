@@ -226,25 +226,25 @@ def validate_optional_condition(
                 stage_id or None,
             )
         )
-    if stage.get("evaluation") not in {"continuous", "at_exit"}:
+    if stage.get("evaluation") not in {"continuous", "at_exit", "on_entry"}:
         diagnostics.append(
             Diagnostic(
                 "error",
                 "invalid_evaluation",
-                f"{context}.evaluation must be continuous or at_exit",
+                f"{context}.evaluation must be continuous, at_exit or on_entry",
                 stage_id or None,
             )
         )
 
     if (
         not isinstance(stage.get("phase_template"), str)
-        and stage.get("evaluation") != "at_exit"
+        and stage.get("evaluation") not in {"at_exit", "on_entry"}
     ):
         diagnostics.append(
             Diagnostic(
                 "error",
                 "unsupported_condition_evaluation",
-                f"{context} currently supports evaluation=at_exit",
+                f"{context} generated evaluation supports at_exit or on_entry",
                 stage_id or None,
             )
         )
@@ -409,6 +409,9 @@ def validate_interact_device(
 def validate_hack_access_point(
     stage: dict[str, Any], context: str, stage_id: str, diagnostics: list[Diagnostic]
 ) -> None:
+    if not stage.get('phase_template') and not stage.get('completion_function'):
+        diagnostics.append(Diagnostic('warning' if stage.get('status') == 'planned' else 'error',
+            'missing_generated_binding', f'{context}: generated access point requires controller_class, action and completion_function', stage_id or None))
     if "completion_function" in stage:
         for field in ("controller_class", "action", "completion_function"):
             require_string(stage, field, context=context, diagnostics=diagnostics)
@@ -1142,17 +1145,17 @@ def validate_braindance_analysis(
     clue_facts = stage.get("clue_facts")
     if (
         not isinstance(clue_facts, list)
-        or len(clue_facts) != 3
+        or not (len(clue_facts) == 3 if stage.get("phase_template") else 1 <= len(clue_facts) <= 32)
         or not all(
             isinstance(item, str) and ID_RE.fullmatch(item) for item in clue_facts
         )
-        or len(set(clue_facts)) != 3
+        or len(set(clue_facts)) != len(clue_facts)
     ):
         diagnostics.append(
             Diagnostic(
                 "error",
                 "invalid_braindance_clue_facts",
-                f"{context}.clue_facts must contain exactly three unique fact names",
+                f"{context}.clue_facts must contain unique fact names (1-32 generated; three for legacy template bindings)",
                 stage_id or None,
             )
         )

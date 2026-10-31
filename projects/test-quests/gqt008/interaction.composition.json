@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "gqt008_interaction",
+  "title": "Interaction performance lab",
+  "description": "Isolated native performance test.",
+  "composition": {
+    "namespace": "gqt008",
+    "journal_template": "gqt001_shapes",
+    "quest": {
+      "title": "Interaction performance lab",
+      "localization_key": "gl_gqt008_title"
+    },
+    "objectives": {
+      "interaction": {
+        "id": "gqt008_01_obj_interaction",
+        "phase_id": "gqt008_01",
+        "text": "Try the interaction performances, then finish the test.",
+        "localization_key": "gl_gqt008_objective",
+        "description_id": "gqt008_01_desc_interaction",
+        "description": "Compare seated reactions, walk to the waiting mark, leave and return. This is a diagnostic fixture; gesture previews are silent.",
+        "description_key": "gl_gqt008_description",
+        "counter": 0,
+        "mappins": {
+          "barry": {
+            "id": "gqt008_01_qmp_barry",
+            "ref": "@locations.sm_barry.ref",
+            "text": "Interaction lab",
+            "localization_key": "gl_gqt008_mappin",
+            "debug_caption": "gl_gqt008_mappin"
+          }
+        }
+      }
+    },
+    "points_of_interest": {
+      "barry": {
+        "id": "gqt008_01_poi_barry",
+        "ref": "@locations.sm_barry.ref"
+      }
+    },
+    "locations": {
+      "pr_interaction": "#gqt008_pr_interaction",
+      "com_barry": "#gqt008_com_barry",
+      "sm_barry": "#gqt008_sm_barry",
+      "tr_setup": "#gqt008_tr_setup"
+    },
+    "facts": {
+      "debug_step": "gqt008_debug_step",
+      "comparison_finished": "gqt008_comparison_finished"
+    }
+  }
+}

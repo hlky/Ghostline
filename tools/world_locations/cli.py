@@ -416,6 +416,7 @@ def command_install_cet(
     destination.mkdir(parents=True, exist_ok=True)
     for source_name, destination_name in (
         ("init.lua", "init.lua"),
+        ("survey_runtime.lua", "survey_runtime.lua"),
         ("config.example.json", "config.json"),
     ):
         target = destination / destination_name
@@ -478,7 +479,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     from .site_surveys import SURVEY_CATEGORIES
 
-    plan.add_argument("--category", choices=["road", "fake_door", "site_surveys", *SURVEY_CATEGORIES], help="Update only the selected category using existing geographic metadata")
+    plan.add_argument("--category", choices=["road", "fake_door", "fake_garage_door", "vending_machine", "site_surveys", *SURVEY_CATEGORIES], help="Update only the selected category using existing geographic metadata")
     plan.set_defaults(handler=command_plan)
 
     road_sample = commands.add_parser("prepare-road-sample", help="Decode native road deformation and enable four calibration pairs")

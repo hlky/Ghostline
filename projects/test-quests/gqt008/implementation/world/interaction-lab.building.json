@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "gqt008-lab",
+  "name": "GQT008 interaction performance lab",
+  "kit": "industrial-3m",
+  "origin": {
+    "x": 140.0,
+    "y": 100.0,
+    "z": 700.0,
+    "yaw": 0.0
+  },
+  "wall_appearance": "default",
+  "floor_appearance": "tiles_grey",
+  "rooms": [
+    {
+      "id": "approach",
+      "name": "Approach and return",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "depth": 6,
+      "level": 0
+    },
+    {
+      "id": "performance",
+      "name": "Conversation and activity",
+      "x": 0,
+      "y": 6,
+      "width": 12,
+      "depth": 6,
+      "level": 0
+    }
+  ],
+  "openings": {
+    "0:x:1:2": "passage",
+    "0:x:2:2": "passage"
+  },
+  "stairs": [],
+  "modules": [
+    {
+      "id": "office-desk",
+      "asset": "f9f0850dd0a8667e46b3",
+      "position": [
+        8.0,
+        8.0,
+        0.0
+      ],
+      "yaw": 0,
+      "level": 0,
+      "anchor": "base-center",
+      "collision": "none",
+      "source_sha256": "87df9366f8638b20ff2a9d639370b9d3cf19ed686e697bc5c50a0b154b3d1fc4",
+      "geometry_sha256": "6ab055bee48338e5252ebee0ade0711a89e0a21139d5336febd083915e598cf6",
+      "appearance": "default"
+    },
+    {
+      "id": "office-chair",
+      "asset": "b65b13d08280634a8090",
+      "position": [
+        8.0,
+        7.05,
+        0.0
+      ],
+      "yaw": 0,
+      "level": 0,
+      "anchor": "base-center",
+      "collision": "none",
+      "source_sha256": "3db719c5e0bf23f024719cc5b7774c6528f9b49310e2c2a6615ac081a0f68d17",
+      "geometry_sha256": "089785fa8b92619555b586632e48d0f2fd7a56a1b9efea6cfe7486a133e39b85",
+      "appearance": "default"
+    },
+    {
+      "id": "office-paperwork",
+      "asset": "8c19776074348cd39c07",
+      "position": [
+        7.82,
+        7.86,
+        0.8
+      ],
+      "yaw": -8,
+      "level": 0,
+      "anchor": "base-center",
+      "collision": "none",
+      "appearance": "default",
+      "source_sha256": "8d5da29616a021b3d02eb5d2d141645f1ec28041428aa44307d161730df701fe",
+      "geometry_sha256": "eaffb55e6b3e8efe93fd8368ae44896ad7598dad27c510496ff2ee3022c508a3"
+    },
+    {
+      "id": "office-coffee-mug",
+      "asset": "cac5fb021e9c548d1ca8",
+      "position": [
+        8.38,
+        7.82,
+        0.8
+      ],
+      "yaw": 25,
+      "level": 0,
+      "anchor": "base-center",
+      "collision": "none",
+      "appearance": "black",
+      "source_sha256": "6f3dcc446303fceaaffd33fa7fa67a91688371d92c4a04ea0364d0acd9e6977c",
+      "geometry_sha256": "f7d68ed1707b839cb2b3587b0598811e41e6dc255855ea9757c9f418a7c82f6c"
+    },
+    {
+      "id": "visitor-chair",
+      "asset": "b65b13d08280634a8090",
+      "position": [
+        8.0,
+        9.2,
+        0.0
+      ],
+      "yaw": 180,
+      "level": 0,
+      "anchor": "base-center",
+      "collision": "none",
+      "source_sha256": "3db719c5e0bf23f024719cc5b7774c6528f9b49310e2c2a6615ac081a0f68d17",
+      "geometry_sha256": "089785fa8b92619555b586632e48d0f2fd7a56a1b9efea6cfe7486a133e39b85",
+      "appearance": "default"
+    }
+  ],
+  "navigation": {
+    "export": true,
+    "radius": 0.3,
+    "height": 1.8,
+    "layer": 241
+  },
+  "archive_name": "Ghostline_GQT008",
+  "workstations": []
+}

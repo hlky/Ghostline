@@ -1,5 +1,180 @@
 # In-Game World Location Database
 
+## Camera survey v2 (2026-10-28)
+
+`tools/world-location-capture-survey-v2.json` uses a separate `category-runs/survey-v2`
+workspace. All eligible views are requeued, including previously captured centers.
+Earlier category databases, image files and capture history are retained. Known
+kill zones and rejected/uncalibrated placements remain excluded.
+
+Context views have center and ±45° headings; targeted device/entrance detail
+views stay single. Parking uses four headings at 90° intervals, 2 m above the
+previous player position with camera pitch −20°. Every sidecar records the
+actual active-camera orientation and origin as well as the player position.
+
+FreeFly must be active. Loading UI lifecycle, player attachment and fast-travel
+blackboard signals pause movement and capture, with a 30-second loading budget.
+Frame checks add temporal settling and learned engine-labelled loading-screen
+signatures; these do not prove that every distant object has finished streaming.
+Pose settling and active visual retries retain their short 5-second limits.
+
+Context obstruction checks use a small ray grid. Up to two lateral moves may
+improve a blocked view, restricted to preapproved in-scope candidates. Otherwise
+the best available view is kept with obstruction diagnostics. A shared geographic
+route groups nearby stations across categories. Clear moves up to 20 m use gradual
+FreeFly movement; larger or blocked moves use teleportation.
+
+After reloading CET mods (or restarting the game), activate FreeFly and run:
+
+```powershell
+.\tools\run_world_location_survey_sample.ps1
+```
+
+This captures ten trial views: three landing angles, four raised parking headings,
+and three vending-machine context angles. Inspect them before the full pass:
+
+```powershell
+.\tools\run_world_location_batch.ps1
+```
+
+The batch launcher now resumes the combined survey by default. `-Categories`
+filters the shared route; `-Legacy` selects the earlier category workspaces.
+`tools/prepare_world_location_survey.py` builds a new snapshot and refuses to
+overwrite an existing survey database. The manifest under `survey-v2/reports`
+records queue totals and preserved history. Runtime behavior still requires an
+in-game trial; mocked camera and loading checks cannot establish native behavior.
+
+The location-scouting caption proposal and original 32-image review are documented in
+`docs/authoring/world-location-captioner.md`. The proposed machine-readable
+contract is `tools/world-location-caption-v1.schema.json`; sample manifests,
+contact sheets, review notes and a validated manual example are under
+`converted/world-location-database/reports/captioner-review-20261027`. This is a
+captioner design, not a completed bulk captioning run or capture-publication step.
+Contract revision 0.2.0 captions each image independently for quest-location
+selection: physical layout, scene features, connections, visual character,
+structural lighting and concrete scene uses. Pair evaluation, HUD annotation and
+generated verification checklists were removed; capture QA is a separate stage.
+
+## Fast-Travel Category Pilot (2026-10-27)
+
+`tools/world-location-capture-fast-travel-v1.json` owns the separate
+`converted/world-location-database/category-runs/fast-travel-v1` workspace.
+It reuses a read-only snapshot of the static world index, with no road captures,
+places, attempts or sessions copied into its working history. Roads remain the
+default preset; the shared launcher accepts `-Config` to select another workspace.
+
+223 indexed anchors become 190 locations after 5 m anchor deduplication: 380
+views total. The corrected `usable_side_pair` profile uses entity-local **+X**,
+transformed by the placed entity rotation, at the entity's original height.
+`arrival_area` is 1.5 m in front of the usable side and faces outward;
+`terminal` is 5 m in front and faces back toward the installation.
+The user confirmed in game that the inferred -X side was behind the terminal,
+so the usable-side rule was reversed to +X. The interaction-workspot transform
+alone did not establish the visible front. Previous +Y and -X captures remain
+historical evidence, and all 380 views were requeued after the correction.
+Pair IDs, reciprocal view IDs and native fast-travel
+marker/record references remain in provenance. FreeFly preserves the planned pose.
+The extracted entity references and correction audit are under
+`converted/fast-travel-front-references` and the workspace report
+`reports/fast-travel-usable-side-fix.json`. Corrected framing still needs visual
+confirmation for the individual terminal/metro-gate appearances.
+
+The initial pilot selected eight geographically spread locations (16 views).
+The user subsequently requested the entire category: all 380 views are now
+enabled, with `require_category_calibration=false` and explicit
+`category_capture_approved=true`. This authorizes capture, not publication or a
+claim that every camera angle has been reviewed. The original pilot IDs remain
+in `workspace.pilot_anchor_ids`, and the sample launcher still selects those views.
+
+With FreeFly active and the CET overlay closed, run:
+
+```powershell
+.\tools\run_world_location_fast_travel_sample.ps1
+```
+
+The selected views and initial database audit are in the workspace's
+`reports/fast-travel-calibration-sample.json` and `reports/workspace-manifest.json`.
+This preparation does not start capture or change the roads queue.
+
+## Unattended Category Batch
+
+`tools/run_world_location_batch.ps1` waits for the current controller's OS lock
+to become available, then sequentially runs the roads, fast-travel, drop-point,
+vending-machine, parking-area and road-barrier presets. `-Categories` selects a
+subset in that order. Every runner still performs its own preflight and acquires its OS locks.
+It resumes pending/interrupted locations; it does not recapture completed views
+or automatically retry previously failed locations. A fatal runtime/game failure
+stops the batch rather than launching another controller into the unhealthy game.
+
+`tools/world-location-capture-drop-points-v1.json` owns the separate
+`category-runs/drop-points-v1` workspace: 103 anchors and 206 views. Both views
+use the anchor's original height and a 3 m outward offset. `drop_point` faces the
+device, and `surroundings` faces outward. Existing calibrated extraction rules
+provide placement; the full category is capture-approved at the user's request.
+Native hazards and ordinary image/metadata review remain active.
+
+With FreeFly active and the CET overlay closed:
+
+```powershell
+.\tools\run_world_location_batch.ps1
+```
+
+The vending-machine preset is `tools/world-location-capture-vending-machines-v1.json`
+and its workspace is `category-runs/vending-machines-v1`. It selects 2,000 of
+8,466 indexed machines after hazard filtering and 15 m minimum 3D viewpoint
+spacing. If more candidates survive, a deterministic sample distributed across
+Morton spatial order limits the queue to 2,000. Completed locations take priority
+when replanning. Each location gets one **outward** view toward the street or
+surrounding space, preserving the machine's serialized height. Placement uses
+the existing 0.45 m family front extent plus 1 m clearance along the extracted
+forward axis; it does not face back at the machine. Other categories and their
+capture histories remain separate.
+
+The next capture-approved category queues are separate workspaces with fresh
+capture histories, using read-only snapshots of the drop-point world index:
+
+- `parking-areas-v1` / `world-location-capture-parking-areas-v1.json`: 708 pending
+  views at 354 parking stops after 50 m anchor spacing and hazard filtering.
+  Opposite views share a viewpoint 4 m along the native parking marker's forward
+  axis: one looks back at the parking context, the other toward the surroundings.
+- `road-barriers-v1` / `world-location-capture-road-barriers-v1.json`: 222 pending
+  views at 111 barrier installations after 10 m anchor spacing and filtering.
+  Viewpoints are 8 m on either side, looking toward the barrier. The pairing
+  avoids relying on an inferred usable-side sign.
+
+Both queues have reciprocal location IDs and shared pair IDs. All pending pairs
+are complete; excluded views remain disabled. Camera usefulness still needs
+image review for each category. The archived database and existing captures are
+unchanged. Resume vending and then capture the new queues with:
+
+```powershell
+.\tools\run_world_location_batch.ps1 -Categories vending_machine,parking_space,road_barrier
+```
+
+The batch also includes separate `fake-garage-doors-v1`, `intercoms-v1`,
+`access-points-v1`, `terminals-v1`, and `fake-doors-v1` workspaces. Pending views
+at preparation were 542, 326, 380, 876, and 15,070 respectively. Every pending
+view has a reciprocal partner and a shared pair ID. Fake door families are
+filtered by extraction rule, so the two workspaces do not overlap. Their outward
+view is 1.5 m along the indexed normal; their building view is 15 m along it,
+facing back, at the original door height with FreeFly. Exterior-side correctness
+still requires per-model image review. The unscoped legacy planner retains both
+door families together for compatibility.
+
+Intercoms, access points and terminals use device/context pairs from nearby AI
+workspot or parking references, rather than guessing the model front. References
+must be 3–20 m away with at most 3 m vertical drop and a distance/height ratio of
+at least three. Missing suitable references defer 24 intercom, 163 access-point
+and 94 terminal anchors after deduplication; those reports are in each workspace's
+`reports/site-survey-ground-gaps.json`. Reference positions do not prove line of
+sight or absence of intervening walls. Camera usefulness needs image review.
+
+The smaller new queues run before the large fake-door queue. Run all category
+queues, including pending vending views, with `run_world_location_batch.ps1`
+without `-Categories`. Completed captures are skipped. A running older batch
+does not acquire categories added after it started; invoke the updated launcher
+to include these additions. No existing or archived capture history was changed.
+
 ## Active Category Workspace (2026-10-27)
 
 The default configuration is now `tools/world-location-capture-roads-v1.json`.
@@ -440,6 +615,43 @@ ORDER BY road_id;
 ```
 
 ## CET Installation and Game Setup
+
+The October 27 orientation audit is recorded in
+`converted/capture-orientation-audit/orientation-audit.json`, with compact native
+screen and binding transforms in `screen-transform-evidence.json`. Fast-travel
+uses the in-game checked local +X face. Vending-machine controls and drop-point
+UI placement support their existing local +Y offsets; vending views face outward.
+Seven rare appearance-specific vending templates remain individually unverified.
+Generic personal-link workspots are copied across unrelated devices and must not
+be used alone to infer the usable face. Other device families retain category
+calibration requirements; mixed screen and parent rotations need per-resource
+review. Two-sided barriers and target-based ground-context views are less
+sensitive to front-sign changes.
+
+The controller watchdog keeps its same-session heartbeat cache between commands.
+A newly received command gets one normal heartbeat lease for transient file-read
+failures. Matching acknowledgements are processed before watchdog expiry; a real
+expiry publishes a failed completion before discarding the command. Reload CET
+after installing this runtime. Resume preserves completed captures and recovers
+the interrupted destination automatically.
+
+Capture, preflight, and visual-settle timeouts now default to five seconds per
+attempt in every category preset. Restrictions cleared by a load are reapplied
+at most once per second while retaining their original ownership snapshot.
+Loading progress only blocks a frame when its controller root is visible;
+uninitializing that controller clears the loading flag. Cleanup verifies removal
+of capture-owned effects, rather than requiring unrelated pre-existing effects
+to survive scripted transitions.
+
+Area-entry/new-location banners, security-zone alerts, stealth-zone HUD, journal
+quest updates and custom quest notifications also have explicit root-widget
+suppression. Their queues and delivery remain active. Presentation callbacks and
+capture draw callbacks re-hide the roots; references are capped at one per known
+controller class and cleared on uninitialization. The CET heartbeat reports
+`hud_suppression_revision: area-zone-quest-interactions-v2` and the retained HUD
+slot count. Interaction widgets, dialogue choices, interaction tooltips and loot
+prompts use the same capture-only root hiding on presentation and draw callbacks.
+Their gameplay interaction data is not changed. Reload CET to activate an update.
 
 Install Cyber Engine Tweaks for the current game version first. Then install
 the checked runtime into that existing CET installation:

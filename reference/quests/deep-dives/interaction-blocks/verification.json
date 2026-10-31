@@ -1,0 +1,82 @@
+{
+  "inspection_date": "2026-10-27",
+  "status": "experimental authoring implementation; not installed or runtime accepted",
+  "frozen_presets": 5,
+  "native_adapters": [
+    "workspot_move",
+    "workspot_idle",
+    "workspot_exit"
+  ],
+  "donor_events": 27,
+  "source_sha256": {
+    "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json": "a32bec715d197987d589678b95cb97a409429a28960ec3e7737dd8141b6c2da5",
+    "reference/vanilla_extract_json/mq003/mq003_01_homeless.scene.json": "ab414bf9b74874eaf0a65b5dd139278df6c11f3ef5c0a34f82c1b8a8d104ed23"
+  },
+  "implementation_sha256": {
+    "tools/scene_performance.py": "e49a1acf78350d024533c5c0377d9f8076c6d15fc893db50f8fbd766e25e8ede",
+    "tools/build_scene_performance_library.py": "965fed6aaa602833d0be270299908dc0bc0989888d88066dd1f480db87cebd19",
+    "tools/build_scene_performance_preview.py": "3ad4e3c87eba50395136eb4833bc15d03d52153d4078ab3d224f1664ccec06f3",
+    "tools/generate_scene.py": "4c4e9570f3b1f71c7c0d743bcf0aab57af5233c9e2a06b8eb58c65d98ee6dd11",
+    "tools/scene_validation.py": "03f54903e92c4cd09f181c88f6207b7ed16723a787d4e95a88f973fad93ae412",
+    "tests/test_scene_performance.py": "4968e20b8079f56f88dca00b40faf7c93e06a8121de7e97e17ccae31c24db886",
+    "quests/examples/interaction-performance.scene-spec.json": "69eeb9d28863f92f06fb7748f481a805acc456e41e7a859f421ff425a1dfa3fb",
+    "quests/templates/performances/arrive_and_sit.json": "04c77206f591ae1170b5dd1f61755329a59ce52609d42baf8f0003440e00baf0",
+    "quests/templates/performances/catalog.json": "bce5a4a23f33e536278aae10ce80f27fb527732b36c77e3f50700a273669c144",
+    "quests/templates/performances/group_side_exchange.json": "a13105efa27dfde9e6db9c148d4ebf2b225def6f9cebed35054a8d9f11181e3c",
+    "quests/templates/performances/seated_explanation.json": "57d419ca52c88914b60ef91a11d8cca0f321a785516c631d8d3c65d7782d1074",
+    "quests/templates/performances/seated_sad_reply.json": "1985cf9d20a354e9b3a979f5c076fdd0670c7781ca55baa6c96d604a10669690",
+    "quests/templates/performances/stand_from_chair.json": "849d4d39192d17ea4a374bebcf8b0c92fbfc8bfadfec5d8447511bf822412e8c"
+  },
+  "checks": {
+    "repository_tests": 1086,
+    "focused_performance_tests": 14,
+    "ruff": "passed",
+    "legacy_production_scene_parity": {
+      "projects/ghostline/quests/gq000/implementation/scenes/patch-meet.scene-spec.json": "7d584d8bad93561a9f44f70609a92be11877faafd6dbc7c1036ce3a81d5b5424",
+      "projects/ghostline/quests/gq001/implementation/scenes/iris-meet.scene-spec.json": "d40b5abb8d6cc4619994b646c3fae2287a9092d2cdbe95e38410a8deac4dd652",
+      "projects/ghostline/quests/gq002/implementation/scenes/cinder-meet.scene-spec.json": "00442d7f9e1557adb28f63c0e26d275488f36eafe4fd353b5d07dbe212f1ed6a",
+      "projects/ghostline/quests/gq004/implementation/scenes/gq004_01.scene-spec.json": "cf3c4fbad3f968737a95222ae9a53fd4c4a32a6a6f0d4a3c4256a39ae2714258"
+    },
+    "library_regeneration": "byte-identical",
+    "preview_source_destination_guards": [
+      "story project",
+      "test project",
+      "template source"
+    ]
+  },
+  "preview": {
+    "status": "structural-preview; not installed or runtime accepted",
+    "spec": "quests/examples/interaction-performance.scene-spec.json",
+    "spec_sha256": "69eeb9d28863f92f06fb7748f481a805acc456e41e7a859f421ff425a1dfa3fb",
+    "catalog_sha256": "bce5a4a23f33e536278aae10ce80f27fb527732b36c77e3f50700a273669c144",
+    "builder_sha256": "3ad4e3c87eba50395136eb4833bc15d03d52153d4078ab3d224f1664ccec06f3",
+    "validation_errors": [],
+    "events": {
+      "scnPlaySkAnimEvent": 9,
+      "scnChangeIdleAnimEvent": 7,
+      "scnPoseCorrectionEvent": 3,
+      "scnLookAtEvent": 5,
+      "scnDialogLineEvent": 1,
+      "scneventsSocket": 1
+    },
+    "nodes": 10,
+    "cinematic_sets": 4,
+    "raw": "H:\\projects\\Ghostline\\.tmp\\scene-performance-preview\\source\\raw\\mod\\performance_preview\\scenes\\meeting.scene.json",
+    "raw_sha256": "b3b524ef1c4badaec0d0b38deae4e371db676fec07880262142a5e2afb333f74",
+    "converted_and_typed_readback_verified": true,
+    "binary": "H:\\projects\\Ghostline\\.tmp\\scene-performance-preview\\source\\archive\\mod\\performance_preview\\scenes\\meeting.scene",
+    "binary_sha256": "789002aeffa9348c59029dd9dda40dcbf81980dd1f5618024cdb44de16ad1d55"
+  },
+  "runtime_acceptance": {
+    "installed": false,
+    "visual_review_for_new_actors": false,
+    "required": [
+      "rig/body/facial-graph compatibility",
+      "furniture/prop placement",
+      "approach and obstruction",
+      "interruption and return",
+      "workspot retirement and cleanup",
+      "save/load"
+    ]
+  }
+}

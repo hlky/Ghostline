@@ -64,6 +64,12 @@ class PreflightTests(unittest.TestCase):
         })
         self.assertFalse(self.check()["ready"])
 
+    def test_survey_requires_loaded_camera_runtime(self):
+        self.config["capture"]["survey_runtime_required"] = True
+        report = self.check()
+        self.assertFalse(report["ready"])
+        self.assertEqual(next(c for c in report["checks"] if c["name"] == "survey_runtime")["status"], "blocked")
+
     def test_preflight_exit_code_reports_blocked_run(self):
         with mock.patch.object(preflight, "check_preflight", return_value={"ready": False}), mock.patch.object(cli, "_print"):
             self.assertEqual(cli.main(["preflight"]), 1)

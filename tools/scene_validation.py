@@ -9,11 +9,15 @@ def validate_reference_tables(root: dict[str, Any]) -> list[str]:
     """Check references in emitted data, without consulting generator inputs."""
     errors: list[str] = []
     references = root.get("resouresReferences", {})
+    if len(references.get("cinematicAnimSets", [])) != len(references.get("cinematicAnimNames", [])):
+        errors.append("Cinematic animation resource/name tables must have matching lengths")
     for actor in [*root.get("actors", []), *root.get("playerActors", [])]:
         actor_name = actor.get("actorName", actor.get("playerName", "?"))
         for field, table in (
             ("animSets", "ridAnimSets"),
             ("facialAnimSets", "ridFacialAnimSets"),
+            ("bodyCinematicAnimSets", "cinematicAnimSets"),
+            ("facialCinematicAnimSets", "cinematicAnimSets"),
         ):
             for reference in actor.get(field, []):
                 index = reference.get("id")

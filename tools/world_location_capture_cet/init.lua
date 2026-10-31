@@ -1,6 +1,8 @@
 -- Night City world-location capture runtime.
 -- All communication is scoped to this CET mod's runtime directory.
 
+local Survey = require('survey_runtime')
+
 local config = nil
 local state = {
     active = false,
@@ -10,6 +12,8 @@ local state = {
     lastCommandId = nil,
     stage = 'idle',
     loadingScreen = false,
+    loadingController = nil,
+    lastEffectRepairUnix = nil,
     menuOpen = false,
     overlayOpen = false,
     phonePresentationActive = false,
@@ -21,16 +25,21 @@ local state = {
     preflightEvidence = nil,
     lastReadiness = nil,
     lastControllerHeartbeatUnix = nil,
+    controllerCommandReceivedUnix = nil,
     lastStabilityPosition = nil,
     positionStableFrames = 0,
     positionStableSeconds = 0.0,
     runtimeLocation = {},
     hiddenControllers = {},
     popupControllers = {},
+    hudControllers = {},
     hiddenWeapon = nil,
     restorationVerified = true,
     lastRestoration = {},
     cleanupWarnings = {},
+    notificationElapsed = 0.0,
+    locationElapsed = 1.0,
+    locationCached = {},
 }
 
 local function log(level, message)
@@ -110,6 +119,7 @@ local function writeEvent(eventName, values)
         location_id = state.command.location_id,
         event = eventName,
         timestamp = now(),
+        loading_wait_seconds = state.surveyLoadingElapsed or 0,
     }
     merge(event, values)
     local ok, err = writeJsonAtomic(runtimePath('event-' .. eventName .. '.json'), event)
@@ -284,6 +294,25 @@ local function effectsAreApplied(player)
     return true
 end
 
+local function repairCaptureEffects(player)
+    if not player or not state.snapshot or not state.snapshot.effects then return end
+    -- Loads and scripted transitions can clear restrictions while capture mode
+    -- stays active. Reapply missing effects without replacing ownership history.
+    local nowUnix = os.time()
+    if state.lastEffectRepairUnix == nowUnix then return end
+    state.lastEffectRepairUnix = nowUnix
+    local system = Game.GetStatusEffectSystem()
+    if not system then return end
+    for _, effect in ipairs(state.snapshot.effects) do
+        if not hasStatusEffect(player, effect.name) then
+            pcall(function()
+                system:ApplyStatusEffect(player:GetEntityID(), TweakDBID.new(effect.name),
+                    player:GetRecordID(), player:GetEntityID(), 1, Vector4.new(0, 0, 0, 0), false)
+            end)
+        end
+    end
+end
+
 local function restoreEffects(player)
     if not state.snapshot or not state.snapshot.effects then return true end
     if not player then return false end
@@ -297,7 +326,9 @@ local function restoreEffects(player)
             end)
             if not removed then restored = false end
         end
-        if hasStatusEffect(player, effect.name) ~= effect.alreadyApplied then restored = false end
+        -- Only effects introduced by capture are ours to remove/verify. A load
+        -- may independently clear a pre-existing effect; that is not failed cleanup.
+        if not effect.alreadyApplied and hasStatusEffect(player, effect.name) then restored = false end
     end
     return restored
 end
@@ -410,46 +441,74 @@ local function setProfile(profile)
     return true, nil
 end
 
-local function hideController(controller)
+local function hideController(controller, key)
     if not state.active or not controller then return end
+    if type(key) ~= 'string' then return end
     pcall(function()
         local widget = controller:GetRootWidget()
         if widget then
-            local key = tostring(controller)
             if not state.hiddenControllers[key] then
                 local visible = widget:IsVisible()
                 state.hiddenControllers[key] = { widget = widget, visible = visible }
             end
-            widget:SetVisible(false)
+            if widget:IsVisible() then widget:SetVisible(false) end
         end
     end)
 end
 
-local function rememberPopupController(controller)
-    if controller then state.popupControllers[tostring(controller)] = controller end
+local function rememberPopupController(controller, key)
+    -- CET WeakReference has neither native-identity tostring nor equality.
+    -- Observer callbacks wrap the same native controller in new Lua userdata.
+    -- Only retain the latest HUD controller for each known observer class.
+    if controller and type(key) == 'string' then state.popupControllers[key] = controller end
 end
 
-local function forgetPopupController(controller)
-    if controller then
-        local key = tostring(controller)
+local function forgetPopupController(controller, key)
+    if controller and type(key) == 'string' then
         state.popupControllers[key] = nil
         -- A destroyed popup has no visible state left to restore.
         state.hiddenControllers[key] = nil
     end
 end
 
-local function suppressPopupController(controller)
-    rememberPopupController(controller)
+local function suppressPopupController(controller, key)
+    rememberPopupController(controller, key)
     pcall(function() controller:Dismiss() end)
-    hideController(controller)
+    hideController(controller, key)
+end
+
+local function hideHudNotifications()
+    for key, controller in pairs(state.hudControllers) do
+        if type(IsDefined) == 'function' and not IsDefined(controller) then
+            state.hudControllers[key] = nil
+            state.hiddenControllers[key] = nil
+        else
+            hideController(controller, key)
+        end
+    end
+end
+
+local function notificationResources()
+    if state.snapshot and state.snapshot.notifications then return state.snapshot.notifications end
+    local definitions = Game.GetAllBlackboardDefs()
+    local system = Game.GetBlackboardSystem()
+    local resources = {
+        board = system:Get(definitions.UI_Notifications),
+        onscreen = definitions.UI_Notifications.OnscreenMessage,
+        warning = definitions.UI_Notifications.WarningMessage,
+        phone = system:Get(definitions.UI_ComDevice),
+        contacts = definitions.UI_ComDevice.ContactsActive,
+    }
+    if state.snapshot then state.snapshot.notifications = resources end
+    return resources
 end
 
 local function setPhoneMessageNotificationsHidden(hidden)
     local ok, matches = pcall(function()
-        local definitions = Game.GetAllBlackboardDefs()
-        local board = Game.GetBlackboardSystem():Get(definitions.UI_ComDevice)
+        local resources = notificationResources()
+        local board = resources.phone
         if state.snapshot and state.snapshot.contactsActive == nil then
-            state.snapshot.contactsActive = board:GetBool(definitions.UI_ComDevice.ContactsActive)
+            state.snapshot.contactsActive = board:GetBool(resources.contacts)
         end
         -- ContactsActive=true opens the phone dialer. Never use that flag as
         -- a notification mute; capture closes contacts and hides popup roots.
@@ -457,25 +516,32 @@ local function setPhoneMessageNotificationsHidden(hidden)
         if not hidden and state.snapshot and state.snapshot.contactsActive ~= nil then
             value = state.snapshot.contactsActive
         end
-        board:SetBool(definitions.UI_ComDevice.ContactsActive, value, true)
-        return board:GetBool(definitions.UI_ComDevice.ContactsActive) == value
+        -- Signalling an unchanged value still invokes HUD observers in game.
+        if board:GetBool(resources.contacts) ~= value then board:SetBool(resources.contacts, value, true) end
+        return board:GetBool(resources.contacts) == value
     end)
     return ok and matches == true
 end
 
 local function dismissNotifications()
+    hideHudNotifications()
     local ok = pcall(function()
-        local definitions = Game.GetAllBlackboardDefs()
-        local board = Game.GetBlackboardSystem():Get(definitions.UI_Notifications)
-        local message = SimpleScreenMessage.new()
-        message.message = ''
-        message.duration = 0.0
-        message.isShown = false
-        board:SetVariant(definitions.UI_Notifications.OnscreenMessage, ToVariant(message), true)
-        board:SetVariant(definitions.UI_Notifications.WarningMessage, ToVariant(message), true)
+        local resources = notificationResources()
+        if not resources.emptyMessage then
+            local message = SimpleScreenMessage.new()
+            message.message, message.duration, message.isShown = '', 0.0, false
+            resources.emptyMessage = ToVariant(message)
+        end
+        resources.board:SetVariant(resources.onscreen, resources.emptyMessage, false)
+        resources.board:SetVariant(resources.warning, resources.emptyMessage, false)
     end)
-    for _, controller in pairs(state.popupControllers) do
-        suppressPopupController(controller)
+    for key, controller in pairs(state.popupControllers) do
+        if type(IsDefined) == 'function' and not IsDefined(controller) then
+            forgetPopupController(controller, key)
+        else
+            -- Dismiss only on presentation events, not on every update.
+            hideController(controller, key)
+        end
     end
     state.notificationSuppressionActive = ok and setPhoneMessageNotificationsHidden(true)
 end
@@ -557,7 +623,7 @@ local function restoreCaptureMode(reason)
         return_position = true,
         settings = restoreSettings(),
         prevention = restorePrevention(),
-        camera = true,
+        camera = Survey.restoreCamera(state),
         time = true,
         weather = true,
     }
@@ -609,8 +675,10 @@ end
 
 local function enterCaptureMode(profile)
     if state.active then
+        repairCaptureEffects(Game.GetPlayer())
         local _, reason, fatal = maintainProtection(Game.GetPlayer())
         if fatal then return false, reason end
+        if state.command and state.command.survey then return true, nil end
         return setProfile(profile)
     end
     if state.snapshot or not state.restorationVerified then
@@ -678,7 +746,29 @@ local function getPaused()
     return ok and value == true
 end
 
+local function loadingScreenIsVisible()
+    if state.command and state.command.survey then
+        local active, sources = Survey.loadingState()
+        state.surveyLoadingSources = sources
+        if active then return true end
+    end
+    if not state.loadingScreen then return false end
+    if state.loadingController then
+        local ok, visible = pcall(function()
+            local root = state.loadingController:GetRootWidget()
+            return root ~= nil and root:IsVisible()
+        end)
+        if ok then return visible == true end
+    end
+    return state.loadingScreen
+end
+
 local function getActualPose(player)
+    if state.command and state.command.survey then
+        local ok, pose = pcall(Survey.readPose, player)
+        if ok then return pose end
+        state.surveyCameraError = tostring(pose)
+    end
     local position = player:GetWorldPosition()
     local forward = player:GetWorldForward()
     local yaw = math.deg(math.atan2(-forward.x, forward.y))
@@ -699,7 +789,11 @@ local function positionIsValid(actual, expected, tolerances)
     local dx, dy, dz = actual.x - expected.x, actual.y - expected.y, actual.z - expected.z
     local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
     local heading = angleDelta(actual.yaw, expected.yaw)
-    return distance <= tonumber(tolerances.position_tolerance_m or 0.35), distance, heading
+    local angle = tonumber(tolerances.angle_tolerance_degrees or 2)
+    local oriented = not (state.command and state.command.survey)
+        or (heading <= angle and angleDelta(actual.pitch or 0, expected.pitch or 0) <= angle
+            and actual.camera_verified == true)
+    return distance <= tonumber(tolerances.position_tolerance_m or 0.35) and oriented, distance, heading
 end
 
 local function playerPositionIsStable(position, frameDeltaSeconds)
@@ -733,7 +827,14 @@ local function runtimeLocation()
         if not district then return end
         local record = GetSingleton('gamedataTweakDBInterface'):GetDistrictRecord(district:GetDistrictID())
         local labels = {}
-        while record do
+        local seen = {}
+        for _ = 1, 8 do
+            if not record or (type(IsDefined) == 'function' and not IsDefined(record)) then break end
+            local idOk, id = pcall(function() return tostring(record:GetID()) end)
+            if idOk then
+                if seen[id] then break end
+                seen[id] = true
+            end
             table.insert(labels, 1, Game.GetLocalizedText(record:LocalizedName()))
             record = record:ParentDistrict()
         end
@@ -783,25 +884,42 @@ local function buildReadiness(delta)
         actual, state.command.effective_pose or state.command.pose, state.command.expected or {}
     )
     local stable, frameDelta, stableFrames, stableSeconds = playerPositionIsStable(actual, delta)
-    local observedLocation = runtimeLocation()
+    -- Location is metadata, not a frame-readiness predicate. Avoid recreating
+    -- native district/record wrappers on every update and draw callback.
+    state.locationElapsed = state.locationElapsed + math.max(0, tonumber(delta) or 0)
+    if state.locationElapsed >= 1.0 then
+        state.locationElapsed = 0.0
+        state.locationCached = runtimeLocation()
+    end
+    local observedLocation = state.locationCached
     for key, value in pairs(observedLocation) do
         if value ~= nil and value ~= '' then state.runtimeLocation[key] = value end
     end
     local flightActive = freeflyIsActive()
     -- There is deliberately no floor/collision fence in flight. The Python
     -- controller checks advancing rendered frames and visual settling next.
-    local streamingComplete = attached and flightActive and positionValid and stable
-    local streamingSource = 'stationary FreeFly pose; rendered frames settle in controller'
+    local loading = loadingScreenIsVisible()
+    local streamingComplete = attached and flightActive and positionValid and stable and not loading
+    local streamingSource = state.command.survey
+        and 'loading lifecycle clear and camera pose settled; image stability checked by controller'
+        or 'stationary FreeFly pose; rendered frames settle in controller'
     state.menuOpen = getMenuOpen()
     local paused = getPaused()
     local uiSuppressed, width, height, weaponHidden, uiDetails = uiIsSuppressed(player)
     local cameraAttached = player:GetFPPCameraComponent() ~= nil
+        and (not state.command.survey or actual.camera_verified == true)
     local protected, protectionError = maintainProtection(player)
     local combatClear = combatIsClear(player)
     local evidence = {
         streaming_complete = streamingComplete,
         streaming_source = streamingSource,
-        loading_screen = state.loadingScreen,
+        loading_screen = loading,
+        loading_sources = state.surveyLoadingSources,
+        loading_wait_seconds = state.surveyLoadingElapsed or 0,
+        camera_pose = actual.camera_pose,
+        camera_pose_verified = actual.camera_verified,
+        camera_error = state.surveyCameraError,
+        obstruction = state.surveyObstruction,
         menu_open = state.menuOpen,
         paused = paused,
         player_attached = attached,
@@ -825,7 +943,7 @@ local function buildReadiness(delta)
         display_height = height,
     }
     state.lastReadiness = evidence
-    local ready = streamingComplete and not state.loadingScreen and not state.menuOpen and not paused
+    local ready = streamingComplete and not evidence.loading_screen and not state.menuOpen and not paused
         and attached and cameraAttached and protected and combatClear
         and positionValid and stable and flightActive and weaponHidden and uiSuppressed
     return evidence, ready, actual
@@ -835,6 +953,10 @@ local function teleport(command)
     local pose = command.effective_pose or command.pose
     local player = Game.GetPlayer()
     local ok, errorValue = pcall(function()
+        if command.survey then
+            state.surveyMotionKind = Survey.startMovement(state)
+            return
+        end
         Game.GetTeleportationFacility():Teleport(
             player,
             Vector4.new(pose.x, pose.y, pose.z, 1.0),
@@ -858,9 +980,14 @@ local function acceptCommand(command)
     if type(command.command_id) ~= 'string' or type(command.session_id) ~= 'string' then
         return
     end
+    if state.captureSessionId ~= command.session_id then
+        state.lastControllerHeartbeatUnix = nil
+    end
+    -- Receiving a new command is itself proof of controller activity. Give
+    -- its heartbeat one lease to become readable, including across loading.
+    state.controllerCommandReceivedUnix = os.time()
     state.command = command
     state.lastCommandId = command.command_id
-    state.lastControllerHeartbeatUnix = nil
     if command.kind == 'restore' then
         state.stage = 'restoring'
         state.elapsed = 0
@@ -876,9 +1003,19 @@ local function acceptCommand(command)
     state.positionStableFrames = 0
     state.positionStableSeconds = 0.0
     state.runtimeLocation = {}
+    state.locationCached = {}
+    state.locationElapsed = 1.0
+    state.notificationElapsed = 0.25
     state.elapsed = 0.0
     state.preflightEvidence = nil
     state.lastReadiness = nil
+    state.surveyMotion = nil
+    state.surveyLoadingElapsed = 0
+    state.surveyRecoveries = 0
+    state.surveyObstruction = nil
+    state.surveyObstructionChecked = false
+    state.surveyCameraError = nil
+    state.surveyWasLoading = false
     state.stage = 'preflight'
     writeEvent('accepted', {
         capture_mode_active = false,
@@ -888,6 +1025,7 @@ end
 
 local function beginCaptureWhenGameplayIsReady()
     if state.stage ~= 'preflight' or not state.command then return end
+    if state.command.survey and loadingScreenIsVisible() then return end
     local player = Game.GetPlayer()
     local requests = Game.GetSystemRequestsHandler()
     state.menuOpen = getMenuOpen()
@@ -939,7 +1077,7 @@ local function beginCaptureWhenGameplayIsReady()
         return
     end
     state.elapsed = 0.0
-    state.stage = 'waiting'
+    state.stage = state.surveyMotion and 'travelling' or 'waiting'
 end
 
 local function pollCommand()
@@ -988,9 +1126,14 @@ local function controllerHeartbeatIsAlive()
         and type(heartbeat.unix_seconds) == 'number' then
         state.lastControllerHeartbeatUnix = heartbeat.unix_seconds
     end
+    local timeout = tonumber(config.controller_heartbeat_timeout_seconds or 5) + 1
+    if state.command and type(state.controllerCommandReceivedUnix) == 'number'
+        and math.abs(os.time() - state.controllerCommandReceivedUnix) <= timeout then
+        return true
+    end
     if type(state.lastControllerHeartbeatUnix) ~= 'number' then return false end
     return math.abs(os.time() - state.lastControllerHeartbeatUnix)
-        <= tonumber(config.controller_heartbeat_timeout_seconds or 5) + 1
+        <= timeout
 end
 
 local function writeHeartbeat()
@@ -1002,6 +1145,10 @@ local function writeHeartbeat()
             if camera then actualFov = camera:GetFOV() end
         end)
     end
+    local popupSlots, hiddenSlots, hudSlots = 0, 0, 0
+    for _ in pairs(state.popupControllers) do popupSlots = popupSlots + 1 end
+    for _ in pairs(state.hiddenControllers) do hiddenSlots = hiddenSlots + 1 end
+    for _ in pairs(state.hudControllers) do hudSlots = hudSlots + 1 end
     writeJsonAtomic(runtimePath('cet-heartbeat.json'), {
         schema_version = 1,
         timestamp = now(),
@@ -1010,6 +1157,14 @@ local function writeHeartbeat()
         placement_mode = 'freefly',
         freefly_active = freeflyIsActive(),
         protection_contract_version = 1,
+        survey_contract_version = Survey.revision,
+        loading_wait_seconds = state.surveyLoadingElapsed or 0,
+        loading_sources = state.surveyLoadingSources,
+        camera_motion = state.surveyMotionKind,
+        obstruction = state.surveyObstruction,
+        controller_lease_revision = 'command-receipt-grace-v1',
+        controller_heartbeat_unix = state.lastControllerHeartbeatUnix,
+        command_received_unix = state.controllerCommandReceivedUnix,
         restoration_verified = state.restorationVerified and state.snapshot == nil,
         restoration = state.lastRestoration,
         cleanup_warnings = state.cleanupWarnings,
@@ -1020,15 +1175,64 @@ local function writeHeartbeat()
         preflight = state.preflightEvidence,
         readiness = state.lastReadiness,
         actual_pose = state.readyEvidence and state.readyEvidence.actual or nil,
+        camera_pose = state.readyEvidence and state.readyEvidence.actual.camera_pose or nil,
         effective_pose = state.command and state.command.effective_pose or nil,
         actual_fov = actualFov,
         runtime_location = state.runtimeLocation,
+        reference_diagnostics = {
+            revision = 'bounded-hud-references-v1',
+            popup_controller_slots = popupSlots,
+            hidden_controller_slots = hiddenSlots,
+            hud_controller_slots = hudSlots,
+            hud_suppression_revision = 'area-zone-quest-interactions-v2',
+            lua_heap_kib = collectgarbage('count'),
+        },
     })
 end
 
 local function installObservers()
+    Survey.installLoadingObservers()
+    -- These banners bypass the player's HUD preferences. Keep one controller
+    -- per known class, never one per callback wrapper or notification instance.
+    -- Hide only their roots: notification delivery and animations still finish.
+    local hudEvents = {
+        ZoneAlertNotificationQueue = { 'OnPlayerAttach', 'OnSecurityDataChange', 'OnVehicleZone', 'OnFact' },
+        ZoneAlertNotification = { 'SetNotificationData', 'OnNotificationResumed' },
+        JournalNotificationQueue = { 'OnInitialize', 'OnJournalUpdate', 'OnNewLocationDiscovered', 'OnCustomQuestNotificationUpdate' },
+        JournalNotification = { 'OnInitialize', 'SetNotificationData', 'OnNotificationResumed' },
+        NewLocationNotification = { 'OnInitialize', 'SetNotificationData', 'OnNotificationResumed' },
+        NewAreaGameController = { 'OnInitialize', 'Setup', 'PlayIntroAnimation' },
+        CustomQuestNotificationGameController = { 'OnInitialize', 'Setup', 'PlayAnimation' },
+        StealthZonesGameController = { 'OnInitialize', 'OnPlayerAttach' },
+        interactionWidgetGameController = { 'OnInitialize', 'OnUpdateInteraction', 'OnItemSpawned', 'ResolveRootVisibility', 'UpdateVisibility' },
+        dialogWidgetGameController = { 'OnInitialize', 'OnInteractionsChanged', 'UpdateDialogsData', 'OnDialogsActivateHub' },
+        InteractionsHubGameController = { 'OnInitialize', 'OnRefreshTooltipEvent', 'OnShowTooltips' },
+        LootingGameController = { 'OnInitialize', 'OnUpdateData', 'OnActivateHub' },
+    }
+    for className, events in pairs(hudEvents) do
+        local key = className
+        for _, eventName in ipairs(events) do
+            pcall(function()
+                Observe(key, eventName, function(controller)
+                    state.hudControllers[key] = controller
+                    if state.active then hideController(controller, key) end
+                end)
+            end)
+        end
+        pcall(function()
+            Observe(key, 'OnUninitialize', function()
+                state.hudControllers[key] = nil
+                state.hiddenControllers[key] = nil
+            end)
+        end)
+    end
     Observe('LoadingScreenProgressBarController', 'SetProgress', function(_, progress)
-        state.loadingScreen = tonumber(progress) < 1.0
+        state.loadingController = _
+        state.loadingScreen = (tonumber(progress) or 1.0) < 1.0
+    end)
+    Observe('LoadingScreenProgressBarController', 'OnUninitialize', function()
+        state.loadingScreen = false
+        state.loadingController = nil
     end)
     local popupEvents = {
         PhoneDialerGameController = { Show = true, Hide = false },
@@ -1043,37 +1247,37 @@ local function installObservers()
             pcall(function()
                 Observe(observedController, observedEvent, function(controller)
                     if observedActive then
-                        rememberPopupController(controller)
+                        rememberPopupController(controller, observedController)
                     else
-                        forgetPopupController(controller)
+                        forgetPopupController(controller, observedController)
                     end
                     state.phonePresentationActive = next(state.popupControllers) ~= nil
-                    if state.active and observedActive then suppressPopupController(controller) end
+                    if state.active and observedActive then suppressPopupController(controller, observedController) end
                 end)
             end)
         end
     end
     pcall(function()
         Observe('HudPhoneMessageController', 'OnInitialize', function(controller)
-            rememberPopupController(controller)
-            if state.active then suppressPopupController(controller) end
+            rememberPopupController(controller, 'HudPhoneMessageController')
+            if state.active then suppressPopupController(controller, 'HudPhoneMessageController') end
         end)
     end)
     pcall(function()
         Observe('HudPhoneMessageController', 'ShowMessage', function(controller)
-            rememberPopupController(controller)
-            if state.active then suppressPopupController(controller) end
+            rememberPopupController(controller, 'HudPhoneMessageController')
+            if state.active then suppressPopupController(controller, 'HudPhoneMessageController') end
         end)
     end)
     pcall(function()
         Observe('HudPhoneMessageController', 'OnStateChanged', function(controller)
-            rememberPopupController(controller)
-            if state.active then suppressPopupController(controller) end
+            rememberPopupController(controller, 'HudPhoneMessageController')
+            if state.active then suppressPopupController(controller, 'HudPhoneMessageController') end
         end)
     end)
     pcall(function()
         Observe('HudPhoneMessageController', 'OnUninitialize', function(controller)
-            forgetPopupController(controller)
+            forgetPopupController(controller, 'HudPhoneMessageController')
         end)
     end)
     local messengerEvents = {
@@ -1089,10 +1293,10 @@ local function installObservers()
         pcall(function()
             Observe('MessengerNotification', observedEvent, function(controller)
                 if observedPresent then
-                    rememberPopupController(controller)
-                    if state.active then suppressPopupController(controller) end
+                    rememberPopupController(controller, 'MessengerNotification')
+                    if state.active then suppressPopupController(controller, 'MessengerNotification') end
                 else
-                    forgetPopupController(controller)
+                    forgetPopupController(controller, 'MessengerNotification')
                 end
             end)
         end)
@@ -1110,10 +1314,10 @@ local function installObservers()
         pcall(function()
             Observe('NewHudPhoneGameController', observedEvent, function(controller)
                 if observedPresent then
-                    rememberPopupController(controller)
-                    if state.active then hideController(controller) end
+                    rememberPopupController(controller, 'NewHudPhoneGameController')
+                    if state.active then hideController(controller, 'NewHudPhoneGameController') end
                 else
-                    forgetPopupController(controller)
+                    forgetPopupController(controller, 'NewHudPhoneGameController')
                 end
             end)
         end)
@@ -1122,7 +1326,7 @@ local function installObservers()
         Observe('PhoneMessagePopupGameController', 'SetTimeDilatation', function(controller, active)
             if state.active then
                 state.phonePresentationActive = active == true
-                if active then suppressPopupController(controller) end
+                if active then suppressPopupController(controller, 'PhoneMessagePopupGameController') end
             end
         end)
     end)
@@ -1150,18 +1354,35 @@ registerForEvent('onUpdate', function(delta)
         state.heartbeatElapsed = 0.0
         writeHeartbeat()
     end
+    -- Consume a matching acknowledgement before expiring its command lease.
+    pollAck()
     if (state.active or state.snapshot or (state.command and state.stage ~= 'idle')) and not controllerHeartbeatIsAlive() then
         if state.command then failCommand('controller_heartbeat_lost', 'controller heartbeat expired') end
-        if state.active or state.snapshot then restoreCaptureMode('controller heartbeat lost') end
+        local restored, verification = true, state.lastRestoration
+        if state.active or state.snapshot then
+            restored, verification = restoreCaptureMode('controller heartbeat lost')
+        end
+        -- The controller may still be alive after a long stall. Complete the
+        -- failed command so its negative acknowledgement cannot time out.
+        if state.command then
+            writeEvent('completed', {
+                success = false, restoration_verified = restored == true,
+                restoration = verification or {}, cleanup_warnings = state.cleanupWarnings,
+            })
+        end
         state.stage = 'idle'
         state.command = nil
         return
     end
     if state.active then
+        repairCaptureEffects(Game.GetPlayer())
         maintainProtection(Game.GetPlayer())
-        dismissNotifications()
+        state.notificationElapsed = state.notificationElapsed + math.max(0, tonumber(delta) or 0)
+        if state.notificationElapsed >= 0.25 then
+            state.notificationElapsed = 0.0
+            dismissNotifications()
+        end
     end
-    pollAck()
     pollCommand()
     if state.stage == 'restoring' and state.command then
         state.elapsed = state.elapsed + delta
@@ -1178,12 +1399,49 @@ registerForEvent('onUpdate', function(delta)
         end
         return
     end
+    if state.command and state.command.survey and state.stage ~= 'error' then
+        if loadingScreenIsVisible() then
+            state.surveyLoadingElapsed = state.surveyLoadingElapsed + math.max(0,delta)
+            if state.stage == 'ready' or state.stage == 'armed' then state.stage='waiting' end
+            state.readyEvidence=nil
+            if state.surveyLoadingElapsed >= state.command.survey.loading_wait_seconds then
+                failCommand('loading_timeout', 'loading wait budget exhausted')
+            end
+            if not state.surveyWasLoading then state.surveyWasLoading=true; writeHeartbeat() end
+            return
+        end
+        if state.surveyWasLoading then
+            state.surveyWasLoading=false; state.elapsed=0
+            state.lastStabilityPosition=nil; state.positionStableSeconds=0; state.positionStableFrames=0
+            writeHeartbeat()
+        end
+        local aligned, cameraError = Survey.holdCamera(state)
+        if not aligned then failCommand('camera_control_failed', tostring(cameraError)); return end
+        if state.stage == 'travelling' then
+            local ok, arrived = pcall(Survey.advanceMovement,state,delta)
+            if not ok then failCommand('camera_move_failed', tostring(arrived)); return end
+            if not arrived then return end
+            state.stage='waiting'; state.elapsed=0; state.lastStabilityPosition=nil
+        end
+    end
+    if state.stage == 'preflight' then
+        state.elapsed = state.elapsed + delta
+        if state.elapsed >= tonumber(config.pose_timeout_seconds or 5) then
+            failCommand('preflight_timeout', json.encode(state.preflightEvidence or {}))
+        end
+    end
     beginCaptureWhenGameplayIsReady()
     if state.stage == 'ready' and state.command then
         local evidence, ready, actual = buildReadiness(delta)
         evidence.presented_frame = state.frame
         state.readyEvidence = { evidence = evidence, actual = actual }
-        if not ready then failCommand('readiness_lost', json.encode(evidence)) end
+        if not ready then
+            if state.command.survey then
+                state.stage='waiting'; state.elapsed=0; state.readyEvidence=nil; writeHeartbeat()
+            else
+                failCommand('readiness_lost', json.encode(evidence))
+            end
+        end
     end
     if state.stage == 'waiting' and state.command then
         state.elapsed = state.elapsed + delta
@@ -1191,13 +1449,26 @@ registerForEvent('onUpdate', function(delta)
         if not evidence.freefly_active then
             failCommand('capture_mode_failed', 'FreeFly must remain active throughout capture')
         elseif ready then
+            if state.command.survey then
+                local ok, moved = pcall(Survey.recoverObstruction,state)
+                if not ok then failCommand('obstruction_probe_failed', tostring(moved)); return end
+                if moved then
+                    local teleported, reason = teleport(state.command)
+                    if not teleported then failCommand('teleport_failed',reason); return end
+                    state.stage=state.surveyMotion and 'travelling' or 'waiting'
+                    state.elapsed=0; state.lastStabilityPosition=nil
+                    state.positionStableSeconds=0; state.positionStableFrames=0
+                    writeHeartbeat()
+                    return
+                end
+            end
             state.readyEvidence = { evidence = evidence, actual = actual }
             state.stage = 'armed'
         elseif state.elapsed >= tonumber(config.pose_timeout_seconds or 5)
             and not evidence.loading_screen and not evidence.menu_open and not evidence.paused
             and (not evidence.position_valid or not evidence.position_stable) then
             failCommand('pose_timeout', json.encode(evidence))
-        elseif state.elapsed >= tonumber(config.loading_timeout_seconds or 45) then
+        elseif state.elapsed >= tonumber(config.loading_timeout_seconds or 5) then
             failCommand('streaming_timeout', json.encode(evidence))
         end
     end
@@ -1205,6 +1476,7 @@ end)
 
 registerForEvent('onDraw', function()
     if not config then return end
+    if state.active then hideHudNotifications() end
     state.frame = state.frame + 1
     if state.stage == 'armed' and state.command and state.readyEvidence then
         -- Recheck after onUpdate: overlay/loading/attachment can change before draw.

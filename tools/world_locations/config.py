@@ -42,6 +42,7 @@ def validate_planning_config(config: Mapping[str, Any]) -> None:
         "location_spacing_rules": ("minimum_separation_m",),
         "metadata_rules": ("runtime_area_fallback_m",),
         "fake_door_rules": ("outward_distance_m", "building_distance_m"),
+        "vending_machine_rules": ("minimum_separation_m",),
     }
     for group, fields in groups.items():
         for field in fields:
@@ -64,11 +65,27 @@ def validate_planning_config(config: Mapping[str, Any]) -> None:
                 raise ValueError(
                     f"{group}.{field} must be finite and {'positive' if positive else 'nonnegative'}"
                 )
+    vending_maximum = config.get("vending_machine_rules", {}).get("maximum_locations", 2000)
+    if isinstance(vending_maximum, bool) or not isinstance(vending_maximum, int) or vending_maximum <= 0:
+        raise ValueError("vending_machine_rules.maximum_locations must be a positive integer")
     fake_doors = config.get("fake_door_rules", {})
+    if "include_rule_ids" in fake_doors:
+        included = fake_doors["include_rule_ids"]
+        if not isinstance(included, list) or not included or any(
+            not isinstance(rule, str) or rule not in {"fake_door_v1", "fake_garage_door_v1"} for rule in included
+        ):
+            raise ValueError("fake_door_rules.include_rule_ids must select fake door or garage rules")
     if float(fake_doors.get("building_distance_m", 15)) <= float(fake_doors.get("outward_distance_m", 1.5)):
         raise ValueError("fake_door_rules.building_distance_m must exceed outward_distance_m")
     for category, profile in config.get("site_survey_rules", {}).items():
-        if profile.get("mode") not in {"detail_approach", "entrance_lobby", "two_sides", "ground_context"}:
+        if "ground_reference_categories" in profile:
+            from .site_surveys import GROUND_CATEGORIES
+            categories = profile["ground_reference_categories"]
+            if not isinstance(categories, list) or not categories or any(
+                not isinstance(value, str) or value not in GROUND_CATEGORIES for value in categories
+            ):
+                raise ValueError(f"Invalid ground reference categories for {category}")
+        if profile.get("mode") not in {"detail_approach", "entrance_lobby", "two_sides", "ground_context", "usable_side_pair"}:
             raise ValueError(f"Unknown site survey mode for {category}")
         labels = profile.get("view_labels", [])
         if len(labels) != 2 or any(not isinstance(label, str) or not label.strip() for label in labels) or labels[0] == labels[1]:
@@ -81,7 +98,9 @@ def validate_planning_config(config: Mapping[str, Any]) -> None:
                 raise ValueError(f"Invalid site survey distance: {category}.{field}") from error
             if isinstance(value, bool) or not math.isfinite(number) or number < 0 or (number == 0 and field != "minimum_anchor_separation_m"):
                 raise ValueError(f"Invalid site survey distance: {category}.{field}")
-        if profile["mode"] == "detail_approach" and float(profile.get("far_distance_m", 12)) <= float(profile.get("near_distance_m", 3)):
+        if profile["mode"] == "usable_side_pair" and profile.get("front_axis") not in {"+x", "-x", "+y", "-y"}:
+            raise ValueError(f"Site survey {category} needs a valid local front_axis")
+        if profile["mode"] in {"detail_approach", "usable_side_pair"} and float(profile.get("far_distance_m", 12)) <= float(profile.get("near_distance_m", 3)):
             raise ValueError(f"Site survey {category} far distance must exceed near distance")
         if profile["mode"] == "ground_context" and float(profile.get("minimum_ground_reference_distance_m", 4)) > float(profile.get("maximum_ground_reference_distance_m", 25)):
             raise ValueError(f"Site survey {category} ground-reference minimum exceeds maximum")

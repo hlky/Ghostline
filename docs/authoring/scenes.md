@@ -1,5 +1,10 @@
 # Scene Authoring
 
+For reusable vanilla-derived combinations of body motion, gaze, expression,
+placement and timed handoffs, see [scene performance blocks](scene-performance-blocks.md).
+These experimental blocks extend the scene spec and have separate source,
+serialization and runtime acceptance boundaries.
+
 These are the target rules for fresh `gq000` scene creation tooling. They are
 based on local vanilla extracts under `reference/vanilla_extract_json` and
 world/journal references under `reference/world` and `reference/journal`.
@@ -105,8 +110,10 @@ Current implementation:
 - `tools/scene_spec.md` documents the supported v1 spec fields.
 - V1 covers dialogue scenes, actor acquisition, choice locStore coverage,
   scene-local journal/mappin/trigger/AI quest nodes, validation, and optional
-  WolvenKit deserialization. It intentionally does not author animation-heavy
-  cinematic events or rewrite world marker hierarchy.
+  WolvenKit deserialization. Optional source-derived performance blocks now add
+  reviewed combinations of body animation, expression, gaze, placement and
+  timed signals; RID authoring remains a separate explicit path. The generator
+  does not automatically choreograph interactions or rewrite world marker hierarchy.
 
 ## Root Scene Shape
 

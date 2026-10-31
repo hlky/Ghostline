@@ -338,8 +338,10 @@ class QuestBuildingBlockTests(unittest.TestCase):
                     {item.code for item in diagnostics},
                 )
 
-    def test_complex_blocks_resolve_builtin_templates(self) -> None:
-        for stage_type in sorted(quest_compiler.TEMPLATE_REQUIRED_STAGE_TYPES):
+    def test_former_template_blocks_default_to_generation(self) -> None:
+        from quest_stages import LEGACY_TEMPLATE_RESOURCES
+        self.assertFalse(quest_compiler.TEMPLATE_REQUIRED_STAGE_TYPES)
+        for stage_type in sorted(LEGACY_TEMPLATE_RESOURCES):
             value = stage(stage_type)
             value.pop("phase_template", None)
             with self.subTest(stage_type=stage_type):
@@ -349,15 +351,14 @@ class QuestBuildingBlockTests(unittest.TestCase):
                     [diagnostic.as_dict() for diagnostic in diagnostics],
                 )
                 assert spec is not None
-                self.assertEqual(
-                    quest_compiler.stage_template_resource(spec.stages[0]),
-                    quest_compiler.BUILTIN_TEMPLATE_RESOURCES[stage_type],
-                )
+                self.assertIsNone(quest_compiler.stage_template_resource(spec.stages[0]))
+                self.assertTrue(quest_compiler.emits_stage_phase(spec.stages[0]))
 
     def test_every_builtin_template_instantiates_without_placeholders(self) -> None:
-        for stage_type in sorted(quest_compiler.TEMPLATE_REQUIRED_STAGE_TYPES):
+        from quest_stages import LEGACY_TEMPLATE_RESOURCES
+        for stage_type in sorted(LEGACY_TEMPLATE_RESOURCES):
             value = stage(stage_type)
-            value.pop("phase_template", None)
+            value['phase_template'] = LEGACY_TEMPLATE_RESOURCES[stage_type]
             with self.subTest(stage_type=stage_type):
                 spec, diagnostics = self.load([value])
                 self.assertIsNotNone(
@@ -375,18 +376,16 @@ class QuestBuildingBlockTests(unittest.TestCase):
                     child, context=stage_type
                 )
 
-    def test_builtin_templates_reject_fields_their_graph_does_not_implement(
+    def test_generated_delivery_supports_exit_policy_and_explicit_override(
         self,
     ) -> None:
         value = stage("deliver_vehicle")
         del value["phase_template"]
         value["require_player_exit"] = True
         spec, diagnostics = self.load([value])
-        self.assertIsNone(spec)
-        self.assertIn(
-            "unsupported_builtin_fields",
-            {diagnostic.code for diagnostic in diagnostics},
-        )
+        self.assertIsNotNone(spec, diagnostics)
+        phase = quest_compiler.build_stage_phase(spec.stages[0], ROOT / 'generated/tests/delivery-exit.questphase')
+        self.assertIn('OnUnmount', json.dumps(phase))
 
         value["phase_template"] = TEMPLATE
         spec, diagnostics = self.load([value])

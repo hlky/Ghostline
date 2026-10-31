@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "id": "generated_blocks",
+  "title": "Generated block migration examples",
+  "description": "Complete typed bindings for structural and serialization checks; independent examples with placeholder world/scene bindings, not a playable route.",
+  "stages": [
+    {
+      "id": "optional_condition",
+      "type": "optional_condition",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\optional_condition.questphase",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "condition": {
+        "kind": "fact",
+        "value": "test_condition"
+      },
+      "success_fact": "test_optional_success",
+      "failure_fact": "test_optional_failure",
+      "evaluation": "at_exit"
+    },
+    {
+      "id": "stealth_monitor",
+      "type": "stealth_monitor",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\stealth_monitor.questphase",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "failure_fact": "test_stealth_failed",
+      "success_fact": "test_stealth_succeeded",
+      "stop_fact": "test_stealth_stop"
+    },
+    {
+      "id": "plant_item",
+      "type": "plant_item",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\plant_item.questphase",
+      "item": "Items.test_tracker",
+      "device": "#test_target",
+      "controller_class": "DeviceControllerPS",
+      "action": "PlantTracker",
+      "completion_function": "WasTrackerPlanted",
+      "completion_fact": "test_tracker_planted",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj"
+    },
+    {
+      "id": "release_or_rescue_npc",
+      "type": "release_or_rescue_npc",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\release_or_rescue_npc.questphase",
+      "community": "#test_prisoners",
+      "entry": "rescued",
+      "device": "#test_lock",
+      "controller_class": "DoorControllerPS",
+      "action": "QuestForceUnlock",
+      "completion_function": "IsUnlocked",
+      "completion_fact": "test_rescue_complete",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj"
+    },
+    {
+      "id": "enter_vehicle",
+      "type": "enter_vehicle",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\enter_vehicle.questphase",
+      "vehicle_community": "#test_vehicle_community",
+      "vehicle_entry": "test_vehicle",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "mappin": "quests/minor_quest/gq_blocks/gq_blocks_01/obj/test_vehicle_mappin"
+    },
+    {
+      "id": "drive_to",
+      "type": "drive_to",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\drive_to.questphase",
+      "vehicle_community": "#test_vehicle_community",
+      "vehicle_entry": "test_vehicle",
+      "destination": "#test_drive_destination",
+      "completion_fact": "test_drive_complete",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "mappin": "quests/minor_quest/gq_blocks/gq_blocks_01/obj/test_drive_mappin"
+    },
+    {
+      "id": "steal_vehicle",
+      "type": "steal_vehicle",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\steal_vehicle.questphase",
+      "vehicle_community": "#test_vehicle_community",
+      "vehicle_entry": "test_vehicle",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "mappin": "quests/minor_quest/gq_blocks/gq_blocks_01/obj/test_vehicle_mappin",
+      "completion_fact": "test_vehicle_stolen"
+    },
+    {
+      "id": "deliver_vehicle",
+      "type": "deliver_vehicle",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\deliver_vehicle.questphase",
+      "vehicle": "#test_vehicle",
+      "destination": "#test_destination",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj"
+    },
+    {
+      "id": "vehicle_cleanup",
+      "type": "vehicle_cleanup",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\vehicle_cleanup.questphase",
+      "player_vehicle_record": "Vehicle.test_vehicle",
+      "completion_fact": "test_vehicle_cleanup"
+    },
+    {
+      "id": "carry_npc",
+      "type": "carry_npc",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\carry_npc.questphase",
+      "community": "#test_community",
+      "entry": "carried",
+      "destination": "#test_destination",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj"
+    },
+    {
+      "id": "ride_with_contact",
+      "type": "ride_with_contact",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\ride_with_contact.questphase",
+      "vehicle_community": "#test_vehicle_community",
+      "vehicle_entry": "test_vehicle",
+      "contact_community": "#test_contacts",
+      "contact_entry": "driver",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj"
+    },
+    {
+      "id": "braindance_analysis",
+      "type": "braindance_analysis",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\braindance_analysis.questphase",
+      "scene": "mod\\test\\braindance.scene",
+      "scene_origin": "#test_braindance_origin",
+      "player_anchor": "#test_braindance_player_hold",
+      "player_return": "#test_braindance_player_return",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "clue_facts": [
+        "test_braindance_visual_clue",
+        "test_braindance_audio_clue",
+        "test_braindance_thermal_clue"
+      ],
+      "completion_fact": "test_braindance_complete"
+    },
+    {
+      "id": "meet_contact",
+      "type": "meet_contact",
+      "phase_resource": "mod\\generated_blocks\\phases\\meet_contact.questphase",
+      "contact": "contact",
+      "community": "#generated_blocks_contact",
+      "scene": "mod\\generated_blocks\\scenes\\meeting.scene",
+      "objective": "quests/generated_blocks/meeting",
+      "description_entry": "quests/generated_blocks/meeting/description",
+      "mappin": "quests/generated_blocks/meeting/pin",
+      "setup_trigger": "#generated_blocks_setup",
+      "scene_origin": "#generated_blocks_origin",
+      "accepted_fact": "generated_blocks_accepted",
+      "status": "planned"
+    },
+    {
+      "id": "choice_gate",
+      "type": "choice_gate",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\choice_gate.questphase",
+      "gate_kind": "fact",
+      "branches": [
+        {
+          "id": "left",
+          "condition": "test_left",
+          "set_fact": "test_chose_left"
+        },
+        {
+          "id": "right",
+          "condition": "test_right",
+          "set_fact": "test_chose_right"
+        }
+      ],
+      "join": true
+    },
+    {
+      "id": "escort_npc",
+      "type": "escort_npc",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\escort_npc.questphase",
+      "community": "#test_community",
+      "entry": "escort",
+      "destinations": [
+        "#test_destination_a",
+        "#test_destination_b",
+        "#test_destination_c"
+      ],
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "mappin": "quests/minor_quest/gq_blocks/gq_blocks_01/obj/qmp",
+      "completion_fact": "test_escort_complete"
+    },
+    {
+      "id": "defend_target",
+      "type": "defend_target",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\defend_target.questphase",
+      "community": "#test_allies",
+      "entry": "protected",
+      "completion_fact": "test_defense_complete",
+      "failure_fact": "test_target_failed",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj"
+    },
+    {
+      "id": "deliver_drop_point",
+      "type": "deliver_drop_point",
+      "item": "Items.test_package",
+      "drop_point": "#test_drop_point",
+      "deposit_fact": "test_package_deposited",
+      "objective": "quests/test/delivery",
+      "phase_resource": "mod\\generated_blocks\\phases\\deliver_drop_point.questphase",
+      "status": "planned"
+    },
+    {
+      "id": "hack_access_point",
+      "type": "hack_access_point",
+      "status": "planned",
+      "phase_resource": "mod\\generated_blocks\\phases\\hack_access_point.questphase",
+      "device": "#generated_blocks_access_point",
+      "controller_class": "AccessPointControllerPS",
+      "action": "QuestForceON",
+      "completion_function": "WasHackingMinigameSucceeded",
+      "success_fact": "generated_blocks_hacked"
+    }
+  ]
+}

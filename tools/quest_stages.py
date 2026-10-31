@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from quest_stage_validation import VALIDATORS
+from quest_mechanism_validation import validate_mechanism
+from quest_generated_validation import validate_generated
 from quest_types import Diagnostic
 
 SCHEMA_PATH = Path(__file__).with_name("quest-schema-v1.json")
@@ -89,6 +91,62 @@ IMPLEMENTATIONS = {
     "vehicle_cleanup": StageImplementation(),
 }
 
+for _generated in (
+    "optional_condition",
+    "stealth_monitor",
+    "plant_item",
+    "release_or_rescue_npc",
+    "enter_vehicle",
+    "drive_to",
+    "steal_vehicle",
+    "deliver_vehicle",
+    "vehicle_cleanup",
+    "carry_npc",
+    "ride_with_contact",
+    "braindance_analysis",
+    "meet_contact",
+    "choice_gate",
+    "escort_npc",
+    "defend_target",
+):
+    IMPLEMENTATIONS[_generated] = StageImplementation(
+        f"build_generated_{_generated}_phase", builtin_template=False
+    )
+
+GENERATED_REPLACEMENT_TYPES = frozenset(
+    name
+    for name, value in IMPLEMENTATIONS.items()
+    if value.builder and value.builder.startswith("build_generated_")
+)
+LEGACY_TEMPLATE_RESOURCES = {
+    name: rf"mod\ghostline\quest_blocks\templates\{name}.questphase"
+    for name in GENERATED_REPLACEMENT_TYPES - {"meet_contact"}
+}
+
+IMPLEMENTATIONS["hack_access_point"] = StageImplementation(
+    "build_interact_device_phase", builtin_template=False
+)
+IMPLEMENTATIONS["deliver_drop_point"] = StageImplementation(
+    "build_generated_deliver_drop_point_phase", builtin_template=False
+)
+
+for _mechanism in (
+    "investigate_reactions",
+    "owned_scope",
+    "acquire_or_use",
+    "access_routes",
+    "resolve_and_report",
+    "observe_lethal",
+    "reward_commit",
+    "contact_fallback",
+    "adaptive_timer",
+    "entitlement_reconcile",
+):
+    IMPLEMENTATIONS[_mechanism] = StageImplementation(
+        f"build_{_mechanism}_phase", builtin_template=False
+    )
+    VALIDATORS[_mechanism] = validate_mechanism
+
 
 def _string_property(value: dict[str, Any]) -> bool:
     if "$ref" in value:
@@ -124,17 +182,65 @@ class StageDefinition:
         diagnostics: list[Diagnostic],
     ) -> None:
         if (
-            self.name in {"escort_npc", "defend_target", "choice_gate", "investigate_clues"}
+            self.name
+            in {"escort_npc", "defend_target", "choice_gate", "investigate_clues"}
             and data.get("phase_template")
             and set(data) & {"actor_lifecycle", "objective_lifecycle"}
         ):
-            diagnostics.append(Diagnostic("error", "custom_template_lifecycle", f"{context} lifecycle policies require the generated block; custom templates own their lifecycle", stage_id or None))
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "custom_template_lifecycle",
+                    f"{context} lifecycle policies require the generated block; custom templates own their lifecycle",
+                    stage_id or None,
+                )
+            )
         validator = VALIDATORS.get(self.name)
         if validator is not None:
             validator(data, context, stage_id, diagnostics)
+        if (
+            self.name == "escort_npc"
+            and "allow_combat_interrupt" in data
+            and not data.get("phase_template")
+        ):
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "unsupported_generated_policy",
+                    f"{context}.allow_combat_interrupt requires an explicit custom template",
+                    stage_id,
+                )
+            )
+        if self.name in GENERATED_REPLACEMENT_TYPES:
+            if (
+                self.name
+                not in {
+                    "meet_contact",
+                    "braindance_analysis",
+                    "escort_npc",
+                    "defend_target",
+                    "choice_gate",
+                }
+                and (data.get("phase_template") or data.get("template_bindings"))
+                and data.get("objective_lifecycle")
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "custom_template_lifecycle",
+                        f"{context} custom templates own their lifecycle; generated lifecycle policies cannot be applied implicitly",
+                        stage_id,
+                    )
+                )
+            # Extended escort/defense/choice already have their own validators
+            # and multi-outcome builders. Preserve those established contracts.
+            if self.name not in {"escort_npc", "defend_target", "choice_gate"}:
+                validate_generated(data, context, stage_id, diagnostics)
 
     def builder(self, data: dict[str, Any]) -> str | None:
         if data.get("phase_template"):
+            return None
+        if "template_bindings" in data and self.name in LEGACY_TEMPLATE_RESOURCES:
             return None
         if self.name == "interact_device" and data.get("outcome_branches"):
             return "build_outcome_interact_device_phase"
@@ -184,6 +290,13 @@ class StageDefinition:
         explicit = data.get("phase_template")
         if isinstance(explicit, str):
             return explicit
+        if "template_bindings" in data and self.name in LEGACY_TEMPLATE_RESOURCES:
+            suffix = (
+                "defend_target_retry"
+                if self.name == "defend_target" and data.get("block_on_failure")
+                else self.name
+            )
+            return rf"mod\ghostline\quest_blocks\templates\{suffix}.questphase"
         if self.builder(data):
             return None
         if not self.implementation.builtin_template:
@@ -242,17 +355,6 @@ def reference_table() -> str:
             ", ".join(f"`{field}`" for field in entry.structure.get("required", []))
             or "See semantic constraints below."
         )
-        mode = (
-            "template or generated"
-            if name
-            in {
-                "hack_access_point",
-                "deliver_drop_point",
-                "escort_npc",
-                "defend_target",
-                "choice_gate",
-            }
-            else entry.mode({})
-        )
+        mode = entry.mode({})
         rows.append(f"| `{name}` | {mode} | {required} |")
     return "\n".join(rows)

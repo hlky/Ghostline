@@ -32,6 +32,10 @@ class RuntimeTimeout(ProtocolError):
     pass
 
 
+class ReadinessPending(ProtocolError):
+    """The same command is still alive and is waiting for gameplay/camera readiness."""
+
+
 @contextmanager
 def exclusive_controller(path: Path):
     """OS-owned lock: released on crashes; never delete the shared lock file."""
@@ -389,6 +393,8 @@ class RuntimeProtocol:
                 event=heartbeat,
             )
         frame = heartbeat.get("frame")
+        if heartbeat.get("survey_contract_version") == 2 and heartbeat.get("stage") in {"waiting", "armed", "travelling", "preflight"}:
+            raise ReadinessPending("Capture is waiting for the scene/camera", code="readiness_pending", event=heartbeat)
         if (
             heartbeat.get("stage") != "ready"
             or type(frame) is not int

@@ -1,5 +1,30 @@
 # Quest reference inputs
 
+The [cinematic scene study](../../docs/reference/vanilla-quests/deep-dives/cinematic-scenes/README.md)
+adds presentation metrics, per-quest inventories and raw-verified section case
+studies. Its compressed analysis and verification records live in
+`deep-dives/cinematic-scenes/`.
+
+The [all-quest deep dives](../../docs/reference/vanilla-quests/deep-dives/all-quests/README.md)
+cover all 416 exported journal entries, every stored type, plus an inventory of
+the extracted implementation families. See the
+[method](../../docs/reference/vanilla-quests/deep-dives/all-quests-method.md) and
+[manual synthesis](../../docs/reference/vanilla-quests/deep-dives/all-quest-synthesis.md).
+Their frozen source selection, compressed graph/pattern evidence and verification
+records live in `deep-dives/all-quests/`. Earlier studies below remain separate snapshots.
+
+The first source-backed questphase/scene studies are available in the
+[vanilla quest deep dives](../../docs/reference/vanilla-quests/deep-dives/README.md):
+Space Oddity (`mq003`) and Happy Together (`mq010`), with a candidate building-block
+catalogue. Their machine-readable evidence and provenance live in `deep-dives/`.
+These manually reviewed dossiers are separate from the generated journal index.
+
+The [expanded catalogue](../../docs/reference/vanilla-quests/deep-dives/catalogue/README.md)
+covers all 130 side/minor journal entries, including Phantom Liberty. See its
+[coverage method](../../docs/reference/vanilla-quests/deep-dives/corpus-method.md)
+for exact journal links, the POI-only case, unresolved entries and proof limits.
+Compressed source evidence and per-resource provenance are in `deep-dives/catalogue/`.
+
 `ign-index-snapshot.json` is the checked input for the offline quest-reference
 generator. It retains IGN index titles and URLs only; it contains no walkthrough
 article prose. The journal export supplies the quest descriptions and structure.

@@ -25,7 +25,7 @@ from .capture_evidence import refresh_session_publication
 from .database import json_text, transaction, utc_now
 from .model import stable_id
 from .planning import REQUIRED_NAME_FIELDS, resolve_metadata
-from .protocol import ProtocolError, RuntimeProtocol, RuntimeTimeout, atomic_write_json, exclusive_controller
+from .protocol import ProtocolError, ReadinessPending, RuntimeProtocol, RuntimeTimeout, atomic_write_json, exclusive_controller
 
 
 class CaptureError(RuntimeError):
@@ -135,7 +135,7 @@ def validate_ready_event(
             f"actual position is {distance:.3f}m from the effective pose (maximum {tolerance:.3f}m)"
         )
     try:
-        if any(
+        changed = any(
             not math.isclose(
                 float(effective[axis]),
                 float(place[f"requested_{axis}"]),
@@ -143,10 +143,28 @@ def validate_ready_event(
                 rel_tol=0,
             )
             for axis in ("x", "y", "z")
-        ):
-            errors.append("runtime changed the requested destination")
+        )
+        if changed:
+            approved = place.get("_approved_recovery_poses", []) if capture_config.get("survey_runtime_required") else []
+            if not any(all(abs(float(effective[axis])-candidate[axis]) < 1e-5 for axis in ("x", "y", "z", "yaw", "pitch", "roll")) for candidate in approved):
+                errors.append("runtime changed the requested destination")
     except (KeyError, TypeError, ValueError):
         errors.append("effective destination is invalid")
+    if capture_config.get("survey_runtime_required"):
+        angle = float(capture_config.get("angle_tolerance_degrees", 2))
+        try:
+            if actual.get("camera_verified") is not True:
+                errors.append("active camera pose was not verified")
+            for axis in ("yaw", "pitch", "roll"):
+                if not math.isfinite(float(actual[axis])) or _angle_delta(float(actual[axis]), float(effective[axis])) > angle:
+                    errors.append(f"active camera {axis} does not match the requested angle")
+                if _angle_delta(float(effective[axis]), float(place[f"requested_{axis}"])) > 1e-5:
+                    errors.append(f"runtime changed requested {axis}")
+            camera = actual["camera_pose"]
+            if not all(math.isfinite(float(camera[axis])) for axis in ("x", "y", "z", "yaw", "pitch", "roll")):
+                errors.append("active camera transform is not finite")
+        except (KeyError, TypeError, ValueError):
+            errors.append("active camera transform is incomplete")
     expected_fov = capture_config.get("profile", {}).get("fov")
     actual_fov = event.get("actual_fov")
     if expected_fov is not None:
@@ -275,7 +293,7 @@ class GameWindow:
         expected_height: int,
         *,
         visual_settle_seconds: float = 2.0,
-        visual_timeout_seconds: float = 45.0,
+        visual_timeout_seconds: float = 5.0,
         black_pixel_threshold: int = 8,
         black_fraction_threshold: float = 0.98,
         readiness_check: Callable[[], None] | None = None,
@@ -303,6 +321,15 @@ class GameWindow:
         first_timespan: int | None = None
         last_timespan: int | None = None
         frames = 0
+        pending = threading.Event()
+        pending_evidence: dict[str, Any] = {}
+        active_visual_seconds = 0.0
+        last_frame_at: float | None = None
+        last_frame_reason: str | None = None
+        scene_checker = None
+        if getattr(self, "scene_stability_threshold", None) is not None:
+            from .visual_readiness import FrameReadiness
+            scene_checker = FrameReadiness(threshold=self.scene_stability_threshold, template_path=getattr(self, "loading_template_path", None))
         finished = threading.Event()
         capture = WindowsCapture(
             cursor_capture=False,
@@ -319,7 +346,7 @@ class GameWindow:
                 visible_since, \
                 first_timespan, \
                 last_timespan, \
-                frames
+                frames, active_visual_seconds, last_frame_at, last_frame_reason
             if finished.is_set():
                 capture_control.stop()
                 return
@@ -349,12 +376,35 @@ class GameWindow:
             last_timespan = timespan
             frames += 1
             bgr = frame.frame_buffer[:, :, :3]
+            frame_delta = 0 if last_frame_at is None else now-last_frame_at
+            last_frame_at = now
+            if pending.is_set():
+                if scene_checker is not None:
+                    scene_checker.observe(bgr, loading_confirmed=bool(pending_evidence.get("loading_sources")))
+                    scene_checker.previous = None
+                visible_since = None
+                last_frame_reason = "readiness_pending"
+                return
+            stable, last_frame_reason = scene_checker.observe(bgr) if scene_checker is not None else (True, None)
+            if last_frame_reason != "known_loading_screen":
+                active_visual_seconds += frame_delta
             black_fraction = float((bgr.max(axis=2) <= black_pixel_threshold).mean())
-            if black_fraction >= black_fraction_threshold:
+            if black_fraction >= black_fraction_threshold or not stable:
                 visible_since = None
             elif visible_since is None:
                 visible_since = now
             elif frames >= 2 and now - visible_since >= visual_settle_seconds:
+                if readiness_check is not None:
+                    try:
+                        readiness_check()
+                    except ReadinessPending as error:
+                        pending.set(); pending_evidence.update(error.event)
+                        visible_since = None
+                        return
+                    except (CaptureError, ProtocolError) as error:
+                        capture_error = error
+                        finished.set(); capture_control.stop()
+                        return
                 # Windows Graphics Capture supplies BGRA pixels. Copy them
                 # while the callback owns the native frame buffer.
                 rgb = frame.frame_buffer[:, :, [2, 1, 0]].copy()
@@ -385,16 +435,24 @@ class GameWindow:
             control = capture.start_free_threaded()
             while not finished.wait(0.025):
                 if readiness_check is not None:
-                    readiness_check()
-                if time.monotonic() - started >= visual_timeout_seconds:
+                    try:
+                        readiness_check()
+                        pending.clear(); pending_evidence.clear()
+                    except ReadinessPending as error:
+                        pending.set(); pending_evidence.update(error.event)
+                        visible_since = None
+                active_limit = getattr(self, "active_visual_timeout_seconds", visual_timeout_seconds)
+                if time.monotonic() - started >= visual_timeout_seconds or active_visual_seconds >= active_limit:
                     raise CaptureError(
                         f"no settled fresh frame within {visual_timeout_seconds:.1f}s "
                         f"({frames} advancing frames observed)",
-                        code="frame_timeout",
+                        code="loading_timeout" if pending.is_set() or last_frame_reason == "known_loading_screen" else "frame_timeout",
                         report={
                             "frames_observed": frames,
                             "first_timespan": first_timespan,
                             "last_timespan": last_timespan,
+                            "active_visual_seconds": active_visual_seconds,
+                            "last_frame_reason": last_frame_reason,
                         },
                     )
                 if control.is_finished():
@@ -409,6 +467,11 @@ class GameWindow:
             finished.set()
             if control is not None and not control.is_finished():
                 control.stop()
+            if scene_checker is not None:
+                try:
+                    scene_checker.save()
+                except OSError:
+                    pass
         if capture_error:
             raise capture_error
         if image is None:
@@ -646,11 +709,15 @@ class CaptureController:
             str(self.capture_config["window_title_contains"]),
             str(self.capture_config.get("window_process_name", "Cyberpunk2077.exe")),
         )
+        if self.capture_config.get("survey_runtime_required"):
+            self.window.scene_stability_threshold = self.capture_config.get("scene_stability_threshold", 0.04)
+            self.window.loading_template_path = runtime_root / "loading-frame-signatures.json"
+            self.window.active_visual_timeout_seconds = 5.0
 
     def _command(
         self, session_id: str, command_id: str, place: Mapping[str, Any]
     ) -> dict[str, Any]:
-        return {
+        command = {
             "schema_version": PROTOCOL_SCHEMA_VERSION,
             "kind": "capture",
             "session_id": session_id,
@@ -677,8 +744,19 @@ class CaptureController:
                 "position_tolerance_m": self.capture_config.get(
                     "position_tolerance_m", 0.35
                 ),
+                "angle_tolerance_degrees": self.capture_config.get("angle_tolerance_degrees", 2.0),
             },
         }
+        if self.capture_config.get("survey_runtime_required"):
+            note = json.loads(place["provenance_json"])
+            parent_view = note.get("survey", {}).get("parent_view", place["direction"])
+            command["survey"] = {
+                **self.capture_config["survey"],
+                "obstruction_enabled": parent_view not in {"terminal", "drop_point", "entrance"},
+                "loading_wait_seconds": float(self.capture_config.get("loading_wait_seconds", 30)),
+            }
+            command["recovery_candidates"] = place.get("_approved_recovery_poses", [])
+        return command
 
     def _insert_attempt(
         self,
@@ -904,6 +982,11 @@ class CaptureController:
             raise CaptureError("maximum_attempts must be at least one")
         last_error: str | None = None
         last_code = "capture_failed"
+        loading_remaining = float(self.capture_config.get("loading_wait_seconds", 30))
+        if self.capture_config.get("survey_runtime_required"):
+            from .survey import recovery_candidates
+            place = dict(place)
+            place["_approved_recovery_poses"] = recovery_candidates(place, self.config)
         for attempt_number in range(1, maximum_attempts + 1):
             attempt_id = f"attempt_{uuid.uuid4().hex}"
             command_id = f"command_{uuid.uuid4().hex}"
@@ -920,31 +1003,9 @@ class CaptureController:
             heartbeat_thread: threading.Thread | None = None
             try:
                 self.runtime.heartbeat(session_id)
-                self.runtime.send(self._command(session_id, command_id, place))
-                accepted = self.runtime.wait_for_event(
-                    command_id=command_id,
-                    accepted_types={"accepted"},
-                    timeout_seconds=float(
-                        self.capture_config.get("command_accept_timeout_seconds", 5.0)
-                    ),
-                    session_id=session_id,
-                )
-                self._accepted_attempt(attempt_id, accepted)
-                event = self.runtime.wait_for_event(
-                    command_id=command_id,
-                    accepted_types={"ready"},
-                    timeout_seconds=float(
-                        self.capture_config.get("loading_timeout_seconds", 45.0)
-                    ),
-                    session_id=session_id,
-                )
-                ready = time.monotonic()
-                self._ready_attempt(attempt_id, event)
-                ready_report = validate_ready_event(event, place, self.capture_config)
-                if not ready_report["valid"]:
-                    raise ValidationError(ready_report)
-                validation_config = self.capture_config.get("validation", {})
-
+                # Keep the lease alive during acceptance, loading and database
+                # writes as well as image capture. A blocking operation between
+                # protocol polls must not look like a dead controller to CET.
                 def keep_controller_alive() -> None:
                     while not heartbeat_stop.is_set():
                         try:
@@ -959,6 +1020,34 @@ class CaptureController:
                     daemon=True,
                 )
                 heartbeat_thread.start()
+                command = self._command(session_id, command_id, place)
+                if "survey" in command:
+                    command["survey"]["loading_wait_seconds"] = max(0.1, loading_remaining)
+                self.runtime.send(command)
+                accepted = self.runtime.wait_for_event(
+                    command_id=command_id,
+                    accepted_types={"accepted"},
+                    timeout_seconds=float(
+                        self.capture_config.get("command_accept_timeout_seconds", 5.0)
+                    ),
+                    session_id=session_id,
+                )
+                self._accepted_attempt(attempt_id, accepted)
+                event = self.runtime.wait_for_event(
+                    command_id=command_id,
+                    accepted_types={"ready"},
+                    timeout_seconds=float(
+                        self.capture_config.get("readiness_timeout_seconds", self.capture_config.get("loading_timeout_seconds", 5.0))
+                    ),
+                    session_id=session_id,
+                )
+                ready = time.monotonic()
+                self._ready_attempt(attempt_id, event)
+                ready_report = validate_ready_event(event, place, self.capture_config)
+                if not ready_report["valid"]:
+                    raise ValidationError(ready_report)
+                validation_config = self.capture_config.get("validation", {})
+
                 latest_observation: dict[str, Any] = {}
 
                 def check_destination() -> None:
@@ -977,25 +1066,34 @@ class CaptureController:
                         raise ValidationError(current)
                     latest_observation.update(snapshot)
 
-                image = self.window.capture(
-                    int(self.capture_config["width"]),
-                    int(self.capture_config["height"]),
-                    visual_settle_seconds=float(
-                        self.capture_config.get("visual_settle_seconds", 2.0)
-                    ),
-                    visual_timeout_seconds=float(
-                        self.capture_config.get("loading_timeout_seconds", 45.0)
-                    ),
-                    black_pixel_threshold=int(
-                        validation_config.get("black_pixel_threshold", 8)
-                    ),
-                    black_fraction_threshold=float(
-                        validation_config.get("black_fraction_threshold", 0.98)
-                    ),
-                    readiness_check=check_destination,
-                )
-                captured = time.monotonic()
-                check_destination()
+                visual_deadline = time.monotonic() + float(self.capture_config.get(
+                    "visual_timeout_seconds", self.capture_config.get("loading_timeout_seconds", 5.0)))
+                while True:
+                    try:
+                        image = self.window.capture(
+                            int(self.capture_config["width"]),
+                            int(self.capture_config["height"]),
+                            visual_settle_seconds=float(
+                                self.capture_config.get("visual_settle_seconds", 2.0)
+                            ),
+                            visual_timeout_seconds=max(0.01, visual_deadline-time.monotonic()),
+                            black_pixel_threshold=int(
+                                validation_config.get("black_pixel_threshold", 8)
+                            ),
+                            black_fraction_threshold=float(
+                                validation_config.get("black_fraction_threshold", 0.98)
+                            ),
+                            readiness_check=check_destination,
+                        )
+                        check_destination()
+                        captured = time.monotonic()
+                        break
+                    except ReadinessPending as error:
+                        # Loading can begin between copying a frame and its last
+                        # pose check. Stay in this attempt and discard that frame.
+                        image = None
+                        if time.monotonic() >= visual_deadline:
+                            raise CaptureError("loading resumed before capture could complete", code="loading_timeout") from error
                 capture_event = {
                     **event,
                     **{
@@ -1096,6 +1194,7 @@ class CaptureController:
                     "validation": getattr(error, "report", {}),
                     "runtime_event": getattr(error, "event", {}),
                 }
+                loading_remaining = max(0.0, loading_remaining - float(failure["runtime_event"].get("loading_wait_seconds", 0)))
                 if image is not None:
                     rejected = (
                         self.captures_root
@@ -1156,6 +1255,8 @@ class CaptureController:
                     command_id=command_id,
                     expected_success=False,
                 )
+                if last_code == "loading_timeout":
+                    break
                 if last_code in {"capture_mode_failed", "controller_heartbeat_lost"}:
                     raise SessionProtocolError(
                         f"capture runtime is unhealthy; queue preserved: {last_error}"
@@ -1259,6 +1360,8 @@ class CaptureController:
                 locks.enter_context(exclusive_controller(Path(database_path + ".capture.lock")))
             maximum_age = float(self.capture_config.get("heartbeat_timeout_seconds", 5.0))
             heartbeat = self.runtime.assert_runtime_alive(maximum_age_seconds=maximum_age)
+            if self.capture_config.get("survey_runtime_required") and heartbeat.get("survey_contract_version") != 2:
+                raise ProtocolError("Survey camera runtime v2 is not loaded; reload CET before starting")
             if (
                 heartbeat.get("stage") != "idle"
                 or heartbeat.get("capture_mode_active") is not False

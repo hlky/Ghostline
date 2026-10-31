@@ -20,6 +20,37 @@ from tests.test_world_location_capture import sector_document
 
 
 class FakeDoorTests(unittest.TestCase):
+    def test_scoped_door_and_garage_queues_are_separate_with_reciprocal_pairs(self):
+        chunk = self.document["Data"]["RootChunk"]
+        index = len(chunk["nodes"])
+        chunk["nodes"].append({"Data": {"$type": "worldEntityNode", "entityTemplate": {
+            "DepotPath": {"$value": r"base\gameplay\devices\doors\final\gate_decorative.ent"}}}})
+        chunk["nodeData"]["Data"].append({"NodeIndex": index, "Id": "garage",
+            "Position": {"X": 40, "Y": 40, "Z": 12},
+            "Orientation": {"i": 0, "j": 0, "k": 0, "r": 1}})
+        self.file.write_text(json.dumps(self.document), encoding="utf-8")
+        index_sectors(self.connection, self.source, self.config)
+        self.config["fake_door_rules"]["include_rule_ids"] = ["fake_door_v1"]
+        plan_locations(self.connection, self.config, category="fake_door")
+        doors = [tuple(r) for r in self.connection.execute("SELECT * FROM places ORDER BY location_id")]
+        self.assertEqual(len(doors), 4)
+        self.config["fake_door_rules"]["include_rule_ids"] = ["fake_garage_door_v1"]
+        plan_locations(self.connection, self.config, category="fake_garage_door")
+        self.assertEqual(doors, [tuple(r) for r in self.connection.execute(
+            "SELECT * FROM places WHERE category='fake_door' ORDER BY location_id")])
+        views = list(self.connection.execute("SELECT * FROM places WHERE category='fake_garage_door'"))
+        self.assertEqual(len(views), 2)
+        by_view = {r["direction"]: r for r in views}
+        self.assertEqual(by_view["outward"]["requested_y"], 41.5)
+        self.assertEqual(by_view["building"]["requested_y"], 55)
+        self.assertEqual(by_view["outward"]["requested_yaw"], 0)
+        self.assertEqual(by_view["building"]["requested_yaw"], 180)
+        for row, other in ((views[0], views[1]), (views[1], views[0])):
+            self.assertEqual(row["requested_z"], 12)
+            provenance = json.loads(row["provenance_json"])
+            self.assertEqual(provenance["paired_location_id"], other["location_id"])
+            self.assertEqual(provenance["capture_pair_id"], json.loads(other["provenance_json"])["capture_pair_id"])
+
     def setUp(self):
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)

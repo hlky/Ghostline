@@ -1,11 +1,25 @@
 # Quest blocks, evidence, and scenarios
 
+All 40 registered stage types now have generated defaults. See the
+[template-to-generator migration](generated-block-migration.md) for preserved
+legacy graphs, new configuration options and explicit template compatibility.
+
+The research-derived [owned lifecycle blocks](owned-lifecycle-blocks.md) add
+explicit restoration/commit boundaries and ten opt-in recipe stages to this
+registry. They are experimental implementations with separate source,
+serialization and runtime evidence requirements.
+
+The full [quest block catalog](quest-block-catalog.md) lives in this documentation
+tree so it can be reviewed and committed with registry changes. It lists every
+registered stage type and its fields, ports, implementation mode and examples.
+
 The block registry in `tools/quest_stages.py` joins the editor schema to the
-compiler's implementation policy. Generate its catalog instead of maintaining
-another list of supported fields:
+compiler's implementation policy. Refresh the documentation catalog from that
+registry whenever block definitions change; do not edit its generated tables by
+hand:
 
 ```powershell
-py -B tools/quest_catalog.py catalog --format markdown --output generated/quest-catalog/blocks.md
+py -B tools/quest_catalog.py catalog --format markdown --output docs/authoring/quest-block-catalog.md
 py -B tools/quest_catalog.py catalog --format json --output generated/quest-catalog/blocks.json
 ```
 

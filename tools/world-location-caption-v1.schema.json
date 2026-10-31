@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ghostline:world-location-caption:0.2.0",
+  "title": "World-location scouting caption",
+  "description": "One independent image caption describing persistent place characteristics for quest-location search. IDs are attached by the host; capture checks and run provenance are external.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2.0"
+    },
+    "capture_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "location_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "caption": {
+      "$ref": "#/$defs/caption"
+    }
+  },
+  "required": [
+    "schema_version",
+    "capture_id",
+    "location_id",
+    "caption"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "caption": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500
+        },
+        "location_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "visual_character": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "layout": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "space_scale": {
+              "type": "string",
+              "enum": [
+                "confined",
+                "small",
+                "medium",
+                "large",
+                "open_landscape",
+                "unknown"
+              ]
+            },
+            "enclosure": {
+              "type": "string",
+              "enum": [
+                "open",
+                "partly_enclosed",
+                "enclosed",
+                "unknown"
+              ]
+            },
+            "level_changes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "maxItems": 6
+            },
+            "overlooks": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "description",
+            "space_scale",
+            "enclosure",
+            "level_changes",
+            "overlooks"
+          ],
+          "additionalProperties": false
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$",
+                "maxLength": 64
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "kind",
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 20
+        },
+        "approaches_and_connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "road",
+                  "sidewalk",
+                  "stairs",
+                  "ramp",
+                  "walkway",
+                  "alley",
+                  "doorway",
+                  "garage_opening",
+                  "open_ground",
+                  "other"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "kind",
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 8
+        },
+        "surroundings": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lighting": {
+          "type": "object",
+          "properties": {
+            "daylight_access": {
+              "type": "string",
+              "enum": [
+                "open_sky",
+                "open_sides",
+                "windows",
+                "light_well",
+                "enclosed",
+                "unknown"
+              ]
+            },
+            "fixtures": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "daylight_access",
+            "fixtures"
+          ],
+          "additionalProperties": false
+        },
+        "scene_uses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "use": {
+                "type": "string",
+                "enum": [
+                  "meeting",
+                  "handoff",
+                  "stakeout",
+                  "ambush",
+                  "pursuit",
+                  "vehicle_arrival",
+                  "retrofit_entrance",
+                  "environmental_storytelling",
+                  "other"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "use",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 6
+        },
+        "search_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "maxItems": 24,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "description",
+        "location_types",
+        "visual_character",
+        "layout",
+        "features",
+        "approaches_and_connections",
+        "surroundings",
+        "lighting",
+        "scene_uses",
+        "search_tags"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -83,7 +83,7 @@ def check_preflight(
     if game_root is not None:
         mod = game_root / "bin/x64/plugins/cyber_engine_tweaks/mods/world_location_capture"
         source = Path(__file__).resolve().parents[1] / "world_location_capture_cet"
-        for name, expected in (("init.lua", "init.lua"), ("config.json", "config.example.json")):
+        for name, expected in (("init.lua", "init.lua"), ("survey_runtime.lua", "survey_runtime.lua"), ("config.json", "config.example.json")):
             target = mod / name
             matches = target.is_file() and target.read_bytes() == (source / expected).read_bytes()
             record(f"installed_{name}", "ok" if matches else "blocked", str(target))
@@ -101,6 +101,8 @@ def check_preflight(
             and heartbeat.get("protection_contract_version") == 1
         )
         record("cet_heartbeat", "ok" if idle else "blocked", heartbeat)
+        if capture.get("survey_runtime_required"):
+            record("survey_runtime", "ok" if heartbeat.get("survey_contract_version") == 2 else "blocked", "Survey camera runtime v2 must be loaded; reload CET mods or restart the game")
         record("freefly", "ok" if heartbeat.get("freefly_active") is True else "blocked", "Activate FreeFly before capture; keep it active")
     except (OSError, RuntimeError) as error:
         record("cet_heartbeat", "blocked", str(error))

@@ -1,0 +1,51 @@
+{
+  "depot_path": "base\\workspots\\common\\chair\\generic__sit_chair__sit_around__01.workspot",
+  "source": {
+    "raw_sha256": "6b21ab0760022515a58257844a91d47050655cf2864be1cf3189334b60e3f388",
+    "binary_sha256": "f408a8403d65735af25b9a21492e7e3fe058a66b5908383696a7147fbadeba83"
+  },
+  "rigs": [
+    "base\\characters\\base_entities\\man_base\\man_base.rig",
+    "base\\characters\\base_entities\\man_big\\man_big.rig",
+    "base\\characters\\base_entities\\man_child\\man_child.rig",
+    "base\\characters\\base_entities\\man_fat\\man_fat.rig",
+    "base\\characters\\base_entities\\woman_base\\woman_base.rig"
+  ],
+  "review_status": "unreviewed",
+  "selected_entries": [
+    {
+      "type": "workSequence",
+      "id": 2,
+      "parent_id": 1,
+      "settings": {
+        "idleAnim": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "sit_chair__2h_on_lap__01"
+        },
+        "previousLoopInfinitely": true
+      }
+    },
+    {
+      "type": "workExitAnim",
+      "id": 19,
+      "parent_id": 1,
+      "settings": {
+        "animName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "sit_chair__2h_on_lap__01__to__walk_0__turn270__01"
+        },
+        "idleAnim": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "sit_chair__2h_on_lap__01"
+        }
+      }
+    }
+  ],
+  "relevant_animsets": [
+    "base\\animations\\npc\\generic_characters\\male_big\\interactive_scene\\generic_male_big__sit_chair__2h_on_lap__01.anims"
+  ],
+  "evidence": "Structural database binding only; visual/runtime acceptance pending."
+}

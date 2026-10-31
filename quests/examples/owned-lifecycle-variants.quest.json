@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "id": "lifecycle_variants",
+  "title": "Owned lifecycle native predicate variants",
+  "description": "Planned serialization bindings; not a playable route.",
+  "stages": [
+    {
+      "id": "game_clock",
+      "type": "adaptive_timer",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_variants\\phases\\game_clock.questphase",
+      "clock": "game",
+      "choices": [
+        {
+          "weight": 1,
+          "seconds": 25
+        },
+        {
+          "weight": 2,
+          "seconds": 30
+        },
+        {
+          "weight": 2,
+          "seconds": 35
+        }
+      ],
+      "profiles": [
+        {
+          "when_fact": "lifecycle_demo_hard",
+          "choices": [
+            {
+              "weight": 1,
+              "seconds": 15
+            }
+          ]
+        }
+      ],
+      "busy_fact": "lifecycle_demo_reading",
+      "max_deferral_seconds": 90
+    },
+    {
+      "id": "native_vehicle",
+      "type": "entitlement_reconcile",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_variants\\phases\\native_vehicle.questphase",
+      "owned_fact": "lifecycle_demo_vehicle_owned",
+      "retire": [
+        {
+          "kind": "objective",
+          "path": "quests/lifecycle_demo/offer",
+          "state": "Inactive"
+        },
+        {
+          "kind": "message",
+          "path": "contacts/lifecycle_demo/messages/offer",
+          "state": "Inactive"
+        },
+        {
+          "kind": "fact",
+          "fact": "lifecycle_demo_offer_retired"
+        }
+      ],
+      "outcomes": {
+        "owned": "Owned",
+        "unowned": "Unowned"
+      },
+      "on": {
+        "owned": "$end",
+        "unowned": "$end"
+      },
+      "vehicle_record": "Vehicle.v_standard2_archer_quartz_player"
+    }
+  ]
+}

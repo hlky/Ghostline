@@ -75,6 +75,8 @@ from quest_encounter import (
 
 from artifact_io import atomic_write_json, publish_json_artifacts
 from quest_lifecycle import apply_objective_lifecycle
+from quest_mechanisms import BUILDERS as MECHANISM_BUILDERS
+from quest_generated_blocks import BUILDERS as GENERATED_BLOCK_BUILDERS
 from quest_block_builders import (
     build_escort_phase, build_timed_defense_phase, build_choice_phase,
     build_investigation_phase,
@@ -95,6 +97,7 @@ from quest_stages import (
     SUPPORTED_STAGE_TYPES, DIRECT_STAGE_TYPES as DIRECT_STAGE_TYPES, TEMPLATE_REQUIRED_STAGE_TYPES,
     BUILTIN_TEMPLATE_RESOURCES as BUILTIN_TEMPLATE_RESOURCES, BUILTIN_UNSUPPORTED_FIELDS,
     STAGE_IMPLEMENTATION_MODE as STAGE_IMPLEMENTATION_MODE, STAGE_REQUIRED_FIELDS, STAGE_TYPE_FIELDS,
+    LEGACY_TEMPLATE_RESOURCES,
 )
 
 DEPOT_RE = re.compile(r"^(?:base|ep1|mod)\\.+$")
@@ -860,7 +863,19 @@ def audit_cyberpsycho_authoring(
 
 def audit_resources(spec: QuestSpec, *, root: Path = ROOT) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = audit_scene_contracts(spec, root)
+    from quest_interfaces import audit_bound_interfaces
+    from project_layout import source_path
+
+    authored = {stage.phase_resource: stage for stage in spec.stages}
+
+    def resolve_interface(resource):
+        if resource in authored and emits_stage_phase(authored[resource]):
+            return build_stage_phase(authored[resource], root / "generated/interface-audit.questphase", spec.phase_prefabs)
+        return json.loads(source_path(resource, "raw", root=root).read_text(encoding="utf-8"))
+
     for stage in spec.stages:
+        if stage.type in MECHANISM_BUILDERS or (stage.type in GENERATED_BLOCK_BUILDERS and stage_builder_name(stage) is not None):
+            diagnostics.extend(audit_bound_interfaces(stage, resolve_interface))
         resources = []
         template = stage_template_resource(stage)
         if template is not None:
@@ -2272,6 +2287,14 @@ def build_interact_device_phase(
         builder.connect(previous, mappin, destination_socket="Active")
         previous = mappin
     action: GraphNode | None = None
+    if stage.type == "hack_access_point" and stage.data.get("guard_community"):
+        guards = community_action_node(builder, next_id, stage.data["guard_community"], "Activate")
+        next_id += 1
+        ready = character_spawned_node(builder, next_id, stage.data["guard_community"])
+        next_id += 1
+        builder.connect(previous, guards)
+        builder.connect(guards, ready)
+        previous = ready
     if stage.data.get("send_action", True):
         action = device_manager_node(
             builder,
@@ -2309,6 +2332,12 @@ def build_interact_device_phase(
         next_id += 1
         builder.connect(previous, mappin_done, destination_socket="Inactive")
         previous = mappin_done
+    if stage.type == "hack_access_point":
+        for item in stage.data.get("grants", []):
+            granted = add_item_node(builder, next_id, item, 1)
+            next_id += 1
+            builder.connect(previous, granted)
+            previous = granted
     if stage.data.get("success_fact"):
         succeeded = fact_node(builder, next_id, stage.data["success_fact"])
         builder.connect(previous, succeeded)
@@ -2718,6 +2747,8 @@ STAGE_BUILDERS = {builder.__name__: builder for builder in (
     build_time_gate_phase,
     build_read_terminal_document_phase,
 )}
+STAGE_BUILDERS.update({builder.__name__: builder for builder in MECHANISM_BUILDERS.values()})
+STAGE_BUILDERS.update({builder.__name__: builder for builder in GENERATED_BLOCK_BUILDERS.values()})
 
 
 def build_stage_phase(
@@ -2726,6 +2757,12 @@ def build_stage_phase(
     phase_prefabs: tuple[str, ...] = (),
     *, template_document: JsonObject | None = None,
 ) -> JsonObject:
+    if template_document is not None and not stage.data.get('phase_template'):
+        # Preserve the explicit in-memory template API for migrated built-ins.
+        from dataclasses import replace
+        resource = LEGACY_TEMPLATE_RESOURCES.get(stage.type)
+        if resource is not None:
+            stage = replace(stage, data={**stage.data, 'phase_template': resource})
     builder_name = stage_builder_name(stage)
     if builder_name is None:
         result = instantiate_stage_phase(stage, archive_target, template_document=template_document)
@@ -3101,8 +3138,9 @@ def compile_artifacts(
             validate_stage_contract(stage, document)
             apply_objective_lifecycle(stage, document)
         else:
+            template_resource = stage_template_resource(stage) or LEGACY_TEMPLATE_RESOURCES.get(stage.type)
             document = build_stage_phase(stage, archive, spec.phase_prefabs,
-                template_document=(template_documents or {}).get(stage_template_resource(stage)))
+                template_document=(template_documents or {}).get(template_resource))
         if stage.id in transforms:
             # An explicit quest-owned hook can change lifecycle ownership (for
             # example GQT005 keeps its review objective active across handoff).

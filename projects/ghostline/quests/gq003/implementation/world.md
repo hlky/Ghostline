@@ -5,13 +5,22 @@
 The typed manifest is complete with explicit placeholder NodeRefs. Select and
 review locations before promoting or registering runtime resources. Use the
 opening Iris site again as the later safe site so the quest has five principal
-sites plus one drop point. Each chosen site becomes a world origin; all
+sites plus one drop point. The GQ001 Japantown site may be reused for the two
+GQ003 meetings, subject to checking Mara's staging and a separate street-level
+vehicle pickup: the site itself is elevated and is not drivable. Each chosen
+site becomes a world origin; all
 Ghostline-owned triggers, devices, communities, markers, routes, and scene
 placements use relative offsets.
 
+The opening Patch line says "Same place as before" and the later scene refers
+to a room and work surface. If the GQ001 site is not ultimately suitable,
+reconcile the line and scene staging with its replacement before voice production.
+The current vehicle dialogue says the van is at the safe site; if pickup is
+at street level, reconcile the dialogue and objective with the actual route.
+
 | Origin | Required catalog evidence | Runtime review |
 | --- | --- | --- |
-| Iris briefing and safe site | Reuse established Iris site or `loot_anchor` plus `npc_staging_candidate`, with road access and room for Mara. | Confirm scene approach lifecycle, retained Mara staging, temporary vehicle placement, and whether the Iris community can be safely reactivated. |
+| Iris briefing and safe site | Reuse the GQ001 Iris site if suitable, or choose a `loot_anchor` plus `npc_staging_candidate`, with room for Mara and a viable route to a street-level vehicle pickup. | Confirm scene approach lifecycle, retained Mara staging, pickup and route geometry, and whether the Iris community can be safely reactivated. |
 | Freight yard | `vehicle` or `loot_anchor`, with nearby `terminal`, `plant_target`, and `access_point`. | Three-guard routes, stealth exits, vertical trigger coverage, and no vanilla quest-state ownership. |
 | Memory clinic | `door_lock` plus `release_target_candidate`, with three pedestrian gates and defense anchors. | Mara navmesh continuity, cover, fixed-attacker paths, checkpoint safety. |
 | Freight interchange | `vehicle` plus `parking_anchor_candidate`. | Drivable approach and departure, compatible player-vehicle entry, no obstructed theft animation. |
@@ -34,7 +43,9 @@ both vehicle stops and routes; the relay encounter, clues, core, and exit; and
 final delivery.
 
 The **Suggested exploration destinations** section offers eight provisional
-presets across the six sites. The anonymous Northside yard and Ebunike docks
+presets across the six sites. The Iris Japantown rooftop preset is the GQ001
+site and remains a candidate, but its elevation requires a separate vehicle
+pickup. The anonymous Northside yard and Ebunike docks
 are separate alternatives; the elevated ship landmark is labelled separately.
 Other presets cover the earlier Iris, medical-site, Arroyo interchange, relay,
 and Kabuki delivery leads. Each includes review notes. These are exploration

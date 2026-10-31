@@ -1,0 +1,1012 @@
+{
+  "schema_version": 1,
+  "key": "stand_from_chair",
+  "requirements": "Seated, both hands on lap; source male_big. Requires explicit root-motion placement and a consumer for idle-only/standing signals; idle-only is not StopWorkspot.",
+  "source": {
+    "path": "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json",
+    "sha256": "a32bec715d197987d589678b95cb97a409429a28960ec3e7737dd8141b6c2da5",
+    "section": 768,
+    "event_pointers": [
+      "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/0",
+      "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/1",
+      "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/2",
+      "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/3",
+      "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/4"
+    ],
+    "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/128"
+  },
+  "roles": {
+    "speaker": 0,
+    "listener": 1
+  },
+  "role_kinds": {
+    "speaker": "npc",
+    "listener": "player"
+  },
+  "duration_ms": 5067,
+  "events": [
+    {
+      "HandleId": "816",
+      "Data": {
+        "$type": "scnPlaySkAnimEvent",
+        "actorComponent": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "body"
+        },
+        "animData": {
+          "$type": "scneventsPlayAnimEventExData",
+          "basic": {
+            "$type": "scneventsPlayAnimEventData",
+            "blendIn": 0.5,
+            "blendInCurve": "SinusoidalEaseInOut",
+            "blendOut": 0.5,
+            "blendOutCurve": "SinusoidalEaseInOut",
+            "clipEnd": 0,
+            "clipFront": 0,
+            "stretch": 1
+          },
+          "bodyPartMask": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "None"
+          },
+          "weight": 1
+        },
+        "animName": {
+          "HandleId": "817",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "sit_chair__2h_on_lap__01__to__stand__2h_on_sides__01__turn0__01"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "blendOverride": "CopyPitch_CopyYaw",
+        "cameraBlendInDuration": 1,
+        "cameraBlendOutDuration": 1,
+        "cameraParallaxSpace": "Trajectory",
+        "cameraParallaxWeight": 0,
+        "cameraUseTrajectorySpace": 1,
+        "convertToAdditive": 0,
+        "duration": 5067,
+        "enableWorldSpaceSmoothing": 1,
+        "executionTagFlags": 0,
+        "eyesBlendAdditive": 1,
+        "FPPControlActive": 0,
+        "gameplayAnimName": {
+          "HandleId": "818",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "stand__2h_on_sides__01"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "genderSpecificParams": [],
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2749058887321939968"
+        },
+        "idleIsMountedWorkspot": 0,
+        "isSceneCarrying": 0,
+        "lowerFaceBlendAdditive": 1,
+        "muteAnimEvents": "0",
+        "neckWeight": 1,
+        "performer": {
+          "$type": "scnPerformerId",
+          "id": 1
+        },
+        "pitchLimitBottom": 0,
+        "pitchLimitTop": 0,
+        "playerData": {
+          "$type": "scnPlayerAnimData",
+          "isEndOfCarryingAnimation": 0,
+          "tierData": {
+            "HandleId": "819",
+            "Data": {
+              "$type": "gameSceneTier4Data",
+              "emptyHands": 1,
+              "params": {
+                "$type": "gameMotionConstrainedTierDataParams",
+                "adjustingDuration": 0,
+                "adjustingSpeed": 0,
+                "notificationBackwardIndex": 0,
+                "splineRef": {
+                  "$type": "NodeRef",
+                  "$storage": "uint64",
+                  "$value": "0"
+                },
+                "travellingDuration": 0,
+                "travellingSpeed": 0
+              },
+              "tier": "Tier4_FPPCinematic",
+              "userDebugInfo": "ChangeWorkEvent base\\quest\\minor_quests\\mq010\\scenes\\mq010_02_barry_talk.scenesolution\n"
+            }
+          },
+          "unmountBodyCarry": 1,
+          "useZSnapping": 0
+        },
+        "poseBlendOutWorkspot": {
+          "HandleId": "820",
+          "Data": {
+            "$type": "scnEventBlendWorkspotSetupParameters",
+            "idleOnlyMode": 1,
+            "itemOverride": {
+              "$type": "workWorkspotItemOverride",
+              "itemOverrides": [],
+              "propOverrides": []
+            },
+            "sequenceEntryId": {
+              "$type": "workWorkEntryId",
+              "id": 2
+            },
+            "workExcludedGestures": [],
+            "workspotId": {
+              "$type": "scnSceneWorkspotInstanceId",
+              "id": 1011
+            }
+          }
+        },
+        "rootMotionData": {
+          "$type": "scnPlaySkAnimRootMotionData",
+          "customBlendInCurve": "SinusoidalEaseInOut",
+          "customBlendInTime": -1,
+          "enabled": 1,
+          "meshDissolvingEnabled": 1,
+          "originMarker": {
+            "$type": "scnMarker",
+            "entityRef": {
+              "$type": "gameEntityReference",
+              "dynamicEntityUniqueName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "names": [],
+              "reference": {
+                "$type": "NodeRef",
+                "$storage": "uint64",
+                "$value": "0"
+              },
+              "sceneActorContextName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "slotName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "type": "EntityRef"
+            },
+            "isMounted": 1,
+            "localMarkerId": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "nodeRef": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "slotName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "type": "Global"
+          },
+          "originOffset": {
+            "$type": "Transform",
+            "orientation": {
+              "$type": "Quaternion",
+              "i": 0.000417140633,
+              "j": -0.000690979243,
+              "k": -0.719601274,
+              "r": 0.694387078
+            },
+            "position": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": -3.88195801,
+              "Y": -1.3084718,
+              "Z": 0.0118103027
+            }
+          },
+          "placementMode": "Blend",
+          "removePitchRollRotation": 1,
+          "snapToGround": 0,
+          "snapToGroundEnd": 0,
+          "snapToGroundStart": 0,
+          "trajectoryLOD": [],
+          "vehicleChangePhysicsState": 1,
+          "vehicleEnabledPhysicsOnEnd": 1
+        },
+        "scalingData": {
+          "HandleId": "821",
+          "Data": {
+            "$type": "scnScalingData_KeepRelationWithOtherEvents",
+            "groupRfrncNdspaceEndtime": {
+              "$type": "scnSceneTime",
+              "stu": 5067
+            },
+            "groupRfrncNdspaceStarttime": {
+              "$type": "scnSceneTime",
+              "stu": 0
+            }
+          }
+        },
+        "startTime": 0,
+        "stayInScene": 0,
+        "type": "0",
+        "upperFaceBlendAdditive": 1,
+        "vehicleProceduralCameraWeight": 0,
+        "yawLimitLeft": 0,
+        "yawLimitRight": 0
+      }
+    },
+    {
+      "HandleId": "822",
+      "Data": {
+        "$type": "scneventsSocket",
+        "duration": 0,
+        "executionTagFlags": 0,
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2749058887338717212"
+        },
+        "osockStamp": {
+          "$type": "scnOutputSocketStamp",
+          "name": 3,
+          "ordinal": 0
+        },
+        "scalingData": {
+          "HandleId": "821",
+          "Data": {
+            "$type": "scnScalingData_KeepRelationWithOtherEvents",
+            "groupRfrncNdspaceEndtime": {
+              "$type": "scnSceneTime",
+              "stu": 5067
+            },
+            "groupRfrncNdspaceStarttime": {
+              "$type": "scnSceneTime",
+              "stu": 0
+            }
+          }
+        },
+        "startTime": 0,
+        "type": "0"
+      }
+    },
+    {
+      "HandleId": "823",
+      "Data": {
+        "$type": "scnChangeIdleAnimEvent",
+        "actorComponent": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "head"
+        },
+        "addIdleAnimName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        },
+        "animData": {
+          "$type": "scneventsPlayAnimEventExData",
+          "basic": {
+            "$type": "scneventsPlayAnimEventData",
+            "blendIn": 0.5,
+            "blendInCurve": "SinusoidalEaseInOut",
+            "blendOut": 0.5,
+            "blendOutCurve": "SinusoidalEaseInOut",
+            "clipEnd": 0,
+            "clipFront": 0,
+            "stretch": 0.681978822
+          },
+          "bodyPartMask": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "None"
+          },
+          "weight": 1
+        },
+        "animName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        },
+        "bakedFacialTransition": {
+          "$type": "animFacialEmotionTransitionBaked",
+          "customTransitionAnim": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "None"
+          },
+          "facialKey_Female": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "idle__disinterested__female__uncertain"
+          },
+          "facialKey_Male": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "idle__disinterested__male__uncertain"
+          },
+          "facialKeyWeight": 1,
+          "timeScale": 0.681978822,
+          "toIdleFemale": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "idle__disinterested__female"
+          },
+          "toIdleMale": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "idle__disinterested__male"
+          },
+          "toIdleNeckWeight": 0.75,
+          "toIdleWeight": 1,
+          "transitionDuration": 3.86000013,
+          "transitionType": "Natural"
+        },
+        "convertToAdditive": 0,
+        "duration": 3860,
+        "executionTagFlags": 0,
+        "eyesBlendAdditive": 1,
+        "facialInstantTransition": 0,
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2747670172628447232"
+        },
+        "idleAnimName": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "None"
+        },
+        "isEnabled": 1,
+        "lowerFaceBlendAdditive": 1,
+        "muteAnimEvents": "0",
+        "neckWeight": 1,
+        "performer": {
+          "$type": "scnPerformerId",
+          "id": 1
+        },
+        "scalingData": null,
+        "startTime": 824,
+        "type": "0",
+        "upperFaceBlendAdditive": 1
+      }
+    },
+    {
+      "HandleId": "824",
+      "Data": {
+        "$type": "scnLookAtEvent",
+        "basicData": {
+          "$type": "scnLookAtBasicEventData",
+          "basic": {
+            "$type": "scnAnimTargetBasicData",
+            "isStart": 1,
+            "performerId": {
+              "$type": "scnPerformerId",
+              "id": 1
+            },
+            "staticTarget": {
+              "$type": "Vector4",
+              "W": 1,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "targetActorId": {
+              "$type": "scnActorId",
+              "id": 4294967295
+            },
+            "targetOffsetEntitySpace": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "targetPerformerId": {
+              "$type": "scnPerformerId",
+              "id": 257
+            },
+            "targetPropId": {
+              "$type": "scnPropId",
+              "id": 4294967295
+            },
+            "targetSlot": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "pla_default_tgt"
+            },
+            "targetType": "Actor"
+          },
+          "removePreviousAdvancedLookAts": 1,
+          "requests": [
+            {
+              "$type": "animLookAtRequestForPart",
+              "attachLeftHandToRightHand": -1,
+              "attachRightHandToLeftHand": -1,
+              "bodyPart": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "Eyes"
+              },
+              "request": {
+                "$type": "animLookAtRequest",
+                "additionalParts": {
+                  "Elements": [
+                    {
+                      "$type": "animLookAtPartRequest",
+                      "mode": 0,
+                      "partName": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Head"
+                      },
+                      "suppress": 0,
+                      "weight": 0.100000024
+                    },
+                    {
+                      "$type": "animLookAtPartRequest",
+                      "mode": 0,
+                      "partName": {
+                        "$type": "CName",
+                        "$storage": "string",
+                        "$value": "Chest"
+                      },
+                      "suppress": 0,
+                      "weight": 0.799999952
+                    }
+                  ]
+                },
+                "calculatePositionInParentSpace": 0,
+                "debugInfo": "Scene preset: \"Eyes & Head & Limited Body\"",
+                "followingSpeedFactorOverride": -1,
+                "hasOutTransition": 0,
+                "invalid": 0,
+                "limits": {
+                  "$type": "animLookAtLimits",
+                  "backLimitDegrees": 210,
+                  "hardLimitDegrees": 270,
+                  "hardLimitDistance": 1000000,
+                  "softLimitDegrees": 360
+                },
+                "mode": 0,
+                "outTransitionSpeed": 60,
+                "priority": -1,
+                "suppress": 0,
+                "transitionSpeed": 80
+              }
+            }
+          ]
+        },
+        "duration": 1000,
+        "executionTagFlags": 0,
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2747669940264005632"
+        },
+        "scalingData": null,
+        "startTime": 1102,
+        "type": "0"
+      }
+    },
+    {
+      "HandleId": "825",
+      "Data": {
+        "$type": "scneventsSocket",
+        "duration": 0,
+        "executionTagFlags": 0,
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2749058887338717208"
+        },
+        "osockStamp": {
+          "$type": "scnOutputSocketStamp",
+          "name": 2,
+          "ordinal": 0
+        },
+        "scalingData": {
+          "HandleId": "821",
+          "Data": {
+            "$type": "scnScalingData_KeepRelationWithOtherEvents",
+            "groupRfrncNdspaceEndtime": {
+              "$type": "scnSceneTime",
+              "stu": 5067
+            },
+            "groupRfrncNdspaceStarttime": {
+              "$type": "scnSceneTime",
+              "stu": 0
+            }
+          }
+        },
+        "startTime": 5066,
+        "type": "0"
+      }
+    }
+  ],
+  "animation_bindings": [
+    {
+      "role": "speaker",
+      "actor_field": "bodyCinematicAnimSets",
+      "source_index": 4,
+      "reference": {
+        "$type": "scnCinematicAnimSetSRRef",
+        "asyncAnimSet": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\animations\\npc\\generic_characters\\male_big\\interactive_scene\\generic_big_male_transitions.anims"
+          },
+          "Flags": "Soft"
+        },
+        "isOverride": 1,
+        "priority": 200
+      },
+      "names": {
+        "$type": "scnAnimSetAnimNames",
+        "animationNames": [
+          {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "sit_chair__2h_on_lap__01__to__stand__2h_on_sides__01__turn0__01"
+          }
+        ]
+      }
+    }
+  ],
+  "ports": {
+    "idle_only": {
+      "$type": "scnOutputSocketStamp",
+      "name": 3,
+      "ordinal": 0
+    },
+    "standing": {
+      "$type": "scnOutputSocketStamp",
+      "name": 2,
+      "ordinal": 0
+    }
+  },
+  "source_context": [
+    {
+      "pointer": "/Data/RootChunk/sceneGraph/Data/graph/165",
+      "node": {
+        "HandleId": "1013",
+        "Data": {
+          "$type": "scnQuestNode",
+          "ffStrategy": "automatic",
+          "isockMappings": [
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "CutDestination"
+            },
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "In"
+            }
+          ],
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 1011
+          },
+          "osockMappings": [
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "Success"
+            },
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "Work Started"
+            }
+          ],
+          "outputSockets": [
+            {
+              "$type": "scnOutputSocket",
+              "destinations": [],
+              "stamp": {
+                "$type": "scnOutputSocketStamp",
+                "name": 0,
+                "ordinal": 0
+              }
+            },
+            {
+              "$type": "scnOutputSocket",
+              "destinations": [],
+              "stamp": {
+                "$type": "scnOutputSocketStamp",
+                "name": 0,
+                "ordinal": 1
+              }
+            }
+          ],
+          "questNode": {
+            "HandleId": "1014",
+            "Data": {
+              "$type": "questUseWorkspotNodeDefinition",
+              "entityReference": {
+                "$type": "gameEntityReference",
+                "dynamicEntityUniqueName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "names": [
+                  {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "barry"
+                  }
+                ],
+                "reference": {
+                  "$type": "NodeRef",
+                  "$storage": "string",
+                  "$value": "#mq010_com_barry"
+                },
+                "sceneActorContextName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "slotName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "type": "EntityRef"
+              },
+              "id": 1011,
+              "paramsV1": {
+                "HandleId": "1015",
+                "Data": {
+                  "$type": "scnUseSceneWorkspotParamsV1",
+                  "changeWorkspot": 1,
+                  "continueInCombat": 0,
+                  "dangleResetSimulation": 0,
+                  "enableIdleMode": 0,
+                  "entryId": {
+                    "$type": "workWorkEntryId",
+                    "id": 2
+                  },
+                  "entryTag": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "exitAnimName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "exitEntryId": {
+                    "$type": "workWorkEntryId",
+                    "id": 4294967295
+                  },
+                  "finishAnimation": 0,
+                  "forceEntryAnimName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "function": "UseWorkspot",
+                  "instant": 0,
+                  "isPlayer": 0,
+                  "isWorkspotInfinite": 1,
+                  "itemOverride": {
+                    "$type": "workWorkspotItemOverride",
+                    "itemOverrides": [],
+                    "propOverrides": []
+                  },
+                  "jumpToEntry": 1,
+                  "maxAnimTimeLimit": 2,
+                  "meshDissolvingEnabled": 1,
+                  "movementType": "Walk",
+                  "playAtActorLocation": 0,
+                  "playerParams": {
+                    "$type": "questUseWorkspotPlayerParams",
+                    "applyCameraParams": 0,
+                    "cameraSettings": {
+                      "$type": "gameTier3CameraSettings",
+                      "pitchBottomLimit": 45,
+                      "pitchSpeedMultiplier": 1,
+                      "pitchTopLimit": 60,
+                      "yawLeftLimit": 60,
+                      "yawRightLimit": 60,
+                      "yawSpeedMultiplier": 1
+                    },
+                    "cameraUseTrajectorySpace": 1,
+                    "emptyHands": 0,
+                    "parallaxSpace": "Trajectory",
+                    "parallaxWeight": 1,
+                    "tier": "Tier3",
+                    "vehicleProceduralCameraWeight": 1
+                  },
+                  "repeatCommandOnInterrupt": 0,
+                  "teleport": 1,
+                  "workExcludedGestures": [],
+                  "workspotInstanceId": {
+                    "$type": "scnSceneWorkspotInstanceId",
+                    "id": 1011
+                  },
+                  "workspotNode": {
+                    "$type": "NodeRef",
+                    "$storage": "uint64",
+                    "$value": "0"
+                  }
+                }
+              },
+              "sockets": [
+                {
+                  "HandleId": "1016",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "CutDestination"
+                    },
+                    "type": "CutDestination"
+                  }
+                },
+                {
+                  "HandleId": "1017",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "In"
+                    },
+                    "type": "Input"
+                  }
+                },
+                {
+                  "HandleId": "1018",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "Success"
+                    },
+                    "type": "Output"
+                  }
+                },
+                {
+                  "HandleId": "1019",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "Work Started"
+                    },
+                    "type": "Output"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "pointer": "/Data/RootChunk/sceneGraph/Data/graph/166",
+      "node": {
+        "HandleId": "1020",
+        "Data": {
+          "$type": "scnQuestNode",
+          "ffStrategy": "automatic",
+          "isockMappings": [
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "CutDestination"
+            },
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "In"
+            }
+          ],
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 1012
+          },
+          "osockMappings": [
+            {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "Success"
+            }
+          ],
+          "outputSockets": [
+            {
+              "$type": "scnOutputSocket",
+              "destinations": [],
+              "stamp": {
+                "$type": "scnOutputSocketStamp",
+                "name": 0,
+                "ordinal": 0
+              }
+            }
+          ],
+          "questNode": {
+            "HandleId": "1021",
+            "Data": {
+              "$type": "questUseWorkspotNodeDefinition",
+              "entityReference": {
+                "$type": "gameEntityReference",
+                "dynamicEntityUniqueName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "names": [
+                  {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "barry"
+                  }
+                ],
+                "reference": {
+                  "$type": "NodeRef",
+                  "$storage": "string",
+                  "$value": "#mq010_com_barry"
+                },
+                "sceneActorContextName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "slotName": {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "None"
+                },
+                "type": "EntityRef"
+              },
+              "id": 1012,
+              "paramsV1": {
+                "HandleId": "1022",
+                "Data": {
+                  "$type": "questUseWorkspotParamsV1",
+                  "changeWorkspot": 1,
+                  "continueInCombat": 0,
+                  "dangleResetSimulation": 0,
+                  "enableIdleMode": 1,
+                  "entryId": {
+                    "$type": "workWorkEntryId",
+                    "id": 4294967295
+                  },
+                  "entryTag": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "exitAnimName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "exitEntryId": {
+                    "$type": "workWorkEntryId",
+                    "id": 4294967295
+                  },
+                  "finishAnimation": 1,
+                  "forceEntryAnimName": {
+                    "$type": "CName",
+                    "$storage": "string",
+                    "$value": "None"
+                  },
+                  "function": "IdleOnlyMode",
+                  "instant": 0,
+                  "isPlayer": 0,
+                  "isWorkspotInfinite": 1,
+                  "jumpToEntry": 0,
+                  "maxAnimTimeLimit": 0,
+                  "meshDissolvingEnabled": 1,
+                  "movementType": "Walk",
+                  "playerParams": {
+                    "$type": "questUseWorkspotPlayerParams",
+                    "applyCameraParams": 0,
+                    "cameraSettings": {
+                      "$type": "gameTier3CameraSettings",
+                      "pitchBottomLimit": 45,
+                      "pitchSpeedMultiplier": 1,
+                      "pitchTopLimit": 60,
+                      "yawLeftLimit": 60,
+                      "yawRightLimit": 60,
+                      "yawSpeedMultiplier": 1
+                    },
+                    "cameraUseTrajectorySpace": 1,
+                    "emptyHands": 0,
+                    "parallaxSpace": "Trajectory",
+                    "parallaxWeight": 1,
+                    "tier": "Tier3",
+                    "vehicleProceduralCameraWeight": 1
+                  },
+                  "repeatCommandOnInterrupt": 1,
+                  "teleport": 1,
+                  "workExcludedGestures": [],
+                  "workspotNode": {
+                    "$type": "NodeRef",
+                    "$storage": "uint64",
+                    "$value": "0"
+                  }
+                }
+              },
+              "sockets": [
+                {
+                  "HandleId": "1023",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "CutDestination"
+                    },
+                    "type": "CutDestination"
+                  }
+                },
+                {
+                  "HandleId": "1024",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "In"
+                    },
+                    "type": "Input"
+                  }
+                },
+                {
+                  "HandleId": "1025",
+                  "Data": {
+                    "$type": "questSocketDefinition",
+                    "connections": [],
+                    "name": {
+                      "$type": "CName",
+                      "$storage": "string",
+                      "$value": "Success"
+                    },
+                    "type": "Output"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

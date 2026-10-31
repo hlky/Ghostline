@@ -493,15 +493,15 @@ class VariableQuestBlockTests(unittest.TestCase):
             validator(data, "stage", "test", diagnostics)
             self.assertIn(code, {item.code for item in diagnostics})
 
-    def test_legacy_templates_remain_default_and_explicit_templates_win(self):
+    def test_generated_defaults_and_explicit_templates_win(self):
         for kind, fields in [
             ("escort_npc", {"destinations": ["a", "b", "c"]}),
             ("choice_gate", {"branches": [{}, {}]}),
             ("defend_target", {}),
         ]:
             definition = STAGE_REGISTRY[kind]
-            self.assertIsNone(definition.builder(fields))
-            self.assertIsNotNone(definition.template(fields))
+            self.assertIsNotNone(definition.builder(fields))
+            self.assertIsNone(definition.template(fields))
             extended = {**fields, "outcomes": {"success": "Out1"}}
             self.assertIsNotNone(definition.builder(extended))
             self.assertIsNone(definition.template(extended))

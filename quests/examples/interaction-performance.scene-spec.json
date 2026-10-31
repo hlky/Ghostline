@@ -1,0 +1,276 @@
+{
+  "name": "interaction_performance_preview",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/ghostline/quests/gq000/script/gq000_01_manifest.json",
+  "raw_path": ".tmp/scene-performance-preview/source/raw/mod/performance_preview/scenes/meeting.scene.json",
+  "archive_path": ".tmp/scene-performance-preview/source/archive/mod/performance_preview/scenes/meeting.scene",
+  "exported_datetime": "2026-05-01T14:00:30.1316437Z",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 400,
+  "line_gap_ms": 250,
+  "lipsync_animset": "mod\\gq000\\scenes\\lipsync\\en\\gq000_patch_meet\\civ_low_m_11_enus_40_fat.anims",
+  "actors": [
+    {
+      "key": "patch",
+      "name": "patch",
+      "kind": "community",
+      "id": 0,
+      "entry": "contact",
+      "community_ref": "#performance_preview_contact",
+      "appearance": "default",
+      "lipsync": 0,
+      "voicetag": "4387958692488143316"
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 0
+    },
+    {
+      "key": "observer",
+      "name": "observer",
+      "kind": "community",
+      "id": 2,
+      "entry": "observer",
+      "community_ref": "#performance_preview_observer",
+      "appearance": "default",
+      "lipsync": 0,
+      "voicetag": "4387958692488143316"
+    }
+  ],
+  "spoken_line_order": [
+    "gq000_01_patch_intro_01"
+  ],
+  "choice_line_order": [],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "done",
+      "node_id": 99
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 50,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "sections": [
+    {
+      "key": "sit",
+      "node_id": 20,
+      "lines": [],
+      "on_end": [
+        {
+          "node_id": 30
+        }
+      ]
+    },
+    {
+      "key": "reply",
+      "node_id": 30,
+      "lines": [
+        "gq000_01_patch_intro_01"
+      ],
+      "on_end": [
+        {
+          "node_id": 40
+        }
+      ]
+    },
+    {
+      "key": "explanation",
+      "node_id": 40,
+      "lines": [],
+      "on_end": [
+        {
+          "node_id": 60
+        }
+      ]
+    },
+    {
+      "key": "stand",
+      "node_id": 60,
+      "lines": [],
+      "on_end": [
+        {
+          "node_id": 70
+        }
+      ]
+    },
+    {
+      "key": "group",
+      "node_id": 70,
+      "lines": [],
+      "on_end": [
+        {
+          "node_id": 99
+        }
+      ]
+    }
+  ],
+  "choices": [],
+  "quest_nodes": [],
+  "xor_nodes": [],
+  "end_node": {
+    "node_id": 99
+  },
+  "performance_blocks": [
+    {
+      "key": "approach",
+      "kind": "workspot_move",
+      "node_id": 50,
+      "actor": "patch",
+      "workspot_ref": "#performance_preview_waiting_spot",
+      "entry_id": 4294967295,
+      "is_workspot_infinite": true,
+      "on_success": [],
+      "on_work_started": [
+        {
+          "node_id": 20
+        }
+      ]
+    },
+    {
+      "key": "chair_entry",
+      "kind": "pose_beat",
+      "preset": "arrive_and_sit",
+      "section": "sit",
+      "actors": {
+        "speaker": "patch",
+        "listener": "v"
+      },
+      "root_motion": {
+        "speaker": {
+          "origin": "#performance_preview_chair_origin",
+          "offset": {
+            "$type": "Transform",
+            "position": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 0
+            },
+            "orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0,
+              "r": 1
+            }
+          }
+        }
+      },
+      "ignore_ports": [
+        "settled"
+      ]
+    },
+    {
+      "key": "answer",
+      "kind": "pose_beat",
+      "preset": "seated_sad_reply",
+      "section": "reply",
+      "actors": {
+        "speaker": "patch",
+        "listener": "v"
+      },
+      "anchor_line": "gq000_01_patch_intro_01"
+    },
+    {
+      "key": "explain",
+      "kind": "pose_beat",
+      "preset": "seated_explanation",
+      "section": "explanation",
+      "actors": {
+        "speaker": "patch",
+        "listener": "v"
+      }
+    },
+    {
+      "key": "chair_exit",
+      "kind": "pose_beat",
+      "preset": "stand_from_chair",
+      "section": "stand",
+      "actors": {
+        "speaker": "patch",
+        "listener": "v"
+      },
+      "root_motion": {
+        "speaker": {
+          "origin": "#performance_preview_chair_origin",
+          "offset": {
+            "$type": "Transform",
+            "position": {
+              "$type": "Vector4",
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "W": 0
+            },
+            "orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0,
+              "r": 1
+            }
+          }
+        }
+      },
+      "on": {
+        "idle_only": [
+          {
+            "node_id": 80,
+            "input_ordinal": 1
+          }
+        ]
+      },
+      "ignore_ports": [
+        "standing"
+      ]
+    },
+    {
+      "key": "suspend_activity",
+      "kind": "workspot_idle",
+      "node_id": 80,
+      "actor": "patch",
+      "on_success": []
+    },
+    {
+      "key": "side_exchange",
+      "kind": "pose_beat",
+      "preset": "group_side_exchange",
+      "section": "group",
+      "actors": {
+        "smoker": "patch",
+        "table_listener": "observer"
+      }
+    },
+    {
+      "key": "exit_activity",
+      "kind": "workspot_exit",
+      "node_id": 85,
+      "actor": "patch",
+      "workspot_ref": "#performance_preview_waiting_spot",
+      "exit_entry_id": 4294967295,
+      "on_success": []
+    }
+  ],
+  "description": "Structural recipe catalogue, not a playable route. Chair, wall, table, props and actor rigs are explicit unreviewed bindings; do not install."
+}

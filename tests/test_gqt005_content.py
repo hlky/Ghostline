@@ -123,7 +123,7 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
                 actor["body_animation"],
             )
 
-    def test_typed_manifest_is_ready_and_resolves_builtin_template(self) -> None:
+    def test_typed_manifest_is_ready_and_resolves_generated_builder(self) -> None:
         spec, diagnostics = quest_compiler.load_spec(MANIFEST)
         self.assertIsNotNone(
             spec,
@@ -149,13 +149,8 @@ class BraindanceAnalysisContentTests(unittest.TestCase):
                 "gqt005_bd_guard_implant_heat_found",
             ],
         )
-        self.assertEqual(
-            quest_compiler.stage_template_resource(stage),
-            (
-                r"mod\ghostline\quest_blocks\templates"
-                r"\braindance_analysis.questphase"
-            ),
-        )
+        self.assertIsNone(quest_compiler.stage_template_resource(stage))
+        self.assertIsNotNone(quest_compiler.stage_builder_name(stage))
         self.assertFalse(
             [
                 item

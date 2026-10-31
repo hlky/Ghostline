@@ -1,0 +1,439 @@
+# A Day In The Life
+
+Journal: `quests/minor_quest/mq013_punks` · `MinorQuest` · hash `3309160730`.
+
+**Coverage: journal-linked.** 27 exact journal-linked nodes in 2 resources; 2 resources in the inspected dependency context.
+
+Resource roles in that context: 2 content candidate. Role labels describe path/name evidence, not proof of runtime reachability.
+
+Root quest resources with additional journal references: none indexed. Roots remain activation context when a phase/scene anchor exists, to avoid importing sibling launch scaffolding.
+
+Generated structural analysis from decoded resources. Shared resources are context, not exclusive quest ownership. The tables trace stored sockets and fact dependencies; they do not simulate runtime ordering, prove all branches reachable, or infer chronology from journal objective order. See [method](../all-quests-method.md).
+
+## Journal objectives and implementation anchors
+
+Objective labels come from the saved local journal export. They identify intent; the implementation transitions below establish graph evidence.
+
+| Objective | Journal path |
+| --- | --- |
+| Gonna sound like my gramps for a sec, but you know, in my time, being a punk meant something different. People fought against the system whatever way they could, frying the biggest fish they could catch, tearing down palaces brick by brick. Now every random gonk-brain fool thinks they're a hero for flatlining an unarmed normie. This isn't your beef, I get it... But are you sure don't wanna teach those worms a lesson? (Primary) | `quests/minor_quest/mq013_punks/00_punks/00_talk_shopkeep` |
+| Decide if you'll help the vendor. (Primary) | `quests/minor_quest/mq013_punks/00_punks/01_decide` |
+| Talk to the thugs. (Primary) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` |
+| Defeat the thugs. (Primary) | `quests/minor_quest/mq013_punks/00_punks/03_defeat_punks` |
+| Talk to the vendor. (Primary) | `quests/minor_quest/mq013_punks/00_punks/04_talk_shopkeep` |
+
+## Exact journal transitions and neighboring signals
+
+Locators are resource basename / graph handle / node ID, or scene / node ID. Full depot paths and exact JSON pointers are in the evidence. Scene quest-node input mappings are included so a raw stamp such as `0:3` can be read against its actual mapping.
+
+| Source locator | Journal target | Connected signals |
+| --- | --- | --- |
+| `mq013.questphase / h801 / 3` (Journal) | `quests/minor_quest/mq013_punks` | 2:Out → 3:Failed; 3:Out → 4:In |
+| `mq013_00_punks.scene / scene / 336` (Journal) | `quests/minor_quest/mq013_punks/00_punks/00_talk_shopkeep` | 622:0:0 → 336:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 338` (Journal) | `quests/minor_quest/mq013_punks/00_punks/01_decide` | 338:0:0 → 9:0:0; 722:0:0 → 338:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 339` (Journal) | `quests/minor_quest/mq013_punks/00_punks/01_decide` | 9:0:0 → 339:0:3; 339:0:0 → 10:0:0; 339:0:0 → 383:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 341` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 206:0:0 → 341:0:3; 341:0:0 → 798:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 345` (Journal) | `quests/minor_quest/mq013_punks/00_punks/04_talk_shopkeep` | 106:0:0 → 345:0:3; 345:0:0 → 347:0:3; 516:0:0 → 345:0:3; 2211:2:2 → 345:0:3; 2221:2:2 → 345:0:3; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 347` (Journal) | `quests/minor_quest/mq013_punks` | 345:0:0 → 347:0:3; 347:0:0 → 1573:0:1; 1067:0:0 → 347:0:3; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 374` (Journal) | `quests/minor_quest/mq013_punks` | 156:0:0 → 374:0:4; 374:0:0 → 1576:0:1; 445:0:0 → 374:0:4; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 383` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 339:0:0 → 383:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 519` (Journal) | `quests/minor_quest/mq013_punks/00_punks/04_talk_shopkeep` | 445:0:1 → 519:0:1; 519:0:0 → 1494:0:1; 519:0:0 → 2043:0:1; 519:0:0 → 2168:0:1; 837:0:0 → 519:0:1; 951:0:0 → 519:0:1; 1204:0:0 → 519:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 619` (Journal) | `quests/minor_quest/mq013_punks` | 11:0:0 → 619:0:4; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 622` (Journal) | `quests/minor_quest/mq013_punks/00_punks/00_talk_shopkeep/description` | 4:2:0 → 622:0:1; 622:0:0 → 336:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive |
+| `mq013_00_punks.scene / scene / 722` (Journal) | `quests/minor_quest/mq013_punks/00_punks/00_talk_shopkeep` | 4:0:0 → 722:0:3; 722:0:0 → 338:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 736` (Journal) | `quests/minor_quest/mq013_punks/00_punks/01_decide` | 9:0:1 → 736:0:3; 736:0:0 → 11:0:0; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 798` (Journal) | `quests/minor_quest/mq013_punks/00_punks/04_talk_shopkeep` | 341:0:0 → 798:0:1; 798:0:0 → 837:0:0; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 951` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 951:0:0 → 519:0:1; 1942:0:0 → 951:0:3; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 965` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 135:0:0 → 965:0:2; 965:0:0 → 967:0:4; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 967` (Journal) | `quests/minor_quest/mq013_punks` | 965:0:0 → 967:0:4; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1067` (Journal) | `quests/minor_quest/mq013_punks/00_punks/04_talk_shopkeep` | 1060:0:0 → 1067:0:4; 1067:0:0 → 347:0:3; 1067:0:0 → 2098:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1126` (Journal) | `quests/minor_quest/mq013_punks/00_punks/01_decide` | 1126:0:0 → 1140:0:1; 1127:0:0 → 1126:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1127` (Journal) | `quests/minor_quest/mq013_punks/00_punks/00_talk_shopkeep` | 24:0:0 → 1127:0:2; 1127:0:0 → 1126:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1139` (Journal) | `quests/minor_quest/mq013_punks/00_punks/01_decide` | 1139:0:0 → 1143:0:1; 1140:0:0 → 1139:0:3; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1143` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 1139:0:0 → 1143:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1207` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 1207:0:0 → 1200:0:0; 1213:0:0 → 1207:0:3; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1409` (Journal) | `quests/minor_quest/mq013_punks/00_punks/02_deal_with_punks` | 1408:0:0 → 1409:0:3; 1409:0:0 → 1414:0:1; 1409:0:0 → 1841:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1415` (Journal) | `quests/minor_quest/mq013_punks/00_punks/03_defeat_punks` | 1414:0:0 → 1415:0:1; 1415:0:0 → 1413:0:1; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+| `mq013_00_punks.scene / scene / 1416` (Journal) | `quests/minor_quest/mq013_punks/00_punks/03_defeat_punks` | 1416:0:0 → 445:0:1; 1533:0:0 → 1416:0:3; input mappings: 0:0=CutDestination, 0:1=Active, 0:2=Inactive, 0:3=Succeeded, 0:4=Failed |
+
+## Phase calls and scene handoffs
+
+Calls below come from journal-linked graph scopes and their forward resource dependencies. Incoming sockets select entries; outgoing sockets show the caller's actual consumers. An exposed but unwired output does not advance its parent.
+
+| Call site | Resource / marker | Connected signals |
+| --- | --- | --- |
+| `mq013.questphase / h91 / 14` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene`; `#mq013_00_sm_punks` | 7:Out → 14:mq013_00_in; 89:CutSource → 14:CutDestination; 14:mq013_00_shopkeep_alive_out → 77:In1; 14:mq013_00_shopkeep_dead_out → 17:In; 14:combat → 85:In1; 14:combat → 52:In1; 14:goto_combat_shop → 91:combat_shop; 14:mq013_00_to_combat_scene_out → 76:mq013_00_combat_in |
+| `mq013.questphase / h91 / 76` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene`; `#mq013_00_sm_punks` | 14:mq013_00_to_combat_scene_out → 76:mq013_00_combat_in; 76:mq013_00_shopkeep_alive_out → 16:In; 76:mq013_00_shopkeep_dead_out → 17:In; 89:CutSource → 76:CutDestination |
+| `mq013.questphase / h91 / 91` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene`; `#mq013_00_sm_punks` | 14:goto_combat_shop → 91:combat_shop; 91:mq013_00_shopkeep_dead_out → 17:In |
+| `mq013.questphase / h265 / 81` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene`; `#mq013_00_sm_punks` | 3:Out → 81:stop_lookats |
+
+## Parent orchestration and activation context
+
+Only actual phase/scene call sites are followed here; references from scene-state conditions are not treated as calls. Parent resources can be shared master graphs. Neighboring predicates describe stored gates, not verified engine entry eligibility.
+
+| Parent call site | Called resource | Incoming gates and connected outputs |
+| --- | --- | --- |
+| `base\quest\minor_quests\minorquests.questphase` / h0 / 17 | `mq013.questphase` | 47: LogicalHub; 47:Out1 → 17:In1 |
+| `base\quest\minor_quests\mq013\mq013.quest` / h0 / 0 | `mq013.questphase` | 11: Scene: mq013_00_punks.scene; 11:chicken_out → 0:chicken |
+| `base\quest\minor_quests\mq013\mq013.quest` / h0 / 11 | `mq013_00_punks.scene` | 1: Start; 11:chicken_out → 0:chicken; 1:Out → 11:chicken_in; 11:chicken_out → 6:In |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 14 | `mq013_00_punks.scene` | 7: FactsDBManager: std_arr_foodshop_03_default_on write/default comparison 0; 89: CutControl; 7:Out → 14:mq013_00_in; 89:CutSource → 14:CutDestination; 14:mq013_00_shopkeep_alive_out → 77:In1; 14:mq013_00_shopkeep_dead_out → 17:In; 14:combat → 85:In1; 14:combat → 52:In1; 14:goto_combat_shop → 91:combat_shop; 14:mq013_00_to_combat_scene_out → 76:mq013_00_combat_in |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 76 | `mq013_00_punks.scene` | 14: Scene: mq013_00_punks.scene; 89: CutControl; 14:mq013_00_to_combat_scene_out → 76:mq013_00_combat_in; 76:mq013_00_shopkeep_alive_out → 16:In; 76:mq013_00_shopkeep_dead_out → 17:In; 89:CutSource → 76:CutDestination |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 91 | `mq013_00_punks.scene` | 14: Scene: mq013_00_punks.scene; 14:goto_combat_shop → 91:combat_shop; 91:mq013_00_shopkeep_dead_out → 17:In |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h265 / 81 | `mq013_00_punks.scene` | 3: FactsDBManager: mq013_punk_combat_start; 3:Out → 81:stop_lookats |
+| `base\quest\cyberpunk2077.questphase` / h520 / 6 | `minorquests.questphase` | 4: Phase: bugfixing.questphase; 7: LogicalHub; 8: PauseCondition: chicken_test_enable_sidecontent; 21: FactsDBManager: ep1_standalone_bugfix_start; 4:to_mq025 → 6:to_mq025; 7:Out1 → 6:In1; 8:Out → 6:In1; 21:Out → 6:EP1_Standalone |
+| `base\quest\demos\handson_2020\handson_2020_kabuki.quest` / h0 / 8 | `minorquests.questphase` | 0: Start; 0:Out → 8:In1 |
+| `base\quest\demos\handson_2020\handson_2020_little_china.quest` / h0 / 7 | `minorquests.questphase` | 1: Start; 1:Out → 7:In1 |
+| `base\quest\demos\handson_2020\handson_2020_northside_industrial_district.quest` / h0 / 7 | `minorquests.questphase` | 0: Start; 0:Out → 7:In1 |
+| `base\quest\demos\handson_2020\handson_2020_scavengers.quest` / h0 / 32 | `minorquests.questphase` | 25: LogicalHub; 25:Out1 → 32:In1 |
+| `base\quest\demos\handson_2020\handson_2020_speed_test.quest` / h0 / 5 | `minorquests.questphase` | 0: Start; 0:Out → 5:In1 |
+| `base\quest\cyberpunk2077.quest` / h0 / 2 | `cyberpunk2077.questphase` | 0: Start; 0:Out → 2:Start |
+| `base\quest\demos\handson_2020\handson_2020.quest` / h0 / 33 | `cyberpunk2077.questphase` | 34: FactsDBManager: e3_2020; 34:Out → 33:Start |
+| `base\quest\demos\handson_2020\handson_2020_testing.quest` / h0 / 5 | `cyberpunk2077.questphase` | 6: FactsDBManager: e3_2020; 6:Out → 5:Testing |
+| `ep1\quest\cyberpunk2077_ep1_standalone.quest` / h0 / 1 | `cyberpunk2077.questphase` | 2: Start; 2:Out → 1:EP1_Standalone |
+
+## Scene interfaces and actors
+
+| Scene | Entries → exits | Actors; graph size |
+| --- | --- | --- |
+| `mq013_00_punks.scene` | mq013_00_in, mq013_00_punk_off_bike, stop_lookats, combat_shop, Start 3, chicken_in, mq013_00_combat_in, Start 9, Start 7 → mq013_00_shopkeep_alive_out, mq013_00_shopkeep_dead_out, combat, End 8, goto_combat_shop, chicken_out, mq013_00_to_combat_scene_out | shopkeep; punk_01; punk_02; customer; bike; Player; 304 nodes / 386 edges |
+
+## Choice labels, eligibility and outgoing branches
+
+Text is joined from screenplay option IDs to the embedded localization store. An option-level predicate is only one layer of eligibility; parent graph routes can impose additional gates.
+
+| Scene / node / option | Embedded label and caption | Authored option gate | Outgoing signal |
+| --- | --- | --- | --- |
+| `mq013_00_punks.scene / n9 / 0` | [Stand] Sure, I'll help. (`sure`) | No option-level predicate stored | 0:0 → 339:0:3; 0:0 → 1850:0:0 |
+| `mq013_00_punks.scene / n9 / 1` | [Stand] You're on your own. (`no`) | No option-level predicate stored | 0:1 → 736:0:3; 0:1 → 1850:0:0 |
+| `mq013_00_punks.scene / n34 / 0` | Leave him alone. (`fuck_off`) | No option-level predicate stored | 0:0 → 55:0:0 |
+| `mq013_00_punks.scene / n34 / 1` | [Punch] (`punch`) | {"questCondition": {"$type": "questFactsDBCondition", "type": {"$type": "questVarComparison_ConditionType", "factName": "mq013_punch_enabled"}}} | 0:1 → 206:0:0 |
+| `mq013_00_punks.scene / n34 / 2` | Never mind. I'll just be on my way. (`nothing`) | No option-level predicate stored | 0:2 → 56:0:0; 0:2 → 1850:0:0 |
+| `mq013_00_punks.scene / n34 / 3` | What's going on here? (`what`) | No option-level predicate stored | 0:3 → 450:0:0 |
+| `mq013_00_punks.scene / n89 / 0` | I'll blow your brains out. (`beat`) | No option-level predicate stored | 0:0 → 91:0:0 |
+| `mq013_00_punks.scene / n89 / 1` | I changed my mind. Do whatever you want. (`leave`) | No option-level predicate stored | 0:1 → 92:0:0 |
+| `mq013_00_punks.scene / n354 / 0` | You OK? (`talk`) | No option-level predicate stored | 0:0 → 1060:0:0; 0:0 → 2016:0:0; 0:0 → 2207:0:1 |
+| `mq013_00_punks.scene / n354 / 1` | What about your sister's new job? (`Option_04`) | {"questCondition": {"$type": "questFactsDBCondition", "type": {"$type": "questVarComparison_ConditionType", "factName": "mq013_zetatech_info"}}} | 0:1 → 643:0:0 |
+| `mq013_00_punks.scene / n503 / 0` |                                  (`Option`) | No option-level predicate stored | 0:0 → 505:0:1 |
+| `mq013_00_punks.scene / n503 / 1` |                      (`Option_01`) | No option-level predicate stored | 0:1 → 493:0:1 |
+| `mq013_00_punks.scene / n522 / 0` | You OK? (`talk`) | No option-level predicate stored | 0:0 → 1060:0:0; 0:0 → 2016:0:0; 0:0 → 2204:0:1 |
+| `mq013_00_punks.scene / n522 / 1` | What about your sister's new job? (`Option_03`) | {"questCondition": {"$type": "questFactsDBCondition", "type": {"$type": "questVarComparison_ConditionType", "factName": "mq013_zetatech_info"}}} | 0:1 → 1166:0:0 |
+| `mq013_00_punks.scene / n572 / 0` | [Sit] Can I get a Chromanticore? (`buy`) | {"questCondition": {"$type": "questFactsDBCondition", "type": {"$type": "questVarComparison_ConditionType", "factName": "mq013_shopkeep_blocked_sq024", "comparisonType": "Equal"}}} | 0:0 → 587:0:0 |
+| `mq013_00_punks.scene / n572 / 1` | [Sit] Sain Ruisseau, please. (`Option_05`) | {"questCondition": {"$type": "questFactsDBCondition", "type": {"$type": "questVarComparison_ConditionType", "factName": "mq013_shopkeep_blocked_sq024", "comparisonType": "Equal"}}} | 0:1 → 588:0:0 |
+| `mq013_00_punks.scene / n572 / 2` | [Sit] I'll have a Lothbrok. (`Option_06`) | {"questCondition": {"$type": "questFactsDBCondition", "type": {"$type": "questVarComparison_ConditionType", "factName": "mq013_shopkeep_blocked_sq024", "comparisonType": "Equal"}}} | 0:2 → 594:0:0 |
+
+## Persistent state dependencies
+
+A writer/reader pairing is a data dependency, not proof of an execution edge or exclusive ownership. RED defaults remain omitted in the evidence. `done`/cleanup facts are not assumed to mean successful journal outcome.
+
+| Fact | Writers in context | Readers and other fact bindings in context |
+| --- | --- | --- |
+| `high_streetcred` | mq013_00_punks.scene / scene / 505 | mq013_00_punks.scene / scene / 455 |
+| `mq013_00_beat_played` | mq013_00_punks.scene / scene / 1448 | No reader in selected context |
+| `mq013_active` | mq013.questphase / h1013 / 4; mq013.questphase / h12 / 3 | No reader in selected context |
+| `mq013_dealt_with_punks_somehow` | mq013_00_punks.scene / scene / 2043; mq013_00_punks.scene / scene / 2084 | mq013.questphase / h695 / 21 |
+| `mq013_done` | mq013.questphase / h1013 / 3 | No reader in selected context |
+| `mq013_far_away` | mq013.questphase / h695 / 28 | mq013.questphase / h801 / 8 |
+| `mq013_got_off_bike` | mq013_00_punks.scene / scene / 1182 | No reader in selected context |
+| `mq013_punch` | mq013_00_punks.scene / scene / 1099 | mq013.questphase / h265 / 44 |
+| `mq013_punch_enabled` | Producer outside selected context | mq013_00_punks.scene / scene / 34 |
+| `mq013_punk_combat_shopkeeper` | mq013_00_punks.scene / scene / 307 | mq013.questphase / h265 / 16; mq013_00_punks.scene / scene / 317; mq013_00_punks.scene / scene / 804 |
+| `mq013_punk_combat_start` | mq013.questphase / h265 / 3; mq013_00_punks.scene / scene / 1414; mq013_00_punks.scene / scene / 1801 | mq013.questphase / h265 / 116; mq013.questphase / h801 / 23; mq013_00_punks.scene / scene / 1341; mq013_00_punks.scene / scene / 1814; mq013_00_punks.scene / scene / 317; mq013_00_punks.scene / scene / 804; mq013_00_punks.scene / scene / 947 |
+| `mq013_punks_dead_before_scene` | Producer outside selected context | mq013.questphase / h265 / 42 |
+| `mq013_punks_defeated` | mq013.questphase / h265 / 17 | No reader in selected context |
+| `mq013_punks_engaged` | mq013_00_punks.scene / scene / 2239 | No reader in selected context |
+| `mq013_said_not_helping` | mq013_00_punks.scene / scene / 840; mq013_00_punks.scene / scene / 854 | No reader in selected context |
+| `mq013_shopkeep_blocked_sq024` | mq013_00_punks.scene / scene / 2049; mq013_00_punks.scene / scene / 2050 | mq013_00_punks.scene / scene / 572 |
+| `mq013_zetatech_info` | mq013_00_punks.scene / scene / 1422 | mq013_00_punks.scene / scene / 2204; mq013_00_punks.scene / scene / 2207; mq013_00_punks.scene / scene / 354; mq013_00_punks.scene / scene / 522 |
+| `q101_done` | Producer outside selected context | mq013.questphase / h12 / 6 |
+| `sq024_mq013_active_timeskipped` | Producer outside selected context | mq013.questphase / h695 / 37 |
+| `sq024_santo_domingo_countdown_end` | Producer outside selected context | mq013_00_punks.scene / scene / 2047 |
+| `sq024_santo_domingo_race_started` | Producer outside selected context | mq013_00_punks.scene / scene / 2046 |
+| `std_arr_foodshop_03_dead` | mq013.questphase / h801 / 17; mq013.questphase / h91 / 17 | mq013.questphase / h1013 / 25; mq013.questphase / h1131 / 16; mq013.questphase / h1131 / 17 |
+| `std_arr_foodshop_03_default_on` | mq013.questphase / h91 / 15; mq013.questphase / h91 / 7; mq013_00_punks.scene / scene / 1820; mq013_00_punks.scene / scene / 1822; mq013_00_punks.scene / scene / 1824; mq013_00_punks.scene / scene / 1826; mq013_00_punks.scene / scene / 1828 | No reader in selected context |
+| `std_arr_foodshop_03_discount_on` | mq013.questphase / h91 / 16 | No reader in selected context |
+
+## Exact gates, joins and cancellation
+
+<details><summary>109 stored control nodes in the selected context</summary>
+
+Only stored fields are shown. Missing comparison, clock or boolean fields retain RED defaults; no value is invented. This exposes the actual wait predicates, join counts and cut destinations behind the proposed blocks.
+
+| Locator | Type and authored fields | Connected signals |
+| --- | --- | --- |
+| `mq013.questphase / h12 / 6` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"q101_done"}}}` | 0:Out → 6:In; 6:Out → 16:In |
+| `mq013.questphase / h12 / 9` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq013_tr_start"}}` | 16:Out → 9:In; 9:Out → 10:In |
+| `mq013.questphase / h91 / 8` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_vendor"}}` | 0:Out → 8:In; 8:Out → 28:In2 |
+| `mq013.questphase / h91 / 28` | `questLogicalAndNodeDefinition` `{}` | 8:Out → 28:In2; 32:Out1 → 28:In1; 28:Out1 → 73:In; 28:Out1 → 81:In |
+| `mq013.questphase / h91 / 81` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_shopkeep"}}` | 81:Out → 7:In; 28:Out1 → 81:In |
+| `mq013.questphase / h91 / 86` | `questCutControlNodeDefinition` `{}` | 86:CutSource → 85:CutDestination; 87:Out1 → 86:In |
+| `mq013.questphase / h91 / 89` | `questCutControlNodeDefinition` `{}` | 89:CutSource → 14:CutDestination; 89:CutSource → 76:CutDestination; 85:Out1 → 89:In; 89:Out → 88:In1 |
+| `mq013.questphase / h208 / 4` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterSpawned_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["random_customer"]},"comparisonParams":{"$type":"questComparisonParam","entireCommunity":false,"comparisonType":"Greater"}}}}` | 6:Out → 4:In; 4:Out → 8:In2 |
+| `mq013.questphase / h208 / 5` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questVehicleCondition","type":{"$type":"questVehicleSpawned_ConditionType","vehicleRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["bike"]}}}}` | 3:Out → 5:In; 5:Out → 7:In |
+| `mq013.questphase / h208 / 8` | `questLogicalAndNodeDefinition` `{}` | 8:Out1 → 1:In; 4:Out → 8:In2; 10:Out → 8:In1 |
+| `mq013.questphase / h265 / 4` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterHit_ConditionType","attackerRef":{"$type":"gameEntityReference","reference":"#player"},"isAttackerPlayer":true,"targetRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"includeHitTypes":["Melee","Bullet","Explosion","Other"]}}}` | 50:Out1 → 4:In; 4:Out → 6:In3 |
+| `mq013.questphase / h265 / 5` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterHit_ConditionType","attackerRef":{"$type":"gameEntityReference","reference":"#player"},"isAttackerPlayer":true,"targetRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"includeHitTypes":["Melee","Bullet","Explosion","Other"]}}}` | 50:Out1 → 5:In; 5:Out → 6:In4 |
+| `mq013.questphase / h265 / 6` | `questLogicalXorNodeDefinition` `{"inputSocketCount":7}` | 6:Out1 → 3:In; 4:Out → 6:In3; 5:Out → 6:In4; 82:Out → 6:In1; 84:Out → 6:In1; 88:Out → 6:In2; 116:Out → 6:In5; 115:Out → 6:In6; 48:Out → 6:In7; 6:Out1 → 114:In |
+| `mq013.questphase / h265 / 8` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 7:Out1 → 8:In; 8:Out → 10:In1 |
+| `mq013.questphase / h265 / 9` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 7:Out1 → 9:In; 9:Out → 10:In2 |
+| `mq013.questphase / h265 / 10` | `questLogicalAndNodeDefinition` `{}` | 8:Out → 10:In1; 9:Out → 10:In2; 10:Out1 → 75:In |
+| `mq013.questphase / h265 / 16` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_shopkeeper"}}}` | 7:Out1 → 16:In; 16:Out → 71:In; 16:Out → 74:In; 16:Out → 87:In |
+| `mq013.questphase / h265 / 40` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","operation":"OR","conditions":[{"$type":"questSensesCondition","type":{"$type":"questStimuli_ConditionType","instigatorRef":{"$type":"gameEntityReference","names":["None"]},"targetRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"type":"WeaponDisplayed"}},{"$type":"questSensesCondition","type":{"$type":"questStimuli_ConditionType","instigatorRef":{"$type":"gameEntityReference","names":["None"]},"targetRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"type":"WeaponDisplayed"}}]}}` | 50:Out1 → 40:In |
+| `mq013.questphase / h265 / 42` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punks_dead_before_scene"}}}` | 42:False → 1:In; 17:Out → 42:In; 42:True → 43:In |
+| `mq013.questphase / h265 / 44` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punch"}}}` | 7:Out1 → 44:In; 44:Out → 43:In |
+| `mq013.questphase / h265 / 48` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterStatusEffect_CondtionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"statusEffectID":"BaseStatusEffect.Grappled"}}}` | 48:Out → 6:In7; 7:Out1 → 48:In |
+| `mq013.questphase / h265 / 71` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 16:Out → 71:In; 71:Out → 74:In |
+| `mq013.questphase / h265 / 82` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterStatusEffect_CondtionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"statusEffectID":"BaseStatusEffect.Grappled"}}}` | 82:Out → 6:In1; 83:Out → 82:In |
+| `mq013.questphase / h265 / 84` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":15.0},"comparisonType":"LessOrEqual"}},{"$type":"questLogicalCondition","operation":"OR","conditions":[{"$type":"questCharacterCondition","type":{"$type":"questCharacterState_ConditionType","subType":{"$type":"questCharacterState_PlayerSubType","takedownState":"Takedown"}}},{"$type":"questCharacterCondition","type":{"$type":"questCharacterState_ConditionType","subType":{"$type":"questCharacterState_PlayerSubType","takedownState":"Leap"}}}]}]}}` | 84:Out → 6:In1; 83:Out → 84:In |
+| `mq013.questphase / h265 / 85` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":100}}}` | 111:Out → 85:In; 85:Out → 86:In |
+| `mq013.questphase / h265 / 88` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questLogicalCondition","operation":"OR","conditions":[{"$type":"questCharacterCondition","type":{"$type":"questCharacterAim_ConditionType","preciseAiming":true,"targetRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]}}},{"$type":"questCharacterCondition","type":{"$type":"questCharacterAim_ConditionType","preciseAiming":true,"targetRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]}}}]},{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks"}]}}` | 88:Out → 6:In2; 89:Out → 88:In |
+| `mq013.questphase / h265 / 96` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":300}}}` | 96:Out → 77:In; 106:Out → 96:In |
+| `mq013.questphase / h265 / 97` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":300}}}` | 97:Out → 25:In; 77:Out → 97:In |
+| `mq013.questphase / h265 / 99` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterMount_ConditionType","parentRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["bike"]},"childRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"condition":"OnUnmount","role":"Driver"}}}` | 101:Out → 99:In; 99:Out → 110:In |
+| `mq013.questphase / h265 / 101` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":300}}}` | 101:Out → 11:In; 25:Out → 101:In; 101:Out → 99:In |
+| `mq013.questphase / h265 / 110` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":300}}}` | 99:Out → 110:In; 110:Out → 109:In |
+| `mq013.questphase / h265 / 115` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks"},{"$type":"questCharacterCondition","type":{"$type":"questCharacterCombat_ConditionType"}}]}}` | 115:Out → 6:In6; 117:Out → 115:In |
+| `mq013.questphase / h265 / 116` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}}}` | 116:Out → 6:In5; 117:Out → 116:In |
+| `mq013.questphase / h695 / 2` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_player_left"}}` | 5:Out → 2:In; 2:Out → 3:In |
+| `mq013.questphase / h695 / 4` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq013_tr_player_left"}}` | 0:Out → 4:In; 3:Out → 4:In; 4:Out → 5:In |
+| `mq013.questphase / h695 / 12` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq012_tr_player_far_away_fail"}}` | 0:Out → 12:In; 22:CutSource → 12:CutDestination; 12:Out → 28:In |
+| `mq013.questphase / h695 / 21` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_dealt_with_punks_somehow"}}}` | 0:Out → 21:In; 21:Out → 22:In |
+| `mq013.questphase / h695 / 22` | `questCutControlNodeDefinition` `{}` | 22:CutSource → 12:CutDestination; 21:Out → 22:In; 22:CutSource → 37:CutDestination |
+| `mq013.questphase / h695 / 37` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"sq024_mq013_active_timeskipped","value":1,"comparisonType":"GreaterOrEqual"}}}` | 37:Out → 14:In; 22:CutSource → 37:CutDestination; 35:Out → 37:In |
+| `mq013.questphase / h801 / 8` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_far_away"}}}` | 4:Out → 8:In; 8:False → 7:In; 8:True → 28:In |
+| `mq013.questphase / h801 / 12` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":30.0}}},{"$type":"questSystemCondition","type":{"$type":"questCameraFocus_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"timeInterval":10.0,"onScreenTest":true,"inverted":true}}]}}` | 12:Out → 9:In; 11:Out → 12:In |
+| `mq013.questphase / h801 / 15` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":30.0}}},{"$type":"questSystemCondition","type":{"$type":"questCameraFocus_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"timeInterval":10.0,"onScreenTest":true,"inverted":true}}]}}` | 15:Out → 10:In; 11:Out → 15:In |
+| `mq013.questphase / h801 / 16` | `questLogicalAndNodeDefinition` `{}` | 9:Out → 16:In1; 10:Out → 16:In2; 16:Out1 → 25:In1 |
+| `mq013.questphase / h801 / 23` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}}}` | 0:Out → 23:In; 23:False → 19:In; 23:True → 20:In |
+| `mq013.questphase / h801 / 24` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":3}}}` | 24:Out → 19:In; 20:Out → 24:In |
+| `mq013.questphase / h801 / 25` | `questLogicalAndNodeDefinition` `{}` | 25:Out1 → 1:In; 6:Out → 25:In1; 16:Out1 → 25:In1; 19:Out → 25:In2 |
+| `mq013.questphase / h1013 / 9` | `questLogicalAndNodeDefinition` `{}` | 6:Out → 9:In1; 10:Out1 → 9:In2; 9:Out1 → 33:In2 |
+| `mq013.questphase / h1013 / 10` | `questLogicalAndNodeDefinition` `{"inputSocketCount":4}` | 7:Out → 10:In1; 8:Out → 10:In3; 10:Out1 → 9:In2; 19:Out → 10:In2; 14:Out → 10:In4; 25:False → 10:In4 |
+| `mq013.questphase / h1013 / 11` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":150.0}}}}` | 11:Out → 7:In; 30:True → 11:In |
+| `mq013.questphase / h1013 / 12` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":150.0}}}}` | 31:True → 12:In; 12:Out → 19:In |
+| `mq013.questphase / h1013 / 20` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["bike"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":150.0}}}}` | 20:Out → 8:In; 32:True → 20:In |
+| `mq013.questphase / h1013 / 25` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"std_arr_foodshop_03_dead"}}}` | 0:Out → 25:In; 25:False → 10:In4; 25:True → 26:In |
+| `mq013.questphase / h1013 / 26` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":150.0}}}}` | 26:Out → 14:In; 25:True → 26:In |
+| `mq013.questphase / h1013 / 30` | `questConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterSpawned_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","entireCommunity":false,"comparisonType":"Greater"}}}}` | 0:Out → 30:In; 30:False → 7:In; 30:True → 11:In |
+| `mq013.questphase / h1013 / 31` | `questConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterSpawned_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","entireCommunity":false,"comparisonType":"Greater"}}}}` | 0:Out → 31:In; 31:True → 12:In; 31:False → 19:In |
+| `mq013.questphase / h1013 / 32` | `questConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterSpawned_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["bike"]},"comparisonParams":{"$type":"questComparisonParam","entireCommunity":false,"comparisonType":"Greater"}}}}` | 0:Out → 32:In; 32:False → 8:In; 32:True → 20:In |
+| `mq013.questphase / h1013 / 33` | `questLogicalAndNodeDefinition` `{}` | 33:Out1 → 1:In; 9:Out1 → 33:In2; 13:Out1 → 33:In1 |
+| `mq013.questphase / h1131 / 3` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterMount_ConditionType","parentRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["bike"]},"childRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"role":"Driver"}}}` | 2:Out → 3:In; 3:Out → 4:In |
+| `mq013.questphase / h1131 / 4` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":2}}}` | 3:Out → 4:In; 4:Out → 5:In |
+| `mq013.questphase / h1131 / 7` | `questConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 0:Out → 7:In; 7:False → 16:In; 7:False → 21:In |
+| `mq013.questphase / h1131 / 8` | `questConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 0:Out → 8:In; 8:False → 17:In; 8:False → 22:In |
+| `mq013.questphase / h1131 / 16` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"std_arr_foodshop_03_dead"}}}` | 7:False → 16:In; 16:True → 20:In; 16:True → 25:In |
+| `mq013.questphase / h1131 / 17` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"std_arr_foodshop_03_dead"}}}` | 8:False → 17:In; 17:True → 26:In; 17:True → 23:In |
+| `mq013.questphase / h1131 / 20` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":2}}}` | 20:Out → 2:In; 16:True → 20:In |
+| `mq013.questphase / h1131 / 31` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq013_tr_player_left","activatorRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"isPlayerActivator":false}}` | 29:Out → 31:In; 31:Out → 33:In2 |
+| `mq013.questphase / h1131 / 32` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq012_tr_player_far_away_fail"}}` | 29:Out → 32:In; 32:Out → 33:In1 |
+| `mq013.questphase / h1131 / 33` | `questLogicalXorNodeDefinition` `{}` | 33:Out1 → 30:In; 31:Out → 33:In2; 32:Out → 33:In1 |
+| `mq013_00_punks.scene / scene / 24` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":8.0}}}}` | 4:2:0 → 24:0:1; 24:0:0 → 4:1:0; 24:0:0 → 972:0:0; 24:0:0 → 1116:0:1; 24:0:0 → 1127:0:2; 979:0:0 → 24:0:0 |
+| `mq013_00_punks.scene / scene / 115` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":500}}}` | 115:0:0 → 109:0:0; 840:0:0 → 115:0:1 |
+| `mq013_00_punks.scene / scene / 135` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 135:0:0 → 156:0:0; 135:0:0 → 911:0:0; 135:0:0 → 965:0:2; 135:0:0 → 1855:0:1; 135:0:0 → 1879:1:0; 135:0:0 → 1891:0:1; 307:0:0 → 135:0:1; 911:0:0 → 135:0:0 |
+| `mq013_00_punks.scene / scene / 317` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}},{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_shopkeeper"}}]}}` | 1:0:0 → 317:0:1; 317:0:0 → 194:0:0 |
+| `mq013_00_punks.scene / scene / 445` | `questConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}}` | 445:0:0 → 374:0:4; 445:0:1 → 519:0:1; 1416:0:0 → 445:0:1 |
+| `mq013_00_punks.scene / scene / 455` | `questConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","operation":"OR","conditions":[{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"high_streetcred"}},{"$type":"questStatsCondition","type":{"$type":"questStreetCredTier_ConditionType","entityRef":{"$type":"questUniversalRef"},"tierID":"140261389284","comparisonType":"GreaterOrEqual"}}]}}` | 455:0:0 → 458:0:0; 455:0:0 → 1085:0:1; 455:0:0 → 1087:0:1; 455:0:1 → 2143:0:0; 1448:0:0 → 455:0:1 |
+| `mq013_00_punks.scene / scene / 661` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["random_customer"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":60.0}}},{"$type":"questSystemCondition","type":{"$type":"questCameraFocus_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["random_customer"]},"onScreenTest":true,"inverted":true}}]}}` | 661:0:0 → 546:0:1; 1000:0:0 → 661:0:1 |
+| `mq013_00_punks.scene / scene / 712` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":2}}}` | 587:0:0 → 712:0:1; 588:0:0 → 712:0:1; 594:0:0 → 712:0:1; 712:0:0 → 4:0:0; 712:0:0 → 1820:0:1 |
+| `mq013_00_punks.scene / scene / 762` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks","activatorRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]},"isPlayerActivator":false}}` | 762:0:0 → 1195:0:1; 762:0:0 → 2230:0:1; 2129:0:0 → 762:0:1 |
+| `mq013_00_punks.scene / scene / 766` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks"}}` | 19:0:0 → 766:0:1; 766:0:0 → 26:0:0; 766:0:0 → 1826:0:1; 766:0:0 → 2230:0:1 |
+| `mq013_00_punks.scene / scene / 804` | `questConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","operation":"OR","conditions":[{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_shopkeeper"}},{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}}]}}` | 531:0:0 → 804:0:1; 804:0:0 → 354:0:0; 804:0:1 → 522:0:0 |
+| `mq013_00_punks.scene / scene / 911` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}},{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}]}}` | 135:0:0 → 911:0:0; 307:0:0 → 911:0:1; 911:0:0 → 135:0:0; 911:0:0 → 837:0:0; 911:0:0 → 1103:0:1; 911:0:0 → 2035:0:1 |
+| `mq013_00_punks.scene / scene / 947` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}}}` | 675:2:0 → 947:0:1; 947:0:0 → 1564:0:1; 947:0:1 → 705:0:1; 1814:0:0 → 947:0:1 |
+| `mq013_00_punks.scene / scene / 989` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":600}}}` | 34:1:0 → 989:0:1; 989:0:0 → 54:0:0 |
+| `mq013_00_punks.scene / scene / 1004` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","operation":"OR","conditions":[{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","minutes":1}},{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":30.0}}}]}}` | 34:1:0 → 1004:0:0; 749:0:0 → 1004:0:1; 1004:0:0 → 26:1:0; 1004:0:0 → 34:1:0; 1004:0:0 → 2133:0:0 |
+| `mq013_00_punks.scene / scene / 1060` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":50.0}}}}` | 354:0:0 → 1060:0:0; 522:0:0 → 1060:0:0; 531:0:0 → 1060:0:1; 1060:0:0 → 354:1:0; 1060:0:0 → 522:1:0; 1060:0:0 → 1067:0:4 |
+| `mq013_00_punks.scene / scene / 1140` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks"}}` | 1126:0:0 → 1140:0:1; 1140:0:0 → 1139:0:3 |
+| `mq013_00_punks.scene / scene / 1160` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":500}}}` | 1160:0:0 → 466:0:1; 1160:0:0 → 2104:0:1; 1898:0:1 → 1160:0:1 |
+| `mq013_00_punks.scene / scene / 1195` | `questConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}},{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}]}}` | 762:0:0 → 1195:0:1; 1195:0:0 → 1198:0:0; 1195:0:1 → 19:0:0 |
+| `mq013_00_punks.scene / scene / 1213` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":2,"miliseconds":500}}}` | 1198:0:0 → 1213:0:1; 1213:0:0 → 1207:0:3 |
+| `mq013_00_punks.scene / scene / 1277` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterSpawned_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","entireCommunity":false,"comparisonType":"Greater"}}}}` | 1277:0:0 → 1276:0:1; 1277:0:0 → 1382:0:1; 1277:0:0 → 2071:0:1; 1300:0:0 → 1277:0:1 |
+| `mq013_00_punks.scene / scene / 1278` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questCharacterCondition","type":{"$type":"questCharacterSpawned_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","entireCommunity":false,"comparisonType":"Greater"}}}}` | 1278:0:0 → 1275:0:1; 1278:0:0 → 1382:0:0; 1278:0:0 → 2072:0:1; 1299:0:0 → 1278:0:1 |
+| `mq013_00_punks.scene / scene / 1309` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":1}}}` | 1305:0:0 → 1309:0:1; 1309:0:0 → 1299:0:1; 1309:0:0 → 1300:0:1 |
+| `mq013_00_punks.scene / scene / 1341` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}}}` | 976:0:0 → 1341:0:1; 1341:0:0 → 2143:0:1; 1341:0:0 → 2182:0:0 |
+| `mq013_00_punks.scene / scene / 1413` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}},{"$type":"questCharacterCondition","type":{"$type":"questCharacterKilled_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"comparisonParams":{"$type":"questComparisonParam","comparisonType":"GreaterOrEqual"}}}]}}` | 1413:0:0 → 1508:0:0; 1413:0:0 → 2032:0:1; 1415:0:0 → 1413:0:1 |
+| `mq013_00_punks.scene / scene / 1476` | `questConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks","activatorRef":{"$type":"gameEntityReference","reference":"#std_arr_foodshop_03","names":["std_arr_foodshop_03"]},"isPlayerActivator":false}}` | 1476:0:0 → 531:0:0; 1476:0:1 → 1517:0:1; 1476:0:1 → 2077:0:1; 1494:0:0 → 1476:0:1 |
+| `mq013_00_punks.scene / scene / 1517` | `questConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_near_punks"}}` | 1476:0:1 → 1517:0:1; 1517:0:0 → 1475:0:1; 1517:0:1 → 1520:0:1; 1517:0:1 → 1524:0:1 |
+| `mq013_00_punks.scene / scene / 1524` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq013_tr_player_left"}}` | 1517:0:1 → 1524:0:1; 1520:0:0 → 1524:0:0; 1524:0:0 → 1488:0:0; 1524:0:0 → 1520:0:0 |
+| `mq013_00_punks.scene / scene / 1533` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":500}}}` | 1508:0:0 → 1533:0:1; 1533:0:0 → 1416:0:3; 1533:0:0 → 2164:0:1 |
+| `mq013_00_punks.scene / scene / 1814` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_punk_combat_start"}}}` | 1803:0:0 → 1814:0:1; 1814:0:0 → 947:0:1; 1814:0:1 → 675:0:0 |
+| `mq013_00_punks.scene / scene / 1864` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":50.0}}},{"$type":"questSystemCondition","type":{"$type":"questCameraFocus_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_02"]},"onScreenTest":true,"inverted":true}}]}}` | 460:0:0 → 1864:0:1; 1864:0:0 → 1865:0:1; 1904:0:0 → 1864:0:1 |
+| `mq013_00_punks.scene / scene / 1868` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questDistanceCondition","type":{"$type":"questDistanceComparison_ConditionType","distanceDefinition1":{"$type":"questObjectDistance","entityRef":{"$type":"questUniversalRef"},"nodeRef2":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]}},"distanceDefinition2":{"$type":"questValueDistance","distanceValue":50.0}}},{"$type":"questSystemCondition","type":{"$type":"questCameraFocus_ConditionType","objectRef":{"$type":"gameEntityReference","reference":"#mq013_com_punks","names":["punk_01"]},"onScreenTest":true,"inverted":true}}]}}` | 466:0:0 → 1868:0:1; 1868:0:0 → 513:0:1; 1906:0:0 → 1868:0:1 |
+| `mq013_00_punks.scene / scene / 1898` | `questConditionNodeDefinition` `{"condition":{"$type":"questTriggerCondition","triggerAreaRef":"#mq013_tr_run_towards_player"}}` | 458:2:0 → 1898:0:1; 1898:0:0 → 1904:0:1; 1898:0:0 → 1908:0:1; 1898:0:0 → 2116:0:1; 1898:0:1 → 460:0:1; 1898:0:1 → 1160:0:1; 1898:0:1 → 2106:0:1 |
+| `mq013_00_punks.scene / scene / 1908` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":500}}}` | 1898:0:0 → 1908:0:1; 1908:0:0 → 1906:0:1; 1908:0:0 → 2114:0:1 |
+| `mq013_00_punks.scene / scene / 2046` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"sq024_santo_domingo_race_started"}}}` | 572:2:0 → 2046:0:1; 2046:0:0 → 2049:0:1; 2046:0:0 → 2060:0:2 |
+| `mq013_00_punks.scene / scene / 2047` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"sq024_santo_domingo_countdown_end"}}}` | 2047:0:0 → 2050:0:1; 2047:0:0 → 2063:0:1; 2049:0:0 → 2047:0:1 |
+| `mq013_00_punks.scene / scene / 2164` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":5}}}` | 1533:0:0 → 2164:0:1; 2164:0:0 → 1843:0:1 |
+| `mq013_00_punks.scene / scene / 2168` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","seconds":5}}}` | 519:0:0 → 2168:0:1; 2168:0:0 → 1839:0:1 |
+| `mq013_00_punks.scene / scene / 2182` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questLogicalCondition","conditions":[{"$type":"questTriggerCondition","type":"IsOutside","triggerAreaRef":"#mq013_tr_player_left"},{"$type":"questCharacterCondition","type":{"$type":"questCharacterState_ConditionType","subType":{"$type":"questCharacterState_PlayerSubType","vehicleState":"Transition"}}}]}}` | 9:1:0 → 2182:0:1; 91:0:0 → 2182:0:0; 1341:0:0 → 2182:0:0; 2137:0:0 → 2182:0:0; 2182:0:0 → 2186:0:0 |
+| `mq013_00_punks.scene / scene / 2197` | `questPauseConditionNodeDefinition` `{"condition":{"$type":"questTimeCondition","type":{"$type":"questRealtimeDelay_ConditionType","miliseconds":500}}}` | 2188:0:0 → 2197:0:1; 2197:0:0 → 2194:0:1 |
+| `mq013_00_punks.scene / scene / 2204` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_zetatech_info"}}}` | 522:0:0 → 2204:0:1; 2204:0:0 → 516:0:0; 2204:0:1 → 2221:0:0 |
+| `mq013_00_punks.scene / scene / 2207` | `questConditionNodeDefinition` `{"condition":{"$type":"questFactsDBCondition","type":{"$type":"questVarComparison_ConditionType","factName":"mq013_zetatech_info"}}}` | 354:0:0 → 2207:0:1; 2207:0:0 → 106:0:0; 2207:0:1 → 2211:0:0 |
+
+</details>
+
+
+## Candidate Ghostline blocks
+
+These candidates are supported by the listed stored node types. They are reduction proposals, not implemented compiler types or claims that a node's presence proves a complete reusable lifecycle. Review topology, bindings and cancellation before promotion.
+
+| Candidate | Concrete evidence | Inputs → outputs; reduction boundary |
+| --- | --- | --- |
+| `actor_readiness` | mq013.questphase / h1013 / 30; mq013.questphase / h1013 / 31; mq013.questphase / h1013 / 32; mq013.questphase / h208 / 4; +2 locations in catalogue.json | community/entry or actor reference + count policy → actor available. Test already-spawned, delayed and missing actors before speech or commands. |
+| `actor_route` | mq013.questphase / h1131 / 23; mq013_00_punks.scene / scene / 1116; mq013_00_punks.scene / scene / 1275; mq013_00_punks.scene / scene / 1276; +15 locations in catalogue.json | actor + authored route/spline + movement policy → movement output. World navigation is a dependency; test blockage, combat and departure recovery. |
+| `checkpoint` | mq013.questphase / h1013 / 6 | checkpoint scope + save eligibility + debug identity → checkpoint request. Inspect SaveLock gates and never infer a successful persisted save from graph dispatch alone. |
+| `choice_gate` | mq013_00_punks.scene / scene / 34; mq013_00_punks.scene / scene / 354; mq013_00_punks.scene / scene / 503; mq013_00_punks.scene / scene / 522; +3 locations in catalogue.json | choice + eligibility predicates + commit effects → selected option or defer/interruption. Keep knowledge, skill eligibility and persistent decision separate; test return to the choice. |
+| `combat_control` | mq013.questphase / h1131 / 25; mq013.questphase / h1131 / 26; mq013.questphase / h265 / 107; mq013.questphase / h265 / 11; +2 locations in catalogue.json | actor + target + combat operation → command result. Separate hostility, threat injection, encounter completion and target cleanup. |
+| `community_lifecycle` | mq013.questphase / h1013 / 19; mq013.questphase / h1013 / 7; mq013.questphase / h208 / 6; mq013.questphase / h801 / 10; +16 locations in catalogue.json | community + named entries/phases + ownership → activated/reactivated/deactivated entries. Spawn, readiness and safe departure cleanup are separate steps. |
+| `conditional_route` | mq013.questphase / h1013 / 25; mq013.questphase / h1131 / 16; mq013.questphase / h1131 / 17; mq013.questphase / h12 / 6; +22 locations in catalogue.json | fact + exact comparison + branch sockets → selected branch. Fact dependencies are not execution edges; identify producers and cancellation. |
+| `content_scope` | mq013.questphase / h1013 / 27; mq013.questphase / h1013 / 5; mq013.questphase / h695 / 3; mq013.questphase / h695 / 5; +2 locations in catalogue.json | owned token source + block/unblock/spawn operation → scope acquired/released. Avoid copying broad UnblockAll behavior without an explicit ownership policy. |
+| `controller_event` | mq013.questphase / h91 / 79 | entity + controller/PS class + typed event → event dispatched. Resolve controller ownership and its completion predicate; an event send is not operation success. |
+| `journal_transition` | mq013.questphase / h1013 / 21; mq013.questphase / h12 / 5; mq013.questphase / h801 / 3; mq013_00_punks.scene / scene / 1067; +28 locations in catalogue.json | typed journal operation + exact path + state socket → journal operation output. Read Active/Succeeded/Failed/Inactive from the wired input; output alone does not establish success. |
+| `mount_state` | mq013.questphase / h1131 / 3; mq013.questphase / h265 / 99 | parent vehicle/puppet + child + role/event → mount/unmount condition. Match seat/role and OnMount/OnUnmount semantics; do not confuse assignment with readiness. |
+| `parallel_join` | mq013.questphase / h1013 / 10; mq013.questphase / h1013 / 33; mq013.questphase / h1013 / 9; mq013.questphase / h208 / 8; +4 locations in catalogue.json | named branch completion signals + reset policy → all required inputs observed. Test either completion order, early events, interruption and save/load at the join. |
+| `persistent_decision` | mq013.questphase / h1013 / 3; mq013.questphase / h1013 / 4; mq013.questphase / h12 / 3; mq013.questphase / h265 / 17; +27 locations in catalogue.json | namespaced fact + explicit write mode/value → durable state update. Separate scene-local presentation facts from public outcome state and review omitted defaults. |
+| `race_resolution` | mq013.questphase / h1131 / 33; mq013.questphase / h265 / 6 | competing outcome signals + retirement policy → converged signal. Review actual graph wiring; an XOR class alone does not prove loser cancellation. |
+| `realtime_delay` | mq013.questphase / h1131 / 20; mq013.questphase / h1131 / 4; mq013.questphase / h265 / 101; mq013.questphase / h265 / 110; +16 locations in catalogue.json | real-time duration + cancellation owner → elapsed signal. Do not substitute game time for real time; retire delayed effects after cancellation. |
+| `retire_branch` | mq013.questphase / h695 / 22; mq013.questphase / h91 / 86; mq013.questphase / h91 / 89 | owned target branch(es) + permanent/reset policy → branch retired. Trace every CutSource destination; cancellation must not commit success. |
+| `reward_commit` | mq013.questphase / h91 / 78 | reward record + eligibility + once-only commit → reward delivered/committed. Verify inventory/currency and objective state; prevent repeated awards after load. |
+| `scene_interface` | mq013.questphase / h265 / 81; mq013.questphase / h91 / 14; mq013.questphase / h91 / 76; mq013.questphase / h91 / 91 | scene + entry + actor/marker bindings → named exits and cancellation. Validate every consumed entry/exit and distinguish terminating from notification outputs. |
+| `spatial_gate` | mq013.questphase / h1131 / 31; mq013.questphase / h1131 / 32; mq013.questphase / h12 / 9; mq013.questphase / h265 / 115; +14 locations in catalogue.json | trigger + activator + exact inside/outside event → spatial predicate. Resolve the registered NodeRef and test starting inside, exiting, actor activation and return. |
+| `target_resolution` | mq013.questphase / h1131 / 7; mq013.questphase / h1131 / 8; mq013.questphase / h265 / 71; mq013.questphase / h265 / 8; +6 locations in catalogue.json | target set + lethal/unconscious/defeated policy → target resolved. Review RED defaults, early defeat and per-target deduplication before counter joins. |
+| `vehicle_control` | mq013.questphase / h1131 / 2; mq013.questphase / h208 / 7; mq013_00_punks.scene / scene / 1481; mq013_00_punks.scene / scene / 1531; +1 locations in catalogue.json | vehicle reference + typed operation + world route → operation-specific result. Vehicle spawning, seats, driving, arrival and cleanup have separate owners. |
+| `workspot_performance` | mq013.questphase / h1131 / 18; mq013_00_punks.scene / scene / 1097; mq013_00_punks.scene / scene / 1155; mq013_00_punks.scene / scene / 1176; +23 locations in catalogue.json | actor + workspot + entry/exit policy → work started/success/failure. Wait for actor/spot readiness and restore AI ownership on interruption. |
+| `world_variant` | mq013.questphase / h1013 / 22; mq013.questphase / h1013 / 29; mq013.questphase / h91 / 73; mq013_00_punks.scene / scene / 1835; +4 locations in catalogue.json | prefab + variant + desired state + restore policy → world presentation changed. Resolve world ownership and restore only this quest's overrides. |
+
+## Dependencies and coverage limits
+
+| Resource | Role | Evidence family |
+| --- | --- | --- |
+| `base\quest\minor_quests\mq013\mq013.questphase` | content candidate; journal anchor | `base-mq013` |
+| `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` | content candidate; journal anchor | `base-mq013` |
+
+Evidence shards for this dossier (including parent context): [base-mq013](../../../../../reference/quests/deep-dives/all-quests/evidence/base-mq013.json.gz), [base-shared](../../../../../reference/quests/deep-dives/all-quests/evidence/base-shared.json.gz), [ep1-shared](../../../../../reference/quests/deep-dives/all-quests/evidence/ep1-shared.json.gz).
+
+World NodeRef definitions/streaming owners, full actor and animation closure, numeric TweakDB names, spoken subtitle/VO payload joins and installed/save behavior have not been validated by this structural pass. Raw direct references, actor bindings, choices, event locstrings and community entries remain in the evidence shards.
+
+## Required acceptance cases before reuse
+
+Exercise normal completion and each named alternate outcome; interrupt and return at every scene handoff; start with spatial/item/actor predicates already satisfied; save/load across waits and joins; cancel parallel listeners; verify reward delivery once; and verify cleanup without changing the committed outcome. Apply the block-specific cases in the [expanded contracts](../all-quest-blocks.md). No installed playtest is claimed.
+
+## Connected paths and supporting bindings
+
+347 repeated typed/socket path signatures in this selected graph context; 34 distinct direct resource identities; 8 embedded graph handoffs. The full occurrence lists, concrete parameters, exact source pointers and external edges are retained in the checked evidence. Shared forward dependencies can serve several quests; these are context counts.
+
+### Connected block candidates
+
+These examples are ranked by breadth across resource families. Three nodes are a useful extraction seed, not a complete contract: retain all boundary ports and inspect surrounding setup, cancellation and cleanup.
+
+| Pattern | Actual occurrence | Typed path and bound sockets |
+| --- | --- | --- |
+| `987122e5e2fcd167cf6c` | `base\quest\minor_quests\mq013\mq013.questphase` / h208 / 0 -> 6 -> 4 | questInputNodeDefinition -> questSpawnManagerNodeDefinition[questCommunityTemplate_NodeType,questSpawnManagerNodeActionEntry] -> questPauseConditionNodeDefinition[questCharacterCondition,questCharacterSpawned_ConditionType,questComparisonParam]; Out -> In; Out -> In |
+| `e5742f9794e6583c67cb` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` / scene / 2049 -> 2047 -> 2050 | questFactsDBManagerNodeDefinition[questSetVar_NodeType] -> questPauseConditionNodeDefinition[questFactsDBCondition,questVarComparison_ConditionType] -> questFactsDBManagerNodeDefinition[questSetVar_NodeType]; 0:0 -> 0:1; 0:0 -> 0:1 |
+| `9dafa78c706e69d654f7` | `base\quest\minor_quests\mq013\mq013.questphase` / h1013 / 0 -> 4 -> 17 | questInputNodeDefinition -> questFactsDBManagerNodeDefinition[questSetVar_NodeType] -> questCrowdManagerNodeDefinition[questCrowdManagerNodeType_EnableNullArea]; Out -> In; Out -> In |
+| `9c634ff27b9a7aa77918` | `base\quest\minor_quests\mq013\mq013.questphase` / h695 / 0 -> 35 -> 37 | questInputNodeDefinition -> questDeletionMarkerNodeDefinition -> questPauseConditionNodeDefinition[questFactsDBCondition,questVarComparison_ConditionType]; Out -> In; Out -> In |
+| `3fe0ae98a8cf5496b004` | `base\quest\minor_quests\mq013\mq013.questphase` / h695 / 5 -> 2 -> 3 | questGameManagerNodeDefinition[questBlockTokenActivation_NodeSubType,questContentTokenManager_NodeType] -> questPauseConditionNodeDefinition[questTriggerCondition] -> questGameManagerNodeDefinition[questBlockTokenActivation_NodeSubType,questContentTokenManager_NodeType]; Out -> In; Out -> In |
+| `eb252b7e42db30cea85d` | `base\quest\minor_quests\mq013\mq013.questphase` / h695 / 2 -> 3 -> 4 | questPauseConditionNodeDefinition[questTriggerCondition] -> questGameManagerNodeDefinition[questBlockTokenActivation_NodeSubType,questContentTokenManager_NodeType] -> questPauseConditionNodeDefinition[questTriggerCondition]; Out -> In; Out -> In |
+| `19665e3783f6f51a7337` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` / scene / 2188 -> 1879 -> 1880 | scnStartNode[scnNodeId] -> scnSectionNode[scnActorId,scnNodeId,scnSceneTime,scnSectionInternalsActorBehavior] -> questUseWorkspotNodeDefinition[scnSceneWorkspotInstanceId,scnUseSceneWorkspotParamsV1]; 0:0 -> 0:0; 2:0 -> 0:1 |
+| `415c2c7ab8d34be7e55a` | `base\quest\minor_quests\mq013\mq013.questphase` / h695 / 21 -> 22 -> 37 | questPauseConditionNodeDefinition[questFactsDBCondition,questVarComparison_ConditionType] -> questCutControlNodeDefinition -> questPauseConditionNodeDefinition[questFactsDBCondition,questVarComparison_ConditionType]; Out -> In; CutSource -> CutDestination |
+| `8e1d2b6d16b0384b26b3` | `base\quest\minor_quests\mq013\mq013.questphase` / h208 / 6 -> 4 -> 8 | questSpawnManagerNodeDefinition[questCommunityTemplate_NodeType,questSpawnManagerNodeActionEntry] -> questPauseConditionNodeDefinition[questCharacterCondition,questCharacterSpawned_ConditionType,questComparisonParam] -> questLogicalAndNodeDefinition; Out -> In; Out -> In2 |
+| `c1b6601d2f647c8a694d` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` / scene / 55 -> 89 -> 91 | scnSectionNode[scnActorId,scnNodeId,scnSceneTime,scnSectionInternalsActorBehavior] -> scnChoiceNode[scnActorId,scnChoiceNodeNsActorReminderParams,scnChoiceNodeNsAdaptiveLookAtParams,scnChoiceNodeNsAttachToActorParams,scnChoiceNodeNsMappinParams,scnChoiceNodeOption,scnInteractionShapeParams,scnNodeId,scnSceneEventId,scnSceneTime,scnscreenplayItemId] -> scnSectionNode[scnActorId,scnNodeId,scnSceneTime,scnSectionInternalsActorBehavior]; 0:0 -> 0:0; 0:0 -> 0:0 |
+| `e70b0765e99ad324f9b7` | `base\quest\minor_quests\mq013\mq013.questphase` / h1013 / 0 -> 4 -> 3 | questInputNodeDefinition -> questFactsDBManagerNodeDefinition[questSetVar_NodeType] -> questFactsDBManagerNodeDefinition[questSetVar_NodeType]; Out -> In; Out -> In |
+| `1cf9adcdd8714d9f07e3` | `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` / scene / 1276 -> 1537 -> 1546 | questMovePuppetNodeDefinition[questMoveOnSplineAdditionalParams,questMoveOnSplineParams,questSimpleMoveOnSplineParams,questUniversalRef] -> scnSectionNode[scnActorId,scnNodeId,scnSceneTime,scnSectionInternalsActorBehavior] -> questUseWorkspotNodeDefinition[scnSceneWorkspotInstanceId,scnUseSceneWorkspotParamsV1]; 0:0 -> 0:0; 2:0 -> 0:1 |
+
+### Embedded phase interfaces
+
+| Owning node | Child graph | Authored interface |
+| --- | --- | --- |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h0 / 8 | `h12` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":1,"socketName":"Out1"},{"$type":"questInputNodeDefinition","id":8,"socketName":"In2"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h0 / 9 | `h91` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":1,"socketName":"Out1","type":"NonTerminating"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 32 | `h208` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":1,"socketName":"Out1"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 52 | `h265` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":1,"socketName":"cut_scene"},{"$type":"questOutputNodeDefinition","id":43,"socketName":"Out1"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 85 | `h695` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":14,"socketName":"Out1"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h91 / 88 | `h801` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":1,"socketName":"Out1"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h0 / 10 | `h1013` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":1,"socketName":"Out1"}] |
+| `base\quest\minor_quests\mq013\mq013.questphase` / h1013 / 13 | `h1131` | [{"$type":"questInputNodeDefinition","id":0,"socketName":"In1"},{"$type":"questOutputNodeDefinition","id":28,"socketName":"Out1","type":"NonTerminating"}] |
+
+### Launch definition context
+
+These definitions reference this quest context or a resolved ancestor. They can include test/debug launch configurations; their presence does not establish that the installed game selects them.
+
+| Definition | Path role | Referenced context |
+| --- | --- | --- |
+| `base\quest\minor_quests\mq013\mq013.gamedef` | content candidate | base\quest\minor_quests\mq013\mq013.quest |
+| `base\quest\cyberpunk2077.gamedef` | content candidate | base\quest\cyberpunk2077.quest |
+| `base\quest\demos\handson_2020\handson_2020.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020.quest |
+| `base\quest\demos\handson_2020\handson_2020_kabuki.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020_kabuki.quest |
+| `base\quest\demos\handson_2020\handson_2020_little_china.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020_little_china.quest |
+| `base\quest\demos\handson_2020\handson_2020_northside_industrial_district.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020_northside_industrial_district.quest |
+| `base\quest\demos\handson_2020\handson_2020_scavengers.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020_scavengers.quest |
+| `base\quest\demos\handson_2020\handson_2020_speed_test.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020_speed_test.quest |
+| `base\quest\demos\handson_2020\handson_2020_testing.gamedef` | content candidate | base\quest\demos\handson_2020\handson_2020_testing.quest |
+| `ep1\quest\minor_quests\mq306\mq306.gamedef` | content candidate | ep1\quest\cyberpunk2077_ep1_standalone.quest |
+| `ep1\quest\ep1.gamedef` | content candidate | base\quest\cyberpunk2077.quest |
+| `ep1\quest\ep1_standalone.gamedef` | content candidate | ep1\quest\cyberpunk2077_ep1_standalone.quest |
+| `ep1\quest\ep1_standalone_debug.gamedef` | content candidate | ep1\quest\cyberpunk2077_ep1_standalone.quest |
+
+### Supporting resource ownership
+
+Providers below are archive-index matches for exact depot hashes. Index presence establishes availability, not payload inspection or runtime load order. Phase/scene/community contents are structurally indexed when marked; other bindings require their own controller, world, performance or localization validation.
+
+| Resource | Binding role | Providers / inspection |
+| --- | --- | --- |
+| `base\animations\facial\male_average\interactive_scene\generic_average_male_facial_gestures.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\archetype_characters\dirtboy\interactive_scene\dirtboy__stand__2h_on_hip__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_average_male_transitions.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__kneel__rk_on_ground__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__sit_barstool__2h_on_lap__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__stand__2h_on_hip__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__stand__2h_on_sides__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__stand__2h_up__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__stand__2h_up__02.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\interactive_scene\generic_male_average__stand__arms_crossed_front__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\npc\generic_characters\male_average\open_world\generic_male_average_work__dead_bodies__01.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\player\female\body\player_locomotion_johnny_guitar.anims` | asset binding .anims | content/basegame_1_engine.archive; index evidence only |
+| `base\animations\player\interactive_scene\player_female__sit_barstool_bar_lean0__2h_on_bar.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\player\interactive_scene\player_female__transitions.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\player\interactive_scene\player_male__sit_barstool_bar_lean0__2h_on_bar.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\player\interactive_scene\player_male__transitions.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\player\male\body\player_locomotion_sick.anims` | asset binding .anims | content/basegame_1_engine.archive; index evidence only |
+| `base\animations\quest\main_quests\part1\q110\synced\q110__synced__player_female.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\animations\quest\main_quests\part1\q110\synced\q110__synced__player_male.anims` | asset binding .anims | content/basegame_4_animation.archive; index evidence only |
+| `base\quest\minor_quests\mq013\scenes\lipsync\en\mq013_00_punks\civ_low_m_02_enus_20.anims` | asset binding .anims | No match in inspected vanilla indexes; index evidence only |
+| `base\quest\minor_quests\mq013\scenes\lipsync\en\mq013_00_punks\civ_low_m_08_enus_20.anims` | asset binding .anims | No match in inspected vanilla indexes; index evidence only |
+| `base\quest\minor_quests\mq013\scenes\lipsync\en\mq013_00_punks\civ_low_m_100_jap_40.anims` | asset binding .anims | No match in inspected vanilla indexes; index evidence only |
+| `base\quest\minor_quests\mq013\scenes\lipsync\en\mq013_00_punks\civ_low_m_93_chn_30.anims` | asset binding .anims | No match in inspected vanilla indexes; index evidence only |
+| `base\quest\minor_quests\mq013\scenes\lipsync\en\mq013_00_punks\v.anims` | asset binding .anims | No match in inspected vanilla indexes; index evidence only |
+| `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` | scene flow | content/basegame_4_gamedata.archive; structurally indexed |
+| `base\workspots\bar\bar_and_barstool\generic__sit_barstool__look__01.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__kneel_ground__inspect__01.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__lie_ground_lean_back__dead__02.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__stand_ground__afraid__01.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__stand_ground__look_at_products__02.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__stand_ground__stand_around__01.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__stand_ground_arms_crossed__stand_around__02.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\common\ground\generic__stand_ground_arms_crossed__stand_around__03.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+| `base\workspots\main_characters\jackie\jackie__sit_barstool_bar_lean_front__sit_around__01.workspot` | performance binding | content/memoryresident_1_general.archive; ep1/ep1_1_nightcity.archive; index evidence only |
+
+### Fact producers outside the forward context
+
+These are indexed writer locations, not proof that they execute before this quest. Absence of a writer here does not establish that a fact is never produced: entity/engine/script producers may be outside the graph corpus.
+
+| Fact | External writer examples |
+| --- | --- |
+| `q101_done` | base\open_world\minor_activities\watson\little_china\ma_wat_lch_06\test\ma_wat_lch_06_chicken_test.scene / scene / 6; base\open_world\minor_activities\watson\northside\ma_wat_nid_15\ma_wat_nid_15.quest / h0 / 24; base\quest\minor_quests\mq010\mq010.quest / h0 / 12; base\quest\minor_quests\mq018\phases\mq018_00_chickentest.questphase / h0 / 27; 51 total source locations in compressed evidence |
+| `sq024_santo_domingo_countdown_end` | base\quest\side_quests\sq024\scenes\sq024_02_santo_domingo_race.scene / scene / 624; 1 total source locations in compressed evidence |
+| `sq024_santo_domingo_race_started` | base\quest\side_quests\sq024\phases\sq024_02_pacifica_race.questphase / h4358 / 19; 1 total source locations in compressed evidence |
+| `std_arr_foodshop_03_default_on` | base\quest\default_dialogs.questphase / h6741 / 6; 1 total source locations in compressed evidence |
+
+NodeRef uses: 263; TweakDB binding uses: 31. Uses retain exact pointers in resource evidence. A global alias alone is not a resolved streaming owner; numeric records are not guessed. See [all-quest analysis](../all-quest-findings.md) for extraction rules and proposed contracts.
+
+## Scene performance events
+
+Section event data retains actor/animation/audio bindings and authored time fields, with raw pointers. Events in different sections are not treated as one chronological timeline: parent routing, interruption and playback policy still apply. Animation/voice payloads and installed timing are not validated by this extraction.
+
+| Scene | Event sections / events | Stored event types |
+| --- | --- | --- |
+| `base\quest\minor_quests\mq013\scenes\mq013_00_punks.scene` | 51 / 395 | scnAudioEvent: 7; scnDialogLineEvent: 87; scnGameplayTransitionEvent: 4; scnIKEvent: 16; scnLookAtEvent: 74; scnPlaySkAnimEvent: 137; scnUnmountEvent: 4; scneventsSetAnimFeatureEvent: 4; scneventsSocket: 62 |
+
+Query full events with `tools/query_sidequest_evidence.py --root reference/quests/deep-dives/all-quests --quest <exact title or journal path> --events`; add `--resource`, `--graph scene --node <id>` or `--event-type <substring>` to narrow the output. Scene-global screenplay and interruption data remain in the performance shards.

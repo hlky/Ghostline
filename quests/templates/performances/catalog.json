@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "status": "experimental; source-derived, not runtime accepted",
+  "blocks": {
+    "seated_sad_reply": {
+      "path": "quests/templates/performances/seated_sad_reply.json",
+      "sha256": "1985cf9d20a354e9b3a979f5c076fdd0670c7781ca55baa6c96d604a10669690",
+      "requirements": "Seated, both hands on lap; source male_big body/facial graph. Body gestures, gaze and expression transitions; head gesture clips excluded.",
+      "source": {
+        "path": "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json",
+        "sha256": "a32bec715d197987d589678b95cb97a409429a28960ec3e7737dd8141b6c2da5",
+        "section": 68,
+        "event_pointers": [
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/1",
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/3",
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/4",
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/5",
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/6",
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/7",
+          "/Data/RootChunk/sceneGraph/Data/graph/24/Data/events/10"
+        ],
+        "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/24"
+      },
+      "events": 7
+    },
+    "seated_explanation": {
+      "path": "quests/templates/performances/seated_explanation.json",
+      "sha256": "57d419ca52c88914b60ef91a11d8cca0f321a785516c631d8d3c65d7782d1074",
+      "requirements": "Seated, both hands on lap; source male_big. Two explanatory gestures plus gaze and facial idle; source dialogue and head clips excluded.",
+      "source": {
+        "path": "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json",
+        "sha256": "a32bec715d197987d589678b95cb97a409429a28960ec3e7737dd8141b6c2da5",
+        "section": 72,
+        "event_pointers": [
+          "/Data/RootChunk/sceneGraph/Data/graph/26/Data/events/0",
+          "/Data/RootChunk/sceneGraph/Data/graph/26/Data/events/4",
+          "/Data/RootChunk/sceneGraph/Data/graph/26/Data/events/6",
+          "/Data/RootChunk/sceneGraph/Data/graph/26/Data/events/9"
+        ],
+        "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/26"
+      },
+      "events": 4
+    },
+    "arrive_and_sit": {
+      "path": "quests/templates/performances/arrive_and_sit.json",
+      "sha256": "04c77206f591ae1170b5dd1f61755329a59ce52609d42baf8f0003440e00baf0",
+      "requirements": "Walking approach into a chair; source male_big. Requires reviewed chair placement and explicit root-motion origin/offset; includes source arm/spine corrections.",
+      "source": {
+        "path": "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json",
+        "sha256": "a32bec715d197987d589678b95cb97a409429a28960ec3e7737dd8141b6c2da5",
+        "section": 484,
+        "event_pointers": [
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/0",
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/1",
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/2",
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/3",
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/4",
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/5",
+          "/Data/RootChunk/sceneGraph/Data/graph/68/Data/events/6"
+        ],
+        "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/68"
+      },
+      "events": 7
+    },
+    "stand_from_chair": {
+      "path": "quests/templates/performances/stand_from_chair.json",
+      "sha256": "849d4d39192d17ea4a374bebcf8b0c92fbfc8bfadfec5d8447511bf822412e8c",
+      "requirements": "Seated, both hands on lap; source male_big. Requires explicit root-motion placement and a consumer for idle-only/standing signals; idle-only is not StopWorkspot.",
+      "source": {
+        "path": "reference/vanilla_extract_json/mq010/mq010_02_barry_talk.scene.json",
+        "sha256": "a32bec715d197987d589678b95cb97a409429a28960ec3e7737dd8141b6c2da5",
+        "section": 768,
+        "event_pointers": [
+          "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/0",
+          "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/1",
+          "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/2",
+          "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/3",
+          "/Data/RootChunk/sceneGraph/Data/graph/128/Data/events/4"
+        ],
+        "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/128"
+      },
+      "events": 5
+    },
+    "group_side_exchange": {
+      "path": "quests/templates/performances/group_side_exchange.json",
+      "sha256": "a13105efa27dfde9e6db9c148d4ebf2b225def6f9cebed35054a8d9f11181e3c",
+      "requirements": "Two NPCs: wall lean with right-hand cigarette and two-hands-on-table lean. Furniture, cigarette and source body rigs must already be compatible. Static world-gaze event excluded.",
+      "source": {
+        "path": "reference/vanilla_extract_json/mq003/mq003_01_homeless.scene.json",
+        "sha256": "ab414bf9b74874eaf0a65b5dd139278df6c11f3ef5c0a34f82c1b8a8d104ed23",
+        "section": 6,
+        "event_pointers": [
+          "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/0",
+          "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/2",
+          "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/4",
+          "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/5"
+        ],
+        "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/0"
+      },
+      "events": 4
+    }
+  }
+}

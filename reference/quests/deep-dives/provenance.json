@@ -1,0 +1,75 @@
+{
+  "inspection_date": "2026-10-27",
+  "scope": "Explicit base-game gamedata archive, not resolved installed override order",
+  "source_archive": {
+    "path": "K:/Cyberpunk 2077/archive/pc/content/basegame_4_gamedata.archive",
+    "size_bytes": 3510738944,
+    "modified_utc": "2026-03-27T18:49:18.488969+00:00",
+    "identity_note": "Archive-wide hash not computed. Each extracted payload has its own binary_sha256 in the evidence."
+  },
+  "game_version": "Not established; identify this snapshot by extracted payload hashes.",
+  "tools": [
+    {
+      "path": "tools/ghostline-red/target/release/ghostline-red.exe",
+      "sha256": "37badd4b53d9dc57a3da23ce35503087eb26d83489695e1e06c5d9e8c8b2a637"
+    },
+    {
+      "path": "H:/WolvenKit.Console-8.17.4/WolvenKit.CLI.exe",
+      "sha256": "fdffea5f19a13a5abf57487acf4e9cffce35e789d8f0d8ef551130021a086201"
+    },
+    {
+      "path": "red-schema.json",
+      "sha256": "ab3c1319276bf6ed4ff5339b0d53df4efa8ee54be1c39271cd265a73840bcc7a"
+    },
+    {
+      "path": "tools/build_quest_deep_dive_evidence.py",
+      "sha256": "3e7159a1a7e8b538132a1d513fc6aa70d8d3e2318d793f7f0dd56d0d3ba54e1b"
+    }
+  ],
+  "journal_context": [
+    {
+      "path": "reference/journal/quests.minor_quest.mq003_orbitals.journal.json",
+      "sha256": "35766c204819f00026b0d355b2636de279f02742cfedc37e6680e3d10231dfcd"
+    },
+    {
+      "path": "reference/journal/quests.minor_quest.mq010_barry.journal.json",
+      "sha256": "7f8d916a87ad8562e657d4a0b7cd3a524dde780fb0da7178a0b334092557c5d2"
+    }
+  ],
+  "counts": {
+    "mq003": {
+      "resources": 23,
+      "historical_identity_only": 9,
+      "phase_graphs": 19,
+      "phase_nodes": 453,
+      "scene_nodes": 239
+    },
+    "mq010": {
+      "resources": 29,
+      "historical_identity_only": 12,
+      "phase_graphs": 34,
+      "phase_nodes": 595,
+      "scene_nodes": 685
+    }
+  },
+  "evidence": [
+    {
+      "path": "reference/quests/deep-dives/mq003.evidence.json",
+      "sha256": "8bfbfef02290e9f8ef0ff3c9eb08aebe3c4f5231e035a604ae122993efead2c6"
+    },
+    {
+      "path": "reference/quests/deep-dives/mq010.evidence.json",
+      "sha256": "1b686098418ab6e026a3066d265d4afd1fb00bdc16cda16704f79f845c9abf20"
+    }
+  ],
+  "verification": {
+    "runtime_playtests": "not performed",
+    "serialization": "52/52 resources serialized successfully",
+    "graph_endpoints": "all indexed graph and scene endpoints resolved",
+    "historical_scene_versions": "hash identity only",
+    "asset_closure": "direct references indexed; full world, VO and transitive asset closure not claimed",
+    "node_pointers": "1972/1972 indexed quest/scene node pointers resolve to matching source node IDs",
+    "reproducibility": "Evidence files regenerate byte-identically from the same raw inputs",
+    "documentation_links": "All relative links in the four dossiers resolve"
+  }
+}

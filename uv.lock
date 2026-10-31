@@ -168,6 +168,9 @@ wheels = [
 name = "ghostline-authoring"
 version = "1.0.0"
 source = { editable = "." }
+dependencies = [
+    { name = "jsonschema" },
+]
 
 [package.optional-dependencies]
 building = [
@@ -176,7 +179,6 @@ building = [
 ]
 capture = [
     { name = "ijson" },
-    { name = "jsonschema" },
     { name = "numpy" },
     { name = "opencv-python" },
     { name = "pillow" },
@@ -187,7 +189,6 @@ capture = [
 ]
 dev = [
     { name = "ijson" },
-    { name = "jsonschema" },
     { name = "numpy" },
     { name = "opencv-python" },
     { name = "pillow" },
@@ -202,7 +203,6 @@ research = [
 ]
 test = [
     { name = "ijson" },
-    { name = "jsonschema" },
     { name = "numpy" },
     { name = "opencv-python" },
     { name = "pillow" },
@@ -217,7 +217,7 @@ requires-dist = [
     { name = "ghostline-authoring", extras = ["test"], marker = "extra == 'capture'" },
     { name = "ghostline-authoring", extras = ["test"], marker = "extra == 'dev'" },
     { name = "ijson", marker = "extra == 'test'", specifier = ">=3.3,<4" },
-    { name = "jsonschema", marker = "extra == 'test'", specifier = ">=4,<5" },
+    { name = "jsonschema", specifier = ">=4,<5" },
     { name = "numpy", marker = "extra == 'test'", specifier = ">=2,<3" },
     { name = "opencv-python", marker = "extra == 'test'", specifier = ">=4.10,<5" },
     { name = "pillow", marker = "extra == 'test'", specifier = ">=10.4,<12" },

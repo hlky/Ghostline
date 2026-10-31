@@ -1,5 +1,9 @@
 # Building Lab
 
+The [interaction performance sky lab](surveys/interaction-performance-lab.md)
+provides a separate floating room layout with furniture, native navigation and
+inactive quest-owned contact bindings for the animation interaction test.
+
 This project owns plain parametric building layouts under `buildings/` and the
 `mod/building_lab/` depot namespace. The local editor and compiler live under the
 repository's `tools` directory. See

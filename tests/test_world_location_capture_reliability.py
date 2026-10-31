@@ -490,6 +490,13 @@ class CapturePersistenceTests(unittest.TestCase):
             )
 
         runtime.heartbeat = heartbeat
+        accepted_attempt = controller._accepted_attempt
+
+        def slow_accept(*args, **kwargs):
+            wait_for_heartbeat()
+            return accepted_attempt(*args, **kwargs)
+
+        controller._accepted_attempt = slow_accept
 
         def snapshot(**_kwargs):
             event = copy.deepcopy(runtime.event())
@@ -612,6 +619,15 @@ class CapturePersistenceTests(unittest.TestCase):
 
 
 class CetRuntimeTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("lua"), "Lua is required for reference lifetime checks")
+    def test_native_wrapper_reference_lifetimes(self):
+        result = subprocess.run(
+            [shutil.which("lua"), str(ROOT / "tests/world_location_capture_reference_harness.lua"),
+             str(ROOT / "tools/world_location_capture_cet/init.lua")],
+            text=True, capture_output=True, timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     @unittest.skipUnless(
         shutil.which("lua"), "Lua is required for isolated CET state-machine checks"
     )
@@ -620,6 +636,7 @@ class CetRuntimeTests(unittest.TestCase):
 local callbacks = {}
 registerForEvent = function(name, fn) callbacks[name] = fn end
 registerHotkey = function(...) end
+package.path = arg[1]:gsub('init%.lua$', '?.lua') .. ';' .. package.path
 dofile(arg[1])
 local function up(fn, name, replacement)
     for i=1,100 do
@@ -665,6 +682,14 @@ state.snapshot={effects=effects}
 local effectsReady=up(up(build,'uiIsSuppressed'),'effectsAreApplied')
 assert(not effectsReady(player),'unobserved effects must block readiness')
 effectPresent=true;assert(effectsReady(player))
+local repair=up(update,'repairCaptureEffects')
+effectPresent=false;state.lastEffectRepairUnix=nil
+repair(player)
+assert(appliedCount==2,'cleared capture restrictions must be reapplied')
+assert(state.snapshot.effects==effects and not effects[1].alreadyApplied,'repair must retain original ownership')
+repair(player)
+assert(appliedCount==2,'effect repair must be throttled while native application settles')
+effectPresent=true
 local cleanupEffects=up(up(up(update,'pollAck'),'restoreCaptureMode'),'restoreEffects')
 local removalRequests=0
 effectSystem.RemoveStatusEffect=function(_,id,effect,count)
@@ -673,6 +698,9 @@ end
 assert(not cleanupEffects(player),'cleanup must await native effect disappearance')
 effectPresent=false
 assert(cleanupEffects(player) and removalRequests==1,'absent owned effects need no repeated removal')
+state.snapshot.effects={{name='GameplayRestriction.NoCombat',alreadyApplied=true}}
+assert(cleanupEffects(player),'game-cleared pre-existing effects must not block cleanup')
+state.snapshot.effects=effects
 
 effectPresent=false
 effectSystem.ApplyStatusEffect=function() error('native application failure') end
@@ -685,6 +713,13 @@ up(build,'playerPositionIsStable',function() return true,0,10,1 end)
 up(build,'runtimeLocation',function() return {} end)
 up(build,'getMenuOpen',function() return false end)
 up(build,'getPaused',function() return false end)
+local loadingVisible=up(build,'loadingScreenIsVisible')
+state.loadingScreen=true
+state.loadingController={GetRootWidget=function() return {IsVisible=function() return false end} end}
+assert(not loadingVisible(),'background loading progress must not reject a clean scene')
+state.loadingController={GetRootWidget=function() return {IsVisible=function() return true end} end}
+assert(loadingVisible(),'visible loading screen must still block capture')
+state.loadingScreen=false;state.loadingController=nil
 -- Popup lifecycle flags do not prove pixels are visible.
 local realUi=up(build,'uiIsSuppressed')
 up(realUi,'settingsAreSuppressed',function() return true end)
@@ -699,7 +734,7 @@ popupVisible=true;assert(realUi(player),'visible empty controller container is d
 state.popupControllers={};state.phonePresentationActive=false
 local phoneMute=up(up(up(update,'pollAck'),'restoreCaptureMode'),'setPhoneMessageNotificationsHidden')
 local contactsActive=false
-Game.GetAllBlackboardDefs=function() return {UI_ComDevice={ContactsActive='contacts'}} end
+Game.GetAllBlackboardDefs=function() return {UI_ComDevice={ContactsActive='contacts'},UI_Notifications={}} end
 Game.GetBlackboardSystem=function() return {Get=function() return {
  GetBool=function() return contactsActive end,
  SetBool=function(_,key,value) contactsActive=value end,
@@ -816,6 +851,21 @@ local heartbeat = up(update,'controllerHeartbeatIsAlive')
 state.active=true;state.captureSessionId='s';state.lastControllerHeartbeatUnix=nil
 up(heartbeat,'readJson',function() return {schema_version=1,session_id='s',unix_seconds=os.time()} end)
 assert(heartbeat()==true,'idle capture mode must retain its session heartbeat')
+local accept=up(up(update,'pollCommand'),'acceptCommand')
+local command={schema_version=1,kind='capture',session_id='s',command_id='fresh',pose={},profile={}}
+accept(command)
+assert(state.lastControllerHeartbeatUnix~=nil,'same-session command must retain heartbeat cache')
+up(heartbeat,'readJson',function() return nil end)
+state.lastControllerHeartbeatUnix=os.time()-100
+assert(heartbeat(),'newly received command must tolerate an unreadable heartbeat')
+state.controllerCommandReceivedUnix=os.time()-100
+assert(not heartbeat(),'command receipt grace must expire')
+state.lastControllerHeartbeatUnix=os.time()
+assert(heartbeat(),'cached same-session heartbeat must survive transient read failures')
+command.session_id='new-session';command.command_id='new'
+accept(command)
+assert(state.lastControllerHeartbeatUnix==nil,'foreign session must not inherit heartbeat cache')
+state.command=nil;state.stage='idle';state.controllerCommandReceivedUnix=nil
 local watchdogRestores=0
 up(update,'controllerHeartbeatIsAlive',function() return false end)
 up(update,'restoreCaptureMode',function() watchdogRestores=watchdogRestores+1;state.active=false;state.snapshot=nil;return true end)
@@ -825,6 +875,14 @@ assert(watchdogRestores==1,'heartbeat loss between destinations must restore cap
 state.snapshot={}
 update(0.01)
 assert(watchdogRestores==2,'heartbeat loss must retry pending restoration snapshots')
+local expiredCompletion=nil
+up(update,'writeEvent',function(kind,event)
+ if kind=='completed' then expiredCompletion=event end
+end)
+state.command={session_id='s',command_id='expired'};state.stage='waiting'
+update(0.01)
+assert(expiredCompletion and expiredCompletion.success==false and expiredCompletion.restoration_verified,
+ 'expired command must emit completion before discarding its identity')
 -- Final explicit restoration follows the same asynchronous barrier.
 up(update,'controllerHeartbeatIsAlive',function() return true end)
 up(update,'pollAck',function() end)
@@ -840,6 +898,18 @@ assert(restoreEvent==nil and state.stage=='restoring','final restore must await 
 cleanupComplete=true
 update(0.01)
 assert(restoreEvent.kind=='restored' and restoreEvent.event.restoration_verified and state.stage=='idle')
+-- Missing effects in preflight must not consume the old 45-second loading budget.
+json={encode=function() return '{}' end}
+up(update,'beginCaptureWhenGameplayIsReady',function() end)
+state.stage='preflight';state.command={session_id='s',command_id='blocked'};state.elapsed=0
+update(5.1)
+assert(state.stage=='error' and restoreEvent.event.error_code=='preflight_timeout')
+up(update,'buildReadiness',function() return {freefly_active=true,position_valid=true,
+ position_stable=true,loading_screen=false,menu_open=false,paused=false,ui_suppressed=false},false,{} end)
+state.stage='waiting';state.elapsed=0
+update(5.1)
+assert(state.stage=='error' and restoreEvent.event.error_code=='streaming_timeout',
+ 'non-pose readiness failures must use the short deadline too')
 print('CET state machine checks passed')
 """
         result = subprocess.run(

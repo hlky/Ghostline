@@ -1,0 +1,372 @@
+{
+  "name": "gqt008_interaction",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/test-quests/gqt008/implementation/dialogue/interaction.manifest.json",
+  "raw_path": "projects/test-quests/gqt008/source/raw/mod/gqt008/scenes/gqt008_interaction.scene.json",
+  "archive_path": "projects/test-quests/gqt008/source/archive/mod/gqt008/scenes/gqt008_interaction.scene",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 300,
+  "lipsync_animset": "base\\localization\\en-us\\lipsync\\mod\\gqt008\\scenes\\gqt008_interaction\\civ_low_m_11_enus_40_fat.anims",
+  "actors": [
+    {
+      "key": "barry",
+      "name": "barry",
+      "kind": "community",
+      "id": 0,
+      "entry": "barry",
+      "community_ref": "#gqt008_com_barry",
+      "appearance": "default",
+      "lipsync": 0,
+      "voicetag": "1624173162010260376"
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 0
+    }
+  ],
+  "spoken_line_order": [
+    "greeting"
+  ],
+  "choice_line_order": [
+    "reply",
+    "explain",
+    "walk",
+    "defer",
+    "finish"
+  ],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "end",
+      "node_id": 90
+    },
+    {
+      "name": "job_accept",
+      "node_id": 99
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 10,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "graph_order": [
+    1,
+    6,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    20,
+    30,
+    40,
+    41,
+    49,
+    50,
+    51,
+    52,
+    90,
+    99
+  ],
+  "sections": [
+    {
+      "key": "greeting",
+      "node_id": 20,
+      "lines": [
+        "greeting"
+      ],
+      "on_end": [
+        {
+          "node_id": 30
+        }
+      ],
+      "look_at_events": [
+        {
+          "actor": "barry",
+          "target": "v",
+          "target_slot": "camera"
+        }
+      ]
+    },
+    {
+      "key": "reply",
+      "node_id": 40,
+      "lines": [],
+      "on_end": [
+        {
+          "node_id": 30
+        }
+      ]
+    },
+    {
+      "key": "explanation",
+      "node_id": 41,
+      "lines": [],
+      "on_end": [
+        {
+          "node_id": 30
+        }
+      ]
+    },
+    {
+      "key": "waiting",
+      "node_id": 52,
+      "lines": [],
+      "section_duration_ms": 2500,
+      "on_end": [
+        {
+          "node_id": 90
+        }
+      ],
+      "look_at_events": [
+        {
+          "actor": "barry",
+          "target": "v",
+          "target_slot": "camera"
+        }
+      ]
+    },
+    {
+      "key": "leave_chair",
+      "node_id": 49,
+      "lines": [],
+      "section_duration_ms": 1,
+      "on_end": [
+        {
+          "node_id": 50,
+          "input_ordinal": 1
+        }
+      ]
+    }
+  ],
+  "choices": [
+    {
+      "key": "performance_menu",
+      "node_id": 30,
+      "actor_id": 0,
+      "options": [
+        {
+          "choice_key": "reply",
+          "caption": "Show a subdued reply.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 40
+        },
+        {
+          "choice_key": "explain",
+          "caption": "Show an explanation.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 41
+        },
+        {
+          "choice_key": "walk",
+          "caption": "Walk to the waiting mark, then return.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 49
+        },
+        {
+          "choice_key": "defer",
+          "caption": "Go back to your activity.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 90
+        },
+        {
+          "choice_key": "finish",
+          "caption": "Finish the test.",
+          "single_choice": false,
+          "choice_type": 1,
+          "target_node_id": 99
+        }
+      ]
+    }
+  ],
+  "quest_nodes": [
+    {
+      "kind": "puppet_ai",
+      "node_id": 10,
+      "entity_ref": "#gqt008_com_barry",
+      "entry": "barry",
+      "ai_tier": "Cinematic",
+      "on_out": [
+        {
+          "node_id": 12,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "kind": "puppet_ai",
+      "node_id": 11,
+      "entity_ref": "#gqt008_com_barry",
+      "entry": "barry",
+      "ai_tier": "Cinematic",
+      "on_out": [
+        {
+          "node_id": 13,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 14,
+      "trigger_ref": "#gqt008_tr_engage",
+      "require_player_not_in_combat": true,
+      "on_out": [
+        {
+          "node_id": 20
+        }
+      ]
+    },
+    {
+      "kind": "pause_condition",
+      "node_id": 15,
+      "trigger_ref": "#gqt008_tr_engage",
+      "require_player_not_in_combat": true,
+      "on_out": [
+        {
+          "node_id": 30
+        }
+      ]
+    }
+  ],
+  "xor_nodes": [],
+  "end_node": {
+    "node_id": 90
+  },
+  "entry_points": [
+    {
+      "name": "start",
+      "node_id": 1
+    },
+    {
+      "name": "resume",
+      "node_id": 6
+    }
+  ],
+  "start_nodes": [
+    {
+      "node_id": 1,
+      "on_start": [
+        {
+          "node_id": 10,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "node_id": 6,
+      "on_start": [
+        {
+          "node_id": 11,
+          "input_ordinal": 1
+        }
+      ]
+    }
+  ],
+  "end_nodes": [
+    {
+      "node_id": 90
+    },
+    {
+      "node_id": 99
+    }
+  ],
+  "performance_blocks": [
+    {
+      "key": "pause_activity",
+      "kind": "workspot_idle",
+      "node_id": 12,
+      "actor": "barry",
+      "on_success": [
+        {
+          "node_id": 14,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "key": "pause_activity_return",
+      "kind": "workspot_idle",
+      "node_id": 13,
+      "actor": "barry",
+      "on_success": [
+        {
+          "node_id": 15,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "key": "subdued_reply",
+      "kind": "pose_beat",
+      "preset": "seated_sad_reply",
+      "section": "reply",
+      "actors": {
+        "speaker": "barry",
+        "listener": "v"
+      }
+    },
+    {
+      "key": "explanation",
+      "kind": "pose_beat",
+      "preset": "seated_explanation",
+      "section": "explanation",
+      "actors": {
+        "speaker": "barry",
+        "listener": "v"
+      }
+    },
+    {
+      "key": "leave_seat",
+      "kind": "workspot_exit",
+      "node_id": 50,
+      "actor": "barry",
+      "workspot_ref": "#gqt008_spot_barry",
+      "exit_entry_id": 19,
+      "on_success": [
+        {
+          "node_id": 51,
+          "input_ordinal": 1
+        }
+      ]
+    },
+    {
+      "key": "walk_to_wait",
+      "kind": "workspot_move",
+      "node_id": 51,
+      "actor": "barry",
+      "workspot_ref": "#gqt008_spot_wait",
+      "entry_id": 4294967295,
+      "is_workspot_infinite": true,
+      "on_work_started": [
+        {
+          "node_id": 52
+        }
+      ],
+      "on_success": []
+    }
+  ]
+}

@@ -7,14 +7,13 @@ name = "ghostline-authoring"
 version = "1.0.0"
 description = "Development dependencies for the Ghostline quest-building toolkit"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["jsonschema>=4,<5"]
 
 [project.optional-dependencies]
 building = ["shapely==2.1.2", "PyYAML>=6,<7"]
 test = [
   "shapely==2.1.2",
   "scipy>=1.14,<2",
-    "jsonschema>=4,<5",
     "PyYAML>=6,<7",
     "numpy>=2,<3",
     "Pillow>=10.4,<12",

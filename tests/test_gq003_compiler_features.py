@@ -137,11 +137,8 @@ class Gq003CompilerFeatureTests(unittest.TestCase):
 
     def test_mara_failure_blocks_child_exit(self) -> None:
         stage = self.stages["stabilize_mara"]
-        self.assertTrue(
-            quest_compiler.stage_template_resource(stage).endswith(
-                "defend_target_retry.questphase"
-            )
-        )
+        self.assertIsNone(quest_compiler.stage_template_resource(stage))
+        self.assertIsNotNone(quest_compiler.stage_builder_name(stage))
         phase = quest_compiler.build_stage_phase(
             stage,
             ROOT / "generated/gq003/mod/gq003/phases/stabilize.questphase",

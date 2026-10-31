@@ -6,10 +6,10 @@ import math
 import sqlite3
 from typing import Any, Mapping, Sequence
 
-from .model import Vec3, game_yaw_degrees, morton_key_2d, stable_id
+from .model import Quaternion, Vec3, game_yaw_degrees, morton_key_2d, outward_vector, stable_id
 
 SURVEY_CATEGORIES = (
-    "intercom", "elevator", "security_checkpoint", "security_device", "road_barrier", "antenna",
+    "intercom", "elevator", "security_checkpoint", "security_device", "road_barrier", "antenna", "fast_travel", "drop_point", "access_point", "terminal",
 )
 GROUND_CATEGORIES = (
     "ai_workspot", "parking_space", "fake_door", "door_gate", "fast_travel", "terminal", "utility_device",
@@ -19,15 +19,16 @@ GROUND_CATEGORIES = (
 def _ground_reference(connection: sqlite3.Connection, anchor: Vec3, rules: Mapping[str, Any]):
     radius = float(rules.get("maximum_ground_reference_distance_m", 25))
     drop = float(rules.get("maximum_ground_reference_drop_m", 30))
+    ground_categories = tuple(rules.get("ground_reference_categories", GROUND_CATEGORIES))
     rows = connection.execute(
         # CROSS JOIN keeps the spatial fence first; otherwise SQLite may scan
         # every workspot for every device through the category index.
         "SELECT f.* FROM feature_rtree r CROSS JOIN features f ON f.feature_pk=r.feature_pk "
         "WHERE r.max_x>=? AND r.min_x<=? AND r.max_y>=? AND r.min_y<=? "
         "AND f.z BETWEEN ? AND ? AND f.capture_enabled=1 AND f.calibrated=1 "
-        f"AND f.category IN ({','.join('?' for _ in GROUND_CATEGORIES)})",
+        f"AND f.category IN ({','.join('?' for _ in ground_categories)})",
         (anchor.x-radius, anchor.x+radius, anchor.y-radius, anchor.y+radius,
-         anchor.z-drop, anchor.z+0.25, *GROUND_CATEGORIES),
+         anchor.z-drop, anchor.z+0.25, *ground_categories),
     ).fetchall()
     minimum = float(rules.get("minimum_ground_reference_distance_m", 4))
     height_ratio = float(rules.get("ground_reference_height_ratio", 2))
@@ -92,7 +93,10 @@ def build_site_surveys(
             near = float(rules.get("near_distance_m", 3))
             far = float(rules.get("far_distance_m", 12))
             labels = rules["view_labels"]
-            if mode == "ground_context":
+            if mode == "usable_side_pair":
+                outward = outward_vector(Quaternion(row["q_i"], row["q_j"], row["q_k"], row["q_r"]), rules["front_axis"])
+                views = ((labels[0], anchor+outward*near, outward), (labels[1], anchor+outward*far, outward*-1))
+            elif mode == "ground_context":
                 ground = _ground_reference(connection, anchor, rules)
                 if ground is None:
                     unresolved.append({"category": family, "feature_id": row["feature_id"], "resource": row["resource_path"], "anchor": anchor.as_dict(), "reason": "no_nearby_ground_reference"})
@@ -125,10 +129,15 @@ def build_site_surveys(
                     "target_anchor": anchor.as_dict(), "viewpoint_strategy": mode,
                     "source_node_index": row["node_index"], "source_instance_index": row["instance_index"],
                     "source_instance_id": row["instance_id"],
-                    "orientation": "extracted local axis; view usefulness requires runtime review",
-                    "ground_z": "nearby ground reference; CET resolves local surface" if ground else "serialized anchor height; CET resolves local surface",
+                    "orientation": rules.get("orientation_evidence", "extracted local axis; view usefulness requires runtime review"),
+                    "front_axis": rules.get("front_axis"),
+                    "ground_z": "nearby reference height; FreeFly preserves planned XYZ" if ground else "serialized anchor height; FreeFly preserves planned XYZ",
                     "ground_reference": {"feature_id": ground["feature_id"], "category": ground["category"], "position": origin.as_dict()} if ground else None,
                 })
+                if family == "fast_travel":
+                    import json
+
+                    provenance["native_fast_travel"] = json.loads(row["metadata_json"]).get("fast_travel", {})
                 record = _place_record(
                     location_id=ids[label], anchor_feature_id=row["feature_id"], category=family,
                     direction=label, requested=requested, forward=forward, resource_path=row["resource_path"],

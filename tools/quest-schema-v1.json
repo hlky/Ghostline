@@ -694,7 +694,17 @@
             "drive_to",
             "steal_vehicle",
             "vehicle_cleanup",
-            "braindance_analysis"
+            "braindance_analysis",
+            "owned_scope",
+            "acquire_or_use",
+            "access_routes",
+            "resolve_and_report",
+            "observe_lethal",
+            "reward_commit",
+            "contact_fallback",
+            "adaptive_timer",
+            "entitlement_reconcile",
+            "investigate_reactions"
           ]
         },
         "status": {
@@ -822,6 +832,17 @@
                   "minLength": 1
                 }
               }
+            },
+            "scene_entries": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           }
         }
@@ -868,6 +889,45 @@
                 "opening_message": {
                   "type": "string",
                   "minLength": 1
+                },
+                "setup_trigger": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "scene_origin": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "rearm_trigger": {
+                  "$ref": "#/$defs/nodeRef"
+                },
+                "scene_entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accept_exit": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "defer_exit": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "meeting_checkpoint": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "community_phase": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accepted_fact": {
+                  "$ref": "#/$defs/factName"
+                },
+                "defer_policy": {
+                  "enum": [
+                    "terminate",
+                    "rearm"
+                  ],
+                  "default": "terminate"
                 }
               },
               "required": [
@@ -1829,7 +1889,8 @@
                 "evaluation": {
                   "enum": [
                     "continuous",
-                    "at_exit"
+                    "at_exit",
+                    "on_entry"
                   ]
                 }
               },
@@ -1995,6 +2056,17 @@
                 },
                 "completion_fact": {
                   "$ref": "#/$defs/factName"
+                },
+                "waypoints": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "#/$defs/nodeRef"
+                  }
+                },
+                "mappin": {
+                  "$ref": "#/$defs/journalPath"
                 }
               },
               "required": [
@@ -2034,10 +2106,14 @@
                 },
                 "require_player_exit": {
                   "type": "boolean",
-                  "default": true
+                  "default": false
                 },
                 "completion_fact": {
                   "$ref": "#/$defs/factName"
+                },
+                "require_stop": {
+                  "type": "boolean",
+                  "default": true
                 }
               },
               "required": [
@@ -2175,6 +2251,14 @@
                 },
                 "stop_fact": {
                   "$ref": "#/$defs/factName"
+                },
+                "additional_failure_facts": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "#/$defs/factName"
+                  }
                 }
               },
               "required": [
@@ -2344,6 +2428,15 @@
                 },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "additional_entries": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
                 }
               },
               "required": [
@@ -2385,6 +2478,13 @@
                 },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "player_role": {
+                  "enum": [
+                    "Invalid",
+                    "Driver",
+                    "Passenger"
+                  ]
                 }
               },
               "required": [
@@ -2426,6 +2526,54 @@
                 },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "player_role": {
+                  "enum": [
+                    "Invalid",
+                    "Driver",
+                    "Passenger"
+                  ]
+                },
+                "contact_role": {
+                  "enum": [
+                    "Invalid",
+                    "Driver",
+                    "Passenger"
+                  ]
+                },
+                "contact_slot": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "wait_for_contacts": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "additional_passengers": {
+                  "type": "array",
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "community",
+                      "entry",
+                      "slot"
+                    ],
+                    "properties": {
+                      "community": {
+                        "$ref": "#/$defs/nodeRef"
+                      },
+                      "entry": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "slot": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
                 }
               },
               "required": [
@@ -2470,6 +2618,14 @@
                 },
                 "description_entry": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "waypoints": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "#/$defs/nodeRef"
+                  }
                 }
               },
               "required": [
@@ -2512,6 +2668,13 @@
                 },
                 "completion_fact": {
                   "$ref": "#/$defs/factName"
+                },
+                "player_role": {
+                  "enum": [
+                    "Invalid",
+                    "Driver",
+                    "Passenger"
+                  ]
                 }
               },
               "required": [
@@ -2541,6 +2704,14 @@
                 },
                 "completion_fact": {
                   "$ref": "#/$defs/factName"
+                },
+                "cleanup_communities": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "#/$defs/nodeRef"
+                  }
                 }
               },
               "required": [
@@ -2578,8 +2749,8 @@
                   "items": {
                     "$ref": "#/$defs/factName"
                   },
-                  "minItems": 3,
-                  "maxItems": 3,
+                  "minItems": 1,
+                  "maxItems": 32,
                   "uniqueItems": true
                 },
                 "completion_fact": {
@@ -2587,6 +2758,38 @@
                 },
                 "objective": {
                   "$ref": "#/$defs/journalPath"
+                },
+                "teardown_seconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 3600,
+                  "default": 1.5
+                },
+                "settle_seconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 3600,
+                  "default": 0.05
+                },
+                "exit_enable_seconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 3600,
+                  "default": 0.5
+                },
+                "scene_entry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "scene_exit_sockets": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 32,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
                 }
               },
               "required": [
@@ -2597,6 +2800,871 @@
                 "clue_facts",
                 "completion_fact",
                 "objective"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "child": {
+                  "$ref": "#/$defs/scopeChild"
+                },
+                "notifications": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "type": {
+                  "const": "owned_scope"
+                }
+              },
+              "required": [
+                "child"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "item": {
+                  "$ref": "#/$defs/tweakDbId"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "existing_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "acquired_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "application": {
+                  "$ref": "#/$defs/scopeChild"
+                },
+                "type": {
+                  "const": "acquire_or_use"
+                }
+              },
+              "required": [
+                "item",
+                "application"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "routes": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "phase": {
+                        "$ref": "#/$defs/depotPath"
+                      },
+                      "entry": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "exits": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "additionalProperties": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "phase",
+                      "entry",
+                      "exits"
+                    ]
+                  }
+                },
+                "route_facts": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "application": {
+                  "$ref": "#/$defs/scopeChild"
+                },
+                "type": {
+                  "const": "access_routes"
+                }
+              },
+              "required": [
+                "routes",
+                "application"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "targets": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "community": {
+                        "$ref": "#/$defs/nodeRef"
+                      },
+                      "entry": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "resolution": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "killed": {
+                            "type": "boolean"
+                          },
+                          "unconscious": {
+                            "type": "boolean"
+                          },
+                          "defeated": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "killed",
+                          "unconscious",
+                          "defeated"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "community",
+                      "entry",
+                      "resolution"
+                    ]
+                  }
+                },
+                "resolved_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "reported_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "report": {
+                  "$ref": "#/$defs/scopeChild"
+                },
+                "type": {
+                  "const": "resolve_and_report"
+                }
+              },
+              "required": [
+                "targets",
+                "resolved_fact",
+                "reported_fact",
+                "report"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "targets": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "community": {
+                        "$ref": "#/$defs/nodeRef"
+                      },
+                      "entry": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "killed_fact": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      }
+                    },
+                    "required": [
+                      "community",
+                      "entry",
+                      "killed_fact"
+                    ]
+                  }
+                },
+                "stop_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "type": {
+                  "const": "observe_lethal"
+                }
+              },
+              "required": [
+                "targets",
+                "stop_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "reported_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "item": {
+                  "$ref": "#/$defs/tweakDbId"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "type": {
+                  "const": "reward_commit"
+                }
+              },
+              "required": [
+                "reported_fact",
+                "item",
+                "commit_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "unavailable_facts": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "call": {
+                  "$ref": "#/$defs/scopeScene"
+                },
+                "message": {
+                  "$ref": "#/$defs/journalPath"
+                },
+                "message_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "connected_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "type": {
+                  "const": "contact_fallback"
+                }
+              },
+              "required": [
+                "call",
+                "message",
+                "message_fact",
+                "connected_fact"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "clock": {
+                  "enum": [
+                    "realtime",
+                    "game"
+                  ]
+                },
+                "choices": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "seconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 86400
+                      },
+                      "weight": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255
+                      }
+                    },
+                    "required": [
+                      "seconds",
+                      "weight"
+                    ]
+                  }
+                },
+                "profiles": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "when_fact": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "choices": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "seconds": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 86400
+                            },
+                            "weight": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 255
+                            }
+                          },
+                          "required": [
+                            "seconds",
+                            "weight"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "when_fact",
+                      "choices"
+                    ]
+                  }
+                },
+                "eligibility_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "busy_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "max_deferral_seconds": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 86400
+                },
+                "type": {
+                  "const": "adaptive_timer"
+                }
+              },
+              "required": [
+                "clock",
+                "choices"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "entitled_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "owned_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "retire": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "type": {
+                  "const": "entitlement_reconcile"
+                },
+                "vehicle_record": {
+                  "$ref": "#/$defs/tweakDbId"
+                }
+              },
+              "required": [
+                "owned_fact",
+                "retire"
+              ]
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/baseStage"
+            },
+            {
+              "properties": {
+                "setup": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "restore": {
+                  "type": "array",
+                  "minItems": 0,
+                  "items": {
+                    "$ref": "#/$defs/scopeAction"
+                  }
+                },
+                "effects": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "$ref": "#/$defs/scopeAction"
+                    }
+                  },
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                },
+                "commit_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "cancellation_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "type": {
+                  "const": "investigate_reactions"
+                },
+                "clues": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "object_ref",
+                      "scan_fact",
+                      "completion_fact"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "object_ref": {
+                        "$ref": "#/$defs/nodeRef"
+                      },
+                      "scan_fact": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "completion_fact": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "reaction": {
+                        "$ref": "#/$defs/scopeScene"
+                      },
+                      "mappin": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "required_count": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "discovery_fact": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                }
+              },
+              "required": [
+                "clues"
               ]
             }
           ],
@@ -3482,6 +4550,37 @@
                           }
                         }
                       ]
+                    },
+                    "scene_entries": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "uniqueItems": true,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/baseStage/properties/contract/properties/scene_entries/additionalProperties/items"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   }
                 }
@@ -3578,6 +4677,106 @@
                         },
                         {
                           "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/opening_message"
+                        }
+                      ]
+                    },
+                    "setup_trigger": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/nodeRef"
+                        }
+                      ]
+                    },
+                    "scene_origin": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/nodeRef"
+                        }
+                      ]
+                    },
+                    "rearm_trigger": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/nodeRef"
+                        }
+                      ]
+                    },
+                    "scene_entry": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/scene_entry"
+                        }
+                      ]
+                    },
+                    "accept_exit": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/accept_exit"
+                        }
+                      ]
+                    },
+                    "defer_exit": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/defer_exit"
+                        }
+                      ]
+                    },
+                    "meeting_checkpoint": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/meeting_checkpoint"
+                        }
+                      ]
+                    },
+                    "community_phase": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/community_phase"
+                        }
+                      ]
+                    },
+                    "accepted_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/factName"
+                        }
+                      ]
+                    },
+                    "defer_policy": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/0/allOf/1/properties/defer_policy"
                         }
                       ]
                     }
@@ -5882,6 +7081,38 @@
                           "$ref": "#/$defs/authoring/$defs/factName"
                         }
                       ]
+                    },
+                    "waypoints": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "maxItems": 32,
+                          "uniqueItems": true,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/nodeRef"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "mappin": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/journalPath"
+                        }
+                      ]
                     }
                   },
                   "required": [
@@ -5971,6 +7202,16 @@
                         },
                         {
                           "$ref": "#/$defs/authoring/$defs/factName"
+                        }
+                      ]
+                    },
+                    "require_stop": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/17/allOf/1/properties/require_stop"
                         }
                       ]
                     }
@@ -6210,6 +7451,28 @@
                         },
                         {
                           "$ref": "#/$defs/authoring/$defs/factName"
+                        }
+                      ]
+                    },
+                    "additional_failure_facts": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "maxItems": 32,
+                          "uniqueItems": true,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/factName"
+                              }
+                            ]
+                          }
                         }
                       ]
                     }
@@ -6579,6 +7842,28 @@
                           "$ref": "#/$defs/authoring/$defs/journalPath"
                         }
                       ]
+                    },
+                    "additional_entries": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "maxItems": 32,
+                          "uniqueItems": true,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/stage/oneOf/23/allOf/1/properties/additional_entries/items"
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   "required": [
@@ -6652,6 +7937,16 @@
                         },
                         {
                           "$ref": "#/$defs/authoring/$defs/journalPath"
+                        }
+                      ]
+                    },
+                    "player_role": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/24/allOf/1/properties/player_role"
                         }
                       ]
                     }
@@ -6733,6 +8028,105 @@
                         },
                         {
                           "$ref": "#/$defs/authoring/$defs/journalPath"
+                        }
+                      ]
+                    },
+                    "player_role": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/25/allOf/1/properties/player_role"
+                        }
+                      ]
+                    },
+                    "contact_role": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/25/allOf/1/properties/contact_role"
+                        }
+                      ]
+                    },
+                    "contact_slot": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/25/allOf/1/properties/contact_slot"
+                        }
+                      ]
+                    },
+                    "wait_for_contacts": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/25/allOf/1/properties/wait_for_contacts"
+                        }
+                      ]
+                    },
+                    "additional_passengers": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "maxItems": 16,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "community",
+                                  "entry",
+                                  "slot"
+                                ],
+                                "properties": {
+                                  "community": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/nodeRef"
+                                      }
+                                    ]
+                                  },
+                                  "entry": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/25/allOf/1/properties/additional_passengers/items/properties/entry"
+                                      }
+                                    ]
+                                  },
+                                  "slot": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/25/allOf/1/properties/additional_passengers/items/properties/slot"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       ]
                     }
@@ -6827,6 +8221,28 @@
                           "$ref": "#/$defs/authoring/$defs/journalPath"
                         }
                       ]
+                    },
+                    "waypoints": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "maxItems": 32,
+                          "uniqueItems": true,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/nodeRef"
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   "required": [
@@ -6910,6 +8326,16 @@
                           "$ref": "#/$defs/authoring/$defs/factName"
                         }
                       ]
+                    },
+                    "player_role": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/27/allOf/1/properties/player_role"
+                        }
+                      ]
                     }
                   },
                   "required": [
@@ -6950,6 +8376,28 @@
                         },
                         {
                           "$ref": "#/$defs/authoring/$defs/factName"
+                        }
+                      ]
+                    },
+                    "cleanup_communities": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "maxItems": 32,
+                          "uniqueItems": true,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/nodeRef"
+                              }
+                            ]
+                          }
                         }
                       ]
                     }
@@ -7029,8 +8477,8 @@
                               }
                             ]
                           },
-                          "minItems": 3,
-                          "maxItems": 3,
+                          "minItems": 1,
+                          "maxItems": 32,
                           "uniqueItems": true
                         }
                       ]
@@ -7054,6 +8502,69 @@
                           "$ref": "#/$defs/authoring/$defs/journalPath"
                         }
                       ]
+                    },
+                    "teardown_seconds": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/29/allOf/1/properties/teardown_seconds"
+                        }
+                      ]
+                    },
+                    "settle_seconds": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/29/allOf/1/properties/settle_seconds"
+                        }
+                      ]
+                    },
+                    "exit_enable_seconds": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/29/allOf/1/properties/exit_enable_seconds"
+                        }
+                      ]
+                    },
+                    "scene_entry": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/29/allOf/1/properties/scene_entry"
+                        }
+                      ]
+                    },
+                    "scene_exit_sockets": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 32,
+                          "uniqueItems": true,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/stage/oneOf/29/allOf/1/properties/scene_exit_sockets/items"
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   "required": [
@@ -7064,6 +8575,1893 @@
                     "clue_facts",
                     "completion_fact",
                     "objective"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/30/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/30/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/30/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "child": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/scopeChild"
+                        }
+                      ]
+                    },
+                    "notifications": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/stage/oneOf/30/allOf/1/properties/notifications/additionalProperties"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/30/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "child"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "item": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/tweakDbId"
+                        }
+                      ]
+                    },
+                    "quantity": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/quantity"
+                        }
+                      ]
+                    },
+                    "existing_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/existing_fact"
+                        }
+                      ]
+                    },
+                    "acquired_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/acquired_fact"
+                        }
+                      ]
+                    },
+                    "application": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/scopeChild"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/31/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "item",
+                    "application"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "routes": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 2,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/routes/items/properties/id"
+                                      }
+                                    ]
+                                  },
+                                  "phase": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/depotPath"
+                                      }
+                                    ]
+                                  },
+                                  "entry": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/routes/items/properties/entry"
+                                      }
+                                    ]
+                                  },
+                                  "exits": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "type": "object",
+                                        "minProperties": 1,
+                                        "additionalProperties": {
+                                          "anyOf": [
+                                            {
+                                              "$ref": "#/$defs/authoring/$defs/alias"
+                                            },
+                                            {
+                                              "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/routes/items/properties/exits/additionalProperties"
+                                            }
+                                          ]
+                                        },
+                                        "propertyNames": {
+                                          "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/routes/items/properties/exits/propertyNames"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "phase",
+                                  "entry",
+                                  "exits"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "route_facts": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/route_facts/additionalProperties"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "application": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/scopeChild"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/32/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "routes",
+                    "application"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "targets": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "community": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/nodeRef"
+                                      }
+                                    ]
+                                  },
+                                  "entry": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/targets/items/properties/entry"
+                                      }
+                                    ]
+                                  },
+                                  "resolution": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "killed": {
+                                            "anyOf": [
+                                              {
+                                                "$ref": "#/$defs/authoring/$defs/alias"
+                                              },
+                                              {
+                                                "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/targets/items/properties/resolution/properties/killed"
+                                              }
+                                            ]
+                                          },
+                                          "unconscious": {
+                                            "anyOf": [
+                                              {
+                                                "$ref": "#/$defs/authoring/$defs/alias"
+                                              },
+                                              {
+                                                "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/targets/items/properties/resolution/properties/unconscious"
+                                              }
+                                            ]
+                                          },
+                                          "defeated": {
+                                            "anyOf": [
+                                              {
+                                                "$ref": "#/$defs/authoring/$defs/alias"
+                                              },
+                                              {
+                                                "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/targets/items/properties/resolution/properties/defeated"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "killed",
+                                          "unconscious",
+                                          "defeated"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "community",
+                                  "entry",
+                                  "resolution"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "resolved_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/resolved_fact"
+                        }
+                      ]
+                    },
+                    "reported_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/reported_fact"
+                        }
+                      ]
+                    },
+                    "report": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/scopeChild"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/33/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "targets",
+                    "resolved_fact",
+                    "reported_fact",
+                    "report"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "targets": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "community": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/nodeRef"
+                                      }
+                                    ]
+                                  },
+                                  "entry": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/targets/items/properties/entry"
+                                      }
+                                    ]
+                                  },
+                                  "killed_fact": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/targets/items/properties/killed_fact"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "community",
+                                  "entry",
+                                  "killed_fact"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "stop_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/stop_fact"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/34/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "targets",
+                    "stop_fact"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/35/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/35/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "reported_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/35/allOf/1/properties/reported_fact"
+                        }
+                      ]
+                    },
+                    "item": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/tweakDbId"
+                        }
+                      ]
+                    },
+                    "quantity": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/35/allOf/1/properties/quantity"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/35/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "reported_fact",
+                    "item",
+                    "commit_fact"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/36/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/36/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "unavailable_facts": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/stage/oneOf/36/allOf/1/properties/unavailable_facts/items"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "call": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/scopeScene"
+                        }
+                      ]
+                    },
+                    "message": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/journalPath"
+                        }
+                      ]
+                    },
+                    "message_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/36/allOf/1/properties/message_fact"
+                        }
+                      ]
+                    },
+                    "connected_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/36/allOf/1/properties/connected_fact"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/36/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "call",
+                    "message",
+                    "message_fact",
+                    "connected_fact"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "clock": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/clock"
+                        }
+                      ]
+                    },
+                    "choices": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "seconds": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/choices/items/properties/seconds"
+                                      }
+                                    ]
+                                  },
+                                  "weight": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/choices/items/properties/weight"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "seconds",
+                                  "weight"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "profiles": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "when_fact": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/profiles/items/properties/when_fact"
+                                      }
+                                    ]
+                                  },
+                                  "choices": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "$ref": "#/$defs/authoring/$defs/alias"
+                                            },
+                                            {
+                                              "type": "object",
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "seconds": {
+                                                  "anyOf": [
+                                                    {
+                                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/profiles/items/properties/choices/items/properties/seconds"
+                                                    }
+                                                  ]
+                                                },
+                                                "weight": {
+                                                  "anyOf": [
+                                                    {
+                                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/profiles/items/properties/choices/items/properties/weight"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "required": [
+                                                "seconds",
+                                                "weight"
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "when_fact",
+                                  "choices"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "eligibility_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/eligibility_fact"
+                        }
+                      ]
+                    },
+                    "busy_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/busy_fact"
+                        }
+                      ]
+                    },
+                    "max_deferral_seconds": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/max_deferral_seconds"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/37/allOf/1/properties/type"
+                    }
+                  },
+                  "required": [
+                    "clock",
+                    "choices"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/38/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "entitled_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/38/allOf/1/properties/entitled_fact"
+                        }
+                      ]
+                    },
+                    "owned_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/38/allOf/1/properties/owned_fact"
+                        }
+                      ]
+                    },
+                    "retire": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/38/allOf/1/properties/type"
+                    },
+                    "vehicle_record": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/authoring/$defs/tweakDbId"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "owned_fact",
+                    "retire"
+                  ]
+                }
+              ],
+              "unevaluatedProperties": false
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/baseStage"
+                },
+                {
+                  "properties": {
+                    "setup": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "restore": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 0,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "$ref": "#/$defs/authoring/$defs/scopeAction"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effects": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "minItems": 0,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/scopeAction"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          },
+                          "propertyNames": {
+                            "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/effects/propertyNames"
+                          }
+                        }
+                      ]
+                    },
+                    "commit_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/commit_fact"
+                        }
+                      ]
+                    },
+                    "cancellation_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/cancellation_fact"
+                        }
+                      ]
+                    },
+                    "type": {
+                      "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/type"
+                    },
+                    "clues": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "id",
+                                  "object_ref",
+                                  "scan_fact",
+                                  "completion_fact"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/clues/items/properties/id"
+                                      }
+                                    ]
+                                  },
+                                  "object_ref": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/nodeRef"
+                                      }
+                                    ]
+                                  },
+                                  "scan_fact": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/clues/items/properties/scan_fact"
+                                      }
+                                    ]
+                                  },
+                                  "completion_fact": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/clues/items/properties/completion_fact"
+                                      }
+                                    ]
+                                  },
+                                  "reaction": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/scopeScene"
+                                      }
+                                    ]
+                                  },
+                                  "mappin": {
+                                    "anyOf": [
+                                      {
+                                        "$ref": "#/$defs/authoring/$defs/alias"
+                                      },
+                                      {
+                                        "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/clues/items/properties/mappin"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "required_count": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/required_count"
+                        }
+                      ]
+                    },
+                    "discovery_fact": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "$ref": "#/$defs/stage/oneOf/39/allOf/1/properties/discovery_fact"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "clues"
                   ]
                 }
               ],
@@ -8105,6 +11503,539 @@
             }
           }
         },
+        "scopeAction": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/0/properties/kind"
+                    }
+                  ]
+                },
+                "fact": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/0/properties/fact"
+                    }
+                  ]
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/0/properties/value"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "fact"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/1/properties/kind"
+                    }
+                  ]
+                },
+                "item": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/tweakDbId"
+                    }
+                  ]
+                },
+                "quantity": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/1/properties/quantity"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "item"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/2/properties/kind"
+                    }
+                  ]
+                },
+                "path": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/journalPath"
+                    }
+                  ]
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/2/properties/state"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "path",
+                "state"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/3/properties/kind"
+                    }
+                  ]
+                },
+                "path": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/journalPath"
+                    }
+                  ]
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/3/properties/state"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "path",
+                "state"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/4/properties/kind"
+                    }
+                  ]
+                },
+                "path": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/journalPath"
+                    }
+                  ]
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/4/properties/state"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "path"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/5/properties/kind"
+                    }
+                  ]
+                },
+                "community": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/nodeRef"
+                    }
+                  ]
+                },
+                "entry": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/5/properties/entry"
+                    }
+                  ]
+                },
+                "phase": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/5/properties/phase"
+                    }
+                  ]
+                },
+                "action": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/5/properties/action"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "community",
+                "entry",
+                "action"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/6/properties/kind"
+                    }
+                  ]
+                },
+                "source": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/6/properties/source"
+                    }
+                  ]
+                },
+                "blend_seconds": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/6/properties/blend_seconds"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "source"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/7/properties/kind"
+                    }
+                  ]
+                },
+                "prefab": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/nodeRef"
+                    }
+                  ]
+                },
+                "variant": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/7/properties/variant"
+                    }
+                  ]
+                },
+                "show": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/7/properties/show"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "prefab",
+                "variant",
+                "show"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/8/properties/kind"
+                    }
+                  ]
+                },
+                "phase": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/authoring/$defs/depotPath"
+                    }
+                  ]
+                },
+                "entry": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/8/properties/entry"
+                    }
+                  ]
+                },
+                "exit": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/authoring/$defs/alias"
+                    },
+                    {
+                      "$ref": "#/$defs/scopeAction/oneOf/8/properties/exit"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "phase",
+                "entry",
+                "exit"
+              ]
+            }
+          ]
+        },
+        "scopeChild": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "phase": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "$ref": "#/$defs/authoring/$defs/depotPath"
+                }
+              ]
+            },
+            "entry": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "$ref": "#/$defs/scopeChild/properties/entry"
+                }
+              ]
+            },
+            "exits": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "type": "object",
+                  "minProperties": 1,
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/authoring/$defs/alias"
+                      },
+                      {
+                        "$ref": "#/$defs/scopeChild/properties/exits/additionalProperties"
+                      }
+                    ]
+                  },
+                  "propertyNames": {
+                    "$ref": "#/$defs/scopeChild/properties/exits/propertyNames"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "phase",
+            "entry",
+            "exits"
+          ]
+        },
+        "scopeScene": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scene": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "$ref": "#/$defs/authoring/$defs/depotPath"
+                }
+              ]
+            },
+            "origin": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "$ref": "#/$defs/authoring/$defs/nodeRef"
+                }
+              ]
+            },
+            "entry": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "$ref": "#/$defs/scopeScene/properties/entry"
+                }
+              ]
+            },
+            "exits": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/alias"
+                },
+                {
+                  "type": "object",
+                  "minProperties": 1,
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/authoring/$defs/alias"
+                      },
+                      {
+                        "$ref": "#/$defs/scopeScene/properties/exits/additionalProperties"
+                      }
+                    ]
+                  },
+                  "propertyNames": {
+                    "$ref": "#/$defs/scopeScene/properties/exits/propertyNames"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "scene",
+            "origin",
+            "entry",
+            "exits"
+          ]
+        },
         "alias": {
           "type": "string",
           "pattern": "^@(quest|resources|objectives|contacts|locations|clues|facts|points_of_interest|readables)(\\.[a-z][a-z0-9_]*)*$",
@@ -8426,6 +12357,37 @@
                                     },
                                     {
                                       "$ref": "#/$defs/baseStage/properties/contract/properties/scene_exits/additionalProperties/items"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "scene_entries": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/authoring/$defs/alias"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/$defs/authoring/$defs/alias"
+                              },
+                              {
+                                "type": "array",
+                                "uniqueItems": true,
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/$defs/authoring/$defs/alias"
+                                    },
+                                    {
+                                      "$ref": "#/$defs/baseStage/properties/contract/properties/scene_entries/additionalProperties/items"
                                     }
                                   ]
                                 }
@@ -8767,6 +12729,116 @@
             },
             {
               "$ref": "#/$defs/authoring/$defs/stage/oneOf/29/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_owned_scope": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/30/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_acquire_or_use": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/31/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_access_routes": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/32/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_resolve_and_report": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/33/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_observe_lethal": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/34/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_reward_commit": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/35/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_contact_fallback": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/36/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_adaptive_timer": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/37/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_entitlement_reconcile": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/38/allOf/1"
+            }
+          ],
+          "unevaluatedProperties": false
+        },
+        "recipe_investigate_reactions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/authoring/$defs/recipeBaseStage"
+            },
+            {
+              "$ref": "#/$defs/authoring/$defs/stage/oneOf/39/allOf/1"
             }
           ],
           "unevaluatedProperties": false
@@ -9132,6 +13204,126 @@
                   ]
                 }
               ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_owned_scope"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_acquire_or_use"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_access_routes"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_resolve_and_report"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_observe_lethal"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_reward_commit"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_contact_fallback"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_adaptive_timer"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_entitlement_reconcile"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/authoring/$defs/recipe_investigate_reactions"
+                },
+                {
+                  "required": [
+                    "type"
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -9394,6 +13586,288 @@
           ]
         }
       }
+    },
+    "scopeAction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "fact"
+            },
+            "fact": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "fact"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "item"
+            },
+            "item": {
+              "$ref": "#/$defs/tweakDbId"
+            },
+            "quantity": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "kind",
+            "item"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "objective"
+            },
+            "path": {
+              "$ref": "#/$defs/journalPath"
+            },
+            "state": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Succeeded",
+                "Failed"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "path",
+            "state"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "mappin"
+            },
+            "path": {
+              "$ref": "#/$defs/journalPath"
+            },
+            "state": {
+              "enum": [
+                "Active",
+                "Inactive"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "path",
+            "state"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "message"
+            },
+            "path": {
+              "$ref": "#/$defs/journalPath"
+            },
+            "state": {
+              "enum": [
+                "Active",
+                "Inactive"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "path"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "community"
+            },
+            "community": {
+              "$ref": "#/$defs/nodeRef"
+            },
+            "entry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "phase": {
+              "type": "string",
+              "minLength": 1
+            },
+            "action": {
+              "enum": [
+                "Activate",
+                "Deactivate"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "community",
+            "entry",
+            "action"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "weather_reset"
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "blend_seconds": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "prefab_variant"
+            },
+            "prefab": {
+              "$ref": "#/$defs/nodeRef"
+            },
+            "variant": {
+              "type": "string",
+              "minLength": 1
+            },
+            "show": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "prefab",
+            "variant",
+            "show"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "phase"
+            },
+            "phase": {
+              "$ref": "#/$defs/depotPath"
+            },
+            "entry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "exit": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "phase",
+            "entry",
+            "exit"
+          ]
+        }
+      ]
+    },
+    "scopeChild": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/depotPath"
+        },
+        "entry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exits": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        }
+      },
+      "required": [
+        "phase",
+        "entry",
+        "exits"
+      ]
+    },
+    "scopeScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scene": {
+          "$ref": "#/$defs/depotPath"
+        },
+        "origin": {
+          "$ref": "#/$defs/nodeRef"
+        },
+        "entry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exits": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        }
+      },
+      "required": [
+        "scene",
+        "origin",
+        "entry",
+        "exits"
+      ]
     }
   },
   "allOf": [

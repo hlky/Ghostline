@@ -43,6 +43,7 @@ legacy scene template,
 | `choices` | No | Choice nodes and options. |
 | `quest_nodes` | No | Scene-local quest wrapper nodes for journal, mappin, trigger, AI setup, player item unequip, status effects, or gameplay/cinematic tier changes. |
 | `props` | No | Scene props acquired with `findInNode`; generic RID camera entities should be declared here so the scene owns their lifecycle. |
+| `performance_blocks` | No | Experimental donor-backed pose beats and native workspot movement/idle-only/exit adapters. See `docs/authoring/scene-performance-blocks.md`. |
 | `xor_nodes` | No | Xor nodes for vanilla-compatible branch joins. |
 | `rid_resources` | No | RID resource IDs and depot paths. Generated as synchronous `Default` references, matching the engine field and vanilla scenes. |
 | `rid_animations` | No | RID resource/serial pairs exposed to body and head animation events. |

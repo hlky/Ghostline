@@ -37,6 +37,7 @@ class StageContract:
     writes_facts: tuple[str, ...] = ()
     external_events: tuple[str, ...] = ()
     scene_exits: tuple[tuple[str, tuple[str, ...]], ...] = ()
+    scene_entries: tuple[tuple[str, tuple[str, ...]], ...] = ()
 
     @classmethod
     def from_data(cls, data: Mapping[str, Any]) -> StageContract:
@@ -49,6 +50,7 @@ class StageContract:
                 (scene, tuple(exits))
                 for scene, exits in contract.get("scene_exits", {}).items()
             ),
+            tuple((scene, tuple(entries)) for scene, entries in contract.get("scene_entries", {}).items()),
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -57,6 +59,8 @@ class StageContract:
             "writes_facts": list(self.writes_facts),
             "external_events": list(self.external_events),
             "scene_exits": {scene: list(exits) for scene, exits in self.scene_exits},
+            **({"scene_entries": {scene: list(entries) for scene, entries in self.scene_entries}}
+               if self.scene_entries else {}),
         }
 
 
@@ -163,7 +167,7 @@ def validate_flow_fields(raw: dict[str, Any], diagnostics: list[Diagnostic]) -> 
                 "missing_start_input", "inputs must declare the start alias", identifier
             )
         contract = stage.get("contract", {})
-        fields = {"reads_facts", "writes_facts", "external_events", "scene_exits"}
+        fields = {"reads_facts", "writes_facts", "external_events", "scene_exits", "scene_entries"}
         if not isinstance(contract, dict) or set(contract) - fields:
             error(
                 "invalid_stage_contract",
@@ -171,7 +175,7 @@ def validate_flow_fields(raw: dict[str, Any], diagnostics: list[Diagnostic]) -> 
                 identifier,
             )
             continue
-        for field in fields - {"scene_exits"}:
+        for field in fields - {"scene_exits", "scene_entries"}:
             if field in contract and not names(
                 contract[field], facts=field.endswith("facts")
             ):
@@ -180,19 +184,19 @@ def validate_flow_fields(raw: dict[str, Any], diagnostics: list[Diagnostic]) -> 
                     f"contract.{field} must contain unique names",
                     identifier,
                 )
-        scenes = contract.get("scene_exits", {})
-        if not isinstance(scenes, dict) or not all(
+        scene_maps = [contract.get(field, {}) for field in ("scene_entries", "scene_exits")]
+        if not all(isinstance(scenes, dict) for scenes in scene_maps) or not all(
             isinstance(scene, str)
             and scene.startswith(("mod\\", "base\\", "ep1\\"))
             and ".." not in scene.split("\\")
             and scene.endswith(".scene")
             and names(exits)
             and exits
-            for scene, exits in scenes.items()
+            for scenes in scene_maps for scene, exits in scenes.items()
         ):
             error(
                 "invalid_scene_contract",
-                "scene_exits must map scene depot paths to exit names",
+                "scene_entries and scene_exits must map scene depot paths to socket names",
                 identifier,
             )
         lifecycle = stage.get("objective_lifecycle", {})
@@ -217,6 +221,8 @@ def validate_flow_fields(raw: dict[str, Any], diagnostics: list[Diagnostic]) -> 
                 identifier,
             )
         elif lifecycle and stage.get("type") not in {
+            "optional_condition", "stealth_monitor", "plant_item", "release_or_rescue_npc",
+            "enter_vehicle", "drive_to", "steal_vehicle", "deliver_vehicle", "carry_npc", "ride_with_contact",
             "meet_contact",
             "braindance_analysis",
             "escort_npc",
@@ -307,9 +313,10 @@ def validate_flow(spec: QuestSpec) -> list[Diagnostic]:
     # Existing all-of groups have separate compiler wiring. Check concurrent
     # ownership here without pretending the flattened stage list is its graph.
     if spec.parallel_groups:
+        from quest_mechanism_validation import scope_claims
         for group in spec.parallel_groups:
             branch_resources = [
-                set().union(*(_claims(stages[item]) for item in branch))
+                set().union(*(_claims(stages[item]) | scope_claims(stages[item]) for item in branch))
                 for branch in group.branches
             ]
             for index, resources in enumerate(branch_resources):
@@ -588,35 +595,35 @@ def validate_emitted_contract(stage: Any, phase: dict[str, Any]) -> None:
             )
     if contract.writes_facts:
         _validate_unconditional_writes(stage, phase, contract.writes_facts)
-    for scene, exits in contract.scene_exits:
-        scene_nodes = [
-            node
-            for node in nodes
-            if node.get("$type") == "questSceneNodeDefinition"
-            and any(
-                item.get("$value") == scene for item in walk(node.get("sceneFile", {}))
-            )
-        ]
-        if not scene_nodes:
-            raise QuestSpecError(f"Stage {stage.id} contract scene is absent: {scene}")
-        definitions = {
-            str(node["HandleId"]): node["Data"]
-            for node in nodes
-            if "HandleId" in node and "Data" in node
-        }
-        sockets = set()
-        for node in scene_nodes:
-            for socket in node.get("sockets", []):
-                data = socket.get("Data") or definitions.get(
-                    str(socket.get("HandleRefId")), {}
+    for direction, declarations in (("Output", contract.scene_exits), ("Input", contract.scene_entries)):
+        for scene, exits in declarations:
+            scene_nodes = [
+                node
+                for node in nodes
+                if node.get("$type") == "questSceneNodeDefinition"
+                and any(
+                    item.get("$value") == scene for item in walk(node.get("sceneFile", {}))
                 )
-                if data.get("type") == "Output":
-                    sockets.add(value(data.get("name")))
-        if set(exits) - sockets:
-            raise QuestSpecError(
-                f"Stage {stage.id} scene {scene} lacks required output sockets: {sorted(set(exits) - sockets)}"
-            )
-
+            ]
+            if not scene_nodes:
+                raise QuestSpecError(f"Stage {stage.id} contract scene is absent: {scene}")
+            definitions = {
+                str(node["HandleId"]): node["Data"]
+                for node in nodes
+                if "HandleId" in node and "Data" in node
+            }
+            sockets = set()
+            for node in scene_nodes:
+                for socket in node.get("sockets", []):
+                    data = socket.get("Data") or definitions.get(
+                        str(socket.get("HandleRefId")), {}
+                    )
+                    if data.get("type") == direction:
+                        sockets.add(value(data.get("name")))
+            if set(exits) - sockets:
+                raise QuestSpecError(
+                    f"Stage {stage.id} scene {scene} lacks required {direction.lower()} sockets: {sorted(set(exits) - sockets)}"
+                )
 
 def _validate_unconditional_writes(
     stage: Any, phase: dict[str, Any], facts: tuple[str, ...]
@@ -702,49 +709,27 @@ def _phase_topology(phase: dict[str, Any]) -> tuple[dict, dict, dict[str, set[st
 
 
 def audit_scene_contracts(spec: QuestSpec, root: Any) -> list[Diagnostic]:
-    """Check child phase socket promises against real authored scene exit tables."""
+    """Check named scene entries/exits against real scene graph nodes."""
     import json
     from pathlib import Path
     from project_layout import source_path
+    from quest_interfaces import scene_interface
 
     diagnostics = []
     for stage in spec.stages:
-        for scene, exits in StageContract.from_data(stage.data).scene_exits:
-            raw = source_path(scene, "raw", root=Path(root))
+        contract = StageContract.from_data(stage.data)
+        entries, exits = dict(contract.scene_entries), dict(contract.scene_exits)
+        for scene in dict.fromkeys([*entries, *exits]):
             level = "warning" if stage.status == "planned" else "error"
             try:
-                scene_root = json.loads(raw.read_text(encoding="utf-8"))["Data"][
-                    "RootChunk"
-                ]
-                points = {
-                    point.get("name", {}).get("$value"): point.get("nodeId", {}).get(
-                        "id"
-                    )
-                    for point in scene_root["exitPoints"]
-                }
-                ends = {
-                    node.get("nodeId", {}).get("id")
-                    for node in walk(scene_root.get("sceneGraph", {}))
-                    if node.get("$type") == "scnEndNode"
-                }
+                document = json.loads(source_path(scene, "raw", root=Path(root)).read_text(encoding="utf-8"))
+                problems = scene_interface(document, entries=entries.get(scene, ()), exits=exits.get(scene, ()))
             except (OSError, ValueError, KeyError, TypeError) as exc:
-                diagnostics.append(
-                    Diagnostic(
-                        level,
-                        "missing_scene_contract_evidence",
-                        f"Cannot inspect scene contract {scene}: {exc}",
-                        stage.id,
-                    )
-                )
+                diagnostics.append(Diagnostic(level, "missing_scene_contract_evidence",
+                    f"Cannot inspect scene contract {scene}: {exc}", stage.id))
                 continue
-            for name in exits:
-                if name not in points or points[name] not in ends:
-                    diagnostics.append(
-                        Diagnostic(
-                            level,
-                            "missing_scene_exit",
-                            f"Scene {scene} has no emitted exit {name}",
-                            stage.id,
-                        )
-                    )
+            for problem in problems:
+                diagnostics.append(Diagnostic(level,
+                    "missing_scene_entry" if problem.startswith("entryPoints") else "missing_scene_exit",
+                    f"Scene {scene}: {problem}", stage.id))
     return diagnostics

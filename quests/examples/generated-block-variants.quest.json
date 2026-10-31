@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "id": "generated_variants",
+  "title": "Generated block configuration variants",
+  "description": "Planned serialization and configuration fixtures; no world/scene install acceptance.",
+  "stages": [
+    {
+      "id": "optional_condition",
+      "type": "optional_condition",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\optional_condition.questphase",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "condition": {
+        "kind": "fact",
+        "value": "test_condition"
+      },
+      "success_fact": "test_optional_success",
+      "failure_fact": "test_optional_failure",
+      "evaluation": "on_entry",
+      "inputs": {
+        "start": "Begin"
+      },
+      "outcomes": {
+        "success": "Resolved"
+      }
+    },
+    {
+      "id": "stealth_monitor",
+      "type": "stealth_monitor",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\stealth_monitor.questphase",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "failure_fact": "test_stealth_failed",
+      "success_fact": "test_stealth_succeeded",
+      "stop_fact": "test_stealth_stop",
+      "additional_failure_facts": [
+        "alarm_a",
+        "alarm_b"
+      ]
+    },
+    {
+      "id": "plant_item",
+      "type": "plant_item",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\plant_item.questphase",
+      "item": "Items.test_tracker",
+      "device": "#test_target",
+      "controller_class": "DeviceControllerPS",
+      "action": "PlantTracker",
+      "completion_function": "WasTrackerPlanted",
+      "completion_fact": "test_tracker_planted",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "consume_item": false
+    },
+    {
+      "id": "release_or_rescue_npc",
+      "type": "release_or_rescue_npc",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\release_or_rescue_npc.questphase",
+      "community": "#test_prisoners",
+      "entry": "rescued",
+      "device": "#test_lock",
+      "controller_class": "DoorControllerPS",
+      "action": "QuestForceUnlock",
+      "completion_function": "IsUnlocked",
+      "completion_fact": "test_rescue_complete",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "additional_entries": [
+        "second",
+        "third"
+      ]
+    },
+    {
+      "id": "drive_to",
+      "type": "drive_to",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\drive_to.questphase",
+      "vehicle_community": "#test_vehicle_community",
+      "vehicle_entry": "test_vehicle",
+      "destination": "#test_drive_destination",
+      "completion_fact": "test_drive_complete",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "mappin": "quests/minor_quest/gq_blocks/gq_blocks_01/obj/test_drive_mappin",
+      "waypoints": [
+        "#waypoint_a",
+        "#waypoint_b"
+      ]
+    },
+    {
+      "id": "deliver_vehicle",
+      "type": "deliver_vehicle",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\deliver_vehicle.questphase",
+      "vehicle": "#test_vehicle",
+      "destination": "#test_destination",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "require_stop": true,
+      "require_player_exit": true,
+      "completion_fact": "vehicle_delivered",
+      "mappin": "quests/test/delivery/pin"
+    },
+    {
+      "id": "vehicle_cleanup",
+      "type": "vehicle_cleanup",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\vehicle_cleanup.questphase",
+      "player_vehicle_record": "Vehicle.test_vehicle",
+      "completion_fact": "test_vehicle_cleanup",
+      "cleanup_communities": [
+        "#owned_car_a",
+        "#owned_car_b"
+      ]
+    },
+    {
+      "id": "carry_npc",
+      "type": "carry_npc",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\carry_npc.questphase",
+      "community": "#test_community",
+      "entry": "carried",
+      "destination": "#test_destination",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "waypoints": [
+        "#carry_a",
+        "#carry_b"
+      ],
+      "completion_fact": "target_delivered",
+      "mappin": "quests/test/carry/pin"
+    },
+    {
+      "id": "ride_with_contact",
+      "type": "ride_with_contact",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\ride_with_contact.questphase",
+      "vehicle_community": "#test_vehicle_community",
+      "vehicle_entry": "test_vehicle",
+      "contact_community": "#test_contacts",
+      "contact_entry": "driver",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "wait_for_contacts": true,
+      "additional_passengers": [
+        {
+          "community": "#contacts",
+          "entry": "second",
+          "slot": "seat_back_left"
+        },
+        {
+          "community": "#contacts",
+          "entry": "third",
+          "slot": "seat_back_right"
+        }
+      ]
+    },
+    {
+      "id": "meet_contact",
+      "type": "meet_contact",
+      "phase_resource": "mod\\generated_variants\\phases\\meet_contact.questphase",
+      "contact": "contact",
+      "community": "#generated_blocks_contact",
+      "scene": "mod\\generated_blocks\\scenes\\meeting.scene",
+      "objective": "quests/generated_blocks/meeting",
+      "description_entry": "quests/generated_blocks/meeting/description",
+      "mappin": "quests/generated_blocks/meeting/pin",
+      "setup_trigger": "#generated_blocks_setup",
+      "scene_origin": "#generated_blocks_origin",
+      "accepted_fact": "generated_blocks_accepted",
+      "status": "planned",
+      "defer_policy": "rearm",
+      "rearm_trigger": "#generated_blocks_rearm"
+    },
+    {
+      "id": "braindance_analysis",
+      "type": "braindance_analysis",
+      "status": "planned",
+      "phase_resource": "mod\\generated_variants\\phases\\braindance_analysis.questphase",
+      "scene": "mod\\test\\braindance.scene",
+      "scene_origin": "#test_braindance_origin",
+      "player_anchor": "#test_braindance_player_hold",
+      "player_return": "#test_braindance_player_return",
+      "objective": "quests/minor_quest/gq_blocks/gq_blocks_01/obj",
+      "clue_facts": [
+        "bd_clue_a",
+        "bd_clue_b",
+        "bd_clue_c",
+        "bd_clue_d",
+        "bd_clue_e"
+      ],
+      "completion_fact": "test_braindance_complete",
+      "scene_entry": "enter",
+      "scene_exit_sockets": [
+        "complete",
+        "abort"
+      ],
+      "teardown_seconds": 0.75,
+      "settle_seconds": 0.125,
+      "exit_enable_seconds": 1.25
+    }
+  ]
+}

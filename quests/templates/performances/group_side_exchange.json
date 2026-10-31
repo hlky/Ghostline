@@ -1,0 +1,730 @@
+{
+  "schema_version": 1,
+  "key": "group_side_exchange",
+  "requirements": "Two NPCs: wall lean with right-hand cigarette and two-hands-on-table lean. Furniture, cigarette and source body rigs must already be compatible. Static world-gaze event excluded.",
+  "source": {
+    "path": "reference/vanilla_extract_json/mq003/mq003_01_homeless.scene.json",
+    "sha256": "ab414bf9b74874eaf0a65b5dd139278df6c11f3ef5c0a34f82c1b8a8d104ed23",
+    "section": 6,
+    "event_pointers": [
+      "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/0",
+      "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/2",
+      "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/4",
+      "/Data/RootChunk/sceneGraph/Data/graph/0/Data/events/5"
+    ],
+    "section_pointer": "/Data/RootChunk/sceneGraph/Data/graph/0"
+  },
+  "roles": {
+    "smoker": 1,
+    "table_listener": 2
+  },
+  "role_kinds": {
+    "smoker": "npc",
+    "table_listener": "npc"
+  },
+  "duration_ms": 9818,
+  "events": [
+    {
+      "HandleId": "4",
+      "Data": {
+        "$type": "scnPlaySkAnimEvent",
+        "actorComponent": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "body"
+        },
+        "animData": {
+          "$type": "scneventsPlayAnimEventExData",
+          "basic": {
+            "$type": "scneventsPlayAnimEventData",
+            "blendIn": 0.5,
+            "blendInCurve": "SinusoidalEaseInOut",
+            "blendOut": 0.5,
+            "blendOutCurve": "SinusoidalEaseInOut",
+            "clipEnd": 0,
+            "clipFront": 0,
+            "stretch": 1
+          },
+          "bodyPartMask": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "None"
+          },
+          "weight": 1
+        },
+        "animName": {
+          "HandleId": "5",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "stand_wall_lean180__rh_cigarette__01__shrug__01"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "blendOverride": "CopyPitch_CopyYaw",
+        "cameraBlendInDuration": 1,
+        "cameraBlendOutDuration": 1,
+        "cameraParallaxSpace": "Trajectory",
+        "cameraParallaxWeight": 0,
+        "cameraUseTrajectorySpace": 1,
+        "convertToAdditive": 0,
+        "duration": 1967,
+        "enableWorldSpaceSmoothing": 1,
+        "executionTagFlags": 0,
+        "eyesBlendAdditive": 1,
+        "FPPControlActive": 0,
+        "gameplayAnimName": {
+          "HandleId": "6",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "genderSpecificParams": [],
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2179208903129182208"
+        },
+        "idleIsMountedWorkspot": 0,
+        "isSceneCarrying": 0,
+        "lowerFaceBlendAdditive": 1,
+        "muteAnimEvents": "0",
+        "neckWeight": 1,
+        "performer": {
+          "$type": "scnPerformerId",
+          "id": 257
+        },
+        "pitchLimitBottom": 0,
+        "pitchLimitTop": 0,
+        "playerData": {
+          "$type": "scnPlayerAnimData",
+          "isEndOfCarryingAnimation": 0,
+          "tierData": null,
+          "unmountBodyCarry": 1,
+          "useZSnapping": 0
+        },
+        "poseBlendOutWorkspot": null,
+        "rootMotionData": {
+          "$type": "scnPlaySkAnimRootMotionData",
+          "customBlendInCurve": "SinusoidalEaseInOut",
+          "customBlendInTime": -1,
+          "enabled": 0,
+          "meshDissolvingEnabled": 1,
+          "originMarker": {
+            "$type": "scnMarker",
+            "entityRef": {
+              "$type": "gameEntityReference",
+              "dynamicEntityUniqueName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "names": [],
+              "reference": {
+                "$type": "NodeRef",
+                "$storage": "uint64",
+                "$value": "0"
+              },
+              "sceneActorContextName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "slotName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "type": "EntityRef"
+            },
+            "isMounted": 1,
+            "localMarkerId": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "nodeRef": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "slotName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "type": "Global"
+          },
+          "originOffset": {
+            "$type": "Transform",
+            "orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0,
+              "r": 1
+            },
+            "position": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            }
+          },
+          "placementMode": "Blend",
+          "removePitchRollRotation": 1,
+          "snapToGround": 0,
+          "snapToGroundEnd": 0,
+          "snapToGroundStart": 0,
+          "trajectoryLOD": [],
+          "vehicleChangePhysicsState": 1,
+          "vehicleEnabledPhysicsOnEnd": 1
+        },
+        "scalingData": null,
+        "startTime": 0,
+        "stayInScene": 0,
+        "type": "0",
+        "upperFaceBlendAdditive": 1,
+        "vehicleProceduralCameraWeight": 0,
+        "yawLimitLeft": 0,
+        "yawLimitRight": 0
+      }
+    },
+    {
+      "HandleId": "8",
+      "Data": {
+        "$type": "scnLookAtEvent",
+        "basicData": {
+          "$type": "scnLookAtBasicEventData",
+          "basic": {
+            "$type": "scnAnimTargetBasicData",
+            "isStart": 1,
+            "performerId": {
+              "$type": "scnPerformerId",
+              "id": 513
+            },
+            "staticTarget": {
+              "$type": "Vector4",
+              "W": 1,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "targetActorId": {
+              "$type": "scnActorId",
+              "id": 4294967295
+            },
+            "targetOffsetEntitySpace": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            },
+            "targetPerformerId": {
+              "$type": "scnPerformerId",
+              "id": 257
+            },
+            "targetPropId": {
+              "$type": "scnPropId",
+              "id": 4294967295
+            },
+            "targetSlot": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "pla_default_tgt"
+            },
+            "targetType": "Actor"
+          },
+          "removePreviousAdvancedLookAts": 1,
+          "requests": [
+            {
+              "$type": "animLookAtRequestForPart",
+              "attachLeftHandToRightHand": -1,
+              "attachRightHandToLeftHand": -1,
+              "bodyPart": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "Eyes"
+              },
+              "request": {
+                "$type": "animLookAtRequest",
+                "additionalParts": {
+                  "Elements": []
+                },
+                "calculatePositionInParentSpace": 0,
+                "debugInfo": "",
+                "followingSpeedFactorOverride": -1,
+                "hasOutTransition": 0,
+                "invalid": 0,
+                "limits": {
+                  "$type": "animLookAtLimits",
+                  "backLimitDegrees": 210,
+                  "hardLimitDegrees": 270,
+                  "hardLimitDistance": 1000000,
+                  "softLimitDegrees": 360
+                },
+                "mode": 0,
+                "outTransitionSpeed": 60,
+                "priority": -1,
+                "suppress": 0,
+                "transitionSpeed": 60
+              }
+            }
+          ]
+        },
+        "duration": 1000,
+        "executionTagFlags": 0,
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2179210012036050944"
+        },
+        "scalingData": null,
+        "startTime": 806,
+        "type": "0"
+      }
+    },
+    {
+      "HandleId": "10",
+      "Data": {
+        "$type": "scnPlaySkAnimEvent",
+        "actorComponent": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "body"
+        },
+        "animData": {
+          "$type": "scneventsPlayAnimEventExData",
+          "basic": {
+            "$type": "scneventsPlayAnimEventData",
+            "blendIn": 0.5,
+            "blendInCurve": "SinusoidalEaseInOut",
+            "blendOut": 0.5,
+            "blendOutCurve": "SinusoidalEaseInOut",
+            "clipEnd": 0,
+            "clipFront": 0,
+            "stretch": 1
+          },
+          "bodyPartMask": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "None"
+          },
+          "weight": 1
+        },
+        "animName": {
+          "HandleId": "11",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "stand_table_lean0__2h_on_table__01__describe_left__01"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "blendOverride": "CopyPitch_CopyYaw",
+        "cameraBlendInDuration": 1,
+        "cameraBlendOutDuration": 1,
+        "cameraParallaxSpace": "Trajectory",
+        "cameraParallaxWeight": 0,
+        "cameraUseTrajectorySpace": 1,
+        "convertToAdditive": 0,
+        "duration": 3767,
+        "enableWorldSpaceSmoothing": 1,
+        "executionTagFlags": 0,
+        "eyesBlendAdditive": 1,
+        "FPPControlActive": 0,
+        "gameplayAnimName": {
+          "HandleId": "12",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "genderSpecificParams": [],
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2179209686222516224"
+        },
+        "idleIsMountedWorkspot": 0,
+        "isSceneCarrying": 0,
+        "lowerFaceBlendAdditive": 1,
+        "muteAnimEvents": "0",
+        "neckWeight": 1,
+        "performer": {
+          "$type": "scnPerformerId",
+          "id": 513
+        },
+        "pitchLimitBottom": 0,
+        "pitchLimitTop": 0,
+        "playerData": {
+          "$type": "scnPlayerAnimData",
+          "isEndOfCarryingAnimation": 0,
+          "tierData": null,
+          "unmountBodyCarry": 1,
+          "useZSnapping": 0
+        },
+        "poseBlendOutWorkspot": null,
+        "rootMotionData": {
+          "$type": "scnPlaySkAnimRootMotionData",
+          "customBlendInCurve": "SinusoidalEaseInOut",
+          "customBlendInTime": -1,
+          "enabled": 0,
+          "meshDissolvingEnabled": 1,
+          "originMarker": {
+            "$type": "scnMarker",
+            "entityRef": {
+              "$type": "gameEntityReference",
+              "dynamicEntityUniqueName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "names": [],
+              "reference": {
+                "$type": "NodeRef",
+                "$storage": "uint64",
+                "$value": "0"
+              },
+              "sceneActorContextName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "slotName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "type": "EntityRef"
+            },
+            "isMounted": 1,
+            "localMarkerId": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "nodeRef": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "slotName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "type": "Global"
+          },
+          "originOffset": {
+            "$type": "Transform",
+            "orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0,
+              "r": 1
+            },
+            "position": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            }
+          },
+          "placementMode": "Blend",
+          "removePitchRollRotation": 1,
+          "snapToGround": 0,
+          "snapToGroundEnd": 0,
+          "snapToGroundStart": 0,
+          "trajectoryLOD": [],
+          "vehicleChangePhysicsState": 1,
+          "vehicleEnabledPhysicsOnEnd": 1
+        },
+        "scalingData": null,
+        "startTime": 2353,
+        "stayInScene": 0,
+        "type": "0",
+        "upperFaceBlendAdditive": 1,
+        "vehicleProceduralCameraWeight": 0,
+        "yawLimitLeft": 0,
+        "yawLimitRight": 0
+      }
+    },
+    {
+      "HandleId": "13",
+      "Data": {
+        "$type": "scnPlaySkAnimEvent",
+        "actorComponent": {
+          "$type": "CName",
+          "$storage": "string",
+          "$value": "body"
+        },
+        "animData": {
+          "$type": "scneventsPlayAnimEventExData",
+          "basic": {
+            "$type": "scneventsPlayAnimEventData",
+            "blendIn": 0.5,
+            "blendInCurve": "SinusoidalEaseInOut",
+            "blendOut": 0.5,
+            "blendOutCurve": "SinusoidalEaseInOut",
+            "clipEnd": 0,
+            "clipFront": 0,
+            "stretch": 1
+          },
+          "bodyPartMask": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "None"
+          },
+          "weight": 1
+        },
+        "animName": {
+          "HandleId": "14",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "stand_wall_lean180__rh_cigarette__01__talk__neutral__03"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "blendOverride": "CopyPitch_CopyYaw",
+        "cameraBlendInDuration": 1,
+        "cameraBlendOutDuration": 1,
+        "cameraParallaxSpace": "Trajectory",
+        "cameraParallaxWeight": 0,
+        "cameraUseTrajectorySpace": 1,
+        "convertToAdditive": 0,
+        "duration": 4233,
+        "enableWorldSpaceSmoothing": 1,
+        "executionTagFlags": 0,
+        "eyesBlendAdditive": 1,
+        "FPPControlActive": 0,
+        "gameplayAnimName": {
+          "HandleId": "15",
+          "Data": {
+            "$type": "scnAnimName",
+            "type": "direct",
+            "unk1": [
+              {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              }
+            ],
+            "unk2": []
+          }
+        },
+        "genderSpecificParams": [],
+        "id": {
+          "$type": "scnSceneEventId",
+          "id": "2179211474925400064"
+        },
+        "idleIsMountedWorkspot": 0,
+        "isSceneCarrying": 0,
+        "lowerFaceBlendAdditive": 1,
+        "muteAnimEvents": "0",
+        "neckWeight": 1,
+        "performer": {
+          "$type": "scnPerformerId",
+          "id": 257
+        },
+        "pitchLimitBottom": 0,
+        "pitchLimitTop": 0,
+        "playerData": {
+          "$type": "scnPlayerAnimData",
+          "isEndOfCarryingAnimation": 0,
+          "tierData": null,
+          "unmountBodyCarry": 1,
+          "useZSnapping": 0
+        },
+        "poseBlendOutWorkspot": null,
+        "rootMotionData": {
+          "$type": "scnPlaySkAnimRootMotionData",
+          "customBlendInCurve": "SinusoidalEaseInOut",
+          "customBlendInTime": -1,
+          "enabled": 0,
+          "meshDissolvingEnabled": 1,
+          "originMarker": {
+            "$type": "scnMarker",
+            "entityRef": {
+              "$type": "gameEntityReference",
+              "dynamicEntityUniqueName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "names": [],
+              "reference": {
+                "$type": "NodeRef",
+                "$storage": "uint64",
+                "$value": "0"
+              },
+              "sceneActorContextName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "slotName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "type": "EntityRef"
+            },
+            "isMounted": 1,
+            "localMarkerId": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "nodeRef": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "slotName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "None"
+            },
+            "type": "Global"
+          },
+          "originOffset": {
+            "$type": "Transform",
+            "orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0,
+              "r": 1
+            },
+            "position": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 0,
+              "Y": 0,
+              "Z": 0
+            }
+          },
+          "placementMode": "Blend",
+          "removePitchRollRotation": 1,
+          "snapToGround": 0,
+          "snapToGroundEnd": 0,
+          "snapToGroundStart": 0,
+          "trajectoryLOD": [],
+          "vehicleChangePhysicsState": 1,
+          "vehicleEnabledPhysicsOnEnd": 1
+        },
+        "scalingData": null,
+        "startTime": 5443,
+        "stayInScene": 0,
+        "type": "0",
+        "upperFaceBlendAdditive": 1,
+        "vehicleProceduralCameraWeight": 0,
+        "yawLimitLeft": 0,
+        "yawLimitRight": 0
+      }
+    }
+  ],
+  "animation_bindings": [
+    {
+      "role": "smoker",
+      "actor_field": "bodyCinematicAnimSets",
+      "source_index": 8,
+      "reference": {
+        "$type": "scnCinematicAnimSetSRRef",
+        "asyncAnimSet": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\animations\\npc\\generic_characters\\male_big\\interactive_scene\\generic_male_big__stand_wall_lean180__rh_cigarette__01.anims"
+          },
+          "Flags": "Soft"
+        },
+        "isOverride": 1,
+        "priority": 128
+      },
+      "names": {
+        "$type": "scnAnimSetAnimNames",
+        "animationNames": [
+          {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "stand_wall_lean180__rh_cigarette__01__talk__neutral__03"
+          },
+          {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "stand_wall_lean180__rh_cigarette__01__shrug__01"
+          }
+        ]
+      }
+    },
+    {
+      "role": "table_listener",
+      "actor_field": "bodyCinematicAnimSets",
+      "source_index": 14,
+      "reference": {
+        "$type": "scnCinematicAnimSetSRRef",
+        "asyncAnimSet": {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "base\\animations\\npc\\generic_characters\\male_average\\interactive_scene\\generic_male_average__stand_table_lean0__2h_on_table__01.anims"
+          },
+          "Flags": "Soft"
+        },
+        "isOverride": 1,
+        "priority": 200
+      },
+      "names": {
+        "$type": "scnAnimSetAnimNames",
+        "animationNames": [
+          {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "stand_table_lean0__2h_on_table__01__describe_left__01"
+          }
+        ]
+      }
+    }
+  ],
+  "ports": {},
+  "source_context": []
+}

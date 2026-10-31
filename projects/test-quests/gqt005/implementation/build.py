@@ -21,7 +21,6 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 
-import generate_advanced_quest_block_templates as advanced_templates
 import generate_scene as scene_builder
 import generate_world as world_builder
 import quest_authoring
@@ -998,7 +997,6 @@ def _collect_artifacts(
     list[world_builder.GeneratedFile],
 ]:
     """Keep authored RID/scene linking and marker generation in one build pass."""
-    template_document = advanced_templates.build_braindance_analysis()
     scene_document, report = generate_scene(scene_template, rid_json, handoff)
     if not report["ok"]:
         raise ValueError("Generated scene failed structural audit")
@@ -1028,7 +1026,7 @@ def _collect_artifacts(
             quest_compiler.QuestArtifact(raw, archive, load(raw))
             for raw, archive, _ in BD_HELPER_RESOURCES
         ),
-        *quest_artifacts(template_document=template_document),
+        *quest_artifacts(),
     ]
     return quest_build.relocate_artifacts(artifacts, output_root), report, world_outputs
 

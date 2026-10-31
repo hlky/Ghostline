@@ -1,0 +1,3369 @@
+{
+  "quests": 416,
+  "resources": 13943,
+  "implementation_families": 803,
+  "families_without_exported_journal_anchor": 521,
+  "repeated_connected_patterns": 57776,
+  "direct_resource_identities": 21065,
+  "bindings_with_archive_provider": 13031,
+  "embedded_handoffs": 17865,
+  "named_facts": 19272,
+  "node_types": {
+    "scnActorId": 460676,
+    "scnSectionInternalsActorBehavior": 454141,
+    "scnNodeId": 303802,
+    "gameEntityReference": 193726,
+    "scnQuestNode": 158281,
+    "questPauseConditionNodeDefinition": 133463,
+    "scnSceneTime": 73729,
+    "scnSectionNode": 61087,
+    "questFactsDBManagerNodeDefinition": 52415,
+    "questSetVar_NodeType": 52412,
+    "questSpawnManagerNodeActionEntry": 49940,
+    "questFactsDBCondition": 49138,
+    "questVarComparison_ConditionType": 48523,
+    "gameJournalPath": 47527,
+    "questSpawnManagerNodeDefinition": 40384,
+    "questTimeCondition": 38455,
+    "questCommunityTemplate_NodeType": 36092,
+    "scnStartNode": 35369,
+    "questCharacterCondition": 35160,
+    "questUseWorkspotNodeDefinition": 34316,
+    "questConditionNodeDefinition": 31689,
+    "questJournalNodeDefinition": 30458,
+    "questRealtimeDelay_ConditionType": 30301,
+    "workWorkEntryId": 30180,
+    "questUniversalRef": 29830,
+    "questTriggerCondition": 28842,
+    "questInputNodeDefinition": 25581,
+    "questJournalQuestEntry_NodeType": 24226,
+    "questPhaseNodeDefinition": 22891,
+    "scnUseSceneWorkspotParamsV1": 22678,
+    "scnSceneWorkspotInstanceId": 22678,
+    "questOutputNodeDefinition": 21806,
+    "questComparisonParam": 20517,
+    "scnscreenplayItemId": 17403,
+    "questLogicalHubNodeDefinition": 17112,
+    "questVariantState": 17040,
+    "scnChoiceNodeOption": 16946,
+    "questDeviceManager_NodeTypeParams": 16285,
+    "questEventManagerNodeDefinition": 15820,
+    "questLogicalCondition": 15714,
+    "questWorldDataManagerNodeDefinition": 15160,
+    "questVehicleNodeDefinition": 14159,
+    "questCharacterManagerNodeDefinition": 13691,
+    "questInteractiveObjectManagerNodeDefinition": 13641,
+    "questTogglePrefabVariant_NodeTypeParams": 13425,
+    "questDeviceManager_NodeType": 13385,
+    "scnHubNode": 13020,
+    "questCharacterSpawned_ConditionType": 12066,
+    "questTogglePrefabVariant_NodeType": 11831,
+    "questUseWorkspotParamsV1": 11638,
+    "questCharacterManagerParameters_NodeType": 10899,
+    "gameinteractionsChoiceTypeWrapper": 10519,
+    "questCombatNodeDefinition": 10151,
+    "questDistanceCondition": 9482,
+    "questValueDistance": 9200,
+    "scnRandomizerNode": 8825,
+    "questCharacterKilled_ConditionType": 8451,
+    "questObjectDistance": 8002,
+    "questDeletionMarkerNodeDefinition": 7990,
+    "scnChoiceNode": 7987,
+    "scnChoiceNodeNsMappinParams": 7979,
+    "questSystemCondition": 7913,
+    "questObjectCondition": 7867,
+    "questJournalCondition": 7755,
+    "questDistanceComparison_ConditionType": 7444,
+    "scnEndNode": 7359,
+    "questCutControlNodeDefinition": 6935,
+    "questJournalEntryState_ConditionType": 6415,
+    "questGameManagerNodeDefinition": 6394,
+    "questUIManagerNodeDefinition": 6205,
+    "questSpawner_NodeType": 6143,
+    "scnInteractionShapeParams": 5940,
+    "questAudioNodeDefinition": 5909,
+    "scnSceneEventId": 5900,
+    "questMiscAICommandNode": 5686,
+    "questSceneNodeDefinition": 5636,
+    "scnWorldMarker": 5633,
+    "questVoicesetManagerNodeDefinition": 5600,
+    "questMovePuppetNodeDefinition": 5480,
+    "questCharacterMount_ConditionType": 5477,
+    "questLogicalXorNodeDefinition": 5442,
+    "questSpawnSet_NodeType": 5425,
+    "questGameTimeDelay_ConditionType": 5347,
+    "questLogicalAndNodeDefinition": 5270,
+    "questCameraFocus_ConditionType": 5167,
+    "questPlayVoiceset_NodeType": 4952,
+    "questPlayVoiceset_NodeTypeParams": 4952,
+    "questCrowdManagerNodeDefinition": 4919,
+    "questCrowdManagerNodeType_EnableNullArea": 4749,
+    "QuestExecuteTransition": 4582,
+    "questJournalEntry_NodeType": 4514,
+    "questAssignCharacter_NodeType": 4438,
+    "AreaTypeTransition": 4366,
+    "questDevice_ConditionType": 4214,
+    "questUseWorkspotPlayerParams": 4190,
+    "scnChoiceNodeNsAdaptiveLookAtParams": 4181,
+    "scnChoiceNodeNsAttachToActorParams": 4149,
+    "gameTier3CameraSettings": 4118,
+    "scnCutControlNode": 4013,
+    "questRandomizerNodeDefinition": 3934,
+    "questMoveOnSplineParams": 3857,
+    "questMoveOnSplineAdditionalParams": 3857,
+    "questSimpleMoveOnSplineParams": 3857,
+    "questCombatNodeParams_CombatTarget": 3748,
+    "questCheckpointNodeDefinition": 3582,
+    "questParamRubberbanding": 3513,
+    "GameTime": 3437,
+    "questEntityManagerNodeDefinition": 3419,
+    "questEntityManagerToggleComponent_NodeTypeParams": 3409,
+    "AIInjectCombatThreatCommandParams": 3249,
+    "questToggleDoor_NodeType": 3234,
+    "questConditionItem": 3168,
+    "scnChoiceNodeNsActorReminderParams": 3072,
+    "questGameplayRestrictions_NodeType": 3047,
+    "scnAndNode": 3010,
+    "questQuestPrefabEntry": 2965,
+    "questContentTokenManager_NodeType": 2890,
+    "questMappinManagerNodeDefinition": 2871,
+    "questShowWorldNode_NodeType": 2845,
+    "questSceneCondition": 2796,
+    "questSceneManagerNodeDefinition": 2763,
+    "questPuppetAIManagerNodeDefinitionEntry": 2738,
+    "AIPatrolPathParameters": 2732,
+    "questItemManagerNodeDefinition": 2701,
+    "questPlayFX_NodeTypeParams": 2661,
+    "questEntityManagerToggleComponent_NodeType": 2648,
+    "questAudioMixNodeType": 2621,
+    "AIAssignRoleCommandParams": 2618,
+    "questCharacterManagerParameters_SetStatusEffect": 2616,
+    "questRecordSelector": 2616,
+    "questFXManagerNodeDefinition": 2611,
+    "questPlayFX_NodeType": 2579,
+    "questCharacterManagerParameters_SetMortality": 2566,
+    "Variant": 2506,
+    "questPhoneManagerNodeDefinition": 2469,
+    "questAudioEventNodeType": 2434,
+    "audioAudEventStruct": 2420,
+    "scnXorNode": 2397,
+    "AIPatrolRole": 2372,
+    "Vector3": 2343,
+    "questCharacterHit_ConditionType": 2339,
+    "questBlockTokenActivation_NodeSubType": 2320,
+    "questPuppetAIManagerNodeDefinition": 2287,
+    "scnOverrideInterruptionScenario_InterruptionOperation": 2267,
+    "scnInterruptionScenarioId": 2265,
+    "questTeleportPuppetNodeDefinition": 2119,
+    "questTeleportPuppetParamsV1": 2119,
+    "questPlayerLookAtParams": 2119,
+    "questCombatNodeParams_RestrictMovementToArea": 2106,
+    "questDeviceManager_ActionProperty": 2029,
+    "questCharacterManagerCombat_NodeType": 1992,
+    "SetSecuritySystemState": 1989,
+    "questTimeManagerNodeDefinition": 1975,
+    "questCharacterManagerParameters_SetReactionPreset": 1974,
+    "questReactionPresetRecordSelector": 1974,
+    "scnToggleScenario_InterruptionScenarioOperation": 1913,
+    "questRenderFxManagerNodeDefinition": 1910,
+    "questCharacterCombat_ConditionType": 1883,
+    "workWorkspotItemOverride": 1872,
+    "questCharacterManagerParameters_SetAttitudeGroupForPuppet": 1830,
+    "questSetFadeInOut_NodeType": 1792,
+    "questInventory_ConditionType": 1786,
+    "questScene_NodeType": 1770,
+    "questVehicleNodeCommandDefinition": 1757,
+    "questVehicleCommandParams": 1757,
+    "questvehicleOnSplineParams": 1757,
+    "questParamKeepDistance": 1757,
+    "questvehicleFollowParams": 1757,
+    "questvehicleToNodeParams": 1757,
+    "vehiclePortalsList": 1757,
+    "questvehicleRacingParams": 1757,
+    "questvehicleJoinTrafficParams": 1757,
+    "questvehiclePanicParams": 1757,
+    "questvehicleChaseParams": 1757,
+    "Quaternion": 1751,
+    "questTimePeriod_ConditionType": 1732,
+    "questMappinGPSComparison_ConditionType": 1729,
+    "questMappinGPSDistance": 1729,
+    "questSetTier_NodeType": 1678,
+    "questObservableUniversalRef": 1667,
+    "questSetHUDEntryForcedVisibility_NodeType": 1582,
+    "questMoveOnSpline_NodeType": 1577,
+    "questVehicleCondition": 1532,
+    "ToggleFocusClueEvent": 1494,
+    "questSectionNode_ConditionType": 1484,
+    "questContentCondition": 1472,
+    "questCharacterStatusEffect_CondtionType": 1430,
+    "scnToggleInterruption_InterruptionOperation": 1423,
+    "scnChoiceNodeNsBasicLookAtParams": 1395,
+    "questEquipItemNodeDefinition": 1368,
+    "questEquipItemParams": 1368,
+    "questAddRemoveItem_NodeTypeParams": 1266,
+    "scnInterruptManagerNode": 1244,
+    "questCallContact_NodeType": 1205,
+    "AISetCombatPresetCommandParams": 1200,
+    "questStatsCondition": 1171,
+    "scnDeletionMarkerNode": 1159,
+    "questContentLock_ConditionType": 1155,
+    "questJournalEntry_ConditionType": 1154,
+    "HighlightEditableData": 1139,
+    "questWithCompanionMoveOnSplineParams": 1111,
+    "questFlowControlNodeDefinition": 1096,
+    "questCharacterManagerCombat_Kill": 1086,
+    "questAddRemoveItem_NodeType": 1080,
+    "scnChoiceNodeNsAttachToWorldParams": 1079,
+    "questTickDelay_ConditionType": 1075,
+    "questTransformAnimatorNodeDefinition": 1046,
+    "scnReferencePointId": 1035,
+    "questSaveLock_ConditionType": 1027,
+    "questSetTime_NodeType": 1010,
+    "questMoveToParams": 972,
+    "questInteraction_ConditionType": 957,
+    "questRewardManagerNodeDefinition": 946,
+    "questGiveReward_NodeType": 946,
+    "questForbiddenTrigger_NodeType": 914,
+    "questVehicleSpawned_ConditionType": 903,
+    "questJournalChangeMappinPhase_NodeType": 887,
+    "questNodeLoadingCondition": 887,
+    "questCharacterManagerParameters_SetGroupsAttitude": 886,
+    "questEnvironmentManagerNodeDefinition": 880,
+    "questSetImmovable_NodeType": 879,
+    "questScan_ConditionType": 868,
+    "questCharacterState_ConditionType": 860,
+    "questPlayEnv_SetWeather": 835,
+    "questPauseTime_NodeType": 796,
+    "questCharacterManagerVisuals_NodeType": 796,
+    "questTransformAnimatorNode_Action_Play": 793,
+    "questCharacterManagerVisuals_EntityAppearanceOperationBaseEntityAppearanceEntry": 768,
+    "questVisionModesManagerNodeDefinition": 762,
+    "questCharacterHealth_ConditionType": 755,
+    "questCharacterState_PlayerSubType": 748,
+    "questGatherTriggerCondition": 741,
+    "questStartNodeDefinition": 711,
+    "questInjectLoot_NodeTypeParams_OperationData": 698,
+    "questRadioAnnouncementNodeType": 698,
+    "questRadioStationAnnouncementEventStruct": 698,
+    "questChangeVoicesetState_NodeTypeParams": 683,
+    "questInjectLoot_NodeTypeParams": 665,
+    "questDynamicSpawnSystemNodeDefinition": 665,
+    "scnChoiceNodeNsAttachToGameObjectParams": 660,
+    "questInjectLoot_NodeType": 658,
+    "workWorkspotItemOverrideItemOverride": 657,
+    "questChangeVoicesetState_NodeType": 647,
+    "questCharacterManagerVisuals_ChangeEntityAppearance": 629,
+    "AIClearRoleCommandParams": 628,
+    "questCharacterManagerCombat_ModifyHealth": 622,
+    "questVarVsVarComparison_ConditionType": 611,
+    "questStopVehicle_NodeType": 593,
+    "VehicleLightQuestToggleEvent": 585,
+    "questCombatNodeParams_UseCover": 573,
+    "questSwitchNodeDefinition": 573,
+    "questInputAction_ConditionType": 569,
+    "questSpawnToken_NodeSubType": 566,
+    "questTutorial_NodeType": 561,
+    "scnChoiceNodeNsTimedParams": 540,
+    "questDynamicVehicleSpawn_NodeType": 538,
+    "questSensesCondition": 533,
+    "questToggleEventExecutionTag_NodeType": 527,
+    "questChangeContactList_NodeTypeParams": 525,
+    "questJournalQuestObjectiveCounter_NodeType": 523,
+    "SetDefaultHighlightEvent": 522,
+    "questToggleForceBrake_NodeType": 519,
+    "ToggleForcedHighlightEvent": 516,
+    "questAddRemoveContact_NodeType": 509,
+    "questGlobalTvScheduler_NodeType": 497,
+    "questSpawnerCondition": 493,
+    "questWarningMessage_NodeType": 491,
+    "questSetFocusClueState_NodeType": 488,
+    "questShowPopup_NodeSubType": 487,
+    "questDevice_ConditionFunctionParameter": 487,
+    "questSetCanVehicleBeRemoteControlled_NodeType": 487,
+    "CustomUIAnimationEvent": 483,
+    "questSceneNode_ConditionType": 470,
+    "RevealQuestTargetEvent": 467,
+    "questPrefetchStreaming_NodeTypeV2": 455,
+    "questSendMessage_NodeType": 450,
+    "AIForceShootCommandParams": 447,
+    "questLifePath_ConditionType": 427,
+    "LifePath_ScriptConditionType": 427,
+    "questLegacy_NodeType": 426,
+    "questEndNodeDefinition": 425,
+    "questPhoneMuted_ConditionType": 404,
+    "questBriefingSequencePlayer_NodeType": 395,
+    "questSetItemTags_NodeTypeParams": 390,
+    "scnChoiceNodeNsAdaptiveLookAtReferencePoint": 371,
+    "AIJoinTargetsSquadCommandParams": 369,
+    "questCombatNodeParams_PrimaryWeapon": 367,
+    "questSetItemTags_NodeType": 366,
+    "questCharacterEquippedItem_ConditionType": 360,
+    "questUICondition": 354,
+    "questCharacterManagerParameters_SetProgressionBuild": 354,
+    "questVision_ConditionType": 350,
+    "questBuild_ConditionType": 341,
+    "Build_ScriptConditionType": 341,
+    "questSpawnerNotReady_ConditionType": 334,
+    "questSpawnPlayerVehicle_NodeType": 331,
+    "questAchievementManagerNodeDefinition": 330,
+    "questSetProgress_NodeType": 330,
+    "Vector2": 330,
+    "questSwitchNameplate_NodeType": 327,
+    "questCharacterManagerParameters_SetAnimset": 325,
+    "questProgressBar_NodeType": 321,
+    "PlaybackOptionsUpdateData": 320,
+    "questContentToken_ConditionType": 317,
+    "questDifficulty_ConditionType": 304,
+    "questCharacterReaction_ConditionType": 280,
+    "questDistanceVsDistanceComparison_ConditionType": 279,
+    "questPhone_ConditionType": 276,
+    "scnChoiceNodeNsAttachToPropParams": 275,
+    "scnPropId": 275,
+    "questCharacterWorkspot_ConditionType": 274,
+    "questEntityManagerSetMeshAppearance_NodeTypeParams": 267,
+    "questEntityManagerSetMeshAppearance_NodeType": 261,
+    "questEnablePlayerVehicle_NodeType": 255,
+    "AIFollowerRole": 250,
+    "questRecordingNodeDefinition": 249,
+    "scnBraindanceLayer_ConditionType": 249,
+    "questCharacterManagerParameters_SetLifePath": 247,
+    "TogglePreventionFreeArea": 245,
+    "questCountdownTimer_NodeType": 241,
+    "questVehicleSpeed_ConditionType": 239,
+    "questToggleStealthMappinVisibility_NodeSubType": 235,
+    "VehicleQuestVisualDestructionEvent": 233,
+    "EnableDocumentEvent": 233,
+    "questCharacterBodyType_CondtionType": 227,
+    "AIMovementTypeSpec": 224,
+    "questToggleMinimapVisibility_NodeSubType": 216,
+    "questLookAtDrivenTurnsNode": 216,
+    "questPhonePickUp_ConditionType": 215,
+    "gameSetAsQuestImportantEvent": 211,
+    "scnOverrideInterruptConditions_InterruptionScenarioOperation": 211,
+    "questJoinCrowdParams": 208,
+    "scnChoiceNodeNsAttachToScreenParams": 208,
+    "questEnableScanning_NodeType": 206,
+    "questTimeDilation_NodeType": 205,
+    "ToggleQuestPreventionTrigger": 204,
+    "questPaymentCondition": 203,
+    "questCombatNodeParams_ShootAt": 196,
+    "questSetTier2Params_NodeType": 189,
+    "questTransformAnimatorNode_Action_Reset": 187,
+    "questElevator_ManageNPCAttachment_NodeType": 185,
+    "questElevator_ManageNPCAttachment_NodeTypeParams": 185,
+    "questSceneTalking_ConditionType": 183,
+    "scnOverrideTalkOnReturn_InterruptionScenarioOperation": 181,
+    "questJournalEntryVisited_ConditionType": 180,
+    "AIbehaviorWorkspotList": 179,
+    "questTeleport_NodeType": 178,
+    "questTeleportPuppetParams": 178,
+    "questStimuli_ConditionType": 176,
+    "AIHoldPositionCommandParams": 175,
+    "questVendorPanel_NodeType": 175,
+    "questShowCustomTooltip_NodeType": 174,
+    "questTimeDilation_Start": 174,
+    "questLootTokenManager_NodeTypeParams": 173,
+    "SetWantedLevel": 171,
+    "SetHeatCounterMultiplier": 171,
+    "questCrowdManagerNodeType_ControlCrowd": 170,
+    "questShiftTime_NodeType": 169,
+    "questUIElement_ConditionType": 165,
+    "questEntityManagerToggleMirrorsArea_NodeType": 160,
+    "questLootTokenManager_NodeType": 160,
+    "questPlayerLookAt_NodeType": 159,
+    "questSceneTier_ConditionType": 159,
+    "questSpawnerReady_ConditionType": 159,
+    "entVoicesetInputToBlock": 158,
+    "questReInitContainers_NodeType": 157,
+    "questReInitContainers_NodeTypeParams": 157,
+    "Color": 155,
+    "questVehicleCorrectlyPlaced_ConditionType": 155,
+    "questCharacterQuickHackUploadBegin_ConditionType": 153,
+    "questSceneInterrupt_ConditionType": 153,
+    "questJournalTrackQuest_NodeType": 150,
+    "VehicleRadioEvent": 150,
+    "SDocumentAdress": 146,
+    "questJournalBulkUpdate_NodeType": 146,
+    "questUseWeapon_NodeType": 145,
+    "scnOverrideReturnConditions_InterruptionScenarioOperation": 143,
+    "questCharacterManagerCombat_EquipWeapon": 139,
+    "questEntityManagerSetAttachment_NodeType": 138,
+    "questCharacterManagerVisuals_PrefetchEntityAppearance": 138,
+    "questShowOnscreen_NodeType": 136,
+    "questPlatform_ConditionType": 134,
+    "inkanimPlaybackOptions": 134,
+    "questRumble_NodeType": 133,
+    "TogglePreventionSystem": 131,
+    "SetMessageRecordEvent": 130,
+    "gameuiSetCasinoChipsAmountEvent": 129,
+    "questSwitchToScenario_NodeType": 125,
+    "questStopRecording_NodeType": 124,
+    "questMinimize_NodeType": 124,
+    "ForceUIRefreshEvent": 123,
+    "questNPCLookAt_NodeType": 122,
+    "questStartRecording_NodeType": 122,
+    "ManagePersonalLinkChangeEvent": 120,
+    "questFinalBoardsOpenSpeakerScreen_NodeType": 120,
+    "questAnimMoveOnSplineParams": 119,
+    "questSetPhoneRestriction_NodeType": 119,
+    "questToggleWindow_NodeType": 117,
+    "scnCheckSpeakersDistanceInterruptCondition": 116,
+    "VehicleQuestAVThrusterEvent": 113,
+    "questCharacterState_PuppetSubType": 112,
+    "questPaymentBalanced_ConditionType": 112,
+    "PaymentBalanced_ScriptConditionType": 112,
+    "SetDoorMalfunctioningType": 110,
+    "questOverrideSplineSpeed_NodeType": 108,
+    "questCharacterGender_CondtionType": 104,
+    "questTimeDilation_World": 104,
+    "questReplacer_NodeType": 102,
+    "AIBackgroundCombatStep": 102,
+    "LerpToColorControllerLightRequest": 102,
+    "SetPersistentForcedHighlightEvent": 101,
+    "StimTargetData": 100,
+    "questEntityManagerChangeAppearance_NodeType": 99,
+    "questSetMetaQuestProgress_NodeType": 99,
+    "gameFastTravelPointData": 97,
+    "questProximityProgressBar_NodeType": 97,
+    "scnCheckSpeakersDistanceInterruptConditionParams": 96,
+    "questEntityManagerSetAttachment_ToActor": 95,
+    "entAllowVehicleCollisionRagdollInSceneEvent": 95,
+    "questDynamicSpawnSystemCondition": 95,
+    "questIsAnyAlive_ConditionType": 95,
+    "StimTargetsEvent": 95,
+    "OverrideScannerPreset": 94,
+    "questDynamicVehicleDespawn_NodeType": 93,
+    "scnCheckSpeakerDistractedInterruptCondition": 93,
+    "questPaymentFixedAmount_ConditionType": 91,
+    "PaymentFixedAmount_ScriptConditionType": 91,
+    "AIBackgroundCombatCommandParams": 90,
+    "SetDoorType": 88,
+    "questCharacterAttack_ConditionType": 87,
+    "questMoveOnSplineControlRubberbanding_NodeType": 87,
+    "questSetCyberspacePostFX_NodeType": 87,
+    "questCharacterLifePath_ConditionType": 86,
+    "scnCheckSpeakersDistanceReturnCondition": 86,
+    "questTimeSkipped_ConditionType": 86,
+    "SetContainerStateEvent": 85,
+    "AIAimAtTargetCommandParams": 84,
+    "DisableScannerEvent": 84,
+    "questTimeDilation_Puppet": 84,
+    "SetGlobalTvChannel": 81,
+    "questFollowParams": 81,
+    "questCharacterEquippedWeapon_ConditionType": 79,
+    "questVehicleAvailable_ConditionType": 79,
+    "questCharacterQuickHacked_ConditionType": 78,
+    "questDiscoverBraindanceClue_NodeType": 75,
+    "AIMoveToCoverCommandParams": 74,
+    "AuthorizePlayerInSecuritySystem": 74,
+    "SBraindanceInputMask": 71,
+    "AIStopCoverCommandParams": 70,
+    "entEntityID": 70,
+    "ResolveAllSkillchecksEvent": 69,
+    "questInputHint_NodeType": 68,
+    "questRadioSongNodeType": 67,
+    "audioRadioStationSongEventStruct": 67,
+    "questCharacterManagerParameters_SetCombatSpace": 67,
+    "TagObjectEvent": 67,
+    "questRequestVehicleCameraPerspective_NodeType": 66,
+    "ToggleUIInteractivity": 66,
+    "scnVarComparison_FactConditionType": 65,
+    "questStreetCredTier_ConditionType": 64,
+    "VehicleRaceQuestEvent": 64,
+    "questShowBracket_NodeSubType": 64,
+    "UndressPlayer": 63,
+    "scnVarComparison_FactConditionTypeParams": 63,
+    "questCombatNodeParams_SecondaryWeapon": 61,
+    "questSetInteractionState_NodeType": 59,
+    "questTransformAnimatorNode_Action_Pause": 58,
+    "questDisplayMessageBox_NodeType": 57,
+    "questSetLootInteractionAccess_NodeType": 57,
+    "BlacklistPlayer": 57,
+    "RegisterFastTravelPointsRequest": 56,
+    "questCameraClippingPlane_NodeType": 54,
+    "SetCloseItself": 54,
+    "questVehicleTrunk_ConditionType": 54,
+    "scnCheckAnyoneDistractedInterruptCondition": 53,
+    "ChangeLoopCurveEvent": 53,
+    "questCharacterManagerCombat_SetWeaponState": 52,
+    "QuestAddTransition": 51,
+    "ReserveItemToThisDropPoint": 49,
+    "Transform": 48,
+    "Vector4": 48,
+    "AddItemForPlayerToPickUp": 48,
+    "scnCheckSpeakersDistanceReturnConditionParams": 47,
+    "questMoveOnSplineAndKeepDistance_NodeType": 47,
+    "VehicleQuestHornEvent": 46,
+    "gameeventsCameraShakeEvent": 46,
+    "questCharacterRoleFinished_ConditionType": 46,
+    "questPlayEnv_NodeType": 45,
+    "questPlayEnv_NodeTypeParams": 45,
+    "scnBraindancePerspective_ConditionType": 42,
+    "questSetLootIconsVisibility_NodeType": 42,
+    "scnMarker": 41,
+    "RegisterFastTravelPointsEvent": 41,
+    "questEnableVehicleSummon_NodeType": 40,
+    "VehicleQuestToggleEngineEvent": 40,
+    "AIFollowerTakedownCommandParams": 40,
+    "questSetTriggerState_NodeTypeParams": 39,
+    "questHUDVideo_NodeType": 39,
+    "scnVehicleMoveOnSpline_Overrides": 39,
+    "questAddCombatLogMessage_NodeType": 39,
+    "ChangeCasinoTableStateEvent": 39,
+    "questAudioSwitchNodeType": 38,
+    "audioAudSwitch": 38,
+    "questUnassignAll_NodeType": 38,
+    "VehicleQuestEnableUIEvent": 38,
+    "DisableBraindanceActions": 38,
+    "questTransferItem_NodeType": 37,
+    "questTransferItems_NodeTypeParams": 37,
+    "gameMotionConstrainedTierDataParams": 37,
+    "questPatrolParams": 37,
+    "questGOGReward_ConditionType": 37,
+    "questCharacterAim_ConditionType": 36,
+    "PauseBraindance": 36,
+    "questTriggerManagerNodeDefinition": 35,
+    "questSetTriggerState_NodeType": 35,
+    "questCharacterManagerParameters_HealPlayer": 35,
+    "MorphMenuUserData": 34,
+    "scnCheckFactInterruptCondition": 34,
+    "scnCheckFactInterruptConditionParams": 34,
+    "questDestruction_ConditionType": 34,
+    "questDynamicVehicleDespawnAll_NodeType": 34,
+    "DressPlayer": 33,
+    "questStartVehicle_NodeType": 33,
+    "VehicleQuestCrystalDomeEvent": 33,
+    "EnableBraindanceActions": 33,
+    "questAudioParameterNodeType": 32,
+    "audioAudParameter": 32,
+    "questChoiceSection_ConditionType": 32,
+    "questStat_ConditionType": 31,
+    "scnCheckFactReturnCondition": 31,
+    "scnCheckFactReturnConditionParams": 31,
+    "questEntityManagerSetDestructionState_NodeTypeParams": 31,
+    "questTimeDilation_Stop": 31,
+    "questMenuState_ConditionType": 30,
+    "SetCustomPersonalLinkReason": 29,
+    "questSetPhoneStatus_NodeType": 29,
+    "questSetScanningState_NodeType": 29,
+    "questCharacterSceneSpot_ConditionType": 29,
+    "questJoinTraffic_NodeType": 28,
+    "questEntityManagerForceStat_NodeType": 28,
+    "questEntityManagerSetDestructionState_NodeType": 28,
+    "questConstAICommandParams": 28,
+    "ToggleGameplayMappinVisibilityEvent": 28,
+    "questPhoneCallPhase_ConditionType": 27,
+    "questDynamicSpawnSystemEnemies_ConditionType": 27,
+    "questDynamicSpawnSystemEnemyDistance": 27,
+    "questCharacterManagerParameters_SetAsCrowdObstacle": 27,
+    "questSetAsCrowdObstacle_NodeTypeParams": 27,
+    "scnCheckSpeakerOrAddressDistractedInterruptCondition": 27,
+    "ToggleContainerLockEvent": 26,
+    "questCharacterManagerParameters_SetGender": 26,
+    "questSetGender_NodeTypeParams": 26,
+    "questVehicleWater_ConditionType": 26,
+    "questRazerAnimation_NodeType": 26,
+    "LerpToDefaultControllerLightColorRequest": 26,
+    "questVehicleDestruction_ConditionType": 25,
+    "questDropItemFromSlot_NodeTypeParams": 24,
+    "VehicleQuestSirenEvent": 23,
+    "questTransferItems_NodeTypeParams_TransferAllOperationData": 23,
+    "questToggleWeaponEnabled_NodeType": 23,
+    "questEntityManagerMountPuppet_NodeType": 23,
+    "questDropItemFromSlot_NodeType": 22,
+    "SetSkillcheckEvent": 22,
+    "questLanguage_ConditionType": 22,
+    "SuppressSecuritySystemStateChange": 22,
+    "QuickHackLockHacks": 21,
+    "MakeNotificationQueueSilentEvent": 21,
+    "SetHeatLevelLimiter": 21,
+    "questCharacterManagerVisuals_GenitalsManager": 21,
+    "tempshitMapPinManagerNodeDefinition": 21,
+    "questMountedObjectInfo": 20,
+    "questToggleVisionMode_NodeType": 20,
+    "DisableVisualOverride": 20,
+    "QuestChangeSecuritySystemAttitudeGroup": 20,
+    "questInputController_ConditionType": 20,
+    "questInstancedCrowdControlNodeDefinition": 20,
+    "SetGlitchOnUIEvent": 20,
+    "questCombatNodeParams_LookAtTarget": 19,
+    "questStopRace_NodeType": 19,
+    "questSendAICommandNodeDefinition": 19,
+    "AIMeleeAttackCommandParams": 18,
+    "scnCheckPlayerTargetEntityDistanceInterruptCondition": 18,
+    "scnCheckPlayerTargetEntityDistanceInterruptConditionParams": 18,
+    "DemolitionSkillCheck": 18,
+    "SetCustomObjectDescriptionEvent": 18,
+    "questVehicleCollision_ConditionType": 18,
+    "questCharacterGroupAttitude_CondtionType": 18,
+    "QuickHackScreenOpen": 18,
+    "questSetSaveDataLoadingScreen_NodeType": 18,
+    "questStreamingTestCheckpoint_NodeType": 18,
+    "BetData": 18,
+    "RevealPlayerSettings": 17,
+    "questForcePhysicsWakeUp_NodeType": 17,
+    "questRepair_NodeType": 17,
+    "inkMargin": 17,
+    "VehicleQuestUIEffectEvent": 17,
+    "questEntityManagerSetAttachment_ToWorld": 16,
+    "questToggleCombatForPlayer_NodeType": 16,
+    "questPlayHUDEntryAnimation_NodeType": 16,
+    "questCharacterCover_ConditionType": 16,
+    "questTimeDilation_Player": 16,
+    "AIAssignRoleCommand": 16,
+    "questSetPossesion_NodeType": 16,
+    "questFinalBoardsEnableSkipCredits_NodeType": 16,
+    "questWeather_ConditionType": 15,
+    "scnCheckPlayerTargetEntityDistanceReturnCondition": 15,
+    "scnCheckPlayerTargetEntityDistanceReturnConditionParams": 15,
+    "questTransferItems_NodeTypeParams_OperationData": 15,
+    "questEntityManagerSetAttachment_ToNode": 15,
+    "questRenderPlane_NodeType": 15,
+    "questToggleTankCustomFPPLockOff_NodeType": 15,
+    "gameDisableAimAssist": 15,
+    "questProximityProgressBar_ConditionType": 15,
+    "questMinigameNodeDefinition": 14,
+    "questFlushAutopilot_NodeType": 14,
+    "EngDemoContainer": 14,
+    "questFollowObject_NodeType": 14,
+    "questStopRazerAnimation_NodeTypeParams": 14,
+    "ResetControllerLightColorRequest": 14,
+    "questLootPurge_NodeType": 13,
+    "SetPoliceForcesPool": 13,
+    "questRemoveAllContacts_NodeType": 13,
+    "SetGameplayRoleEvent": 12,
+    "questVisionMode_ConditionType": 12,
+    "questEntityManagerDestroyCarriedObject": 12,
+    "questForcedBehaviourNodeDefinition": 12,
+    "questSetCustomStyle_NodeType": 12,
+    "questPlayRazerAnimation_NodeTypeParams": 12,
+    "questEntityManagerRemoteControlVehicle_NodeType": 12,
+    "SetControllerLightColorRequest": 12,
+    "entRagdollActivationRequestEvent": 11,
+    "questVehicleDoor_ConditionType": 11,
+    "SuppressNPCInSecuritySystem": 11,
+    "scnRewindableSectionNode": 11,
+    "AIArgumentOverrideWrapper": 11,
+    "questForceVMModule_NodeTypeParams": 11,
+    "questCharacterManagerCombat_SetDeathDirection": 10,
+    "questCharacterMountedTogether_ConditionType": 10,
+    "SetVendorPriceMultiplierRequest": 10,
+    "QuestForceDisconnectPersonalLink": 10,
+    "questGoBackToRace_NodeType": 10,
+    "questShowOverlay_NodeSubType": 10,
+    "questEnableBraindanceFinish_NodeType": 10,
+    "questAudioSetListenerOverrideNodeType": 10,
+    "questRadio_ConditionType": 10,
+    "AIbehaviorSimpleParameterizedBehavior": 10,
+    "scnCheckPlayerCombatInterruptCondition": 10,
+    "DeviceScanningDescription": 10,
+    "questUseWeapon_MissileRainGrid_NodeType": 10,
+    "questStartRace_NodeType": 9,
+    "GoToMenuEvent": 9,
+    "QuestCombatActionNotification": 9,
+    "NPCReference": 9,
+    "GameplayConditionContainer": 9,
+    "questEntityManagerManageBinkComponent_NodeTypeParams": 9,
+    "questTransferItems_NodeTypeParams_TagOperationData": 9,
+    "questSetRenderLayer_NodeType": 9,
+    "questEntityManagerSendAnimationEvent_NodeType": 9,
+    "AIArgumentPuppetRefValue": 9,
+    "questForceModule_NodeType": 9,
+    "questUseWeapon_ChimeraMetalstorm_NodeType": 9,
+    "scnCheckTriggerInterruptCondition": 8,
+    "scnCheckTriggerInterruptConditionParams": 8,
+    "QuestCombatActionAreaNotification": 8,
+    "questOpenPhotoMode_NodeType": 8,
+    "NPCScanningDescription": 8,
+    "questCharacterTriggeredCombatInSecuritySystem_ConditionType": 8,
+    "questVehicleQuickHack_ConditionType": 8,
+    "questTagged_ConditionType": 8,
+    "questRewindableSectionTimeJump_NodeType": 8,
+    "questCharacterManagerCombat_ChangeLevel": 8,
+    "questInt32ValueWrapper": 8,
+    "questInt32FixedValueProvider": 8,
+    "Float": 8,
+    "questTransformAnimatorNode_Action_Skip": 8,
+    "questManageCollision_NodeType": 8,
+    "questManageCollision_NodeTypeParams": 8,
+    "questSetScanningTime_NodeType": 8,
+    "CreditsData": 8,
+    "questCreditsForceStopped_ConditionType": 8,
+    "questCreditsRolling_ConditionType": 8,
+    "VehiclePanzerBootupUIQuestEvent": 8,
+    "ToggleClueConclusionEvent": 8,
+    "questOpenMessage_NodeType": 7,
+    "scnCheckTriggerReturnCondition": 7,
+    "scnCheckTriggerReturnConditionParams": 7,
+    "questUIContextState_ConditionType": 7,
+    "questNewPlayerPuppetAttached_ConditionType": 7,
+    "scnFlowControlNode": 7,
+    "questToggleSwitchSeatsForPlayer_NodeType": 7,
+    "questSetConveyorState_NodeType": 7,
+    "EngineeringSkillCheck": 7,
+    "Int32": 7,
+    "questBehind_ConditionType": 7,
+    "EngineTime": 7,
+    "ResetDoorState": 7,
+    "questCharacterManagerParameters_SetSensePreset": 7,
+    "questToggleBrokenTire_NodeType": 6,
+    "entragdollActivationRequestData": 6,
+    "DispenseStackOfItems": 6,
+    "questPreloadFX_NodeType": 6,
+    "questPreloadFX_NodeTypeParams": 6,
+    "questMappinState_ConditionType": 6,
+    "LibTreeParameter": 6,
+    "questRotateToParams": 6,
+    "LockTakeControlAction": 6,
+    "questCombatNodeParams_SwitchWeapon": 6,
+    "AINoRole": 6,
+    "questVehicleCrowdHit_ConditionType": 6,
+    "questJournalContact_NodeType": 6,
+    "questCombatNodeParams_ThrowGrenade": 6,
+    "questJournalQuestSetObjectiveOptional_NodeType": 6,
+    "gameuiForcePlayerCustomizationData": 6,
+    "questCharacterManagerParameters_EnableBumps": 6,
+    "questCharacterManagerCombat_AssignSquad": 5,
+    "DemolitionContainer": 5,
+    "questSetHUDEntryVisibility_NodeType": 5,
+    "questJournalNotification_ConditionType": 5,
+    "questEntityManagerManageBinkComponent_NodeType": 5,
+    "questSetDebugView_NodeType": 5,
+    "scnBraindancePlaying_ConditionType": 5,
+    "questClearForcedBehavioursNodeDefinition": 5,
+    "LockDeviceChainCreation": 5,
+    "questCharacterStatPool_ConditionType": 5,
+    "scnbPerformerInScene_NodeType": 5,
+    "SetPreventionPath": 5,
+    "questEntityCondition": 5,
+    "questEntityAppearance_ConditionType": 5,
+    "SetBountyEvent": 4,
+    "scnCheckPlayerTargetNodeDistanceInterruptCondition": 4,
+    "DropPointRequest": 4,
+    "SetPreventionDifficulty": 4,
+    "VehicleQuestWindowDestructionEvent": 4,
+    "questCharacterManagerVisuals_SetBrokenNoseStage": 4,
+    "RestoreVisualOverride": 4,
+    "questSetAutopilot_NodeType": 4,
+    "scnBraindanceRewinding_ConditionType": 4,
+    "scnBraindanceJumpInProgress_ConditionType": 4,
+    "questRemoveToken_NodeSubType": 4,
+    "AIHoldPositionCommand": 4,
+    "toolsSocketVisibilityData": 4,
+    "questPlaceholderNodeSocketInfo": 4,
+    "SetGlobalTvOnly": 4,
+    "questSetInteractionVisualizerOverride": 4,
+    "EnableFastTravelRequest": 4,
+    "AIPatrolCommand": 4,
+    "questCleanupNotifications_NodeType": 4,
+    "questSetTargetingQueryRange_NodeType": 4,
+    "SetBlockShootingFromVehicle": 4,
+    "questMinigameSateListenerNodeDefinition": 4,
+    "scnCheckPlayerTargetNodeDistanceInterruptConditionParams": 3,
+    "SceneForceWeaponAim": 3,
+    "questPhoneCallMode_ConditionType": 3,
+    "SetPoliceSearchArea": 3,
+    "questVehicleAVArrived_ConditionType": 3,
+    "QuickHackTimeDilationOverride": 3,
+    "scnBraindanceResetting_ConditionType": 3,
+    "DisableTimeCallbacks": 3,
+    "questSetTier3Params_NodeType": 3,
+    "questSetLocationName_NodeType": 3,
+    "DisableRPGRequirementsForDeviceActions": 3,
+    "scnbSceneActorData": 3,
+    "scnbVoicetagId": 3,
+    "questSetTimer_NodeType": 3,
+    "questVehicleAirtime_ConditionType": 3,
+    "questResetMovement_NodeType": 3,
+    "questFinalBoardsVideosFinished_NodeType": 3,
+    "entRagdollDisableEvent": 3,
+    "questCharacterManagerCombat_ManageRagdoll": 3,
+    "questEntityManagerAddDevelopmentPoint_NodeType": 3,
+    "questEntityManagerLevelUpProficiency_NodeType": 3,
+    "SceneFirstEquipState": 3,
+    "vehicleDetachAllPartsEvent": 2,
+    "scnCheckPlayerTargetNodeDistanceReturnCondition": 2,
+    "scnCheckPlayerTargetNodeDistanceReturnConditionParams": 2,
+    "questVehicleSummoned_ConditionType": 2,
+    "DispenseFreeSpecificItem": 2,
+    "ClearPreventionSystemLocks": 2,
+    "questEntityManagerSetStat_NodeType": 2,
+    "HackingSkillCheck": 2,
+    "questInputScheme_ConditionType": 2,
+    "questDisableTeleportingMonitoring_NodeType": 2,
+    "DisableObjectDescriptionEvent": 2,
+    "questAddBraindanceClue_NodeType": 2,
+    "questForcedBehaviorReference": 2,
+    "LibTreeParameterList": 2,
+    "questPlaylistTrackNode": 2,
+    "audioPlaylistTrackEventStruct": 2,
+    "AIMeleeAttackCommand": 2,
+    "SceneForceWeaponSafe": 2,
+    "AIScanTargetCommandParams": 2,
+    "Point": 2,
+    "HideVisualSlot": 2,
+    "questEnforceScreenSpaceReflectionsUberQuality_NodeType": 2,
+    "AIInjectCombatTargetCommand": 2,
+    "AIArgumentBoolValue": 2,
+    "OpenFastTravelMenuForLastVisitedSubwayGate": 2,
+    "OpenLastVisitedFastTravelSubwayGate": 2,
+    "CloseLastVisitedFastTravelSubwayGate": 2,
+    "ToggleWeakspotHighlightEvent": 2,
+    "FelledEvent": 2,
+    "questSetPlayerMinimapIconRotationAdjustment_NodeType": 2,
+    "questFinalBoardsLoadPonRSave_NodeType": 2,
+    "questCharacterManagerVisuals_OverridePlayerCustomizations": 2,
+    "questCharacterManagerVisuals_OverridePlayerHairstyleAppearance": 2,
+    "TogglePreventionCrowdSpawns": 2,
+    "DispenseFreeItem": 1,
+    "questPrereq_ConditionType": 1,
+    "CombatPSMPrereq": 1,
+    "GenericContainer": 1,
+    "ConditionGroupData": 1,
+    "GameplaySkillCondition": 1,
+    "GameplayStatCondition": 1,
+    "GameplayCyberwareCondition": 1,
+    "GameplayFactCondition": 1,
+    "QuestIllegalActionAreaNotification": 1,
+    "questShowLevelUpNotification_NodeType": 1,
+    "questLevelUpData": 1,
+    "questStorageType_ConditionType": 1,
+    "ChangePresetEvent": 1,
+    "questAudioMusicSyncNodeType": 1,
+    "ForceBraindanceCameraToggle": 1,
+    "questPlaylistTrackChanged_ConditionType": 1,
+    "AIFlatheadSetSoloModeCommandParams": 1,
+    "PrepareForForcedVehicleCombat": 1,
+    "EnableTimeCallbacks": 1,
+    "EngineeringContainer": 1,
+    "scnBraindancePaused_ConditionType": 1,
+    "questBehaviourManagerNodeDefinition": 1,
+    "questJumpWorkspotAnim_NodeType": 1,
+    "questPlaceholderNodeDefinition": 1,
+    "toolsSectionClipboardDataHolder": 1,
+    "scnbgraphSectionNode": 1,
+    "toolsScreenplaySection": 1,
+    "toolsScreenplayLine": 1,
+    "scnblocLocstringId": 1,
+    "scnbScreenplayLineUsage": 1,
+    "scnbGenderMask": 1,
+    "toolsUniqueNodeData": 1,
+    "questShowPointOfNoReturnPrompt_NodeType": 1,
+    "questWaitForAnyKeyLoadingScreen_NodeType": 1,
+    "questStreamingTestMovePlayerOnSpline_NodeType": 1,
+    "VehicleRadioTierEvent": 1,
+    "EnableVisualOverride": 1,
+    "questCloseMessage_NodeType": 1,
+    "SetApartmentScreenStatusEvent": 1,
+    "ResetScannerPreset": 1,
+    "OpenDocumentEvent": 1,
+    "Bool": 1,
+    "questSetScanningAngleThreshold_NodeType": 1,
+    "questResetScanningAngleThreshold_NodeType": 1,
+    "questUpdateEntityHealthListeners_NodeType": 1,
+    "questCharacterCyberdeckProgram_ConditionType": 1,
+    "HackingContainer": 1,
+    "questAudioVehicleMultipliers_NodeType": 1,
+    "audioVehicleMultipliers": 1,
+    "questTimeDilation_Entity": 1,
+    "vehicleDetachPartEvent": 1
+  },
+  "per_quest": [
+    {
+      "journal_path": "quests/minor_activities/westbrook/japantown/ma_wbr_jpn_20",
+      "patterns": 71,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier1",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier2",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier3",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier4",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier5",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier6",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier7",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/tier8",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/meta/09_solo",
+      "patterns": 1031,
+      "bindings": 171,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/side_quest/sq031_smack_my_bitch_up",
+      "patterns": 513,
+      "bindings": 152,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/minor_quest/mq013_punks",
+      "patterns": 347,
+      "bindings": 34,
+      "external_facts": 4
+    },
+    {
+      "journal_path": "quests/side_quest/sq011_concert",
+      "patterns": 766,
+      "bindings": 111,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/wst_ep1_04",
+      "patterns": 28,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/main_quest/epilogues/q202_nomads",
+      "patterns": 1071,
+      "bindings": 150,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/villefort_alvarado",
+      "patterns": 30,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/sts_ep1_08_katya_data_shard",
+      "patterns": 16,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/brennan_apollo",
+      "patterns": 30,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q105_dollhouse",
+      "patterns": 4866,
+      "bindings": 669,
+      "external_facts": 138
+    },
+    {
+      "journal_path": "ep1/quests/sandbox_activities/courier_outro_dock",
+      "patterns": 168,
+      "bindings": 73,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq301_bomb",
+      "patterns": 1388,
+      "bindings": 255,
+      "external_facts": 30
+    },
+    {
+      "journal_path": "quests/minor_quest/mq025_psycho_brawl",
+      "patterns": 1072,
+      "bindings": 160,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/minor_quest/mq025_03_arroyo",
+      "patterns": 172,
+      "bindings": 17,
+      "external_facts": 4
+    },
+    {
+      "journal_path": "quests/minor_quest/mq025_02_kabuki",
+      "patterns": 1060,
+      "bindings": 160,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/minor_quest/mq025_06_pacifica",
+      "patterns": 503,
+      "bindings": 70,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/minor_quest/mq025_07_fight_club",
+      "patterns": 539,
+      "bindings": 82,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_quest/mq025_05_glen",
+      "patterns": 555,
+      "bindings": 79,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/meta/01_climbing_the_ladder",
+      "patterns": 2,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q114_03_attack_on_arasaka_tower",
+      "patterns": 1492,
+      "bindings": 270,
+      "external_facts": 10
+    },
+    {
+      "journal_path": "quests/minor_quest/mq038_neweridentity",
+      "patterns": 173,
+      "bindings": 18,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q304_stadium",
+      "patterns": 3284,
+      "bindings": 481,
+      "external_facts": 88
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q305_prison_convoy",
+      "patterns": 5884,
+      "bindings": 607,
+      "external_facts": 137
+    },
+    {
+      "journal_path": "quests/meta/06_samurai_reunited",
+      "patterns": 1,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq031_cinema",
+      "patterns": 1913,
+      "bindings": 330,
+      "external_facts": 35
+    },
+    {
+      "journal_path": "quests/side_quest/sq028_kerry_romance",
+      "patterns": 629,
+      "bindings": 110,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/side_quest/sq026_01_suicide",
+      "patterns": 421,
+      "bindings": 95,
+      "external_facts": 25
+    },
+    {
+      "journal_path": "quests/minor_quest/mq030_melisa",
+      "patterns": 429,
+      "bindings": 69,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "quests/minor_quest/mq012_stud",
+      "patterns": 383,
+      "bindings": 7,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/minor_quest/mws_wat_08_trauma_drama",
+      "patterns": 89,
+      "bindings": 23,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q116_cyberspace",
+      "patterns": 835,
+      "bindings": 137,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/side_quest/sq031_rogue",
+      "patterns": 1948,
+      "bindings": 330,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/minor_quest/mq037_brendan",
+      "patterns": 426,
+      "bindings": 49,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/thorton_colby",
+      "patterns": 28,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/villefort_columbus",
+      "patterns": 33,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/sts_ep1_12_pickup",
+      "patterns": 27,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/villefort_cortes",
+      "patterns": 32,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "ep1/quests/sandbox_activities/courier_outro",
+      "patterns": 3,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_wat_nid_15",
+      "patterns": 799,
+      "bindings": 74,
+      "external_facts": 82
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_wat_kab_02",
+      "patterns": 229,
+      "bindings": 10,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_std_rcr_11",
+      "patterns": 202,
+      "bindings": 9,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_bls_ina_se1_08",
+      "patterns": 171,
+      "bindings": 4,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_hey_spr_06",
+      "patterns": 169,
+      "bindings": 3,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_pac_cvi_15",
+      "patterns": 177,
+      "bindings": 3,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_wat_kab_08",
+      "patterns": 229,
+      "bindings": 13,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_activities/city_center/downtown/ma_cct_dtn_03",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_cct_dtn_03",
+      "patterns": 242,
+      "bindings": 11,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_cct_dtn_07",
+      "patterns": 226,
+      "bindings": 3,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_hey_spr_04",
+      "patterns": 196,
+      "bindings": 9,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_activities/badlands/se1/ma_bls_ina_se1_22",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_bls_ina_se1_22",
+      "patterns": 182,
+      "bindings": 3,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_wat_nid_22",
+      "patterns": 207,
+      "bindings": 3,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_pac_cvi_08",
+      "patterns": 258,
+      "bindings": 5,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_bls_ina_se1_07",
+      "patterns": 221,
+      "bindings": 3,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_wat_lch_06",
+      "patterns": 184,
+      "bindings": 8,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_std_arr_06",
+      "patterns": 203,
+      "bindings": 3,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_03",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/ma_wat_nid_03",
+      "patterns": 210,
+      "bindings": 10,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/side_quest/sq_cyberpsychos_regina",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq303_addict",
+      "patterns": 1511,
+      "bindings": 208,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/q304_gear_pickup",
+      "patterns": 23,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q105_03_braindance_studio",
+      "patterns": 4931,
+      "bindings": 673,
+      "external_facts": 143
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q301_crash",
+      "patterns": 5362,
+      "bindings": 839,
+      "external_facts": 100
+    },
+    {
+      "journal_path": "quests/side_quest/sq025b_delamain_insurgence",
+      "patterns": 607,
+      "bindings": 68,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/minor_quest/ue_metro_start",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q105_04_judys",
+      "patterns": 1842,
+      "bindings": 252,
+      "external_facts": 66
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q112_01_old_friend",
+      "patterns": 1511,
+      "bindings": 165,
+      "external_facts": 43
+    },
+    {
+      "journal_path": "quests/side_quest/sq006_dream_on",
+      "patterns": 1283,
+      "bindings": 204,
+      "external_facts": 31
+    },
+    {
+      "journal_path": "quests/minor_quest/mq047_ad_vehicle",
+      "patterns": 38,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/chevalier_emperor",
+      "patterns": 31,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/side_quest/sq025_delamain",
+      "patterns": 1692,
+      "bindings": 171,
+      "external_facts": 82
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c06_mean",
+      "patterns": 28,
+      "bindings": 30,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c03_mean",
+      "patterns": 31,
+      "bindings": 30,
+      "external_facts": 13
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c02_sad",
+      "patterns": 39,
+      "bindings": 30,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c05_scared",
+      "patterns": 33,
+      "bindings": 30,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c04_manic",
+      "patterns": 32,
+      "bindings": 30,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c07_suicidal",
+      "patterns": 30,
+      "bindings": 30,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/side_quest/sq025c01_angry",
+      "patterns": 30,
+      "bindings": 30,
+      "external_facts": 10
+    },
+    {
+      "journal_path": "quests/minor_quest/mq028_stalker",
+      "patterns": 539,
+      "bindings": 129,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/badlands_reward",
+      "patterns": 4,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq026_02_maiko",
+      "patterns": 2249,
+      "bindings": 387,
+      "external_facts": 47
+    },
+    {
+      "journal_path": "quests/minor_quest/mq022_ezekiel",
+      "patterns": 125,
+      "bindings": 50,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q304_deal",
+      "patterns": 4492,
+      "bindings": 758,
+      "external_facts": 86
+    },
+    {
+      "journal_path": "quests/side_quest/sq029_sobchak_romance",
+      "patterns": 1700,
+      "bindings": 182,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/minor_quest/mq033_tarot",
+      "patterns": 312,
+      "bindings": 32,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q115_afterlife",
+      "patterns": 1645,
+      "bindings": 263,
+      "external_facts": 29
+    },
+    {
+      "journal_path": "quests/minor_quest/mq021_guide",
+      "patterns": 226,
+      "bindings": 45,
+      "external_facts": 7
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q114_02_maglev_line_assault",
+      "patterns": 1689,
+      "bindings": 246,
+      "external_facts": 13
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q305_reed_epilogue",
+      "patterns": 7312,
+      "bindings": 855,
+      "external_facts": 165
+    },
+    {
+      "journal_path": "quests/minor_quest/mq059_freedom",
+      "patterns": 211,
+      "bindings": 14,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q306_postcontent",
+      "patterns": 61,
+      "bindings": 5,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_quest/mq024_sandra",
+      "patterns": 144,
+      "bindings": 52,
+      "external_facts": 13
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/thorton_galena",
+      "patterns": 27,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/street_stories/city_center/city_center_reward",
+      "patterns": 8,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q303_hands",
+      "patterns": 882,
+      "bindings": 131,
+      "external_facts": 42
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q103_warhead",
+      "patterns": 1660,
+      "bindings": 308,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/street_stories/city_center/downtown/sts_cct_dtn_03",
+      "patterns": 388,
+      "bindings": 43,
+      "external_facts": 23
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/japan_town/sts_wbr_jpn_03",
+      "patterns": 144,
+      "bindings": 29,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/street_stories/city_center/downtown/sts_cct_dtn_02",
+      "patterns": 403,
+      "bindings": 28,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_03",
+      "patterns": 297,
+      "bindings": 63,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_02",
+      "patterns": 348,
+      "bindings": 45,
+      "external_facts": 22
+    },
+    {
+      "journal_path": "quests/street_stories/watson/little_china/sts_wat_lch_03",
+      "patterns": 400,
+      "bindings": 36,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_05",
+      "patterns": 448,
+      "bindings": 32,
+      "external_facts": 23
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/vista_del_rey/sts_hey_rey_01",
+      "patterns": 570,
+      "bindings": 122,
+      "external_facts": 29
+    },
+    {
+      "journal_path": "quests/street_stories/watson/little_china/sts_wat_lch_01",
+      "patterns": 192,
+      "bindings": 22,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_01",
+      "patterns": 534,
+      "bindings": 84,
+      "external_facts": 11
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/rancho_coronado/sts_std_rcr_02",
+      "patterns": 471,
+      "bindings": 65,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_07",
+      "patterns": 329,
+      "bindings": 37,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_12",
+      "patterns": 672,
+      "bindings": 34,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_04",
+      "patterns": 293,
+      "bindings": 48,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_01",
+      "patterns": 990,
+      "bindings": 112,
+      "external_facts": 23
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/rancho_coronado/sts_std_rcr_04",
+      "patterns": 173,
+      "bindings": 24,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/glen/sts_hey_gle_01",
+      "patterns": 407,
+      "bindings": 35,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/charter_hill/sts_wbr_hil_06",
+      "patterns": 260,
+      "bindings": 23,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/rancho_coronado/sts_std_rcr_05",
+      "patterns": 179,
+      "bindings": 25,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/glen/sts_hey_gle_04",
+      "patterns": 176,
+      "bindings": 25,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_04",
+      "patterns": 332,
+      "bindings": 54,
+      "external_facts": 23
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_03",
+      "patterns": 375,
+      "bindings": 76,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_03",
+      "patterns": 326,
+      "bindings": 42,
+      "external_facts": 26
+    },
+    {
+      "journal_path": "quests/street_stories/pacifica/west_wind_estates/sts_pac_wwd_05",
+      "patterns": 294,
+      "bindings": 43,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_12",
+      "patterns": 331,
+      "bindings": 34,
+      "external_facts": 24
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/vista_del_rey/sts_hey_rey_09",
+      "patterns": 272,
+      "bindings": 46,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/glen/sts_hey_gle_05",
+      "patterns": 281,
+      "bindings": 38,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/rancho_coronado/sts_std_rcr_03",
+      "patterns": 703,
+      "bindings": 68,
+      "external_facts": 37
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_05",
+      "patterns": 444,
+      "bindings": 58,
+      "external_facts": 23
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/japan_town/sts_wbr_jpn_12",
+      "patterns": 207,
+      "bindings": 32,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/city_center/downtown/sts_cct_dtn_04",
+      "patterns": 519,
+      "bindings": 49,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_11",
+      "patterns": 200,
+      "bindings": 23,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_06",
+      "patterns": 832,
+      "bindings": 172,
+      "external_facts": 26
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_02",
+      "patterns": 545,
+      "bindings": 64,
+      "external_facts": 30
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/wellsprings/sts_hey_spr_06",
+      "patterns": 230,
+      "bindings": 13,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/japan_town/sts_wbr_jpn_09",
+      "patterns": 100,
+      "bindings": 13,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/vista_del_rey/sts_hey_rey_06",
+      "patterns": 218,
+      "bindings": 34,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_05",
+      "patterns": 235,
+      "bindings": 49,
+      "external_facts": 22
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/glen/sts_hey_gle_06",
+      "patterns": 373,
+      "bindings": 35,
+      "external_facts": 22
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_06",
+      "patterns": 162,
+      "bindings": 34,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_02",
+      "patterns": 363,
+      "bindings": 33,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_09",
+      "patterns": 433,
+      "bindings": 53,
+      "external_facts": 22
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_07",
+      "patterns": 284,
+      "bindings": 43,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_06",
+      "patterns": 722,
+      "bindings": 39,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_06",
+      "patterns": 425,
+      "bindings": 63,
+      "external_facts": 24
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_01",
+      "patterns": 308,
+      "bindings": 64,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/vista_del_rey/sts_hey_rey_08",
+      "patterns": 348,
+      "bindings": 26,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/japan_town/sts_wbr_jpn_01",
+      "patterns": 551,
+      "bindings": 54,
+      "external_facts": 23
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/wellsprings/sts_hey_spr_01",
+      "patterns": 478,
+      "bindings": 46,
+      "external_facts": 27
+    },
+    {
+      "journal_path": "quests/street_stories/watson/little_china/sts_wat_lch_05",
+      "patterns": 351,
+      "bindings": 44,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_04",
+      "patterns": 723,
+      "bindings": 85,
+      "external_facts": 30
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/glen/sts_hey_gle_03",
+      "patterns": 399,
+      "bindings": 54,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_03",
+      "patterns": 173,
+      "bindings": 21,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_04",
+      "patterns": 410,
+      "bindings": 39,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_05",
+      "patterns": 192,
+      "bindings": 38,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_07",
+      "patterns": 806,
+      "bindings": 123,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/watson/northside_industrial_district/sts_wat_nid_07",
+      "patterns": 273,
+      "bindings": 56,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/street_stories/city_center/corpo_plaza/sts_cct_cpz_01",
+      "patterns": 205,
+      "bindings": 37,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_01",
+      "patterns": 441,
+      "bindings": 72,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/arroyo/sts_std_arr_10",
+      "patterns": 193,
+      "bindings": 21,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_06",
+      "patterns": 352,
+      "bindings": 41,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_101",
+      "patterns": 274,
+      "bindings": 34,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_11",
+      "patterns": 246,
+      "bindings": 35,
+      "external_facts": 22
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_08",
+      "patterns": 786,
+      "bindings": 150,
+      "external_facts": 24
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/vista_del_rey/sts_hey_rey_02",
+      "patterns": 216,
+      "bindings": 40,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_13",
+      "patterns": 751,
+      "bindings": 173,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/city_center/downtown/sts_cct_dtn_05",
+      "patterns": 218,
+      "bindings": 24,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/watson/little_china/sts_wat_lch_06",
+      "patterns": 246,
+      "bindings": 25,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/wellsprings/sts_hey_spr_03",
+      "patterns": 348,
+      "bindings": 18,
+      "external_facts": 26
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_03",
+      "patterns": 707,
+      "bindings": 80,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/rancho_coronado/sts_std_rcr_01",
+      "patterns": 253,
+      "bindings": 20,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_12",
+      "patterns": 619,
+      "bindings": 77,
+      "external_facts": 25
+    },
+    {
+      "journal_path": "quests/street_stories/badlands/inland_avenue/sts_bls_ina_08",
+      "patterns": 189,
+      "bindings": 34,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_107",
+      "patterns": 291,
+      "bindings": 34,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/pacifica/coastview/sts_pac_cvi_02",
+      "patterns": 275,
+      "bindings": 71,
+      "external_facts": 21
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/charter_hill/sts_wbr_hil_07",
+      "patterns": 166,
+      "bindings": 14,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/charter_hill/sts_wbr_hil_01",
+      "patterns": 180,
+      "bindings": 21,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/sts_ep1_10",
+      "patterns": 954,
+      "bindings": 128,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/japan_town/sts_wbr_jpn_05",
+      "patterns": 372,
+      "bindings": 57,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/japan_town/sts_wbr_jpn_02",
+      "patterns": 275,
+      "bindings": 50,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_102",
+      "patterns": 197,
+      "bindings": 34,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/street_stories/watson/kabuki/sts_wat_kab_08",
+      "patterns": 336,
+      "bindings": 74,
+      "external_facts": 28
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q112_02_industrial_park",
+      "patterns": 4134,
+      "bindings": 612,
+      "external_facts": 100
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/wst_ep1_05",
+      "patterns": 170,
+      "bindings": 25,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/street_stories/heywood/heywood_reward",
+      "patterns": 3,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/meta/03_haru_kasai",
+      "patterns": 1,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/mq002_veterans",
+      "patterns": 350,
+      "bindings": 76,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/minor_quest/mq010_barry",
+      "patterns": 689,
+      "bindings": 76,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "quests/side_quest/sq018_jackie",
+      "patterns": 988,
+      "bindings": 181,
+      "external_facts": 37
+    },
+    {
+      "journal_path": "ep1/quests/street_stories/combat_zone_reward",
+      "patterns": 17,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/meta/04_mysterious_stranger",
+      "patterns": 2,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq011_kerry",
+      "patterns": 2377,
+      "bindings": 360,
+      "external_facts": 60
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q301_finding_myers",
+      "patterns": 4059,
+      "bindings": 577,
+      "external_facts": 68
+    },
+    {
+      "journal_path": "quests/side_quest/sq025_0_pickup",
+      "patterns": 763,
+      "bindings": 82,
+      "external_facts": 88
+    },
+    {
+      "journal_path": "quests/minor_quest/mq037_brendan_dumpster",
+      "patterns": 426,
+      "bindings": 49,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq017_01_riot_club",
+      "patterns": 1057,
+      "bindings": 160,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/side_quest/sq012_lost_girl",
+      "patterns": 2224,
+      "bindings": 308,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/minor_quest/mq055_romance_apartment",
+      "patterns": 2597,
+      "bindings": 269,
+      "external_facts": 86
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q110_voodoo",
+      "patterns": 3132,
+      "bindings": 442,
+      "external_facts": 90
+    },
+    {
+      "journal_path": "quests/minor_quest/mq001_scorpion",
+      "patterns": 543,
+      "bindings": 121,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/minor_quest/mq050_ken_block_tribute",
+      "patterns": 46,
+      "bindings": 3,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q304_netrunners",
+      "patterns": 1286,
+      "bindings": 170,
+      "external_facts": 41
+    },
+    {
+      "journal_path": "quests/minor_quest/mq014_zen",
+      "patterns": 391,
+      "bindings": 66,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "ep1/quests/sandbox_activities/courier_test",
+      "patterns": 861,
+      "bindings": 35,
+      "external_facts": 164
+    },
+    {
+      "journal_path": "quests/minor_quest/mq018_writer",
+      "patterns": 495,
+      "bindings": 50,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q115_rogues_last_flight",
+      "patterns": 890,
+      "bindings": 140,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_quest/mq016_bartmoss",
+      "patterns": 173,
+      "bindings": 29,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/meta/05_arasaka_princess",
+      "patterns": 2,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/yaiba_kusanagi",
+      "patterns": 26,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/street_stories/watson/watson_reward",
+      "patterns": 3,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q113_rescuing_hanako",
+      "patterns": 857,
+      "bindings": 116,
+      "external_facts": 14
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q305_border_crossing",
+      "patterns": 1628,
+      "bindings": 240,
+      "external_facts": 41
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q104_02_av_chase",
+      "patterns": 2100,
+      "bindings": 331,
+      "external_facts": 39
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q104_01_sabotage",
+      "patterns": 696,
+      "bindings": 155,
+      "external_facts": 7
+    },
+    {
+      "journal_path": "quests/minor_quest/mq027_stunts",
+      "patterns": 52,
+      "bindings": 7,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/street_stories/e3_vm_hack_v2/asdasd",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_activities/pacifica/west_wind_estate/ma_pac_wwd_02",
+      "patterns": 70,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/rancho_coronado/ma_std_rcr_08",
+      "patterns": 73,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/rancho_coronado/ma_std_rcr_18",
+      "patterns": 82,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q101_01_firestorm",
+      "patterns": 782,
+      "bindings": 142,
+      "external_facts": 24
+    },
+    {
+      "journal_path": "quests/minor_quest/mq006_rollercoaster",
+      "patterns": 340,
+      "bindings": 64,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q302_reed",
+      "patterns": 5377,
+      "bindings": 637,
+      "external_facts": 80
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q110_01_voodooboys",
+      "patterns": 1792,
+      "bindings": 312,
+      "external_facts": 83
+    },
+    {
+      "journal_path": "quests/minor_quest/mq007_smartgun",
+      "patterns": 327,
+      "bindings": 27,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/thorton_mackinaw",
+      "patterns": 33,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/makigai_maimai",
+      "patterns": 31,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/minor_quest/mq014_04_fourth",
+      "patterns": 337,
+      "bindings": 62,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/sts_ep1_08_loot_pickup",
+      "patterns": 38,
+      "bindings": 21,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_quest/mq057_motorbreath",
+      "patterns": 171,
+      "bindings": 28,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/q304_car_retrieval",
+      "patterns": 562,
+      "bindings": 45,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/minor_quest/mq046_cave_vehicle",
+      "patterns": 51,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/arch",
+      "patterns": 36,
+      "bindings": 1,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q108_johnny",
+      "patterns": 1721,
+      "bindings": 453,
+      "external_facts": 22
+    },
+    {
+      "journal_path": "quests/main_quest/epilogues/q204_reborn",
+      "patterns": 936,
+      "bindings": 148,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/wst_ep1_11_bill_meeting",
+      "patterns": 79,
+      "bindings": 0,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "quests/minor_quest/mq060_nitro",
+      "patterns": 194,
+      "bindings": 45,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq306_dumpster",
+      "patterns": 1429,
+      "bindings": 209,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "quests/game_version_tracking/holofixer_used_1/holofixer_used_1",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/holofixer_used_2/holofixer_used_2",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/holofixer_used_3/holofixer_used_3",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/holofixer_used_4/holofixer_used_4",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/holofixer_used_5/holofixer_used_5",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_1_5/patch_1_5",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_1_5_2/patch_1_5_2",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_1_6/patch_1_6",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_1_6_1/patch_1_6_1",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_1_6_3/patch_1_6_3",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_2_0_1/patch_2_0_1",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_2_0_2/patch_2_0_2",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_2_1/patch_2_1",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_2_1_1/patch_2_1_1",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_2_1_2/patch_2_1_2",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/game_version_tracking/patch_2_2/patch_2_2",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/meta/08_headhunter",
+      "patterns": 1,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/arroyo/ma_std_arr_03",
+      "patterns": 125,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/rancho_coronado/ma_std_rcr_16",
+      "patterns": 36,
+      "bindings": 1,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_quest/mq009_loser",
+      "patterns": 103,
+      "bindings": 12,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq022_head_hunter",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/templates/generic_gameplay_quest",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/templates/test_template_quest",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/meta/02_sickness",
+      "patterns": 2153,
+      "bindings": 387,
+      "external_facts": 61
+    },
+    {
+      "journal_path": "quests/side_quest/sq017_02_lounge",
+      "patterns": 530,
+      "bindings": 99,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "quests/minor_quest/mq402_stargazing",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/wst_ep1_09",
+      "patterns": 54,
+      "bindings": 29,
+      "external_facts": 1
+    },
+    {
+      "journal_path": "quests/minor_quest/mq005_alley",
+      "patterns": 171,
+      "bindings": 37,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/meta/11_johnny_business",
+      "patterns": 1,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/herrera_outlaw",
+      "patterns": 31,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/minor_quest/mq049_edgerunners",
+      "patterns": 64,
+      "bindings": 13,
+      "external_facts": 1
+    },
+    {
+      "journal_path": "quests/minor_quest/mq045_victor_debt",
+      "patterns": 5,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/main_quest/epilogues/q203_legend",
+      "patterns": 1019,
+      "bindings": 217,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q300_phantom_liberty",
+      "patterns": 6,
+      "bindings": 0,
+      "external_facts": 4
+    },
+    {
+      "journal_path": "quests/side_quest/sq026_04_hiromi",
+      "patterns": 2241,
+      "bindings": 387,
+      "external_facts": 48
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q112_03_dashi_parade",
+      "patterns": 4134,
+      "bindings": 612,
+      "external_facts": 100
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q101_resurrection",
+      "patterns": 1186,
+      "bindings": 364,
+      "external_facts": 43
+    },
+    {
+      "journal_path": "quests/minor_quest/mq014_03_third",
+      "patterns": 337,
+      "bindings": 62,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q000_tutorial",
+      "patterns": 1018,
+      "bindings": 48,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/street_stories/wesbrook/westbrook_reward",
+      "patterns": 3,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/mq043_cyberpsychos",
+      "patterns": 13,
+      "bindings": 10,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "ep1/quests/sandbox_activities/courier_intro_journal",
+      "patterns": 67,
+      "bindings": 54,
+      "external_facts": 28
+    },
+    {
+      "journal_path": "quests/side_quest/sq030_judy_romance",
+      "patterns": 1550,
+      "bindings": 192,
+      "external_facts": 64
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/quadra_type66_nomad_ncu",
+      "patterns": 33,
+      "bindings": 1,
+      "external_facts": 35
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/quadra_type66_nomad",
+      "patterns": 47,
+      "bindings": 1,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/quadra_type66_avenger",
+      "patterns": 33,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/archer_bandit",
+      "patterns": 49,
+      "bindings": 1,
+      "external_facts": 35
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/archer_quartz",
+      "patterns": 28,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/side_quest/sq027_02_raffen_shiv_attack",
+      "patterns": 1528,
+      "bindings": 237,
+      "external_facts": 43
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/rayfield_aerondight",
+      "patterns": 36,
+      "bindings": 1,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/rayfield_caliburn",
+      "patterns": 33,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/minor_quest/mq040_biosculpt",
+      "patterns": 466,
+      "bindings": 98,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/side_quest/sq017_kerry",
+      "patterns": 902,
+      "bindings": 134,
+      "external_facts": 26
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/rancho_coronado/ma_std_rcr_12",
+      "patterns": 38,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/westbrook/japantown/ma_wbr_jpn_09",
+      "patterns": 43,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/badlands/se1/ma_bls_ina_se1_03",
+      "patterns": 60,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/badlands/se1/ma_bls_ina_se1_02",
+      "patterns": 48,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/westbrook/north_oak/ma_wbr_nok_01",
+      "patterns": 56,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/little_china/ma_wat_lch_15",
+      "patterns": 40,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/badlands/se5/ma_bls_ina_se5_33",
+      "patterns": 41,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/arroyo/ma_std_arr_07",
+      "patterns": 49,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_27",
+      "patterns": 47,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_10",
+      "patterns": 79,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/badlands/se1/ma_bls_ina_se1_06",
+      "patterns": 43,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/pacifica/coastview/ma_pac_cvi_13",
+      "patterns": 82,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/badlands/se1/ma_bls_ina_se1_18",
+      "patterns": 47,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/rancho_coronado/ma_std_rcr_13",
+      "patterns": 42,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/westbrook/japantown/ma_wbr_jpn_07",
+      "patterns": 76,
+      "bindings": 0,
+      "external_facts": 4
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_12",
+      "patterns": 64,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_26",
+      "patterns": 42,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/arroyo/ma_std_arr_10",
+      "patterns": 47,
+      "bindings": 1,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/little_china/ma_wat_lch_05",
+      "patterns": 34,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/kabuki/ma_wat_kab_05",
+      "patterns": 38,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/pacifica/coastview/ma_pac_cvi_10",
+      "patterns": 68,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/heywood/glen/ma_hey_gle_07",
+      "patterns": 47,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/arroyo/ma_std_arr_14",
+      "patterns": 74,
+      "bindings": 0,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "quests/minor_activities/westbrook/north_oak/ma_wbr_nok_03",
+      "patterns": 64,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/city_center/downtown/ma_cct_dtn_12",
+      "patterns": 47,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/santo_domingo/rancho_coronado/ma_std_rcr_10",
+      "patterns": 46,
+      "bindings": 0,
+      "external_facts": 2
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/little_china/ma_wat_lch_03",
+      "patterns": 61,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_activities/westbrook/charter_hill/ma_wbr_hil_05",
+      "patterns": 43,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/street_stories/santo_domingo/santo_domingo_reward",
+      "patterns": 3,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq004_riders_on_the_storm",
+      "patterns": 1823,
+      "bindings": 227,
+      "external_facts": 37
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq304_succession",
+      "patterns": 2234,
+      "bindings": 380,
+      "external_facts": 79
+    },
+    {
+      "journal_path": "ep1/quests/sandbox_activities/sa_ep1_15",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/mq032_sacrum",
+      "patterns": 309,
+      "bindings": 44,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q112_04_hideout",
+      "patterns": 868,
+      "bindings": 130,
+      "external_facts": 38
+    },
+    {
+      "journal_path": "quests/side_quest/sq011_johnny",
+      "patterns": 2389,
+      "bindings": 364,
+      "external_facts": 69
+    },
+    {
+      "journal_path": "quests/minor_quest/mq035_ozob",
+      "patterns": 405,
+      "bindings": 20,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/minor_quest/mq044_jakes_vehicle",
+      "patterns": 61,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/minor_quest/mws_se5_07",
+      "patterns": 81,
+      "bindings": 11,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/mizutani_shion_nomad",
+      "patterns": 47,
+      "bindings": 1,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/mizutani_shion",
+      "patterns": 32,
+      "bindings": 1,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/minor_quest/mq011_wilson",
+      "patterns": 347,
+      "bindings": 51,
+      "external_facts": 11
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq305_combat_zone_report",
+      "patterns": 1505,
+      "bindings": 175,
+      "external_facts": 27
+    },
+    {
+      "journal_path": "quests/side_quest/sq023_hit_order",
+      "patterns": 2290,
+      "bindings": 332,
+      "external_facts": 36
+    },
+    {
+      "journal_path": "quests/minor_quest/mq017_streetkid",
+      "patterns": 706,
+      "bindings": 104,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q305_bunker",
+      "patterns": 4829,
+      "bindings": 407,
+      "external_facts": 43
+    },
+    {
+      "journal_path": "quests/minor_quest/mq003_orbitals",
+      "patterns": 344,
+      "bindings": 53,
+      "external_facts": 4
+    },
+    {
+      "journal_path": "quests/minor_quest/mq015_wizardbook",
+      "patterns": 364,
+      "bindings": 27,
+      "external_facts": 15
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q301_q302_rescue_myers",
+      "patterns": 1785,
+      "bindings": 184,
+      "external_facts": 37
+    },
+    {
+      "journal_path": "quests/minor_quest/mq037_brendan_hooligan001",
+      "patterns": 426,
+      "bindings": 49,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_quest/mq008_party",
+      "patterns": 549,
+      "bindings": 218,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_quest/mq014_02_second",
+      "patterns": 337,
+      "bindings": 62,
+      "external_facts": 5
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/mahir_supron",
+      "patterns": 33,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/meta/10_survive",
+      "patterns": 1,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/minor_activities/heywood/glen/ma_hey_gle_02",
+      "patterns": 50,
+      "bindings": 4,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_02",
+      "patterns": 43,
+      "bindings": 3,
+      "external_facts": 10
+    },
+    {
+      "journal_path": "quests/minor_activities/heywood/wellsprings/ma_hey_spr_11",
+      "patterns": 50,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_06",
+      "patterns": 59,
+      "bindings": 3,
+      "external_facts": 10
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/little_china/ma_wat_lch_01",
+      "patterns": 71,
+      "bindings": 3,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/minor_activities/westbrook/north_oak/ma_wbr_nok_05",
+      "patterns": 46,
+      "bindings": 3,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/little_china/ma_wat_lch_08",
+      "patterns": 85,
+      "bindings": 3,
+      "external_facts": 11
+    },
+    {
+      "journal_path": "quests/minor_activities/watson/northside_industrial_district/ma_wat_nid_01",
+      "patterns": 83,
+      "bindings": 3,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/minor_activities/pacifica/coastview/ma_pac_cvi_12",
+      "patterns": 54,
+      "bindings": 4,
+      "external_facts": 8
+    },
+    {
+      "journal_path": "quests/minor_quest/mq036_overload",
+      "patterns": 316,
+      "bindings": 37,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/side_quest/sq026_03_pizza",
+      "patterns": 762,
+      "bindings": 149,
+      "external_facts": 30
+    },
+    {
+      "journal_path": "quests/side_quest/sq032_tapeworm",
+      "patterns": 647,
+      "bindings": 151,
+      "external_facts": 26
+    },
+    {
+      "journal_path": "quests/minor_quest/mq023_bootleg",
+      "patterns": 454,
+      "bindings": 80,
+      "external_facts": 4
+    },
+    {
+      "journal_path": "quests/meta/07_nc_underground",
+      "patterns": 367,
+      "bindings": 97,
+      "external_facts": 19
+    },
+    {
+      "journal_path": "quests/side_quest/sq024_badlands_race",
+      "patterns": 2432,
+      "bindings": 249,
+      "external_facts": 73
+    },
+    {
+      "journal_path": "quests/side_quest/sq024_city_race",
+      "patterns": 2438,
+      "bindings": 249,
+      "external_facts": 72
+    },
+    {
+      "journal_path": "quests/side_quest/sq024_santo_domingo_race",
+      "patterns": 2455,
+      "bindings": 251,
+      "external_facts": 70
+    },
+    {
+      "journal_path": "quests/side_quest/sq024_the_big_race",
+      "patterns": 2455,
+      "bindings": 251,
+      "external_facts": 70
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q000_corpo",
+      "patterns": 1453,
+      "bindings": 303,
+      "external_facts": 28
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q303_baron",
+      "patterns": 2186,
+      "bindings": 311,
+      "external_facts": 26
+    },
+    {
+      "journal_path": "quests/minor_quest/mq056_race_replay",
+      "patterns": 1518,
+      "bindings": 88,
+      "external_facts": 42
+    },
+    {
+      "journal_path": "quests/side_quest/sq_q001_tbug",
+      "patterns": 114,
+      "bindings": 0,
+      "external_facts": 12
+    },
+    {
+      "journal_path": "quests/side_quest/sq_q001_wakako",
+      "patterns": 13,
+      "bindings": 0,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/side_quest/sq_q001_wilson",
+      "patterns": 96,
+      "bindings": 5,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q005_heist",
+      "patterns": 3033,
+      "bindings": 513,
+      "external_facts": 55
+    },
+    {
+      "journal_path": "quests/minor_quest/mq029_tourist",
+      "patterns": 136,
+      "bindings": 33,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "quests/side_quest/sq021_sick_dreams",
+      "patterns": 2775,
+      "bindings": 401,
+      "external_facts": 50
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q004_braindance",
+      "patterns": 1686,
+      "bindings": 234,
+      "external_facts": 62
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q306_devils_bargain",
+      "patterns": 4370,
+      "bindings": 620,
+      "external_facts": 59
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q000_nomad",
+      "patterns": 967,
+      "bindings": 181,
+      "external_facts": 16
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q003_maelstrom",
+      "patterns": 2876,
+      "bindings": 490,
+      "external_facts": 63
+    },
+    {
+      "journal_path": "quests/minor_quest/mq026_conspiracy",
+      "patterns": 628,
+      "bindings": 107,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q001_intro",
+      "patterns": 4427,
+      "bindings": 916,
+      "external_facts": 129
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q001_02_dex",
+      "patterns": 2121,
+      "bindings": 362,
+      "external_facts": 88
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q001_01_victor",
+      "patterns": 2108,
+      "bindings": 363,
+      "external_facts": 73
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/sts_ep1_08_steven_meeting_night_city",
+      "patterns": 71,
+      "bindings": 14,
+      "external_facts": 6
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q105_02_jigjig",
+      "patterns": 1453,
+      "bindings": 194,
+      "external_facts": 57
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q000_street_kid",
+      "patterns": 902,
+      "bindings": 247,
+      "external_facts": 31
+    },
+    {
+      "journal_path": "quests/side_quest/sq023_bd_passion",
+      "patterns": 2290,
+      "bindings": 332,
+      "external_facts": 38
+    },
+    {
+      "journal_path": "quests/minor_quest/mq042_nomad",
+      "patterns": 167,
+      "bindings": 46,
+      "external_facts": 1
+    },
+    {
+      "journal_path": "quests/side_quest/sq023_real_passion",
+      "patterns": 2290,
+      "bindings": 375,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q307_tomorrow",
+      "patterns": 1702,
+      "bindings": 269,
+      "external_facts": 147
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q305_postcontent",
+      "patterns": 102,
+      "bindings": 53,
+      "external_facts": 18
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/thorton_colby_nomad",
+      "patterns": 47,
+      "bindings": 1,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/thorton_colby_pickup",
+      "patterns": 38,
+      "bindings": 1,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/thorton_galena_nomad",
+      "patterns": 47,
+      "bindings": 1,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/chevalier_thrax",
+      "patterns": 32,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q306_reed_epilogue",
+      "patterns": 565,
+      "bindings": 83,
+      "external_facts": 20
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq033_ep1",
+      "patterns": 313,
+      "bindings": 32,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q113_corpo",
+      "patterns": 2362,
+      "bindings": 360,
+      "external_facts": 25
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q110_03_cyberspace",
+      "patterns": 2064,
+      "bindings": 299,
+      "external_facts": 76
+    },
+    {
+      "journal_path": "quests/side_quest/sq025_compensation",
+      "patterns": 1604,
+      "bindings": 161,
+      "external_facts": 84
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/quadra_turbo",
+      "patterns": 32,
+      "bindings": 1,
+      "external_facts": 32
+    },
+    {
+      "journal_path": "quests/vehicle_metaquest/quadra_type66",
+      "patterns": 38,
+      "bindings": 1,
+      "external_facts": 33
+    },
+    {
+      "journal_path": "quests/street_stories/generic_sts_quest",
+      "patterns": 0,
+      "bindings": 0,
+      "external_facts": 0
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q306_somi_epilogue",
+      "patterns": 731,
+      "bindings": 99,
+      "external_facts": 31
+    },
+    {
+      "journal_path": "quests/minor_quest/mq048_cyberware",
+      "patterns": 8321,
+      "bindings": 1435,
+      "external_facts": 264
+    },
+    {
+      "journal_path": "quests/main_quest/prologue/q003_stout",
+      "patterns": 778,
+      "bindings": 200,
+      "external_facts": 40
+    },
+    {
+      "journal_path": "quests/minor_quest/mq019_paparazzi",
+      "patterns": 626,
+      "bindings": 102,
+      "external_facts": 17
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/q304_splinter_stash",
+      "patterns": 9,
+      "bindings": 0,
+      "external_facts": 1
+    },
+    {
+      "journal_path": "quests/minor_quest/mq041_corpo",
+      "patterns": 189,
+      "bindings": 32,
+      "external_facts": 9
+    },
+    {
+      "journal_path": "ep1/quests/minor_quest/mq300_safehouse",
+      "patterns": 257,
+      "bindings": 47,
+      "external_facts": 13
+    },
+    {
+      "journal_path": "quests/main_quest/act_01/q114_01_nomad_initiation",
+      "patterns": 2597,
+      "bindings": 479,
+      "external_facts": 34
+    },
+    {
+      "journal_path": "quests/minor_quest/mq058_semimaru_crystalcoat",
+      "patterns": 129,
+      "bindings": 16,
+      "external_facts": 3
+    },
+    {
+      "journal_path": "quests/main_quest/epilogues/q201_heir",
+      "patterns": 1524,
+      "bindings": 340,
+      "external_facts": 78
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q307_before_tomorrow",
+      "patterns": 1184,
+      "bindings": 210,
+      "external_facts": 155
+    },
+    {
+      "journal_path": "quests/side_quest/sq027_01_basilisk_convoy",
+      "patterns": 3241,
+      "bindings": 457,
+      "external_facts": 50
+    },
+    {
+      "journal_path": "ep1/quests/main_quest/q303_songbird",
+      "patterns": 4878,
+      "bindings": 635,
+      "external_facts": 64
+    }
+  ]
+}

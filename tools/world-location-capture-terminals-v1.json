@@ -1,0 +1,830 @@
+{
+  "capture": {
+    "command_accept_timeout_seconds": 5.0,
+    "command_completion_timeout_seconds": 5.0,
+    "heartbeat_timeout_seconds": 5.0,
+    "height": 1080,
+    "loading_timeout_seconds": 5.0,
+    "maximum_attempts": 3,
+    "placement_mode": "freefly",
+    "position_tolerance_m": 0.75,
+    "profile": {
+      "fov": 80.0,
+      "perspective": "first_person",
+      "time": "10:00",
+      "weather": "clear",
+      "window_mode": "borderless_windowed"
+    },
+    "protocol_poll_seconds": 0.01,
+    "thumbnail_width": 480,
+    "validation": {
+      "black_fraction_threshold": 0.98,
+      "black_mean_threshold": 4.0,
+      "black_pixel_threshold": 8,
+      "black_stddev_threshold": 3.0,
+      "hud_templates": [],
+      "sharpness_laplacian_threshold": 30.0,
+      "template_threshold": 0.9
+    },
+    "visual_settle_seconds": 2.0,
+    "width": 1920,
+    "window_process_name": "Cyberpunk2077.exe",
+    "window_title_contains": "Cyberpunk 2077"
+  },
+  "captures": "captures",
+  "classification_rules": [
+    {
+      "anchor_roles": [
+        "ownership_risk"
+      ],
+      "calibrated": false,
+      "capture_enabled": false,
+      "category": "quest_ownership",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "quest_ownership_v1",
+      "node_types": [
+        "worldQuestAreaNode"
+      ],
+      "patterns": [
+        "worldQuestAreaNode"
+      ],
+      "tags": [
+        "quest",
+        "ownership",
+        "risk"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "ownership_risk",
+        "semantic_evidence"
+      ],
+      "calibrated": false,
+      "capture_enabled": false,
+      "category": "vanilla_occupancy",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "vanilla_occupancy_v1",
+      "node_types": [
+        "worldCommunityRegistryNode",
+        "worldCompiledCommunityAreaNode",
+        "worldCompiledCommunityAreaNode_Streamable",
+        "worldPopulationSpawnerNode"
+      ],
+      "patterns": [
+        "worldCommunityRegistryNode",
+        "worldCompiledCommunityAreaNode",
+        "worldPopulationSpawnerNode"
+      ],
+      "tags": [
+        "vanilla",
+        "community",
+        "population",
+        "risk"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence",
+        "spatial_metadata"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "fast_travel",
+      "clearance_m": 2.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "id": "fast_travel_v2",
+      "minimum_candidate_separation_m": 250.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "patterns": [
+        "fast_travel",
+        "gameFastTravelPointData"
+      ],
+      "tags": [
+        "navigation",
+        "fast-travel"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "ai_workspot",
+      "clearance_m": 1.0,
+      "exclude_resource_patterns": [
+        "base\\workspots\\drone\\",
+        "base\\workspots\\vehicle\\",
+        "base\\workspots\\vehicles\\"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "ai_workspot_v1",
+      "minimum_candidate_separation_m": 25.0,
+      "node_types": [
+        "worldAISpotNode"
+      ],
+      "patterns": [
+        "worldAISpotNode"
+      ],
+      "tags": [
+        "npc",
+        "workspot",
+        "staging"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "parking_space",
+      "clearance_m": 2.5,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "crowd_parking_space_v1",
+      "minimum_candidate_separation_m": 25.0,
+      "node_types": [
+        "worldCrowdParkingSpaceNode",
+        "worldCompiledCrowdParkingSpaceNode"
+      ],
+      "patterns": [
+        "worldCrowdParkingSpaceNode",
+        "worldCompiledCrowdParkingSpaceNode"
+      ],
+      "tags": [
+        "vehicle",
+        "parking",
+        "staging"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "drop_point",
+      "clearance_m": 2.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "id": "drop_point_v1",
+      "minimum_candidate_separation_m": 100.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\drop_points\\drop_point.ent"
+      ],
+      "tags": [
+        "delivery",
+        "drop-point",
+        "native-interaction"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "intercom",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "intercom_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\intercom\\"
+      ],
+      "tags": [
+        "entrance",
+        "intercom",
+        "meeting",
+        "delivery"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "elevator",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "elevator_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\doors\\elevator\\",
+        "gameplay\\devices\\elevators\\"
+      ],
+      "tags": [
+        "elevator",
+        "entrance",
+        "vertical-route"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence",
+        "ownership_risk"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "security_checkpoint",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "security_checkpoint_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\security_systems\\security_gate_and_locker\\"
+      ],
+      "tags": [
+        "security",
+        "checkpoint",
+        "restricted-access",
+        "guarded"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "road_barrier",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "road_barrier_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\traffic\\road_blockade\\"
+      ],
+      "tags": [
+        "roadblock",
+        "route",
+        "ambush",
+        "vehicle"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "terminal",
+      "clearance_m": 1.0,
+      "exclude_resource_patterns": [
+        "laptop_bag",
+        "elevators",
+        "fast_travel"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.4,
+      "id": "computer_terminal_v1",
+      "minimum_candidate_separation_m": 10.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\masters\\computers\\",
+        "gameplay\\devices\\masters\\terminals\\"
+      ],
+      "tags": [
+        "device",
+        "computer",
+        "terminal",
+        "document-host"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "access_point",
+      "clearance_m": 1.0,
+      "exclude_resource_patterns": [
+        "virtual_accesspoint.ent",
+        "network_area.ent"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.25,
+      "id": "physical_access_point_v1",
+      "minimum_candidate_separation_m": 10.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\masters\\access_points\\"
+      ],
+      "tags": [
+        "device",
+        "network",
+        "hackable"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "semantic_evidence"
+      ],
+      "calibrated": false,
+      "capture_enabled": false,
+      "category": "virtual_access_point",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "virtual_access_point_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\masters\\access_points\\virtual_accesspoint.ent",
+        "gameplay\\devices\\masters\\access_points\\network_area.ent"
+      ],
+      "tags": [
+        "device",
+        "network",
+        "hackable",
+        "virtual"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "fake_door",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "fake_door_v1",
+      "node_types": [
+        "worldEntityNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\doors\\final\\single_door_decorative.ent",
+        "gameplay\\devices\\doors\\final\\double_door_decorative.ent"
+      ],
+      "tags": [
+        "entrance",
+        "fake-door",
+        "decorative",
+        "retrofit-candidate",
+        "orientation-needs-runtime-review"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "fake_door",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "fake_garage_door_v1",
+      "node_types": [
+        "worldEntityNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\doors\\final\\gate_decorative.ent"
+      ],
+      "tags": [
+        "entrance",
+        "fake-door",
+        "fake-garage-door",
+        "garage",
+        "gate",
+        "shutter",
+        "decorative",
+        "retrofit-candidate",
+        "orientation-needs-runtime-review"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "door_gate",
+      "clearance_m": 1.5,
+      "exclude_resource_patterns": [
+        "decorative",
+        "_static.ent",
+        "elevator"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.15,
+      "id": "functional_door_gate_v1",
+      "minimum_candidate_separation_m": 15.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\doors\\final\\",
+        "gameplay\\devices\\doors\\gates\\"
+      ],
+      "tags": [
+        "entrance",
+        "threshold",
+        "door",
+        "gate"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "utility_device",
+      "clearance_m": 1.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.6,
+      "id": "utility_device_v1",
+      "minimum_candidate_separation_m": 10.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\masters\\fuse_box\\generator.ent",
+        "gameplay\\devices\\masters\\fuse_box\\fuse.ent"
+      ],
+      "tags": [
+        "device",
+        "utility",
+        "power",
+        "plant-target"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "antenna",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "gameplay_antenna_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\distractors\\plate_antenna_large.ent",
+        "gameplay\\devices\\masters\\access_points\\antenna_access_point_small.ent"
+      ],
+      "tags": [
+        "device",
+        "antenna",
+        "relay"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence",
+        "ownership_risk"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "security_device",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "security_device_v1",
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\security_system\\",
+        "gameplay\\devices\\security\\cameras\\",
+        "gameplay\\devices\\security\\turrets\\",
+        "gameplay\\devices\\security_systems\\"
+      ],
+      "tags": [
+        "security",
+        "camera",
+        "turret",
+        "guarded"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "vending_machine",
+      "clearance_m": 1.0,
+      "exclude_resource_patterns": [
+        "signage",
+        "advertising"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.45,
+      "id": "vending_machine_v1",
+      "minimum_candidate_separation_m": 10.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\devices\\vending_machines\\"
+      ],
+      "tags": [
+        "object",
+        "vending"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "loot_container",
+      "clearance_m": 0.5,
+      "exclude_resource_patterns": [
+        "\\bodies\\",
+        "decoration",
+        "decorative",
+        "garbage",
+        "trashbag"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "id": "loot_container_v2",
+      "minimum_candidate_separation_m": 10.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\loot\\containers\\",
+        "gameplay\\containers\\"
+      ],
+      "tags": [
+        "object",
+        "loot"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "semantic_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "shop",
+      "clearance_m": 2.0,
+      "exclude_resource_patterns": [
+        "sticker",
+        "poster",
+        "billboard",
+        "signage",
+        "\\bodies\\"
+      ],
+      "forward_axis": "+y",
+      "front_extent_m": 0.5,
+      "id": "shop_storefront_v2",
+      "minimum_candidate_separation_m": 25.0,
+      "node_types": [
+        "worldEntityNode",
+        "worldDeviceNode"
+      ],
+      "resource_patterns": [
+        "gameplay\\vendors\\",
+        "storefront",
+        "shop_entrance"
+      ],
+      "tags": [
+        "shop",
+        "storefront"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "capture_origin",
+        "route_evidence"
+      ],
+      "calibrated": true,
+      "capture_enabled": true,
+      "category": "road",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "road_proxy_v1",
+      "node_types": [
+        "worldRoadProxyMeshNode"
+      ],
+      "patterns": [
+        "road_meshes",
+        "roadsplinenode"
+      ],
+      "tags": [
+        "road",
+        "centerline"
+      ]
+    },
+    {
+      "anchor_roles": [
+        "spatial_metadata"
+      ],
+      "calibrated": false,
+      "capture_enabled": false,
+      "category": "area",
+      "clearance_m": 0.0,
+      "forward_axis": "+y",
+      "front_extent_m": 0.0,
+      "id": "named_area_v1",
+      "node_types": [
+        "worldLocationAreaNode",
+        "worldAreaShapeNode",
+        "worldGenericAreaShapeNode"
+      ],
+      "patterns": [
+        "district",
+        "subdistrict",
+        "named_area",
+        "location"
+      ],
+      "tags": [
+        "area",
+        "metadata"
+      ]
+    }
+  ],
+  "database": "locations.sqlite3",
+  "exports": "exports",
+  "extraction_rule_version": "1.4.0",
+  "fake_door_rules": {
+    "building_distance_m": 15.0,
+    "outward_distance_m": 1.5
+  },
+  "feature_identity_version": "1.1.0",
+  "hazard_exclusions_file": "world-location-hazard-exclusions-v1.json",
+  "hazard_rule_version": "1.0.0",
+  "location_spacing_rules": {
+    "category_priority": [
+      "drop_point",
+      "terminal",
+      "access_point",
+      "utility_device",
+      "door_gate",
+      "parking_space",
+      "ai_workspot",
+      "loot_container",
+      "shop",
+      "fast_travel",
+      "vending_machine",
+      "road"
+    ],
+    "minimum_separation_m": 10.0
+  },
+  "metadata_rules": {
+    "runtime_area_fallback_m": 500.0
+  },
+  "orientation_corrections": [],
+  "output_root": "converted/world-location-database/category-runs/terminals-v1",
+  "placement_rule_version": "1.0.0",
+  "reports": "reports",
+  "road_rules": {
+    "endpoint_inset_m": 50.0,
+    "geometry_source": "bended_deformation",
+    "interval_m": 250.0,
+    "minimum_arc_separation_m": 250.0,
+    "minimum_straight_separation_m": 250.0,
+    "short_road_threshold_m": 250.0,
+    "global_minimum_separation_m": 250.0
+  },
+  "runtime": "runtime",
+  "schema_version": 1,
+  "scope_rule_version": "1.0.0",
+  "scope_rules": [
+    {
+      "boundary_name": "Night City southern border wall",
+      "boundary_origin": {
+        "source_node": "#q000_nomad_mp_border_crossing_fance_gate",
+        "x": -2818.559814453125,
+        "y": -5650.1533203125
+      },
+      "boundary_tangent": {
+        "source_node": "#q000_nomad_tr_illegal_crossing_warning",
+        "source_rotation_k": -0.3138085603713989,
+        "source_rotation_r": 0.9494863748550415,
+        "x": 0.8030484120198842,
+        "y": -0.5959137923830445
+      },
+      "enabled": true,
+      "exclusion_reason": "south of the Night City border wall is outside capture scope",
+      "id": "q000_nomad_southern_border_wall_v1",
+      "in_scope_reference": {
+        "source_node": "#q000_nomad_tr_border_crossed",
+        "x": -2799.475830078125,
+        "y": -5589.72705078125
+      },
+      "margin_m": 0.0,
+      "out_of_scope_reference": {
+        "source_node": "#q000_nomad_checkpoint_entrance",
+        "x": -2845.607666015625,
+        "y": -5675.216796875
+      },
+      "provenance": {
+        "questphase": "base\\quest\\main_quests\\prologue\\q000\\phases\\q000_nomad_05_border_crossing.questphase",
+        "streaming_sector": "base\\worlds\\03_night_city\\_compiled\\default\\quest_091e144d47c02bc2.streamingsector"
+      },
+      "type": "exclude_negative_half_plane"
+    }
+  ],
+  "site_survey_rules": {
+    "terminal": {
+      "mode": "ground_context",
+      "view_labels": [
+        "device_context",
+        "surroundings"
+      ],
+      "minimum_anchor_separation_m": 8.0,
+      "ground_reference_categories": [
+        "ai_workspot",
+        "parking_space"
+      ],
+      "minimum_ground_reference_distance_m": 3.0,
+      "maximum_ground_reference_distance_m": 20.0,
+      "maximum_ground_reference_drop_m": 3.0,
+      "ground_reference_height_ratio": 3.0,
+      "orientation_evidence": "Camera at nearby native AI/parking position; yaw is the bearing toward actual target, with opposite surroundings view. Does not infer a universal device-front axis; no line-of-sight proof."
+    }
+  },
+  "source_root": "converted/world-location-database/full-world/serialized-sectors/base/worlds/03_night_city/_compiled/default",
+  "sparse_road_rules": {
+    "minimum_separation_m": 500.0,
+    "object_proximity_m": 250.0
+  },
+  "workspace": {
+    "active_category": "terminal",
+    "require_category_calibration": false,
+    "category_capture_approved": true,
+    "capture_history": "empty",
+    "seed_workspace": "H:\\projects\\Ghostline\\converted\\world-location-database\\category-runs\\drop-points-v1",
+    "geometry_policy": "Camera at nearby native AI/parking position; yaw is the bearing toward actual target, with opposite surroundings view. Does not infer a universal device-front axis; no line-of-sight proof.",
+    "approval_note": "User requested intercom, access-point and terminal queues. Image review still required."
+  }
+}

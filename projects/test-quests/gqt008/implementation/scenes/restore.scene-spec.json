@@ -1,0 +1,130 @@
+{
+  "name": "gqt008_restore",
+  "base_scene": "reference/vanilla_extract_json/mq003/mq003_03_orbital_pod.scene.json",
+  "choice_shell_node_id": 47,
+  "manifest": "projects/test-quests/gqt008/implementation/dialogue/interaction.manifest.json",
+  "raw_path": "projects/test-quests/gqt008/source/raw/mod/gqt008/scenes/gqt008_restore.scene.json",
+  "archive_path": "projects/test-quests/gqt008/source/archive/mod/gqt008/scenes/gqt008_restore.scene",
+  "choice_locales": [
+    "db_db",
+    "pl_pl",
+    "en_us"
+  ],
+  "section_tail_padding_ms": 300,
+  "lipsync_animset": "base\\localization\\en-us\\lipsync\\mod\\gqt008\\scenes\\gqt008_interaction\\civ_low_m_11_enus_40_fat.anims",
+  "actors": [
+    {
+      "key": "barry",
+      "name": "barry",
+      "kind": "community",
+      "id": 0,
+      "entry": "barry",
+      "community_ref": "#gqt008_com_barry",
+      "appearance": "default",
+      "lipsync": 0,
+      "voicetag": "1624173162010260376"
+    },
+    {
+      "key": "v",
+      "name": "V",
+      "kind": "player",
+      "id": 1,
+      "record": "Character.Player_Puppet_Base",
+      "appearance": "default",
+      "lipsync": 0
+    }
+  ],
+  "spoken_line_order": [],
+  "choice_line_order": [],
+  "entry_point": {
+    "name": "start",
+    "node_id": 1
+  },
+  "exit_points": [
+    {
+      "name": "end",
+      "node_id": 90
+    }
+  ],
+  "start_node": {
+    "node_id": 1,
+    "on_start": [
+      {
+        "node_id": 2,
+        "input_ordinal": 1
+      }
+    ]
+  },
+  "graph_order": [
+    1,
+    2,
+    3,
+    90
+  ],
+  "sections": [],
+  "choices": [],
+  "quest_nodes": [
+    {
+      "kind": "use_workspot",
+      "node_id": 3,
+      "entity_ref": "#gqt008_com_barry",
+      "entry": "barry",
+      "workspot_ref": 0,
+      "function": "IdleOnlyMode",
+      "enable_idle_mode": false,
+      "teleport": true,
+      "instant": false,
+      "repeat_on_interrupt": false,
+      "is_workspot_infinite": true,
+      "on_success": [
+        {
+          "node_id": 90
+        }
+      ]
+    }
+  ],
+  "xor_nodes": [],
+  "end_node": {
+    "node_id": 90
+  },
+  "entry_points": [
+    {
+      "name": "start",
+      "node_id": 1
+    }
+  ],
+  "start_nodes": [
+    {
+      "node_id": 1,
+      "on_start": [
+        {
+          "node_id": 2,
+          "input_ordinal": 1
+        }
+      ]
+    }
+  ],
+  "end_nodes": [
+    {
+      "node_id": 90
+    }
+  ],
+  "performance_blocks": [
+    {
+      "key": "return_to_seat",
+      "kind": "workspot_move",
+      "node_id": 2,
+      "actor": "barry",
+      "workspot_ref": "#gqt008_spot_barry",
+      "entry_id": 2,
+      "is_workspot_infinite": true,
+      "on_work_started": [
+        {
+          "node_id": 3,
+          "input_ordinal": 1
+        }
+      ],
+      "on_success": []
+    }
+  ]
+}

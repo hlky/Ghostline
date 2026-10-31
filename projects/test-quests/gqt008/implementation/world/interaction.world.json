@@ -1,0 +1,135 @@
+{
+  "_note": "Native actor, spots and triggers inside the authored floating lab.",
+  "name": "gqt008",
+  "prefab_root": "$/mod/gqt008/#gqt008_pr_interaction",
+  "block_path": "mod\\gqt008\\world\\gqt008_interaction.streamingblock",
+  "quest_sector_path": "mod\\gqt008\\world\\gqt008_interaction.streamingsector",
+  "always_loaded_sector_path": "mod\\gqt008\\world\\gqt008_always_loaded.streamingsector",
+  "streaming_box": "world",
+  "origin": {
+    "x": 148,
+    "y": 107.05,
+    "z": 700,
+    "yaw": 0
+  },
+  "markers": [
+    {
+      "ref": "#gqt008_sm_barry",
+      "sector": "always_loaded",
+      "position": {
+        "from": "origin"
+      },
+      "yaw": "origin",
+      "scene_marker": true,
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "ref": "#gqt008_tr_setup",
+      "position": {
+        "from": "origin",
+        "up": -2
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 5,
+        "segments": 16,
+        "height": 6
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt008_tr_engage",
+      "position": {
+        "from": "origin",
+        "up": -2
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 3.5,
+        "segments": 16,
+        "height": 6
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    },
+    {
+      "ref": "#gqt008_tr_cleanup",
+      "position": {
+        "from": "origin",
+        "up": -2
+      },
+      "outline": {
+        "type": "circle",
+        "radius": 12,
+        "segments": 16,
+        "height": 6
+      },
+      "notifiers": [
+        "quest"
+      ],
+      "node_data": {
+        "max_streaming_distance": 320,
+        "streaming_distance": 280
+      }
+    }
+  ],
+  "community": {
+    "ref": "#gqt008_com_barry",
+    "entry": "barry",
+    "phase": "default",
+    "period": "Day",
+    "character": "Character.mq010_barry",
+    "appearance": "citizen__lowlife_mb__mq010__barry",
+    "voice_tag": "civ_low_m_11_enus_40_fat",
+    "source_object_id": "auto",
+    "registry_node_id": "auto",
+    "registry_debug_name": "gqt008_barry_registry",
+    "active_on_start": 0,
+    "streaming_distance": 160,
+    "node_data": {
+      "max_streaming_distance": 280,
+      "streaming_distance": 240
+    },
+    "spot": {
+      "ref": "#gqt008_spot_barry",
+      "position": {
+        "from": "origin"
+      },
+      "yaw": "origin",
+      "workspot": "base\\workspots\\common\\chair\\generic__sit_chair__sit_around__01.workspot",
+      "node_data": {
+        "max_streaming_distance": 280,
+        "streaming_distance": 240
+      }
+    }
+  },
+  "ai_spots": [
+    {
+      "ref": "#gqt008_spot_wait",
+      "position": {
+        "x": 145,
+        "y": 104,
+        "z": 700
+      },
+      "yaw": 0,
+      "workspot": "base\\workspots\\common\\ground\\generic__stand_ground__guard__01.workspot",
+      "is_workspot_infinite": 1
+    }
+  ]
+}

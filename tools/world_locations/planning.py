@@ -621,6 +621,7 @@ def _object_places(
     connection: sqlite3.Connection,
     config: Mapping[str, Any],
     runtime_area_observations: Sequence[Mapping[str, Any]] = (),
+    *, category: str | None = None,
 ) -> list[dict[str, Any]]:
     version = str(config["placement_rule_version"])
     area_fallback = float(
@@ -630,8 +631,10 @@ def _object_places(
     excluded = ("road", "area", "fake_door", *config.get("site_survey_rules", {}))
     rows = connection.execute(
         "SELECT * FROM features WHERE capture_enabled=1 AND calibrated=1 "
-        f"AND category NOT IN ({','.join('?' for _ in excluded)})", excluded,
+        f"AND category NOT IN ({','.join('?' for _ in excluded)})"
+        + (" AND category=?" if category else ""), (*excluded, category) if category else excluded,
     )
+    candidates = []
     for row in rows:
         anchor = _row_vec(row)
         forward = Vec3(
@@ -644,6 +647,31 @@ def _object_places(
         clearance = float(metadata.get("clearance_m", 0.0))
         requested = anchor + forward * (extent + clearance)
         location_id = stable_id("place", row["feature_id"], "outward", version)
+        candidates.append({
+            "location_id": location_id, "category": row["category"],
+            "requested_x": requested.x, "requested_y": requested.y, "requested_z": requested.z,
+            "feature": row, "forward": forward,
+            **(evaluate_scope(requested, config) if category == "vending_machine" else {}),
+        })
+    if category == "vending_machine":
+        rules = config.get("vending_machine_rules", {})
+        candidates = [entry for entry in candidates if entry["scope_status"] == "in_scope"]
+        preferred = {row[0] for row in connection.execute("SELECT location_id FROM places WHERE category='vending_machine' AND queue_status='captured'")}
+        candidates, _ = _deduplicate_candidate_coordinates(
+            candidates, {category: float(rules.get("minimum_separation_m", 15))}, preferred_ids=preferred,
+        )
+        maximum = int(rules.get("maximum_locations", 2000))
+        if len(candidates) > maximum:
+            captured_candidates = [entry for entry in candidates if entry["location_id"] in preferred]
+            remaining = sorted((entry for entry in candidates if entry["location_id"] not in preferred),
+                key=lambda entry: (morton_key_2d(entry["requested_x"], entry["requested_y"]), entry["location_id"]))
+            slots = max(0, maximum - len(captured_candidates))
+            candidates = captured_candidates + [remaining[index * len(remaining) // slots] for index in range(slots)]
+    for candidate in candidates:
+        row = candidate["feature"]
+        requested = Vec3(candidate["requested_x"], candidate["requested_y"], candidate["requested_z"])
+        forward = candidate["forward"]
+        location_id = candidate["location_id"]
         resolved, provenance = _metadata_for_point(
             connection,
             requested,
@@ -657,7 +685,8 @@ def _object_places(
                 "anchor": f"feature:{row['feature_id']}",
                 "pose": f"placement_rule:{version}",
                 "front_extent": "reviewed_rule",
-                "ground_z": "serialized anchor height; CET resolves ground surface at runtime",
+                "ground_z": "serialized anchor height; FreeFly preserves planned XYZ",
+                "view": "outward",
             }
         )
         records.append(
@@ -685,6 +714,7 @@ def _fake_door_places(
     connection: sqlite3.Connection,
     config: Mapping[str, Any],
     runtime_area_observations: Sequence[Mapping[str, Any]] = (),
+    *, category: str = "fake_door",
 ) -> list[dict[str, Any]]:
     """Retain two survey views of every decorative doorway, without spacing loss."""
     version = str(config["placement_rule_version"])
@@ -694,6 +724,11 @@ def _fake_door_places(
     for row in connection.execute(
         "SELECT * FROM features WHERE category='fake_door' AND capture_enabled=1 AND calibrated=1 ORDER BY feature_id"
     ):
+        included_rules = rules.get("include_rule_ids")
+        if included_rules is not None and row["rule_id"] not in included_rules:
+            continue
+        if category == "fake_garage_door" and row["rule_id"] != "fake_garage_door_v1":
+            continue
         anchor = _row_vec(row)
         outward = Vec3(row["forward_x"], row["forward_y"], row["forward_z"]).normalized(horizontal=True)
         for direction, distance, forward in (
@@ -721,11 +756,13 @@ def _fake_door_places(
                 "source_instance_index": row["instance_index"],
                 "source_instance_id": row["instance_id"],
                 "orientation": "entity local axis from extraction rule; exterior side needs runtime review",
-                "ground_z": "serialized door height; CET resolves ground surface at each viewpoint",
+                "ground_z": "serialized door height; FreeFly preserves planned XYZ without ground snapping",
             })
+            if config.get("workspace", {}).get("category_capture_approved"):
+                provenance["capture_approval"] = "user_requested_full_category"
             record = _place_record(
                 location_id=location_id, anchor_feature_id=row["feature_id"],
-                category="fake_door", direction=direction, requested=requested,
+                category=category, direction=direction, requested=requested,
                 forward=forward, resource_path=row["resource_path"],
                 source_sector=row["source_sector"], road_id=None,
                 extraction_version=row["extraction_rule_version"], placement_version=version,
@@ -1356,6 +1393,12 @@ def plan_locations(
 ) -> dict[str, Any]:
     validate_planning_config(config)
     evaluate_scope(Vec3(0, 0, 0), config)
+    if category == "vending_machine":
+        records = _apply_scope(_object_places(connection, config, _runtime_area_observations(connection), category=category), config)
+        count = _upsert_places(connection, records, category=category)
+        return {"category": category, "places": count,
+                "minimum_separation_m": config.get("vending_machine_rules", {}).get("minimum_separation_m", 15),
+                "maximum_locations": config.get("vending_machine_rules", {}).get("maximum_locations", 2000)}
     if category == "road":
         records = _apply_scope(_road_places(connection, config, _runtime_area_observations(connection)), config)
         calibration = config.get("workspace", {}).get("require_road_calibration", False)
@@ -1393,8 +1436,31 @@ def plan_locations(
             category=None if category == "site_surveys" else category,
         )
         records = _apply_scope(records, config)
+        category_calibration = config.get("workspace", {}).get("require_category_calibration", False)
+        if category_calibration:
+            for record in records:
+                record["review_status"] = "needs_calibration"
+                provenance = json.loads(record["provenance_json"])
+                provenance["geometry_status"] = "awaiting_category_sample_review"
+                record["provenance_json"] = json_text(provenance)
+        elif config.get("workspace", {}).get("category_capture_approved"):
+            for record in records:
+                provenance = json.loads(record["provenance_json"])
+                provenance["capture_approval"] = "user_requested_full_category"
+                record["provenance_json"] = json_text(provenance)
         for family in summaries:
             _upsert_places(connection, [record for record in records if record["category"] == family], category=family)
+            if not category_calibration and config.get("workspace", {}).get("category_capture_approved"):
+                with transaction(connection):
+                    connection.executemany("UPDATE places SET review_status=? WHERE location_id=? AND review_status='needs_calibration'",
+                        ((record["review_status"], record["location_id"]) for record in records if record["category"] == family))
+            if category_calibration:
+                with transaction(connection):
+                    connection.execute("UPDATE places SET queue_status='disabled' WHERE category=? AND review_status='needs_calibration' AND queue_status!='captured'", (family,))
+                    for anchor_id in config.get("workspace", {}).get("calibration_capture_anchor_ids", []):
+                        connection.execute("""UPDATE places SET queue_status='pending' WHERE category=? AND anchor_feature_id=?
+                            AND scope_status='in_scope' AND queue_status='disabled' AND review_status='needs_calibration'
+                            AND NOT EXISTS(SELECT 1 FROM captures c WHERE c.location_id=places.location_id)""", (family, anchor_id))
         return {
             "site_survey_pairs": len(records)//2, "site_survey_places": len(records),
             "in_scope": sum(record["scope_status"] == "in_scope" for record in records),
@@ -1402,10 +1468,10 @@ def plan_locations(
             "categories": summaries, "unresolved_ground_references": unresolved,
         }
     if category is not None:
-        if category != "fake_door":
-            raise ValueError("Scoped planning currently supports only fake_door")
+        if category not in {"fake_door", "fake_garage_door"}:
+            raise ValueError("Unsupported scoped planning category")
         fake_doors = _apply_scope(
-            _fake_door_places(connection, config, _runtime_area_observations(connection)), config,
+            _fake_door_places(connection, config, _runtime_area_observations(connection), category=category), config,
         )
         count = _upsert_places(connection, fake_doors, category=category)
         return {

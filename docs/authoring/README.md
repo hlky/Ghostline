@@ -3,6 +3,8 @@
 These guides own reusable construction rules:
 
 - [Native meeting and personal-link quest template](native-quest-template.md)
+- [Quest block catalog](quest-block-catalog.md)
+- [Quest blocks, evidence, and scenarios](quest-blocks.md)
 - [Scenes](scenes.md)
 - [World resources and NodeRefs](world-resources.md)
 - [World asset discovery](world-assets.md)

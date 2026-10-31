@@ -1,0 +1,566 @@
+[
+  {
+    "depot": "base\\quest\\minor_quests\\mq010\\phases\\mq010_02_barry_talk.questphase",
+    "raw_sha256": "257aa8eb382ef9a6ba13aaa0c3e58efcb54e7868653032f691606b97e02ef789",
+    "graph": "0",
+    "nodes": [
+      {
+        "handle": "36",
+        "pointer": "/Data/RootChunk/graph/Data/nodes/4",
+        "sockets": [
+          {
+            "name": "CutDestination",
+            "type": "CutDestination"
+          },
+          {
+            "name": "Start 0",
+            "type": "Input"
+          },
+          {
+            "name": "knock_on_door_in",
+            "type": "Input"
+          },
+          {
+            "name": "knock_on_door_out",
+            "type": "Output"
+          },
+          {
+            "name": "End 0",
+            "type": "Output"
+          },
+          {
+            "name": "barry_tier",
+            "type": "Output"
+          },
+          {
+            "name": "door_locked_out",
+            "type": "Output"
+          },
+          {
+            "name": "Default INT",
+            "type": "Output"
+          },
+          {
+            "name": "Default RET",
+            "type": "Output"
+          },
+          {
+            "name": "Prefetch",
+            "type": "Input"
+          }
+        ],
+        "data": {
+          "$type": "questSceneNodeDefinition",
+          "id": 9,
+          "sceneFile": {
+            "DepotPath": "base\\quest\\minor_quests\\mq010\\scenes\\mq010_02_barry_talk.scene",
+            "Flags": "Soft"
+          },
+          "sceneLocation": {
+            "$type": "scnWorldMarker",
+            "nodeRef": "#mq010_02_sm_barry_talk"
+          },
+          "interruptionOperations": [
+            {
+              "$type": "scnToggleInterruption_InterruptionOperation"
+            },
+            {
+              "$type": "scnOverrideInterruptionScenario_InterruptionOperation",
+              "scenarioId": {
+                "$type": "scnInterruptionScenarioId",
+                "id": 0
+              },
+              "scenarioOperations": [
+                {
+                  "$type": "scnOverrideInterruptConditions_InterruptionScenarioOperation",
+                  "interruptConditions": [
+                    {
+                      "$type": "scnCheckSpeakersDistanceInterruptCondition"
+                    }
+                  ]
+                },
+                {
+                  "$type": "scnOverrideReturnConditions_InterruptionScenarioOperation",
+                  "returnConditions": [
+                    {
+                      "$type": "scnCheckSpeakersDistanceReturnCondition"
+                    }
+                  ]
+                },
+                {
+                  "$type": "scnOverrideTalkOnReturn_InterruptionScenarioOperation",
+                  "talkOnReturn": false
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "handle": "95",
+        "pointer": "/Data/RootChunk/graph/Data/nodes/9",
+        "sockets": [
+          {
+            "name": "CutDestination",
+            "type": "CutDestination"
+          },
+          {
+            "name": "Start 0",
+            "type": "Input"
+          },
+          {
+            "name": "knock_on_door_in",
+            "type": "Input"
+          },
+          {
+            "name": "knock_on_door_out",
+            "type": "Output"
+          },
+          {
+            "name": "End 0",
+            "type": "Output"
+          },
+          {
+            "name": "barry_tier",
+            "type": "Output"
+          },
+          {
+            "name": "door_locked_out",
+            "type": "Output"
+          },
+          {
+            "name": "Default INT",
+            "type": "Output"
+          },
+          {
+            "name": "Default RET",
+            "type": "Output"
+          },
+          {
+            "name": "Prefetch",
+            "type": "Input"
+          }
+        ],
+        "data": {
+          "$type": "questSceneNodeDefinition",
+          "id": 22,
+          "sceneFile": {
+            "DepotPath": "base\\quest\\minor_quests\\mq010\\scenes\\mq010_02_barry_talk.scene",
+            "Flags": "Soft"
+          },
+          "sceneLocation": {
+            "$type": "scnWorldMarker",
+            "nodeRef": "#mq010_02_sm_barry_talk"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "77",
+        "output": "CutSource",
+        "to": "9",
+        "input": "CutDestination"
+      },
+      {
+        "from": "92",
+        "output": "Out",
+        "to": "9",
+        "input": "Start 0"
+      },
+      {
+        "from": "9",
+        "output": "End 0",
+        "to": "10",
+        "input": "Succeeded"
+      },
+      {
+        "from": "9",
+        "output": "barry_tier",
+        "to": "125",
+        "input": "In"
+      },
+      {
+        "from": "9",
+        "output": "door_locked_out",
+        "to": "131",
+        "input": "In"
+      },
+      {
+        "from": "23",
+        "output": "CutSource",
+        "to": "22",
+        "input": "CutDestination"
+      },
+      {
+        "from": "146",
+        "output": "CutSource",
+        "to": "22",
+        "input": "CutDestination"
+      },
+      {
+        "from": "61",
+        "output": "Out",
+        "to": "22",
+        "input": "knock_on_door_in"
+      },
+      {
+        "from": "22",
+        "output": "knock_on_door_out",
+        "to": "25",
+        "input": "Inactive"
+      }
+    ]
+  },
+  {
+    "depot": "ep1\\quest\\main_quests\\q306\\phases\\q306_05_launchpad.questphase",
+    "raw_sha256": "445508d6db003efb780c002bd08826b6c7997a63778eab77014399f57f66788f",
+    "graph": "0",
+    "nodes": [
+      {
+        "handle": "478",
+        "pointer": "/Data/RootChunk/graph/Data/nodes/17",
+        "sockets": [
+          {
+            "name": "CutDestination",
+            "type": "CutDestination"
+          },
+          {
+            "name": "v_death_setup",
+            "type": "Input"
+          },
+          {
+            "name": "sold_preview",
+            "type": "Input"
+          },
+          {
+            "name": "standoff_start",
+            "type": "Input"
+          },
+          {
+            "name": "Start 2",
+            "type": "Input"
+          },
+          {
+            "name": "somi_chater",
+            "type": "Input"
+          },
+          {
+            "name": "countdown",
+            "type": "Input"
+          },
+          {
+            "name": "deal",
+            "type": "Input"
+          },
+          {
+            "name": "iscussion_03",
+            "type": "Input"
+          },
+          {
+            "name": "reed_dead_preview",
+            "type": "Input"
+          },
+          {
+            "name": "retreated_comment_start",
+            "type": "Input"
+          },
+          {
+            "name": "Reed_Takes_SB_Out",
+            "type": "Output"
+          },
+          {
+            "name": "Reed_Dead_Out",
+            "type": "Output"
+          },
+          {
+            "name": "End1",
+            "type": "Output"
+          },
+          {
+            "name": "draw_weapon",
+            "type": "Output"
+          },
+          {
+            "name": "v_kill_standby",
+            "type": "Output"
+          },
+          {
+            "name": "v_shot_dead",
+            "type": "Output"
+          },
+          {
+            "name": "End2",
+            "type": "Output"
+          },
+          {
+            "name": "retreated_end",
+            "type": "Output"
+          },
+          {
+            "name": "failstate_kill",
+            "type": "Output"
+          },
+          {
+            "name": "retreated_comment_end",
+            "type": "Output"
+          },
+          {
+            "name": "Default INT",
+            "type": "Output"
+          },
+          {
+            "name": "Default RET",
+            "type": "Output"
+          },
+          {
+            "name": "Prefetch",
+            "type": "Input"
+          }
+        ],
+        "data": {
+          "$type": "questSceneNodeDefinition",
+          "id": 10,
+          "sceneFile": {
+            "DepotPath": "ep1\\quest\\main_quests\\q306\\scenes\\q306_10_finale.scene",
+            "Flags": "Soft"
+          },
+          "sceneLocation": {
+            "$type": "scnWorldMarker",
+            "nodeRef": "#q306_10_sm_finale"
+          }
+        }
+      },
+      {
+        "handle": "526",
+        "pointer": "/Data/RootChunk/graph/Data/nodes/18",
+        "sockets": [
+          {
+            "name": "CutDestination",
+            "type": "CutDestination"
+          },
+          {
+            "name": "standoff_start",
+            "type": "Input"
+          },
+          {
+            "name": "Start 2",
+            "type": "Input"
+          },
+          {
+            "name": "reed_dead_preview",
+            "type": "Input"
+          },
+          {
+            "name": "End1",
+            "type": "Output"
+          },
+          {
+            "name": "Reed_Takes_SB_Out",
+            "type": "Output"
+          },
+          {
+            "name": "Reed_Dead_Out",
+            "type": "Output"
+          },
+          {
+            "name": "draw_weapon",
+            "type": "Output"
+          },
+          {
+            "name": "retreated_end",
+            "type": "Output"
+          },
+          {
+            "name": "Default INT",
+            "type": "Output"
+          },
+          {
+            "name": "Default RET",
+            "type": "Output"
+          },
+          {
+            "name": "Prefetch",
+            "type": "Input"
+          }
+        ],
+        "data": {
+          "$type": "questSceneNodeDefinition",
+          "id": 41,
+          "sceneFile": {
+            "DepotPath": "ep1\\quest\\main_quests\\q306\\scenes\\q306_10_finale.scene",
+            "Flags": "Soft"
+          },
+          "sceneLocation": {
+            "$type": "scnWorldMarker",
+            "nodeRef": "#q306_10_sm_finale"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "16",
+        "output": "Out",
+        "to": "10",
+        "input": "Start 2"
+      },
+      {
+        "from": "52",
+        "output": "CutSource",
+        "to": "10",
+        "input": "CutDestination"
+      },
+      {
+        "from": "10",
+        "output": "Reed_Takes_SB_Out",
+        "to": "48",
+        "input": "In"
+      },
+      {
+        "from": "10",
+        "output": "Reed_Takes_SB_Out",
+        "to": "53",
+        "input": "In"
+      },
+      {
+        "from": "10",
+        "output": "Reed_Takes_SB_Out",
+        "to": "57",
+        "input": "In"
+      },
+      {
+        "from": "10",
+        "output": "draw_weapon",
+        "to": "41",
+        "input": "standoff_start"
+      },
+      {
+        "from": "10",
+        "output": "draw_weapon",
+        "to": "49",
+        "input": "In"
+      },
+      {
+        "from": "10",
+        "output": "draw_weapon",
+        "to": "53",
+        "input": "In"
+      },
+      {
+        "from": "10",
+        "output": "v_kill_standby",
+        "to": "51",
+        "input": "v_death_setup"
+      },
+      {
+        "from": "10",
+        "output": "retreated_end",
+        "to": "44",
+        "input": "retreated_in"
+      },
+      {
+        "from": "10",
+        "output": "retreated_end",
+        "to": "47",
+        "input": "In"
+      },
+      {
+        "from": "10",
+        "output": "retreated_end",
+        "to": "45",
+        "input": "retreated_comment_start"
+      },
+      {
+        "from": "10",
+        "output": "failstate_kill",
+        "to": "53",
+        "input": "In"
+      },
+      {
+        "from": "47",
+        "output": "CutSource",
+        "to": "41",
+        "input": "CutDestination"
+      },
+      {
+        "from": "48",
+        "output": "CutSource",
+        "to": "41",
+        "input": "CutDestination"
+      },
+      {
+        "from": "41",
+        "output": "Reed_Dead_Out",
+        "to": "58",
+        "input": "In"
+      }
+    ]
+  },
+  {
+    "depot": "ep1\\quest\\main_quests\\q306\\scenes\\q306_10_finale.scene",
+    "raw_sha256": "0078d53a52361b450d695dbdab7fda107d546df725bc6ca397c6da4c2217f89d",
+    "graph": "scene",
+    "nodes": [
+      {
+        "handle": "2608",
+        "pointer": "/Data/RootChunk/sceneGraph/Data/graph/386",
+        "data": {
+          "$type": "scnQuestNode",
+          "ffStrategy": "automatic",
+          "isockMappings": [
+            "CutDestination",
+            "In"
+          ],
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 5551
+          },
+          "osockMappings": [
+            "True",
+            "False"
+          ],
+          "questNode": {
+            "$type": "questConditionNodeDefinition",
+            "condition": {
+              "$type": "questFactsDBCondition",
+              "type": {
+                "$type": "questVarComparison_ConditionType",
+                "comparisonType": "Greater",
+                "factName": "ep1_official_trailer",
+                "value": 0
+              }
+            },
+            "id": 5551
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source_node": "5551",
+        "source_node_label": "n5551 h2608 QuestNode Condition id=5551",
+        "source_socket": "0:0",
+        "destination_node": "5550",
+        "destination_node_label": "n5550 h2606 SectionNode 1 event(s)",
+        "destination_socket": "0:0"
+      },
+      {
+        "source_node": "5551",
+        "source_node_label": "n5551 h2608 QuestNode Condition id=5551",
+        "source_socket": "0:0",
+        "destination_node": "5850",
+        "destination_node_label": "n5850 h2966 SectionNode 1 event(s)",
+        "destination_socket": "0:0"
+      },
+      {
+        "source_node": "5863",
+        "source_node_label": "n5863 h2988 QuestNode PauseCondition id=5863",
+        "source_socket": "0:0",
+        "destination_node": "5551",
+        "destination_node_label": "n5551 h2608 QuestNode Condition id=5551",
+        "destination_socket": "0:1"
+      }
+    ]
+  }
+]

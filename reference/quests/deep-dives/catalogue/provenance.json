@@ -1,0 +1,1411 @@
+{
+  "inspection_date": "2026-10-27",
+  "scope": "All 130 SideQuest/MinorQuest entries in the saved local journal input, including Phantom Liberty; structural research, not runtime proof.",
+  "archives": [
+    {
+      "path": "K:/Cyberpunk 2077/archive/pc/content/basegame_1_engine.archive",
+      "relative": "content/basegame_1_engine.archive",
+      "size_bytes": 1677524992,
+      "modified_utc": "2026-03-27T18:42:06.932527+00:00",
+      "selected_resources": 1
+    },
+    {
+      "path": "K:/Cyberpunk 2077/archive/pc/content/basegame_4_gamedata.archive",
+      "relative": "content/basegame_4_gamedata.archive",
+      "size_bytes": 3510738944,
+      "modified_utc": "2026-03-27T18:49:18.488969+00:00",
+      "selected_resources": 1726
+    },
+    {
+      "path": "K:/Cyberpunk 2077/archive/pc/ep1/ep1_2_gamedata.archive",
+      "relative": "ep1/ep1_2_gamedata.archive",
+      "size_bytes": 15517347840,
+      "modified_utc": "2026-03-27T18:58:04.243361+00:00",
+      "selected_resources": 2848
+    }
+  ],
+  "archive_identity": "Per-payload SHA-256; archive-wide hashes not computed. Explicit archive selection, not installed mod/hotfix precedence.",
+  "repository_revision": "446b467a0edbbfbb00156e89f107ebe7cd6707c4",
+  "tools": [
+    {
+      "path": "tools/build_sidequest_catalogue.py",
+      "sha256": "7d3288840a444e3502635dd1bdf0d0f2d11fd1e5e3e9c31cb76927ee20e6bd9f"
+    },
+    {
+      "path": "tools/index_sidequest_corpus.py",
+      "sha256": "4a9b8f8f6fa2e64adda4f06ced366972531dc5a51a619119689ddf8f419cf45c"
+    },
+    {
+      "path": "tools/collect_sidequest_evidence.py",
+      "sha256": "a53d5ba728613e36636c5925d542d4d453f699a14c2e2c87cf0a30e9532a21cc"
+    },
+    {
+      "path": "tools/query_sidequest_evidence.py",
+      "sha256": "44ecbcf5686fbc05690eff4914aca796c3e06b384c68534c915cc94982232289"
+    },
+    {
+      "path": "tools/verify_sidequest_catalogue.py",
+      "sha256": "ac2cdcd320f241b494504757510f47b01411bd78b392a42592780a4ccaefcfd7"
+    },
+    {
+      "path": "tools/build_quest_deep_dive_evidence.py",
+      "sha256": "3e7159a1a7e8b538132a1d513fc6aa70d8d3e2318d793f7f0dd56d0d3ba54e1b"
+    },
+    {
+      "path": "tools/explore_questphase.py",
+      "sha256": "4c3bb01aa76930e40bb5a3b5ff553fbffa3d40e1ce744e07b639e205b01f4911"
+    },
+    {
+      "path": "tools/explore_scene.py",
+      "sha256": "163b431625e02f4eb300c6d366c4ea5c6a01fe4e38485fe4a45fa8e1d5555100"
+    },
+    {
+      "path": "tools/cr2w_helpers.py",
+      "sha256": "c12c52a41fd76434c6acabcd8cd6e1158383c4add8954224a548b9cc069cab29"
+    },
+    {
+      "path": "tools/ghostline_red.py",
+      "sha256": "99054e32e636ed889e12aaeb1b9199581b93dfae667b2702d0d5159a8ef5db10"
+    },
+    {
+      "path": "tools/toolchain.py",
+      "sha256": "a0254e74fa0e11fedb15701a6ab40878854e94f672ce6b863bd0a48108fa17c5"
+    },
+    {
+      "path": "red-schema.json",
+      "sha256": "ab3c1319276bf6ed4ff5339b0d53df4efa8ee54be1c39271cd265a73840bcc7a"
+    },
+    {
+      "path": "red-schema.json.identity.json",
+      "sha256": "5ee426f38d11b453848dc57887b56e11a59a7503bf41be599e756a5b4e9b1c58"
+    },
+    {
+      "path": "tools/ghostline-red/target/release/ghostline-red.exe",
+      "sha256": "37badd4b53d9dc57a3da23ce35503087eb26d83489695e1e06c5d9e8c8b2a637"
+    },
+    {
+      "path": "H:/WolvenKit.Console-8.17.4/WolvenKit.CLI.exe",
+      "sha256": "fdffea5f19a13a5abf57487acf4e9cffce35e789d8f0d8ef551130021a086201"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/building-blocks.md",
+      "sha256": "0729180cda6317452d9c08b80e9a1a616a737190f6192569dfd017b2b56a274a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-07_nc_underground.md",
+      "sha256": "aef885109cd49df9a6dc0f7434a17e9e4871cf6338862b8dd11c6be70eaeb4e5"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-archer_bandit.md",
+      "sha256": "52caa56402e08af3ed2186fb38375ca9ff18fbc66c8a977bde49175e33872a47"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq001_scorpion.md",
+      "sha256": "dc6e072e955119c503907fd7b21d2e7f81a6b247c1ab8050b3b37ba3447c459b"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq002_veterans.md",
+      "sha256": "90a155991bff0bbae1c56e5b2a63f4ae6a0fed172aa79fb3c22d866144aa6b3e"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq003_orbitals.md",
+      "sha256": "1ff26027c78ba0bf39ba8fc639ed22e70cbf24872168e3bcd8179cc0ceb35b1c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq005_alley.md",
+      "sha256": "acfba6f0868945c929e45d53286230e6c0cd4fdf97469cbd794ed905eb0610a8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq006_rollercoaster.md",
+      "sha256": "ccc53a0137949ccb156143d656c74e80bc014671f6ac0485dc022930a0ddd0c1"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq007_smartgun.md",
+      "sha256": "ef05e2ad9a6a242fd0ff90608cad02a88823f1b26a02aecd34cf1b169564dc87"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq008_party.md",
+      "sha256": "c331e3371d8a1c8195fae03fba51d988e7ecad58d71955533262cf884cd25e57"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq009_loser.md",
+      "sha256": "5a14dc52dda9edee9bb7f7056d432e28b297ac56907b37764c1d6d125c16ff14"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq010_barry.md",
+      "sha256": "6bfad6e427c38e37a44529299803326f6e74faf17121a6414b5a7d27d47abfbc"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq011_wilson.md",
+      "sha256": "ba7aebc5aa7a008e951f5a20235abc3766195f0f822d1ae8999835c32c5ebbdc"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq012_stud.md",
+      "sha256": "52773d352fb6b7a7524cf084c8ce5c3af1bec2f3d592bba1b2f99367271267e0"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq013_punks.md",
+      "sha256": "e66fe67e772b812c3f5a3f20feaeb411b57e76aa49561b2bd12a0c1bd0ecd6d6"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq014_02_second.md",
+      "sha256": "ef9da47ada920fe99cd6790c2f1534d9e0cc07a01abdfe423a69cb7c1b1510a4"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq014_03_third.md",
+      "sha256": "6c2c778fc7f8ff8ff5e1e79fe05f305a35e2e73fa6fae63fd971f63b1a37b7be"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq014_04_fourth.md",
+      "sha256": "d29938289700b4394e7fc5b5b7802040c8d27a0a779a695011d48436eeafab0a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq014_zen.md",
+      "sha256": "5a2f84eb128c870a9570f2610ac0993aa11973527f7d36c8de407e7908b7a018"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq015_wizardbook.md",
+      "sha256": "9ea0d2590efc644d31362322bb43d6841dd23fdb7a918a0210a2e8d2da8d3248"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq016_bartmoss.md",
+      "sha256": "e29f6fe071a7b22a4639c77a977b4b20f5577de4feb41805261df21b9df62348"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq017_streetkid.md",
+      "sha256": "7baa1cb359845bb94ad00b6aa48a6469de03f66fc0e8df822a6324b3b37e7704"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq018_writer.md",
+      "sha256": "eae34b329496bf64167aa411ab9b12f9d4b6a475f068a4507e68a80b214f3448"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq019_paparazzi.md",
+      "sha256": "9d1ff6ba6b6342f5a7cee520cef96cf0be94ea78fedae7d757430481604f557d"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq021_guide.md",
+      "sha256": "e838be8d6f89cc83985273aef57cdddb052e8fff39b5312eb3a1bdd39fcbb1da"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq022_ezekiel.md",
+      "sha256": "88318a386188ad2cdd64af1499dd0f02bccd98818d069492d37f35a66868f839"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq023_bootleg.md",
+      "sha256": "79cee500cdaf060389cbf870e127ae3c793418c5a87be45120ec1d14a85a7ca8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq024_sandra.md",
+      "sha256": "098ad35ccd9c81b66f9cc0e1d252cccea2da8e1a5693dc2680d6e8f98bd26bef"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq025_02_kabuki.md",
+      "sha256": "95d1b88a58a09eefe0b359dd4abdeceab741baf529ee8fa99c4bfa28d90749fa"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq025_03_arroyo.md",
+      "sha256": "9ff1464cb45b22f7b98c8ba2b388a8c63d6b79b34bb8a84cd8fa4f4cfd188552"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq025_05_glen.md",
+      "sha256": "47e365f55e644ed64e7e878d0b0ef74003f414d7a2779ba7d3ec92cbdc5f7f6d"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq025_06_pacifica.md",
+      "sha256": "9ba02036cc08653f58f5672fbd4a54342c028405614130b7c0ecee5eb6d30b07"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq025_07_fight_club.md",
+      "sha256": "c6c24094cd2be0baaa41fe8c5c5bb2fa50538b27091d896e63e1348e2955fb5e"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq025_psycho_brawl.md",
+      "sha256": "9e311fbd7facb50e9658e0856c48c0c3691ad21f408b47658d4e5c98129b9e85"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq026_conspiracy.md",
+      "sha256": "7e5ffcb89e38d887522e9aa2e3bd8bb78c932e839c1b33b5b3bdc367f6b19679"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq027_stunts.md",
+      "sha256": "48bb768eb7a4ea0920311ef15047e5728b8807c2fc69f0903e2704d03ff0a9f3"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq028_stalker.md",
+      "sha256": "8cd1cb118b7423a00eb0d3b4573f5fb2a470b474c895ae71e181b8e76f270636"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq029_tourist.md",
+      "sha256": "e9228d24503b006866009a0cd08ccaa6d79595743a43e8a5c520dc68ad7a7c87"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq030_melisa.md",
+      "sha256": "2c4d43e2dafab614d6e997b03f9b142896e847b54b1af8bbf51b288e9bfea6f8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq032_sacrum.md",
+      "sha256": "5ee17063c715afc27abbd5e349b5ba8df7b5134a9b38324f8dc105206474e67f"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq033_tarot.md",
+      "sha256": "cac6ab6984029867a1ec7a81a0d8dc37beabe574392cb616f1403c6ead466fc1"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq035_ozob.md",
+      "sha256": "935c1c3f03f5243b5cfa741e77a3c9ebe2f901b5ced28955ca430f087540c8fe"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq036_overload.md",
+      "sha256": "8f6583d93e68ea36b871aaa967b7f7243f0dbd12457a1295b3a2d0e853c1d43c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq037_brendan.md",
+      "sha256": "078af9c94c960f237c83d9afa4eb71bee7f8f4a47738b222c0929f8ad8204695"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq037_brendan_dumpster.md",
+      "sha256": "81cdb990f23bdf6c85673968b6ab84fe21db3fa5434e5f9107480958255ee690"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq037_brendan_hooligan001.md",
+      "sha256": "e7e618a6c37b5da4f9875c2925d9e2531a5a78491c1bc972863e2bc25424c206"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq038_neweridentity.md",
+      "sha256": "005d59ea81850373f5563a5eb7188be54ce6da6de6b1b9c0bcb4bbb8a74e984b"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq040_biosculpt.md",
+      "sha256": "1056c3513d30bafe4456142fd70870e8420b38ba6e269897d5d41b6d0e3d19fe"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq041_corpo.md",
+      "sha256": "dc30605ff8daa0c3837be9e1e03d9865f1f94f5e61af1fed1fda3a1e9a60c20d"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq042_nomad.md",
+      "sha256": "d4072fdc2eaa36c7004e711fec841c75c6869479860e38975d59d49da0afd96d"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq043_cyberpsychos.md",
+      "sha256": "6168477f6c7fcc9d23470d8df059d0356f31390db23f1b813bba63c89798436b"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq044_jakes_vehicle.md",
+      "sha256": "ce419b8d03e9a4cc02f65adf808bc0e20c5e841acc765407acdcb6d916647d34"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq045_victor_debt.md",
+      "sha256": "106b9600831e033402eafc697f3458bda433f16aebea2a2664de4b4205ec8cb7"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq046_cave_vehicle.md",
+      "sha256": "459c4ebffa8d7a1de8ff23fad3159e891852b63f5fb6d7e958662a855553e721"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq047_ad_vehicle.md",
+      "sha256": "60ea92bc67dc803f6d073b4d0f62103b833f0d223f728887f4d1278e00bed966"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq048_cyberware.md",
+      "sha256": "36cbd889d70cd22a44eca6a73f48c16189da325d9950570d161fab79de37e3bc"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq049_edgerunners.md",
+      "sha256": "5cf4972360d1135dad1958bd99a2da562beeab0e1dc924be0c16f19532e673ed"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq050_ken_block_tribute.md",
+      "sha256": "829015f3fc31b12595dff138599349389b2f1ddb52d76bc8c0a318e9cb52b2ce"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq055_romance_apartment.md",
+      "sha256": "d0eb3cb21578eaee2ce1d64fdae10a808ffe86d3e36ea27d7131eba3ae896a11"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq056_race_replay.md",
+      "sha256": "d7d922a0b5cc78eb9b5e47b3ef4b7fb1ca4b149dbd7e4406a7fbe3c26569379a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq057_motorbreath.md",
+      "sha256": "157e1f17f1823fb15f5cd416445e0c95839557e9112af21cb528cb41050c321c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq058_semimaru_crystalcoat.md",
+      "sha256": "ff16192def1b5c4265417ed4445f3488fc02cb2e379b8bf775d9c2302a39bfc8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq059_freedom.md",
+      "sha256": "a60214c14268558810a24a1d33025ba243209be67f0f98b126dd4730f3fcfd6c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq060_nitro.md",
+      "sha256": "f3c15b88374ee8371da6c506dd46d68fe265258ade7089306501733e2c1327ed"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mq402_stargazing.md",
+      "sha256": "56dad941f3318bbff13cbd5a3ca3f02ddb3ba36f3902d45c8d818a7065c9bad0"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mws_se5_07.md",
+      "sha256": "7e55d92cff5747496d3b5e8c6cee6ec09f55b93a871d1562319dc863c833f99f"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-mws_wat_08_trauma_drama.md",
+      "sha256": "9795391476900ca8adda84850696e7eea2bf20250797e0d341c969c9322145ad"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-q003_stout.md",
+      "sha256": "8bed3e22b28ab1e386f8e7630468d0f122c92c92c0bf0081a8af1f233f5a0a87"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq004_riders_on_the_storm.md",
+      "sha256": "963ff062d482d932e6ab4f144d4fd5de0ee95283e99710bdde78f21d494b14ec"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq006_dream_on.md",
+      "sha256": "21e3e3fff1f172217b7f55cf279f347b0ba7855e0b6e9a15847f833e4c260da2"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq011_concert.md",
+      "sha256": "edd27969f651dccd3ab561a34070f858635c249ad43a359420ba389a25b4bf81"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq011_johnny.md",
+      "sha256": "5fa7cb830d1c50bb5bcb2e366eca286d4905e05c3d0d25e489b8a45b78858e6a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq011_kerry.md",
+      "sha256": "c1827c2c6d23f607e4ff81f14d7e7793326eff0d749579015c6bcaa0a0d59652"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq012_lost_girl.md",
+      "sha256": "2cc33f6336209e1eab921c0006b858a5579a4544d602475ebe817190da8bd0fa"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq017_01_riot_club.md",
+      "sha256": "69f0226edf97524a111fe7320caac462e95c26e7c2e212b9f2102c7628bacb49"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq017_02_lounge.md",
+      "sha256": "9d4b6d59681cfbe66e2e39da3be20a877f46e68d03f49032b97cbc0cf190efe0"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq017_kerry.md",
+      "sha256": "bfe7715e4cadbdb90dba0a657498cc027da0dd8931087e4b2c2b2cbb703a5935"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq018_jackie.md",
+      "sha256": "96f75b8bb7c247da985a184bc360546a26b2922abc1e5ec4558e118a0b79c118"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq021_sick_dreams.md",
+      "sha256": "64b63beaf44f0ca79a240b822ff9132d6a50efdaed86fd6325aaabc70100199d"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq022_head_hunter.md",
+      "sha256": "49cf4e25b55ed817240eaf9b5990d07dc55d1ab236dea6a28e7596e57d5afd73"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq023_bd_passion.md",
+      "sha256": "fd60964081a63ca1988cd0e558aafa11fc250fd7f1671e3f06c6fe2514822e19"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq023_hit_order.md",
+      "sha256": "b3ce3a70e3548bd5026bfbc849aa55e2ae3c9ab0a883aafb35d6be77340125d9"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq023_real_passion.md",
+      "sha256": "170575803c392ab15c1fe859ac35ff292983360c6b27c5fec4eadde173b4d45a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq024_badlands_race.md",
+      "sha256": "122224bf01563bf054adebfcafd0669ce106363dcfad41d2134cadbba342aa8a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq024_city_race.md",
+      "sha256": "7b5280e7dc9d49ab9ac9f8e565bc2a58ff0a8d069ad4d94ca47ca47109763ce7"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq024_santo_domingo_race.md",
+      "sha256": "c808d21c359d64a53e172326b02ff4bad1e2a8b754a87b2a20d136f0aef567c4"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq024_the_big_race.md",
+      "sha256": "22af85237246b4c00c04a4c7c5698557bb6553083124ae22761abf2aa3334c74"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025_0_pickup.md",
+      "sha256": "d36c2e36cad7d51bafce829e837d2e7bed88db2291f30f70e508df752a30b7e1"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025_compensation.md",
+      "sha256": "4bc99091d40e589c2cc3377d40265e4a0b4c4833eedb9de2abba967846751ae0"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025_delamain.md",
+      "sha256": "aac5b92cfc281e62c8aa86eccab26390a11844bde6842158a24400ca1ddf6c21"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025b_delamain_insurgence.md",
+      "sha256": "4e91b97a5a23cccbb398bef99f0ecc9baf4bff7610632fc303bb8c636f42c3ae"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c01_angry.md",
+      "sha256": "50f3321549a4ff49f7f67b62eab0e5c991af7a4628dee239c43680122e02e8aa"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c02_sad.md",
+      "sha256": "f30abe28a17d0d7b66ed5518ae6e5bbcf0a4ec636699438c15c998d1df37631c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c03_mean.md",
+      "sha256": "18fc6e9da00ffe34eed356ea507db888e70769d87d25403f92cce9ad24b3203e"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c04_manic.md",
+      "sha256": "f961e5e56c78e106663fc7026bcf33241006cf18865e2d52ca9c6c98320b3b74"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c05_scared.md",
+      "sha256": "b593038c202992198920d872a6ee5afeaaa9d6825c0bd845bfac62961977de0f"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c06_mean.md",
+      "sha256": "cfd107a59232db35df68be4bc2d2d64d4ae5ce820a4f3f681078ba2d6cb55b02"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq025c07_suicidal.md",
+      "sha256": "08a100a00f80f67c4fbc5959c1014d1fd3208da0ea4e37b3af3a051a75978890"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq026_01_suicide.md",
+      "sha256": "7df14c1084f3f58cdf2afee3ea1a12ec76a9125b3edaba301a529cf196eebf8c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq026_02_maiko.md",
+      "sha256": "2ec0da1950e60295a97903919923b6b373026250341893350a950eb076fd776d"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq026_03_pizza.md",
+      "sha256": "7f73c85d435222bb6dcb2a35a6363872780a86a15060fe0b3e3849dbbee9a969"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq026_04_hiromi.md",
+      "sha256": "7da70e7633bc69087d0db2f272b858d081dc69460b069112b140c67d794804db"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq027_01_basilisk_convoy.md",
+      "sha256": "bc51924a8114c019601cb959e6b3ea16526ed2eea2069e879078c2efe824c0c8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq027_02_raffen_shiv_attack.md",
+      "sha256": "aadbe87576c6b91052bee4ab3d5c7805303068c39645eb66681fb8707a1c20e1"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq028_kerry_romance.md",
+      "sha256": "12091b895659ea0de2ce9e698ee7b4ff19ef1e99390c6c503e82ffb45ee7e4cf"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq029_sobchak_romance.md",
+      "sha256": "deb271ca2b42512d8073323d5c5832199344c2cbe8c8a80e232d77496006c944"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq030_judy_romance.md",
+      "sha256": "bd80b9d187354a7e83b4a6e1f6867f3e6dd5de5a017b1957baa06fac7e30ce27"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq031_cinema.md",
+      "sha256": "2f827fcd4fc35b37f0805fc68504672df15cf015c1a6ac62600cac1ded774349"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq031_rogue.md",
+      "sha256": "c4bc0099a7fcf3c251f29b2c6897e8d74945413f9dba9e1cd5ce2c5a5cd3ad23"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq031_smack_my_bitch_up.md",
+      "sha256": "6b52ee51cf6e881dd46f17e19fd17d9e5b476c15e34d923b6815801f72913fd5"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq_cyberpsychos_regina.md",
+      "sha256": "5e9c4adac39751c7feffd41f4746b5f3114524e5596fedb5cee88615c904367f"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq_q001_tbug.md",
+      "sha256": "c2d8c54450008d47b90022ca003948cb9138ebf5cb2c631cb7e01385f45c4495"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq_q001_wakako.md",
+      "sha256": "52c634b5afd0b0194c1e2fe377a60a1c4339bf04f99a09c4aaa463488a3cdeb2"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-sq_q001_wilson.md",
+      "sha256": "1f5923fc9721c8afff3df94558e0b84b86761648f1ba40cda502f903984d9b7a"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/base-ue_metro_start.md",
+      "sha256": "87821d31ecc88bc22167870dc61a3ad6c177eb9844e9ec83b1ce7527e54a9927"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-mq033_ep1.md",
+      "sha256": "38ddee770edb1571488c1d218cf55610393c3e9fc7b523e87432124160365b30"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-mq300_safehouse.md",
+      "sha256": "d12b00547537a16ba40679506709ca9b537e66f054b0e6f65e94f767ab30ce94"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-mq301_bomb.md",
+      "sha256": "0f4319834c2b17663b9e34d63b7d938442d22e104f5a9dd9ed195479eef543a2"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-mq303_addict.md",
+      "sha256": "515fa2b5cc474d236f9f0f156727e06d11aecfbae126cf8b0b25ac87278e4550"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-mq305_combat_zone_report.md",
+      "sha256": "a834ed750d4b0f9ed13cfa9976371be326c4b8251b96c1bb784b5f0523b2b68c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-mq306_dumpster.md",
+      "sha256": "6f6396e3da67e3a86fdd6016e64fe25bf88cd8dceaf402a089d0927e2a7d5fb2"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-q304_car_retrieval.md",
+      "sha256": "d4f4795f5129ef853a7f1bd1da2374778959a14bde6273af87a4d1d08d780ef3"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-q304_gear_pickup.md",
+      "sha256": "6d04e3188f6afd4094eb24153213271f83584aaaf6c736f05aa777591728d639"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-q304_splinter_stash.md",
+      "sha256": "706567092dd79f09b97b76a0a6ec765844316c20bf51f745ed6234bd7c3149c8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-sts_ep1_08_loot_pickup.md",
+      "sha256": "a3187d83f014b42756bebf9adc3e18d67eb0344b79154a2042d255afb0879f98"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-sts_ep1_08_steven_meeting_night_city.md",
+      "sha256": "5b2b0640809b3bcbb0172d1db015d6824bafc649ecfb1fc2c3867db3ad760f8c"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-sts_ep1_12_pickup.md",
+      "sha256": "801070d1ee75d57291d7ef5375975af613c27673b080fd570091d995ec90b2e8"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-wst_ep1_04.md",
+      "sha256": "ffabc20a8e75fab1b385243feb511f3b733eb73f6adb8c53ef605bdf723e8bf2"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-wst_ep1_05.md",
+      "sha256": "013dea4aa9ebb40238bdaceff55f5383e029e9e66ef8dd33ce15ef4dc0980a6f"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-wst_ep1_09.md",
+      "sha256": "074b34dfc51a5a566d0e21daa7c4e4f582b5bec4c2b48c2344c5126278d5a604"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/ep1-wst_ep1_11_bill_meeting.md",
+      "sha256": "1903df79a112aacba29f209c7ff168b85d6a98534be65cfbd333b55d14fc770e"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/catalogue/README.md",
+      "sha256": "2c0f63a3571cd1013f2a96734e764dd4f7bd518603c3d0201486e086800749e4"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/corpus-method.md",
+      "sha256": "bcccfa76fe1069e655c7afa1f8c5198ea4ced24a72118c27fcc4a543f830f826"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/cross-quest-patterns.md",
+      "sha256": "d7a5685a3be100197c64b7bbbc07890dff44b2eeba4bac0745c082ba33dc1510"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/expanded-blocks.md",
+      "sha256": "30e4f09a3513b7bd58da0233de21712bbff0dcd05f7824a3fa627a044d1d1ab5"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/happy-together.md",
+      "sha256": "d5402ee16fc7cd18bd3b576796c19c5fb42012785f382cd53a606920c675727b"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/README.md",
+      "sha256": "6590a7b87e09a27b1492fb791fcd613bc8aadef464076bc3f8bceda41fed6add"
+    },
+    {
+      "path": "docs/reference/vanilla-quests/deep-dives/space-oddity.md",
+      "sha256": "059c2610761bf4eca2f6414f698a591a1968c29830197b7b31b483322d905d42"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/block-occurrences.json",
+      "sha256": "c2c18b43269733542b727e7a4f09ee030458c6b4d8ed78be49644b9c2f7ba315"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/catalogue.json",
+      "sha256": "c0d51bbc95e1a077b7b308060197f5e2b40eaf2a1f8a10ff1db47e941679ca1e"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/discovery-probes.json",
+      "sha256": "4e87b1eaded3db244ba0b878ba7ba2b1340fe7bda46ca7b3c2c15bb7057931d7"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq000.json.gz",
+      "sha256": "d8d0100d90727be5eb8e7adb2bf1e55382f26b15ed9a78be4d1848f59e6b83a0"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq001.json.gz",
+      "sha256": "9edb414b22fdeee10cbdb92c34e5b21b4d7718708591d6282e9a82d68020d04d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq002.json.gz",
+      "sha256": "2ae227af4b26c18480388c489139dd0a4748ca1398052f7f7fbe6e69a590e8b6"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq003.json.gz",
+      "sha256": "124e6278f23662dc26cf998f3739bbc84a96bb5f36697a7be40fc01c8b081eb2"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq005.json.gz",
+      "sha256": "fe7e2b1563f837dd700c679a78946149a4a20b1faeb5e6a7abb909bd08d8c629"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq006.json.gz",
+      "sha256": "67c56db958edc412a8b8de3803408f20eac592d287ae7a36bfaf664664ad0b5f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq007.json.gz",
+      "sha256": "230ef1371bfc120ccfe0a5a14225dd3063852d79c8aec20792e54bc4042be636"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq008.json.gz",
+      "sha256": "078a92a126d20be727991309c01f8b9229c76cbf16f948a30dbb0de659d326ad"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq009.json.gz",
+      "sha256": "cee5afce7c738456b4ce4c56c00e6dbff5934c4323943e8b9ad09e9d76ac6248"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq010.json.gz",
+      "sha256": "632c855e750ec88e49b9658035090cab2e3c50da075f11fed18a2215b34fb574"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq011.json.gz",
+      "sha256": "8360355c6b8cf75d13ca6c1d4bf7b7fe94d843cc2519d1f95576a9d1c5538a2c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq012.json.gz",
+      "sha256": "3c09a378c42c48a22fc838eaa61c4bddd8f2c2ca89580e5884e13677bca518bb"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq013.json.gz",
+      "sha256": "2b87f216e08f77417ead94b634fcf5f6001810f9771b5d6deb94fe3bcbe459c2"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq014.json.gz",
+      "sha256": "bec411c504c92dd46fd0f3f2696b77556b78206f87743a3111ecc13dff7420d6"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq015.json.gz",
+      "sha256": "7d1be93ab73aecf02f2a28d934582ede83906643c634b11b63834ec3fbca24a4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq016.json.gz",
+      "sha256": "753545750abe8b99bb979ad8f749ff6cebb7d1e2b2ee5b95d101afe4bebe57a8"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq017.json.gz",
+      "sha256": "05ce8699467c1731a3a6734634910b34d45f45952ea5563021f5418f0b53682d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq018.json.gz",
+      "sha256": "a1c7bf38a4402a85229e51208c096cdf639bcd67a47121f2a810fa46f08a44bf"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq019.json.gz",
+      "sha256": "77219a23e17b9a7d2f6f08f993c4f495cc4cda020407366f80934afd8aba167d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq021.json.gz",
+      "sha256": "f1b93d87bb95d50ad621d65f5a34325c8208672fb073e7a550a9606c243d3abf"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq022.json.gz",
+      "sha256": "a5c7c32bb57593b53b7eaa9949cf4791a0cca6b54e0bc7630ce8f868f4105c7a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq023.json.gz",
+      "sha256": "837c704cbec969ab1e028e2bf9cac82e05982534a9e685620df6557efb8189ee"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq024.json.gz",
+      "sha256": "689fbae50fa22063c475a222e5a9aeafbbf9a665d5a80f7d51a3480597932543"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq025.json.gz",
+      "sha256": "d6c2e101397bf53b8f5848f76f0365a8c39f485cd3322eb928422adeaed54531"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq026.json.gz",
+      "sha256": "b2ce1e5bbc6f18950fa3b7d81312c4978d460fc805c11a32f53a4d668b8a11ab"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq027.json.gz",
+      "sha256": "1c62d6078669a8b746591bc20282a8d6d5b304ce55eb5e77b5b10f426e457a4e"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq028.json.gz",
+      "sha256": "7d9c516445685f9107e96f15a92ca021acf5e3705ecc99c7e0d99109f52396ac"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq029.json.gz",
+      "sha256": "ffc3e6923c9d72369c4627b3060c39ca0d7c2d60ffe618ba7d1a84ea1893a48c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq030.json.gz",
+      "sha256": "e4455ce0cd01e00ee5afa655dc335a0d35732fd0c8050dda23979324b408f3de"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq032.json.gz",
+      "sha256": "deccde81afcf87696653f0c3b037fc5b5e22d0c65513deafb19777bf31f4beee"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq033.json.gz",
+      "sha256": "7dd6ebdd4e06bf59822a12e45721a8dfdbb98e4dedb985d6e553b4dd0f8b5a1a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq034.json.gz",
+      "sha256": "0f1192a593e6aad02f655a7c457ff1cf47e439b2b89ddabb7e3c6a17a5b42ba6"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq035.json.gz",
+      "sha256": "6f340fdec7bf37b8f6a9b34db0fa057f1f42094985352e94302dc3d9531ebce6"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq036.json.gz",
+      "sha256": "31ac50318bcaf19b2069873c6ba213a7407ab236b0a0068c65a12003382627cd"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq037.json.gz",
+      "sha256": "b93129f67db838896224645104ec2a098f7ee36d8ad582a40b1affaf4acfe5d4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq038.json.gz",
+      "sha256": "180b09b122f3525b8be4f89969a769d1e2ebed7f4f4159b6459edfc462834548"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq040.json.gz",
+      "sha256": "297104dc473f9e273a01343956104945a483b3fa89605b33e55a51a5636acb3f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq041.json.gz",
+      "sha256": "b457c5a8a6b34a834f5d216f6f22caf6764e87d6c7193ce1549a31946286301c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq042.json.gz",
+      "sha256": "c44afffb72654a096d4bdd468e999a5781cbc21aa21e755b171de33e236b14fa"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq044.json.gz",
+      "sha256": "69211941b64b57fce63ba0a97f16c33cf06f1aa7ff9f099f3fcde08bb6445aeb"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq048.json.gz",
+      "sha256": "3e1403e6eb4236aa0f0117a400ec6affce37d4b685e206bf77b857f9202a9f4e"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq049.json.gz",
+      "sha256": "97f266b675846cad8a42ee8dec3facc329bc538b791fc3fe012425f835e33b45"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq050.json.gz",
+      "sha256": "f23e0efb2093845dec8cf8682117f0b0ea49fc6e61330554666b48726d8794c0"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq055.json.gz",
+      "sha256": "1fbc8ca7b0dd5b5acc7392bbcad448d818b31cc7106905e26e4cdf11fa4f377a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq056.json.gz",
+      "sha256": "d3d611164ce6e235b5754ab00f067765444e8c9cf39419c2c4aac3a1fd3bd986"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq057.json.gz",
+      "sha256": "f7cb3f2cd4464369da84cbba7603f4533396ff771eae739bf895edeae894628b"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq058.json.gz",
+      "sha256": "23f8623c80b55e642b0d3a8d5d4c7d37d329bc84bfa3a546bddcecf1b933f675"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq059.json.gz",
+      "sha256": "b84b7ccb4b57c98eec51ade6b5099d29249d8ed9aac5ce79c844ee64921ecdd4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mq060.json.gz",
+      "sha256": "f498e95e0cdcb54577ef305f472563fa9781cb83459ff28b35f13370c9c535b3"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mws-se5-07.json.gz",
+      "sha256": "467b00c1738b25ff44d97deddeb034c08a0223f7a49dc46812ed6b9137ebaad1"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-mws-wat-08.json.gz",
+      "sha256": "0b0de9bad9b21b00b9dd0008dd246cad463d4ae32eec0775ad7f035e1a4fce34"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q000.json.gz",
+      "sha256": "b86b47d22b478b06f70eee06740a454a68bd62e54cbb19102bf979413d3748b2"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q001.json.gz",
+      "sha256": "5661c93024afcc4efa264a1ba92c2146adfcd3213c967a6111129f358c369dcb"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q003.json.gz",
+      "sha256": "34a1da2fbe45b9a352d00bb5c04f0f5bd6143cdbb2085da83bf2f12c7f763f73"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q004.json.gz",
+      "sha256": "99125c9722bcd698264e39e448b7649170a2bc7621caabd78e6f75a138bf00fd"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q104.json.gz",
+      "sha256": "26adc0e3e8db9750959705a1bef7e4f3b7bd5bd99bb164959e6dab9f08cbb359"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q105.json.gz",
+      "sha256": "634f38f1e41b7c0da123567c6f743158005aa0f03aacef649c4503775dd2308f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q112.json.gz",
+      "sha256": "88f4a999029443d49cea6119faf2e86ed26d6ac962cac0e40f383b50ba45ff00"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q114.json.gz",
+      "sha256": "8c2523a005363f42dd376c9cdeecdd000c472e0ee7aff6f7eef37d27042bc61a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-q203.json.gz",
+      "sha256": "2544793bed07432349baab099f8c164f20eb442461bf861bc49b0411f894ba79"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-shared.json.gz",
+      "sha256": "b756c391c6b33f07f6f0c7f21aa14f549ea4316ce3a3854d09ba37cb809bd608"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq004.json.gz",
+      "sha256": "40d6e8f8c1587550e9bb6e826978c4d1a9ebf2847840cca324e19c8cf696e8d7"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq006.json.gz",
+      "sha256": "2e3c182c158c59e04829111f629c77a3398f7b78bc5d0355f0e18c00cbfe4b78"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq011.json.gz",
+      "sha256": "36dc26992afc194a0644b0d4309574960ee6e073cd4d08328a4f22b1faa252c7"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq012.json.gz",
+      "sha256": "f50170ba357078ce2ae82131ba496c557b4d1827c201742e0228c22eab99d24c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq017.json.gz",
+      "sha256": "465e55a55f5394e5af62ded44c913803051cf6d02762a701573bcf9bdfa09786"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq018.json.gz",
+      "sha256": "765507c28a9a2f209273743c90c475ffd8c309c65c6539c9aec756e10723ba4b"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq021.json.gz",
+      "sha256": "389a48b16ccab623394bbeee75f47ac655cff299b2566dde6f6479b5db90cf9a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq023.json.gz",
+      "sha256": "3734934c958c1e83f177aecc676f518870e31206e87731d36a77e49c827ebc1b"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq024.json.gz",
+      "sha256": "416ed6ef128172be7126653a297e2ee7ebd6f8e23620364b93a08dabc89fdfc2"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq025.json.gz",
+      "sha256": "008f326ebc3784249545883bb93d0cc012178eb1755e4b414a396a232c971947"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq026.json.gz",
+      "sha256": "7d6272c307575c4b17a809f6da4f88dbbed7c687d595966f8f29cf903bc27d44"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq027.json.gz",
+      "sha256": "e4f330703bedb319bb232f1075b7fa0a30a79df5c7d6868202d352859f836e69"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq028.json.gz",
+      "sha256": "2017b0603b22fb8a84cba359c5681148d1d4e12dd88d1cc4499632218c3bef75"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq029.json.gz",
+      "sha256": "8ccca3ad1562d5dbfc46576292898007449fc19c2c5472ba27d56ab0ec6550ef"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq030.json.gz",
+      "sha256": "40b48be08fb846408f1f42971fc2f7fdf6b67e4d6c7bb80a278f6bcba1801543"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq031.json.gz",
+      "sha256": "37fe4d3e7a045d652c97207cd83273ccb98b759709f42c8c6b7052caf0b02ebc"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sq032.json.gz",
+      "sha256": "a0bbd339b5b38f08028276b182cd82ec7cc09a450f27ab5ce4776f4e2f8f7caa"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-bls-ina-08.json.gz",
+      "sha256": "4a57252f75f8275cb8488831fe8ed9ce7d6ce47f6c61f7818f7492a908b8b33f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-std-arr-01.json.gz",
+      "sha256": "0e2744221c094a92a8784cd4bd9f01517bb15fea01d786a3f94d801db7c387e3"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-std-arr-03.json.gz",
+      "sha256": "9ed196fa884bb6e93da45fcbdc3f9b4e9e9fa39499b4935250183c9a4dbd8bfc"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-std-arr-05.json.gz",
+      "sha256": "4013a3340a3edc54b767593ec7f657ccc4cc50955b25f79721c5c572cacc48ec"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-std-arr-10.json.gz",
+      "sha256": "ae81a06bbd86831db1cbeacde2e473034a8a5574d9ac9029a7d8efd8811b30e9"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-std-arr-11.json.gz",
+      "sha256": "53e4401109bd94f21bbe371dd3330773cbc1ac52256050ec980c4529d83f81c1"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-sts-wat-kab-03.json.gz",
+      "sha256": "0a1bd197e80a08193734cf1fc9a7536ac56e8769d3eb0cd73bfd4cd89a22334a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/base-ue-metro.json.gz",
+      "sha256": "284383db42e51ef6b944931ba4946970a694c9d307c6fabb5d447c848106851a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/dlc-shared.json.gz",
+      "sha256": "0567b02c08cede1e8f4a7fd255fa1f9e01e08ee8be28d5e9ed680fda2f681a9f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq300.json.gz",
+      "sha256": "3796b3d95a6c3862c45fd0a11bc00347c6682cdf006b6b09ea1b542baedef4da"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq301.json.gz",
+      "sha256": "786fdb0990e4c50aa97cf94f31b31c8aef987d08214b600edf44310aba192cdd"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq303.json.gz",
+      "sha256": "21128354968e6404d326165a4c30eb54c62c54a0b0253718db8bb0d91ef3e4eb"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq304.json.gz",
+      "sha256": "daa2038825d4e57b2773f55425690c2e88f349804c572a59564d74a82112b416"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq305.json.gz",
+      "sha256": "89d1914e9a2b61e4edf927115a3bf7edbdf74c2e948e7861ff05008af75cd701"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq306.json.gz",
+      "sha256": "addfc8de59771efaa09ebbd9aa0f1eaf70f3df14a5c80b38f8a32b494bce549f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mq307.json.gz",
+      "sha256": "85dcd94db11bbdb9e93ade9405b5516cfe558eefd60bb654dbfe0683ec66c81d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-02.json.gz",
+      "sha256": "e8cc51070fe2594c0ffd52945ad0114bf52a37b72ce5015c5f397b9f42890014"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-03.json.gz",
+      "sha256": "4f0b95a2e7383bd05c2dbe493c676fdd1380c5db057264d921473e31ab2631bc"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-04.json.gz",
+      "sha256": "4cbd26d035994010ab422c5a9b9276c6fa5d7c629bf620f483f04db66e87421c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-05.json.gz",
+      "sha256": "af93d2b9e06cac0b69bfdc25bbc80a62fa6803c924586e15f2db52c209b4b526"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-06.json.gz",
+      "sha256": "0458bb2d4d5d385a69452bf39e72a5d31672ec833ecf7e7aec9b91975852d107"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-07.json.gz",
+      "sha256": "d066cfab3eef1b6804fef1c053bd7868e2a15f761e0529383e8637b0ecf4dc90"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-08.json.gz",
+      "sha256": "58437c17d449e7dc480cd4b311dd312594a0d6ba80dea2f60634cd50fbe28a56"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-09.json.gz",
+      "sha256": "10fcc6c460a2e0d499ed58035c9e0cb375cd2a46b3c47a15eeeccaece19a2a80"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-10.json.gz",
+      "sha256": "7dce033208c2974899ea7c5088adc219195d68172be4eab2b9e33546c8a902b6"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-11.json.gz",
+      "sha256": "92c815fe456433a479b43c27598982190b8abe77b4627b1228fc1c4ec4d6d43d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-12.json.gz",
+      "sha256": "b5c629a47f73ba3e50bb6fcb1e63388fada80793e99e9e596afa420f22893fd2"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-13.json.gz",
+      "sha256": "6baaaf4ff9eb322e34d95eadbbb290a64044cf1288f065240261a206276a034d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-14.json.gz",
+      "sha256": "4022790b4f1a180a6ee3127962c0095042172ad662118bb54e20bf076ed5b22d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-15.json.gz",
+      "sha256": "59d2316bb4142585efa9cbb99cc748e5938dcfa480a38526adc31dee3cf9ca80"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-mws-cz-16.json.gz",
+      "sha256": "1dfc44b7c94a9ca1e8a7fe380bc14adfb49753dad5e5e571d065ffacd66edbe3"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q301.json.gz",
+      "sha256": "ef12f94881c51e392e36c85417fc81ec1128d37c92664ee148ef7324b8b85cad"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q302.json.gz",
+      "sha256": "8cf82431da769d66ba806801f965aa16d64f7bf19e77fb03f1819712dcb23e16"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q303.json.gz",
+      "sha256": "568cea07c84b06153ec0199f872477074f171c50d9b4a1936129c0b1ef0995ed"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q304.json.gz",
+      "sha256": "4846234685c02968996f0a6272a925603c4086324afa53351824df50880643cd"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q305.json.gz",
+      "sha256": "01de78dc4660ab759629127ca1b54313e200eb8814a72d0a7b904a3ad582f6b2"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q306.json.gz",
+      "sha256": "ecece13744c1fd21502ef65143c4da32519c0a9275e4eb26c4f3637412f0003c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-q307.json.gz",
+      "sha256": "4c17e634c89f5f416d31612c148cef497c64d5d81655782cb5db3e11256dbba1"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-shared.json.gz",
+      "sha256": "3443e750492e8e3ae6ebf6e2c6b0faafc8ed1b5315d5c913ee50fe7f5fbf2871"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-characters.json.gz",
+      "sha256": "e8a5a92203a0c3618a44ef56e0f36857e2264301a25e996b5923885b8f5b2070"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-01.json.gz",
+      "sha256": "282e0e794dff22363ca82d7417f5515ee17fc5e2e4b926695b69f6fd7ab1ae39"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-02.json.gz",
+      "sha256": "a25fae1d69f5a7ce7c6ef72e07d4b2442d8d0fade06cebd7ebbf503fb94dc4a1"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-03.json.gz",
+      "sha256": "173f6175bf4fbcf803274e95f65a3448b122531b22fc715acabce5f6871d5c5c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-04.json.gz",
+      "sha256": "a287b1be619e19c3ea380f14b4dba0f3a6dabc3dd3fd03dfa718f25b3d37ad31"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-06-zembinsky.json.gz",
+      "sha256": "bf4006715d0fcfd70354450fafd7b1b470679310f14bf1c32439dd79407a605f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-07.json.gz",
+      "sha256": "26370c743b52776fd9a18328e760b150550fd67d704bb8c42292851ebb3efc1c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-08.json.gz",
+      "sha256": "b6bca5a95ff8cae84d4f8f1ef66c285237218044cb66e895ff59f3ea1e93b3bd"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-10.json.gz",
+      "sha256": "07817f4d48a71ee726319bcb808cf0c9e0a9497326c2f26100d7d1e8df2b1bbb"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-12.json.gz",
+      "sha256": "ff95b90db8b985cec7ead1edf9389142c61c08255b34807b1b72b6ac84fe783a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-sts-ep1-13.json.gz",
+      "sha256": "c51fb0e0f16168f4ae7d5e7841a7e712cfd977f2458ffa5345ea3f5743200969"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-01.json.gz",
+      "sha256": "cbbea35f8bb992d804f66f2637ef56ef637fd8dc626f8335bb54610a06bd0771"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-02.json.gz",
+      "sha256": "33869c80c35e66e263fb2214067bbc7601cda1c1a62391a840dc2cd9bc95d963"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-03.json.gz",
+      "sha256": "5d39f2b9c8e1be143894ee87b250e1bbb60e4bfc3101ac8915c9dc7644705b0c"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-04.json.gz",
+      "sha256": "9a3e10663d018b5034177a1cdd0908606d56c078f2d29cef1bbf87f1b081da00"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-05.json.gz",
+      "sha256": "6bbd402f60c05e5eda5e6659cb9779697c9b32cfb982b65608b5ceb1d97eeb8b"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-06.json.gz",
+      "sha256": "672be48c37dfe1b06b9289ab7240bc48ce2e0ba2a07d3c53982f978d4281ad78"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-07.json.gz",
+      "sha256": "53c6431822d94ac8832607d1dd57d6298d3857deeefa4df908fbab475ed42616"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-08.json.gz",
+      "sha256": "4a063bcc369feae1390ba63f6146e646e929bda7e67901213e6d48f3107604da"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-09.json.gz",
+      "sha256": "d98b503d203c3ee62671fbff764740beaffe3e5b3934d969f6b86e7c097786ab"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-10.json.gz",
+      "sha256": "6c250929ae5daa193ad74661a78efea92621ce555ab2fcfa6032434e38745af4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-100.json.gz",
+      "sha256": "d6e8afdf7c052d0988c4abb27f8670840b74f106cabee30be541c0a90c1a77f3"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-11.json.gz",
+      "sha256": "0a2166b2db99fcab61b7c80225cf9f6f62044fc369b0b30beec86f1305449941"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-12.json.gz",
+      "sha256": "286040f9c3cdd39f38ed0182c969700f0b99d5bfff8f079830e660084fa73453"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-13.json.gz",
+      "sha256": "2ce3ff1485a232a58fe2e8b5c91eeb8062ec1280289222f4bce0a2b1acb7b883"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-14.json.gz",
+      "sha256": "2f19e3e16da3f110f72c0fa2344b2620b8657a3ec5c54d12fac42a89a724693b"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-15.json.gz",
+      "sha256": "546c82ad6a0522411c490dae386a84e6fb43469f01f98b65a472db2e49b93613"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-16.json.gz",
+      "sha256": "545405043fe0bac5df7d6dd71b9116632ab9556c9457b2b119d3a0a050fbd1aa"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-17.json.gz",
+      "sha256": "c1be6d2012a93c5dff4963a5a6119658b4559d73de299c7222b948c3314f933e"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-18.json.gz",
+      "sha256": "27adf05a6e2bb49382499f2d6d2161f35a80cf8264d82de68a7cea78d8f55fc4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-19.json.gz",
+      "sha256": "ade76db893fc900588116afd13c8c8123293372ff6d88f157212a3e1750ab2e4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-20.json.gz",
+      "sha256": "da5e792c1bfa61870fd3fb67351f9079052aaab756c87c6ab7d50945c33f47ce"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-21.json.gz",
+      "sha256": "e26a9c67c0a471b1a8cb61bbe9dd7f70248b9a899089a74479e9d3c2e5ba61a9"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-22.json.gz",
+      "sha256": "41faf6147dc6857987c7dc8776a9c3ffc909801ac58f9c898158b765dfbe077e"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-23.json.gz",
+      "sha256": "536108bc13bb74ae2b3b9ff8aa6842c30f07d6b518b9e0bf27f20b2fb94fa335"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-101.json.gz",
+      "sha256": "42b54faf806ed5af203ebfe84a7ee894821109f587591025bc6245958cb25fee"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-102.json.gz",
+      "sha256": "ca8567b59cc048f0d24488b22ef39c7c4727d02c595d474eca457321625098af"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-103.json.gz",
+      "sha256": "74fcb2494f8c7c0c7d8caac365678a0000becea358b9f028dc9f8dbaff0e7600"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-106.json.gz",
+      "sha256": "46c865a662a6d7670a1c5114b2440a9b64b4ec1d2343b2cf04cf35a9bfa34946"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-107.json.gz",
+      "sha256": "67793388d618666e731d72e277ba5f415f52099e9706cceddee2b1b568b9c5b5"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-108.json.gz",
+      "sha256": "6347709c483a529c6e5b979c16309949b8078f763567ceed4b50e1eb6791ea52"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-110.json.gz",
+      "sha256": "919e5fe141484f061b7707483add2d0c34c73cb9b09fb6f68e08a777944b9c8e"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-ctz-111.json.gz",
+      "sha256": "0c210e3f54a4bae6004228bebef90b7e60bac40d5cda5c3931672280c351fc6f"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-gp-101.json.gz",
+      "sha256": "408127b179f6edded9395067d598670bdb644b24d9edd521a6b75dc760e1295a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-gp-102.json.gz",
+      "sha256": "f7f2b72a992af91b0e0815b5954bb84358dd1a82cb2b887e93a55f5129248fb5"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-gp-103.json.gz",
+      "sha256": "04f962a3bab5a648d8630da603a2093f15abe9c98aa0481d05841703788eeddf"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-gp-105.json.gz",
+      "sha256": "e822cddee31c0a1b02c2bb256b6660414fd18939a415293ec4ac322893d4be3a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-gp-106.json.gz",
+      "sha256": "f233f1cccf22ce666cbcdf71948b74d91a758a36be72836b492929674485a5aa"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-gp-107.json.gz",
+      "sha256": "bf57dcd29ecd5fe5853c0c2e107c391c26b075d68dccc0476cc2e90d84fa87e9"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-hgp-102.json.gz",
+      "sha256": "56f23cf26102a3d8518b0fa41f2ea0eb83f55536f0c7119bdfb997a95ec73110"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-hgp-104.json.gz",
+      "sha256": "66d0a9929aeeae0d5682318f881412921d33d180c22272295db2fd54e4e08fde"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-hgp-105.json.gz",
+      "sha256": "f644f65f48b0ce53d002357c599d4893620ab1a88f985bc1612f38b454145fd5"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-hlp-105.json.gz",
+      "sha256": "7fc7e4862d1f7a344d31dbe3b622b7909614c0806d8db90f81bf5cbc6fb9024b"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-hlp-106.json.gz",
+      "sha256": "d3d7d7208a39e70e034a86c91e8b2d4fb8f3814ef52e82bd139b9624d603d1a4"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-hlp-107.json.gz",
+      "sha256": "2bec996f28c8efd4da6061d6c1ddcb7f0baceea0ee7bb14c8fadcbee09d1e88a"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-mdo-101.json.gz",
+      "sha256": "822f00c6407786bfc2c3b60eaecc87a141925e76354892fc11bb57c270bbb04d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-mdo-102.json.gz",
+      "sha256": "ae4194591649550d9063bea0cd1e1b933a34c05be8c98db1af1d91d3d7bccaf5"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-mdo-103.json.gz",
+      "sha256": "a9a4f8e8f9890c6e1cbfc34580c7687ad1627166fcfb31742e62e4a37e2acb48"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-mdo-104.json.gz",
+      "sha256": "57d938d7c48fb71a3073fabf6df21d2acf5d1ad3c6be7c0276b7ac69c8a06cf6"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence/ep1-wst-ep1-mdo-108.json.gz",
+      "sha256": "d59bab2732a8477428cc53ec037b19cc0d8e24cd192e18592ac68b613da3b294"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/evidence-manifest.json",
+      "sha256": "a419e1086dfb4ab8957f9d4568ecc26169669c321fede864a8f7f4f0c9c49b36"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/journal-input.json",
+      "sha256": "907ebe2359f348a512fedd9205d3511c52e2e35cbffa5d2b4be043ff45f962f3"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/resources.json",
+      "sha256": "df29952a703ca09e2b90f41b884563e2dc01f70370cfe5752a46164b218cf39d"
+    },
+    {
+      "path": "reference/quests/deep-dives/catalogue/source-selection.json",
+      "sha256": "282bc70498097d2e2911d7e62a0b0d86fe9621c92f141bdb12e9abb3665bdc04"
+    }
+  ],
+  "counts": {
+    "quests": 130,
+    "coverage": {
+      "journal-linked": 122,
+      "unresolved attribution": 7,
+      "POI-linked; quest activation unresolved": 1
+    },
+    "resources": 4575,
+    "serializers": {
+      "native": 4561,
+      "wolvenkit": 14
+    },
+    "phase_graphs": 9782,
+    "phase_nodes": 238715,
+    "scene_nodes": 172483,
+    "verified_source_nodes": 411198,
+    "candidate_contracts": 27,
+    "unresolved_direct_graph_identities": 9
+  },
+  "validation": {
+    "index_failures": 0,
+    "graph_endpoints": "resolved for indexed graphs",
+    "source_pointer_checks": "411198/411198 source nodes, raw reference/fact pointers and binary/raw identities rechecked; final topology and link audit passed",
+    "replay_smoke": "3/3 binary and raw identities reproduced, including native, WolvenKit fallback and engine-archive inputs; frozen diagnostic headers restored",
+    "runtime_playtests": "not performed",
+    "manual_review": "Two original pilot dossiers and targeted cross-quest synthesis; remaining dossiers are generated structural analyses.",
+    "deterministic_regeneration": "322/322 catalogue/evidence/dossier artifacts reproduced byte-identically",
+    "query_cli": "Windows redirected query smoke checks passed",
+    "verification_report": "reference/quests/deep-dives/catalogue/verification.json"
+  }
+}

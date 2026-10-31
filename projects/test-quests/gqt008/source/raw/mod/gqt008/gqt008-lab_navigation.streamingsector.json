@@ -1,0 +1,196 @@
+{
+  "Header": {
+    "WolvenKitVersion": "8.17.4",
+    "WKitJsonVersion": "0.0.9",
+    "GameVersion": 2310,
+    "ExportedDateTime": "1970-01-01T00:00:00Z",
+    "DataType": "CR2W",
+    "ArchiveFileName": "H:\\projects\\Ghostline\\projects\\test-quests\\gqt008\\source\\archive\\mod\\gqt008\\gqt008-lab_navigation.streamingsector"
+  },
+  "Data": {
+    "Version": 195,
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "worldStreamingSector",
+      "category": "Navigation",
+      "cookingPlatform": "PLATFORM_PC",
+      "externInplaceResource": {
+        "DepotPath": {
+          "$type": "ResourcePath",
+          "$storage": "uint64",
+          "$value": "0"
+        },
+        "Flags": "Soft"
+      },
+      "level": 3,
+      "localInplaceResource": [
+        {
+          "DepotPath": {
+            "$type": "ResourcePath",
+            "$storage": "string",
+            "$value": "mod\\gqt008\\gqt008-lab.navmesh"
+          },
+          "Flags": "Embedded"
+        }
+      ],
+      "nodeData": {
+        "BufferId": "0",
+        "Flags": 0,
+        "Type": "WolvenKit.RED4.Archive.Buffer.worldNodeDataBuffer, WolvenKit.RED4, Version=8.17.4.0, Culture=neutral, PublicKeyToken=null",
+        "Data": [
+          {
+            "Id": "0",
+            "NodeIndex": 0,
+            "Position": {
+              "$type": "Vector4",
+              "W": 0,
+              "X": 140.0,
+              "Y": 100.0,
+              "Z": 700.0
+            },
+            "Orientation": {
+              "$type": "Quaternion",
+              "i": 0,
+              "j": 0,
+              "k": 0.0,
+              "r": 1.0
+            },
+            "Scale": {
+              "$type": "Vector3",
+              "X": 1.0,
+              "Y": 1.0,
+              "Z": 1.0
+            },
+            "Pivot": {
+              "$type": "Vector3",
+              "X": 140.0,
+              "Y": 100.0,
+              "Z": 700.0
+            },
+            "Bounds": {
+              "$type": "Box",
+              "Max": {
+                "$type": "Vector4",
+                "W": 0,
+                "X": 140.0,
+                "Y": 100.0,
+                "Z": 700.0
+              },
+              "Min": {
+                "$type": "Vector4",
+                "W": 0,
+                "X": 140.0,
+                "Y": 100.0,
+                "Z": 700.0
+              }
+            },
+            "QuestPrefabRefHash": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "UkHash1": {
+              "$type": "NodeRef",
+              "$storage": "uint64",
+              "$value": "0"
+            },
+            "CookedPrefabData": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "uint64",
+                "$value": "0"
+              },
+              "Flags": "Default"
+            },
+            "MaxStreamingDistance": 500,
+            "UkFloat1": 100.0,
+            "Uk10": 1024,
+            "Uk11": 512,
+            "Uk12": 0,
+            "Uk13": "0",
+            "Uk14": "0"
+          }
+        ]
+      },
+      "nodeRefs": [],
+      "nodes": [
+        {
+          "HandleId": "0",
+          "Data": {
+            "$type": "worldNavigationNode",
+            "debugName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "gqt008-lab_human_navigation"
+            },
+            "navigationTileResource": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "mod\\gqt008\\gqt008-lab.navmesh"
+              },
+              "Flags": "Embedded"
+            },
+            "isVisibleInGame": 1
+          }
+        }
+      ],
+      "persistentNodeIndex": 0,
+      "persistentNodes": [],
+      "variantIndices": [
+        0
+      ],
+      "variantNodes": [],
+      "version": 62
+    },
+    "EmbeddedFiles": [
+      {
+        "FileName": {
+          "$type": "ResourcePath",
+          "$storage": "string",
+          "$value": "mod\\gqt008\\gqt008-lab.navmesh"
+        },
+        "Content": {
+          "$type": "worldNavigationTileResource",
+          "cookingPlatform": "PLATFORM_PC",
+          "agentSize": "Human",
+          "localBoundingBox": {
+            "$type": "Box",
+            "Min": {
+              "$type": "Vector4",
+              "X": -10.400000000000006,
+              "Y": -2.8000000000000114,
+              "Z": -1.0,
+              "W": 0
+            },
+            "Max": {
+              "$type": "Vector4",
+              "X": 22.0,
+              "Y": 29.599999999999994,
+              "Z": 1.7999999999999545,
+              "W": 0
+            }
+          },
+          "tilesData": [
+            {
+              "$type": "worldNavigationTileData",
+              "tileX": 4,
+              "tileY": 3,
+              "tileIndex": 0,
+              "bufferIndex": 0,
+              "agentSize": "Human",
+              "tileRef": "9223372036854775807"
+            }
+          ],
+          "tileBuffers": [
+            {
+              "BufferId": "1",
+              "Flags": 0,
+              "Bytes": "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"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

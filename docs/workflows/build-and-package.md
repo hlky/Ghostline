@@ -43,6 +43,7 @@ packager still requires exactly one primary root for each active quest.
 | `gqt005` | Braindance test, required Patch resources and its test tweaks |
 | `gqt006` | Standalone Goth Baddie encounter, including referenced custom animations; forbids tutorial dependencies |
 | `gqt007` | Barry lipsync test and localized animset |
+| `gqt008` | Self-contained floating interaction lab, native performance/lifecycle test and vanilla Barry greeting media; installed behavior pending |
 | `development` | Story-only active roots and shared support, base overrides and autosave suppression; excludes incomplete GQ003 preproduction assets/registration |
 
 Selection starts at each character entity and follows named references from

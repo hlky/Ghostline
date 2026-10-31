@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "id": "lifecycle_demo",
+  "title": "Owned lifecycle blocks \u2014 authoring examples",
+  "description": "Binding placeholders; source/serialization examples, not a playable route. See docs/authoring/owned-lifecycle-blocks.md.",
+  "stages": [
+    {
+      "id": "owned_scope",
+      "type": "owned_scope",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\owned_scope.questphase",
+      "child": {
+        "phase": "mod\\lifecycle_demo\\bindings\\work.questphase",
+        "entry": "In1",
+        "exits": {
+          "success": "Out1",
+          "milestone": "Progress"
+        }
+      },
+      "notifications": {
+        "milestone": "lifecycle_demo_progress"
+      },
+      "commit_fact": "lifecycle_demo_scope_done",
+      "restore": [
+        {
+          "kind": "weather_reset",
+          "source": "lifecycle_demo_scope"
+        },
+        {
+          "kind": "phase",
+          "phase": "mod\\lifecycle_demo\\bindings\\restore.questphase",
+          "entry": "In1",
+          "exit": "Out1"
+        },
+        {
+          "kind": "prefab_variant",
+          "prefab": "#lifecycle_demo_world",
+          "variant": "default",
+          "show": true
+        }
+      ]
+    },
+    {
+      "id": "acquire_or_use",
+      "type": "acquire_or_use",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\acquire_or_use.questphase",
+      "item": "Items.money",
+      "quantity": 1,
+      "existing_fact": "lifecycle_demo_existing",
+      "acquired_fact": "lifecycle_demo_acquired",
+      "application": {
+        "phase": "mod\\lifecycle_demo\\bindings\\apply.questphase",
+        "entry": "In1",
+        "exits": {
+          "success": "Out1"
+        }
+      }
+    },
+    {
+      "id": "access_routes",
+      "type": "access_routes",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\access_routes.questphase",
+      "routes": [
+        {
+          "id": "hack",
+          "phase": "mod\\lifecycle_demo\\bindings\\hack.questphase",
+          "entry": "In1",
+          "exits": {
+            "success": "Out1"
+          }
+        },
+        {
+          "id": "key",
+          "phase": "mod\\lifecycle_demo\\bindings\\key.questphase",
+          "entry": "In1",
+          "exits": {
+            "success": "Out1"
+          }
+        }
+      ],
+      "application": {
+        "phase": "mod\\lifecycle_demo\\bindings\\open.questphase",
+        "entry": "In1",
+        "exits": {
+          "success": "Out1"
+        }
+      }
+    },
+    {
+      "id": "investigate_reactions",
+      "type": "investigate_reactions",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\investigate_reactions.questphase",
+      "clues": [
+        {
+          "id": "a",
+          "object_ref": "#lifecycle_demo_a",
+          "scan_fact": "lifecycle_demo_scanned_a",
+          "completion_fact": "lifecycle_demo_reacted_a",
+          "reaction": {
+            "scene": "mod\\lifecycle_demo\\scenes\\a.scene",
+            "origin": "#lifecycle_demo_origin",
+            "entry": "start",
+            "exits": {
+              "success": "end"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "object_ref": "#lifecycle_demo_b",
+          "scan_fact": "lifecycle_demo_scanned_b",
+          "completion_fact": "lifecycle_demo_reacted_b",
+          "reaction": {
+            "scene": "mod\\lifecycle_demo\\scenes\\b.scene",
+            "origin": "#lifecycle_demo_origin",
+            "entry": "start",
+            "exits": {
+              "success": "end"
+            }
+          }
+        }
+      ],
+      "discovery_fact": "lifecycle_demo_direct_discovery"
+    },
+    {
+      "id": "resolve_and_report",
+      "type": "resolve_and_report",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\resolve_and_report.questphase",
+      "targets": [
+        {
+          "community": "#lifecycle_demo_targets",
+          "entry": "target",
+          "resolution": {
+            "killed": true,
+            "unconscious": true,
+            "defeated": true
+          }
+        }
+      ],
+      "resolved_fact": "lifecycle_demo_resolved",
+      "reported_fact": "lifecycle_demo_reported",
+      "report": {
+        "phase": "mod\\lifecycle_demo\\bindings\\report.questphase",
+        "entry": "In1",
+        "exits": {
+          "success": "Out1"
+        }
+      }
+    },
+    {
+      "id": "observe_lethal",
+      "type": "observe_lethal",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\observe_lethal.questphase",
+      "targets": [
+        {
+          "community": "#lifecycle_demo_targets",
+          "entry": "target",
+          "killed_fact": "lifecycle_demo_killed"
+        }
+      ],
+      "stop_fact": "lifecycle_demo_observer_stop"
+    },
+    {
+      "id": "reward_commit",
+      "type": "reward_commit",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\reward_commit.questphase",
+      "reported_fact": "lifecycle_demo_reported",
+      "item": "Items.money",
+      "quantity": 10,
+      "commit_fact": "lifecycle_demo_reward_verified"
+    },
+    {
+      "id": "contact_fallback",
+      "type": "contact_fallback",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\contact_fallback.questphase",
+      "call": {
+        "scene": "mod\\lifecycle_demo\\scenes\\call.scene",
+        "origin": "#lifecycle_demo_origin",
+        "entry": "start",
+        "exits": {
+          "connected": "connected",
+          "rejected": "rejected"
+        }
+      },
+      "message": "contacts/lifecycle_demo/messages/fallback",
+      "message_fact": "lifecycle_demo_message_delivered",
+      "connected_fact": "lifecycle_demo_connected",
+      "unavailable_facts": [
+        "lifecycle_demo_muted",
+        "lifecycle_demo_busy"
+      ],
+      "outcomes": {
+        "connected": "Connected",
+        "fallback": "Fallback"
+      },
+      "on": {
+        "connected": "adaptive_timer",
+        "fallback": "adaptive_timer"
+      }
+    },
+    {
+      "id": "adaptive_timer",
+      "type": "adaptive_timer",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\adaptive_timer.questphase",
+      "clock": "realtime",
+      "choices": [
+        {
+          "weight": 1,
+          "seconds": 25
+        },
+        {
+          "weight": 2,
+          "seconds": 30
+        },
+        {
+          "weight": 2,
+          "seconds": 35
+        }
+      ],
+      "profiles": [
+        {
+          "when_fact": "lifecycle_demo_hard",
+          "choices": [
+            {
+              "weight": 1,
+              "seconds": 15
+            }
+          ]
+        }
+      ],
+      "busy_fact": "lifecycle_demo_reading",
+      "max_deferral_seconds": 90
+    },
+    {
+      "id": "entitlement_reconcile",
+      "type": "entitlement_reconcile",
+      "status": "planned",
+      "phase_resource": "mod\\lifecycle_demo\\phases\\entitlement_reconcile.questphase",
+      "entitled_fact": "lifecycle_demo_vehicle_entitled",
+      "owned_fact": "lifecycle_demo_vehicle_owned",
+      "retire": [
+        {
+          "kind": "objective",
+          "path": "quests/lifecycle_demo/offer",
+          "state": "Inactive"
+        },
+        {
+          "kind": "message",
+          "path": "contacts/lifecycle_demo/messages/offer",
+          "state": "Inactive"
+        },
+        {
+          "kind": "fact",
+          "fact": "lifecycle_demo_offer_retired"
+        }
+      ],
+      "outcomes": {
+        "owned": "Owned",
+        "unowned": "Unowned"
+      },
+      "on": {
+        "owned": "$end",
+        "unowned": "$end"
+      }
+    }
+  ]
+}
