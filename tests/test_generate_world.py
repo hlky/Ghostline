@@ -568,5 +568,123 @@ class GenerateWorldTests(unittest.TestCase):
         )
 
 
+class RaceSplineTests(unittest.TestCase):
+    def spec(self):
+        return {
+            "name": "race_example", "prefab_root": "$/mod/race_example/#course",
+            "origin": {"x": 100, "y": 200, "z": 10, "yaw": 0},
+            "streaming_box": {"padding": 2},
+            "race_splines": [{
+                "ref": "#race_route", "points": [[0, 0, 0], [30, 0, 0], [60, 10, 2]],
+                "width_default": 4,
+                "speed_sections": [{"speed_mps": 10}, {"start": 20, "end": 30, "speed_mps": 5}],
+                "width_sections": [{"to": 20, "left": 4, "right": 3},
+                                   {"from": 20, "to": 60, "left": 2, "right": 3}],
+            }],
+        }
+
+    def build(self, spec):
+        files, documents = generate_world.build_world_documents(spec, Path("raw"), Path("archive"))
+        return {f.kind: documents[f.raw_path]["Data"]["RootChunk"] for f in files}
+
+    def test_course_is_registered_with_native_tuning_and_local_geometry(self):
+        world = self.build(self.spec())
+        sector = world["quest_sector"]
+        route = sector["nodes"][0]["Data"]
+        self.assertEqual(route["$type"], "worldRaceSplineNode")
+        self.assertEqual(route["offsetDefault"], 4)
+        self.assertEqual(route["speedChangeSections"], [
+            {"$type": "worldSpeedSplineNodeSpeedChangeSection", "start": 0, "end": 0, "targetSpeed_M_P_S": 10},
+            {"$type": "worldSpeedSplineNodeSpeedChangeSection", "start": 20, "end": 30, "targetSpeed_M_P_S": 5},
+        ])
+        self.assertEqual(route["offsets"][1], {
+            "$type": "worldRaceSplineNodeOffset", "from": 20, "to": 60, "left": 2, "right": 3,
+        })
+        self.assertEqual(route["splineData"]["Data"]["points"][2]["position"]["X"], 60)
+        full_ref = "$/mod/race_example/#course/#race_route"
+        self.assertEqual(sector["nodeRefs"][0]["$value"], full_ref)
+        placement = sector["nodeData"]["Data"][0]
+        self.assertEqual(placement["QuestPrefabRefHash"]["$value"], full_ref)
+        self.assertEqual(placement["Position"]["X"], 100)
+        # Bounds cover the course end, width and requested padding, not just the origin.
+        box = world["streaming_block"]["descriptors"][0]["streamingBox"]
+        self.assertGreaterEqual(box["Max"]["X"], 166)
+        self.assertLessEqual(box["Min"]["Y"], 194)
+
+    def test_defaults_and_existing_spline_types_coexist(self):
+        spec = self.spec()
+        spec["race_splines"] = [{"ref": "#race_route", "points": [[0, 0, 0], [1, 1, 1]]}]
+        spec["splines"] = [{"ref": "#basic", "points": [[0, 0, 0], [1, 0, 0]]}]
+        spec["patrol_splines"] = [{"ref": "#patrol", "points": [[0, 0, 0], [1, 0, 0]],
+                                   "patrol_spots": ["#spot"]}]
+        nodes = [n["Data"] for n in self.build(spec)["quest_sector"]["nodes"]]
+        self.assertEqual([n["$type"] for n in nodes], [
+            "worldSplineNode", "worldPatrolSplineNode", "worldRaceSplineNode",
+        ])
+        self.assertEqual(nodes[2]["offsetDefault"], 5)
+        self.assertEqual(nodes[2]["speedChangeSections"], [])
+        self.assertEqual(nodes[2]["offsets"], [])
+        self.assertNotIn("offsets", nodes[0])
+
+    def test_bounds_apply_orientation_scale_and_explicit_tangents(self):
+        spec = self.spec()
+        route = spec["race_splines"][0]
+        route.update({"yaw": 90, "node_data": {"scale_x": 2}, "looped": True,
+                      "points": [{"position": [0, 0, 0], "tangents": [[-10, 0, 0], [0, 30, 0]]},
+                                 [30, 0, 0]]})
+        world = self.build(spec)
+        spline = world["quest_sector"]["nodes"][0]["Data"]["splineData"]["Data"]
+        self.assertEqual(spline["looped"], 1)
+        self.assertEqual(spline["points"][0]["tangents"]["Elements"][1]["Y"], 30)
+        box = world["streaming_block"]["descriptors"][0]["streamingBox"]
+        self.assertLessEqual(box["Min"]["X"], 60)  # rotated outgoing handle + width + padding
+        self.assertGreaterEqual(box["Max"]["Y"], 270)
+        self.assertLessEqual(box["Min"]["Y"], 170)
+
+    def test_invalid_tuning_is_rejected_before_output(self):
+        bad = [
+            ("speed_sections", {}, "must be a list"),
+            ("speed_sections", [None], "must be an object"),
+            ("speed_sections", [{}], "speed_mps is required"),
+            ("speed_sections", [{"speed_mps": -1}], "speed_mps"),
+            ("speed_sections", [{"speed_mps": float("nan")}], "speed_mps"),
+            ("speed_sections", [{"speed_mps": 1e40}], "RED float"),
+            ("speed_sections", [{"speed_mps": True}], "speed_mps"),
+            ("speed_sections", [{"start": 5, "end": 4, "speed_mps": 1}], "at least start"),
+            ("speed_sections", [{"start": 0, "end": 20, "speed_mps": 5},
+                                {"start": 10, "end": 30, "speed_mps": 5}], "overlapping"),
+            ("width_sections", [None], "must be an object"),
+            ("width_sections", [{"to": 3, "left": 1}], "right is required"),
+            ("width_sections", [{"to": 0, "left": 1, "right": 1}], "greater than from"),
+            ("width_sections", [{"to": 3, "left": -1, "right": 1}], "left"),
+            ("width_default", float("inf"), "width_default"),
+            ("points", [[0, 0, 0], [float("inf"), 0, 0]], "points"),
+            ("points", [[0, 0, 0], ["bad", 0, 0]], "numeric positions"),
+            ("points", [[0, 0, 0]], "at least two points"),
+            ("points", [{"position": [0, 0, 0], "tangents": [[float("nan"), 0, 0], [0, 0, 0]]},
+                        [30, 0, 0]], "points"),
+            ("patrol_spots", ["#spot"], "cannot contain patrol_spots"),
+        ]
+        for key, value, message in bad:
+            with self.subTest(key=key, value=value):
+                spec = self.spec()
+                spec["race_splines"][0][key] = value
+                with self.assertRaisesRegex(SystemExit, message):
+                    self.build(spec)
+
+    def test_collection_and_duplicate_identity_validation(self):
+        spec = self.spec()
+        spec["race_splines"] = {}
+        with self.assertRaisesRegex(SystemExit, "race_splines must be a list"):
+            self.build(spec)
+        spec["race_splines"] = [None]
+        with self.assertRaisesRegex(SystemExit, "race_splines entries must be objects"):
+            self.build(spec)
+        spec = self.spec()
+        spec["splines"] = [copy.deepcopy(spec["race_splines"][0])]
+        with self.assertRaisesRegex(SystemExit, "Duplicate world NodeRef"):
+            self.build(spec)
+
+
 if __name__ == "__main__":
     unittest.main()

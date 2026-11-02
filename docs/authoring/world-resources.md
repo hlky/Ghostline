@@ -341,6 +341,84 @@ discovery is mechanical; every entry still needs an accessibility/map-label
 review before inclusion, and a randomized runtime route must keep its native
 reservation target paired with the corresponding Ghostline marker.
 
+## Race splines
+
+`tools/generate_world.py` accepts a top-level `race_splines` list alongside
+`splines` and `patrol_splines`. Each entry emits a `worldRaceSplineNode` with
+the same geometry, placement, tangent and NodeRef handling as a basic spline.
+Add this fragment to an owning project's world spec:
+
+```json
+{
+  "race_splines": [
+    {
+      "ref": "#my_quest_race_route",
+      "position": {"from": "origin"},
+      "yaw": 0,
+      "points": [
+        [0, 0, 0],
+        [30, 0, 0],
+        {
+          "position": [60, 10, 2],
+          "tangents": [[-10, -5, 0], [10, 5, 0]]
+        }
+      ],
+      "speed_sections": [
+        {"speed_mps": 10},
+        {"start": 20, "end": 30, "speed_mps": 5}
+      ],
+      "width_default": 5,
+      "width_sections": [
+        {"from": 0, "to": 20, "left": 4, "right": 3},
+        {"from": 20, "to": 60, "left": 2, "right": 3}
+      ]
+    }
+  ]
+}
+```
+
+Points and tangent vectors are **local to the spline node**; `position`, `yaw`
+and optional `node_data` orientation/scale place that node in the world.
+`looped`, `reversed` and `has_direction` use the existing spline conventions.
+Without explicit tangents, the generator creates straight-segment handles at
+one third of the neighboring-point displacement. Supply tangents to shape bends;
+default handles do not smooth the driving line through a corner.
+
+| Authoring field | Native field | Meaning/default |
+| --- | --- | --- |
+| `speed_sections` | `speedChangeSections` | List of speed-change sections; defaults to empty |
+| `start`, `end` | `start`, `end` | Distances along the curve; start defaults to 0, end to start |
+| `speed_mps` | `targetSpeed_M_P_S` | Required target speed in metres per second; 10 m/s = 36 km/h |
+| `width_default` | `offsetDefault` | Default lateral offset, 5 metres as in the reflected native default |
+| `width_sections` | `offsets` | Distance intervals overriding left/right widths; defaults to empty |
+| `from`, `to` | `from`, `to` | Start/end distances; from defaults to 0, to is required |
+| `left`, `right` | `left`, `right` | Required non-negative lateral widths in metres |
+
+Speed sections map directly to native speed-change parameters; they are not
+independent speed-limit volumes. `start == end` is supported, including the
+vanilla initial-speed shape with both omitted/zero. Width intervals require
+`to > from`. Each list must be ordered without overlaps; touching intervals
+and gaps are allowed. The generator does not estimate curve arc length or
+reject distances beyond its end. Review tuning against the actual course.
+Numeric tuning and emitted geometry must fit finite RED floats. A race entry
+cannot contain patrol spots.
+
+Automatic block bounds (`streaming_box: {"padding": ...}`) include the race
+curve's transformed points/handles and a conservative margin for its maximum
+width. Explicit min/max boxes remain author-owned; the default `"world"`
+box is unchanged. Node streaming-distance overrides still use the existing
+`node_data.max_streaming_distance` and `node_data.streaming_distance` fields;
+select and test those for a long course.
+
+Use the normal generator dry run before publishing the owning project's raw
+resources. The native writer needs a template containing a compatible race
+spline layout; use the inspected City Center donor or WolvenKit when a generic
+world template lacks those layouts. Generation and successful native readback
+establish resource structure. They do not establish AI registration, handling,
+checkpoint progress or recovery in game. See the
+[race construction study](../reference/vanilla-quests/deep-dives/races.md) for
+those lifecycle bindings and playtest cases.
+
 ## Completed Reference Work
 
 - Removed the leftover `#mq003_pr_corpse` root prefab from `gq000.questphase`.

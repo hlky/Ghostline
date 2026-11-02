@@ -7,11 +7,13 @@ import threading
 import time
 
 from .core import ScoutError, angles, distance, identifier, number, point
+from .races import RacePlans
 
 
 class Scout:
     def __init__(self, bridge, library, images):
         self.bridge, self.library, self.images = bridge, library, images
+        self.races = RacePlans(library)
         self.gate = threading.Lock()
         self.cancelled = threading.Event()
         self.recording = None
@@ -137,15 +139,51 @@ class Scout:
 
     def inspect(self, u=0.5, v=0.5, range_m=100):
         with self.operation():
-            self._active()
-            if not self.last_observation:
-                raise ScoutError('Observe first; inspect uses the latest image camera and aspect ratio')
-            before = self.last_observation['state']
-            current = self.bridge.state()
-            if current['boot'] != before['boot'] or distance(current['camera'],before['camera'])>0.05 or abs((current['camera']['yaw']-before['camera']['yaw']+180)%360-180)>0.5 or abs(current['camera']['pitch']-before['camera']['pitch'])>0.5:
-                raise ScoutError('Camera moved since the last image; observe again before inspecting')
-            return self.bridge.command('inspect',u=number(u,0,1,'u'),v=number(v,0,1,'v'),
-                range_m=number(range_m,0.1,500,'range_m'), camera=before['camera'],aspect=before.get('aspect',16/9))
+            return self._inspect(u,v,range_m)
+
+    def _inspect(self, u=0.5, v=0.5, range_m=100):
+        self._active()
+        if not self.last_observation:
+            raise ScoutError('Observe first; inspect uses the latest image camera and aspect ratio')
+        before = self.last_observation['state']
+        current = self.bridge.state()
+        if current['boot'] != before['boot'] or distance(current['camera'],before['camera'])>0.05 or abs((current['camera']['yaw']-before['camera']['yaw']+180)%360-180)>0.5 or abs(current['camera']['pitch']-before['camera']['pitch'])>0.5:
+            raise ScoutError('Camera moved since the last image; observe again before inspecting')
+        return self.bridge.command('inspect',u=number(u,0,1,'u'),v=number(v,0,1,'v'),
+            range_m=number(range_m,0.1,500,'range_m'), camera=before['camera'],aspect=before.get('aspect',16/9))
+
+    def mark_race(self, race_id, role, name='', notes='', source='surface', position=None,
+                  yaw=None, u=0.5, v=0.5, range_m=100, options=None, order=None, mark_id=None):
+        with self.operation():
+            self.races.get(race_id)
+            if source not in {'surface','manual','camera','player'}:
+                raise ScoutError('source must be surface, manual, camera or player')
+            evidence = {'source':source}
+            if source == 'manual':
+                if position is None or yaw is None:
+                    raise ScoutError('Manual marks require position and yaw (native camera convention)')
+            else:
+                if position is not None:
+                    raise ScoutError('Explicit position requires source=manual')
+                state = self._active()
+                if not state.get('ready') or state.get('loading') or state.get('paused'):
+                    raise ScoutError('Game must be ready and unpaused to mark a race')
+                evidence.update(boot=state['boot'],timestamp=state['timestamp'],camera=state['camera'])
+                yaw = state['camera']['yaw'] if yaw is None else yaw
+                if source == 'surface':
+                    hit = self._inspect(u,v,range_m)
+                    if not hit.get('hit') or not hit.get('position'):
+                        raise ScoutError('No surface hit; aim at the road and observe again')
+                    position = hit['position']
+                    evidence.update(hit=hit,observation=self.last_observation)
+                else:
+                    position = state.get('player' if source == 'player' else 'camera')
+                    if position is None:
+                        raise ScoutError(f'Runtime did not supply {source} position')
+            if self.cancelled.is_set():
+                raise ScoutError('Operation stopped')
+            return self.races.mark(race_id,role,position,yaw,name=name,notes=notes,
+                                   options=options,order=order,mark_id=mark_id,evidence=evidence)
 
     def capture(self, name='Scout capture'):
         with self.operation():

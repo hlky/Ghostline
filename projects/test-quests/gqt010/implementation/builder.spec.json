@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "gqt010_pacifica_coast_run",
+  "title": "Pacifica Coast Run",
+  "description": "A 3.15 km point-to-point from the city streets through the coastal tunnel to Pacifica.",
+  "survey": "race-plan.json",
+  "vehicle_diagnostics": false,
+  "entrants": [
+    {
+      "id": "racer_one",
+      "grid": 0,
+      "vehicle": "Vehicle.v_sport1_rayfield_caliburn",
+      "driver": "Character.sq024_city_race_corpo_racer"
+    },
+    {
+      "id": "racer_two",
+      "grid": 1,
+      "vehicle": "Vehicle.v_sport1_herrera_outlaw",
+      "driver": "Character.sq024_city_race_corpo_racer"
+    },
+    {
+      "id": "racer_three",
+      "grid": 2,
+      "vehicle": "Vehicle.v_sport2_quadra_type66_nomad",
+      "driver": "Character.sq024_city_race_corpo_racer"
+    },
+    {
+      "id": "racer_four",
+      "grid": 3,
+      "vehicle": "Vehicle.v_sport2_mizutani_shion_nomad",
+      "driver": "Character.sq024_city_race_corpo_racer"
+    }
+  ],
+  "countdown_seconds": 3,
+  "timeout_seconds": 600,
+  "winning_places": 1,
+  "reward": {
+    "item": "Items.money",
+    "quantity": 10000
+  },
+  "off_course": {
+    "action": "fail",
+    "distance_m": 50,
+    "grace_seconds": 2
+  },
+  "rubberband": {
+    "min_distance": 20,
+    "max_distance": 150,
+    "stay_in_front": true
+  },
+  "checkpoint_mode": "vanilla",
+  "checkpoint_spacing_m": 300
+}

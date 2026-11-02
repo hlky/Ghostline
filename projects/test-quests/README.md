@@ -27,5 +27,10 @@ self-contained. See [project layout](../../docs/reference/project-layout.md).
 Barry's seated reactions, native workspot movement, interruption/return and
 activity restoration. Its installed behavior is pending validation.
 
+[GQT010](gqt010/README.md) is Pacifica Coast Run: a surveyed 3.154 km
+point-to-point race through city streets and the coastal tunnel to Pacifica,
+with ten intermediate vanilla checkpoints and a finish. The installed candidate
+is ready for its first runtime playtest.
+
 From the repository root, audit a package with
 `uv run python -B tools/package_project.py --project gqt006 --plan`.

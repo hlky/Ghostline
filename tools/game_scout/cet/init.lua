@@ -3,6 +3,7 @@ local Engine=require('engine')
 local engine=Engine.new()
 local boot=tostring(os.time())..'_'..tostring(math.random(1,2147483647))
 local session,pending,lastCommand,lastStop=nil,nil,nil,nil
+local lastLease=nil
 local elapsed=0
 local outbox={}
 local function read(name)
@@ -39,7 +40,7 @@ end
 local function stop(reason)
     local result=engine:release()
     if pending then respond(pending,false,reason or 'Operation stopped'); pending=nil end
-    session=nil
+    session=nil; lastLease=nil
     write('state',status())
     return result
 end
@@ -51,7 +52,12 @@ local function poll()
     end
     if session then
         local lease=read('lease')
-        if not lease or lease.session~=session or os.time()-lease.timestamp>5 then stop('Controller lease expired') end
+        -- A transient file-open/decode failure is not a dead controller. Keep
+        -- the last valid heartbeat, but never extend its original expiry.
+        if lease then lastLease=lease end
+        lease=lastLease
+        if not lease or lease.session~=session or type(lease.timestamp)~='number'
+            or os.time()-lease.timestamp>5 then stop('Controller lease expired') end
     end
     local command=read('command')
     if not command or command.id==lastCommand then return end
@@ -67,6 +73,7 @@ local function poll()
             if not lease or lease.session~=command.session or os.time()-lease.timestamp>5 then error('No current controller lease') end
             engine:begin(command.arguments.hide_hud~=false)
             session=command.session
+            lastLease=lease
             return status()
         end
         if command.session~=session then error('Session mismatch') end

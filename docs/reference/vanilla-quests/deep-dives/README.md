@@ -1,5 +1,9 @@
 # Vanilla quest deep dives
 
+The [vehicle race construction study](races.md) traces MQ056/SQ024 course
+splines, opponent commands, checkpoint device operations, the stock HUD,
+finish ordering and cleanup into a practical custom-race implementation plan.
+
 The [cinematic scene study](cinematic-scenes/README.md) compares animation,
 gaze, camera, prop, sound and scene-to-gameplay choreography across all 416
 journal identities and 3,139 scene resources. It includes per-quest dossiers,

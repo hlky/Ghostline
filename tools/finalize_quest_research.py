@@ -53,7 +53,7 @@ def main():
              'verify_quest_analysis', 'verify_quest_archive_selection', 'finalize_quest_research',
              'explore_questphase', 'explore_scene', 'cr2w_helpers', 'ghostline_red', 'toolchain']
     tools = [Path('tools') / (n + '.py') for n in names]
-    tools += [Path('red-schema.json'), Path('red-schema.json.identity.json'),
+    tools += [Path('red-schema.json'),
               Path('tools/ghostline-red/target/release/ghostline-red.exe'), Path('H:/WolvenKit.Console-8.17.4/WolvenKit.CLI.exe')]
     for path in [args.data / n for n in ('verification.json', 'analysis-verification.json', 'archive-selection-verification.json', 'regeneration-verification.json', 'replay-verification.json')]:
         if path.exists():

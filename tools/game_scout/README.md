@@ -92,6 +92,100 @@ SQLite commits each completed waypoint and saved record. Exports are independent
 of the world-location database and can be consumed by a later importer. Locations
 and viewpoints have their own IDs; image captions need not be paired.
 
+## Race surveys
+
+Race plans use their own library records (`kind="race"`), separate from camera
+replay routes. They persist each mark in SQLite, including its role, order,
+native heading, options, notes and capture provenance. No CET changes are
+needed for these tools; restart the MCP server after updating its Python source
+so the new tool definitions are available.
+
+1. Call `create_race(name="Dock sprint", prefix="gqt009")`. Use the owning
+   project's registered quest/depot prefix. Optional defaults are `looped=false`,
+   `width_default=5` metres and `speed_mps=10` (36 km/h). Save the returned race ID.
+2. Observe the road, then call `mark_race(race_id=..., role="spline_point",
+   u=0.5, v=0.7)`. Surface marking raycasts the latest observed image and saves
+   the hit coordinates, rather than the flying camera's origin. Aim at the
+   intended road surface; an inspection can also hit a wall, roof or vehicle.
+   A changed camera, missing hit, unready game or stop rejects the mark.
+3. Add spline points in driving order, with more points around bends and grade
+   changes. Add checkpoints in checkpoint order and mark the grid, player start,
+   staging, activation workspot and finish. The default heading is the camera yaw; set `yaw` explicitly
+   when looking down/sideways while marking the road. Native yaw is 0 toward +Y,
+   90 toward -X, in degrees. This heading is retained in exported node rotations.
+4. Add supporting marks and optional speed/width changes using the roles below.
+5. Call `export_race(race_id=...)` to write `world.json` and `race-plan.json`
+   beneath the library's `exports` folder. The response gives both absolute
+   paths, missing requirements and warnings. `require_complete=false` allows
+   an incomplete draft. Exporting does not take game control.
+
+| Role | Export/use | Options |
+| --- | --- | --- |
+| `spline_point` | Ordered centreline points for a race spline | None |
+| `checkpoint` | Marker and ordered checkpoint trigger binding | `width_m`, `depth_m`, `height_m` |
+| `start_grid`, `player_start` | Spawn-point markers | None |
+| `staging`, `finish` | Marker and trigger | `width_m`, `depth_m`, `height_m` |
+| `activation` | Player standing-workspot root and interaction position on clear ground | None |
+| `recovery` | Recovery spawn-point marker | None |
+| `opponent_exit`, `reward`, `spectator`, `gps` | Named location markers for later quest/world bindings | None |
+| `hazard`, `boundary` | Marker and trigger for later policy bindings | `width_m`, `depth_m`, `height_m` |
+| `prop` | Location marker, plus an entity when an explicit depot template is supplied | `entity_template` |
+| `speed_change` | Target speed at the nearest centreline station | Required `speed_mps` |
+| `width_change` | Left/right widths from the nearest station until the next change/end | Required `left_m`, `right_m` |
+
+Area dimensions default to 10 m across the road, 2 m along it and 4 m tall.
+Options are passed as an object, for example
+`options={"width_m":12,"depth_m":3,"height_m":4}`. A complete geometry survey
+requires at least two spline points (three for a loop), a checkpoint, an opponent
+grid mark, a staging mark, an activation workspot mark, exactly one player start and exactly one finish.
+Recovery, run-off, reward, spectators and hazard plans remain author choices;
+all captured marks appear in the handoff manifest.
+
+For an explicitly known coordinate use `source="manual"`, `position={x,y,z}`
+and `yaw`. `source="player"` takes the runtime's player position;
+`source="camera"` is an explicit camera-origin mark and adds a ground-placement
+warning on export. Manual marks and offline edits do not acquire game control.
+`get_record` reads the full race; `search_library(kind="race")` finds plans, and
+`export_library` includes them in its standalone bundle.
+
+`edit_race_mark(race_id, mark_id, ...)` changes notes, name, options, position,
+heading or per-role `order` without recapturing. Omitted fields are retained;
+options replace that mark's option object. Use an unused order when reordering
+(a temporary high order allows a swap). `mark_race(..., mark_id=...)` recaptures
+an existing mark. `remove_race_mark` removes one mark; `configure_race` changes
+description, loop mode or speed/width defaults without replacing any marks.
+
+The export uses a unique subdirectory under `mod/<prefix>/races/<plan ID>` and
+stable NodeRefs, so repeated exports keep identities and two plans do not collide.
+Spline points are converted from captured world coordinates to local offsets
+about the first point, with an identity spline rotation. Speed/width stationing
+uses the piecewise-straight centreline (including loop closure) and warns about
+tuning marks more than 5 m from it. Default generator handles produce straight
+segments; **recompute station distances if you smooth the tangents later**.
+Review projected stations at crossings and hairpins where the closest segment
+may not be the intended one.
+
+Feed the returned world spec to `tools/generate_world.py generate --spec <path>
+--dry-run` from the repository root after resolving the owning project.
+Unregistered prefixes require project/catalog ownership before production use.
+The manifest contains mark-to-resource bindings and the remaining lifecycle
+work: actors/vehicles/seats, countdown, ordered checkpoint activation and facts,
+HUD/visuals, finish ordering, recovery, reward and cleanup. Checkpoint exports
+are **quest trigger geometry**, not automatically active native checkpoint
+devices or a playable race. The export does not install resources or modify
+vanilla race facts. See the
+[race construction study](../../docs/reference/vanilla-quests/deep-dives/races.md).
+
+`build_race(race_id=..., entrants=[{"id":"racer_one","grid":0,
+"vehicle":"Vehicle.v_standard2_archer_quartz",
+"driver":"Character.sq024_city_race_corpo_racer"}])` builds the captured plan
+into a native resource preview. The owning project comes from the survey's
+registered depot prefix. Optional `settings` supplies countdown/timeout,
+winning places, reward, rubber-banding and off-course policy. No game control,
+REDscript or installation is involved. See the
+[race builder](../../docs/authoring/races.md) for binary conversion and the
+workspot-based activation contract.
+
 ## Routes and autonomous scouting
 
 `record_route(name="Courtyard approach")` starts recording. Completed moves and
@@ -144,6 +238,7 @@ installer deliberately does not interrupt an active capture run to perform it.
 
 ```powershell
 .\converted\game-scout\venv\Scripts\python.exe -m unittest tests.test_game_scout -v
+.\converted\game-scout\venv\Scripts\python.exe -m unittest tests.test_game_scout_races -v
 ```
 
 The suite tests geometry, collisions/loading/cleanup through the Lua harness,

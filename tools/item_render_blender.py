@@ -70,6 +70,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--appearance")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--jobs", type=Path)
+    parser.add_argument("--assembly", type=Path)
+    parser.add_argument("--cpu", action="store_true")
     parser.add_argument("--batch-report", type=Path)
     parser.add_argument("--native-pbr", action="store_true")
     parser.add_argument("--resolution", type=int, default=1024)
@@ -265,6 +267,8 @@ def setup_scene(
     scene.render.engine = args.engine
     scene.render.resolution_x = args.resolution
     scene.render.resolution_y = args.resolution
+    if getattr(args, "assembly", None):
+        scene.render.resolution_y = round(args.resolution / 1.6)
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
@@ -274,7 +278,11 @@ def setup_scene(
     if args.engine == "CYCLES":
         scene.cycles.samples = args.samples
         scene.cycles.use_denoising = True
-        cycles_device = configure_cycles(scene)
+        if getattr(args, "cpu", False):
+            scene.cycles.device = "CPU"
+            cycles_device = {"requested": "CPU", "active": "CPU", "devices": []}
+        else:
+            cycles_device = configure_cycles(scene)
     else:
         scene.render.image_settings.color_depth = "8"
         scene.render.film_transparent = True
@@ -286,6 +294,9 @@ def setup_scene(
     background = world.node_tree.nodes.get("Background")
     background.inputs["Color"].default_value = (0.012, 0.016, 0.025, 1.0)
     background.inputs["Strength"].default_value = 0.1
+    if getattr(args, "assembly", None):
+        background.inputs["Color"].default_value = (0.4, 0.4, 0.4, 1.0)
+        background.inputs["Strength"].default_value = 0.65
 
     center = (minimum + maximum) * 0.5
     size = maximum - minimum
@@ -293,6 +304,9 @@ def setup_scene(
     add_area("Key", tuple(center + Vector((-1.6, -2.1, 2.4)) * span), 150 * span, 2.2 * span, center)
     add_area("Fill", tuple(center + Vector((2.0, -0.8, 1.0)) * span), 65 * span, 2.6 * span, center)
     add_area("Rim", tuple(center + Vector((0.5, 2.2, 2.1)) * span), 200 * span, 1.7 * span, center)
+    if getattr(args, "assembly", None):
+        for light in bpy.data.lights:
+            light.energy *= max(span / 2, 1)
 
     camera_data = bpy.data.cameras.new("Item Camera")
     camera_data.lens = 72
@@ -322,6 +336,15 @@ def render_views(
             raise RuntimeError(f"Unknown view: {view}")
         camera.location = target + direction.normalized() * distance
         look_at(camera, target)
+        if getattr(args, "assembly", None):
+            from bpy_extras.object_utils import world_to_camera_view
+            corners = [obj.matrix_world @ Vector(corner) for obj in mesh_objects()
+                       if not obj.hide_render for corner in obj.bound_box]
+            for _ in range(3):
+                bpy.context.view_layer.update()
+                projected = [world_to_camera_view(bpy.context.scene, camera, point) for point in corners]
+                factor = max(max(abs(point.x - .5), abs(point.y - .5)) * 2 for point in projected) / .84
+                camera.location = target + (camera.location - target) * factor
         output = (args.output / f"{view}.png").resolve()
         bpy.context.scene.render.filepath = str(output)
         bpy.ops.render.render(write_still=True)
@@ -397,13 +420,21 @@ def image_diagnostics() -> list[dict[str, object]]:
 def render_job(args: argparse.Namespace) -> dict[str, object]:
     cache_before = MATERIAL_CACHE_STATS.copy()
     clear_scene()
-    if args.native_pbr:
+    assembly = None
+    if getattr(args, "assembly", None):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from vehicle_assembly import import_full_vehicle
+        job = json.loads(args.assembly.read_text(encoding="utf-8"))
+        job["output"] = str(args.output.resolve())
+        assembly = import_full_vehicle(job)
+        mask_repair = {"assembly": assembly}
+    elif args.native_pbr:
         import_native_pbr(args.glb)
         mask_repair = {"repaired": [], "reason": "native PBR material"}
     else:
         import_cp77(args.glb, args.appearance)
         mask_repair = repair_multilayer_masks(args.glb, args.appearance, args.output)
-    objects = mesh_objects()
+    objects = [obj for obj in mesh_objects() if not obj.hide_render]
     minimum, maximum = world_bounds(objects)
     camera, cycles_device = setup_scene(args, minimum, maximum)
     images = render_views(args, camera, minimum, maximum)
@@ -415,6 +446,9 @@ def render_job(args: argparse.Namespace) -> dict[str, object]:
         "engine": args.engine,
         "resolution": args.resolution,
         "samples": args.samples,
+        "geometry": "game_full_detail" if assembly else "mesh",
+        "components": assembly,
+        "vertices": sum(len(obj.data.vertices) for obj in objects),
         "cycles_device": cycles_device,
         "images": images,
         "materials": sorted(material.name for material in bpy.data.materials),
@@ -469,6 +503,8 @@ def main() -> None:
             engine=args.engine,
             views=args.views,
             native_pbr=bool(job.get("native_pbr", args.native_pbr)),
+            assembly=Path(job["assembly"]) if job.get("assembly") else None,
+            cpu=args.cpu,
         )
         try:
             render_job(batch_args)

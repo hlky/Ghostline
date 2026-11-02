@@ -13,6 +13,8 @@ These guides own reusable construction rules:
 - [Characters](characters.md)
 - [Items and equipment](items-and-equipment.md)
 - [Braindance](braindance.md)
+- [Race builder](races.md)
+- [Vehicle races: native research and construction plan](../reference/vanilla-quests/deep-dives/races.md)
 - [ArchiveXL resource patching](archivexl-resource-patching.md)
 
 Quest-specific intent, dialogue, state, and commands remain under

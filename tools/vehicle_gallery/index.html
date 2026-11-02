@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ghostline Vehicle Index</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><div><p class="eyebrow">GHOSTLINE / AUTHORING REFERENCES</p><h1>Vehicle Index</h1><p class="lede">Browse actual vehicle appearances, see their paint and equipment differences, and inspect the matching spawn records.</p></div><div class="totals" id="totals" aria-live="polite">Loading catalog…</div></header>
+<main>
+<form id="filters">
+<label class="search">Search<input id="q" type="search" placeholder="Caliburn, Quadra, nomad, record ID…" autocomplete="off"></label>
+<label>Manufacturer<select id="manufacturer"><option value="">All manufacturers</option></select></label>
+<label>Type<select id="type"><option value="">All types</option></select></label>
+<label>Sort<select id="sort"><option value="name">Name</option><option value="horsepower">Horsepower ↓</option><option value="mass">UI mass ↓</option><option value="speed">Calculated top speed ↓</option></select></label>
+<label class="check"><input id="player" type="checkbox">Player variants only</label><label class="check"><input id="rendered" type="checkbox">With previews</label><label class="check"><input id="studio" type="checkbox">3D renders only</label>
+</form>
+<p class="source-note">Calculated speeds use the forward-gear limits and the game’s speedometer curve. HUD readings and world-space speeds are shown separately. These are configured gearing ceilings; drag, terrain and race AI affect sustained speed. Each card identifies an exact authored appearance. Variant renders use its own materials and components; vanilla icons are not substituted for missing variant renders.</p>
+<div class="result-bar"><p id="status" role="status">Loading vehicles…</p><button id="clear" type="button">Clear filters</button></div>
+<section id="compare-panel" hidden aria-label="Compare selected vehicles"><div class="result-bar"><h2>Compare vehicles</h2><button id="clear-compare" type="button">Clear comparison</button></div><div class="table-scroll"><table id="comparison"></table></div></section>
+<section id="vehicles" class="grid" aria-label="Vehicle results"></section>
+<nav aria-label="Vehicle pages"><button id="previous" type="button">Previous</button><span id="page">Page 1</span><button id="next" type="button">Next</button></nav>
+</main>
+<template id="vehicle-card"><article class="card"><div class="visual"><img loading="lazy" alt=""><span class="placeholder">No game preview available</span><span class="image-kind"></span></div><div class="view-buttons" aria-label="Render views"></div><div class="copy"><p class="make"></p><h2></h2><p class="variant"></p><dl class="specs"></dl><div class="actions"><button class="copy-id" type="button">Copy record ID</button><button class="copy-variant" type="button">Copy variant</button><label class="check"><input class="compare" type="checkbox">Compare</label></div><details><summary>Vehicle details &amp; source</summary><p class="description"></p><dl class="source"></dl><h3>Per-gear speed ceilings</h3><div class="gears"></div></details></div></article></template>
+<dialog id="render-viewer"><button id="close-render" type="button">Close</button><img alt=""><p></p></dialog>
+<script type="module" src="/app.js"></script>
+</body></html>

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "gqt009_race_9a1821af",
+  "title": "Arroyo Industrial Run",
+  "description": "Independent Arroyo industrial race; inherited survey from race_418055e406f145a4a473cb547bcca69e; duration and standing interaction require playtest.",
+  "survey": "race-plan.json",
+  "vehicle_diagnostics": false,
+  "entrants": [
+    {
+      "id": "racer_one",
+      "grid": 0,
+      "vehicle": "Vehicle.v_standard2_archer_quartz",
+      "driver": "Character.sq024_city_race_corpo_racer"
+    }
+  ],
+  "countdown_seconds": 3,
+  "timeout_seconds": 300,
+  "winning_places": 1,
+  "reward": {
+    "item": "Items.money",
+    "quantity": 1000
+  },
+  "off_course": {
+    "action": "fail",
+    "distance_m": 50,
+    "grace_seconds": 2
+  },
+  "rubberband": {
+    "min_distance": 20,
+    "max_distance": 150,
+    "stay_in_front": true
+  },
+  "checkpoint_mode": "vanilla",
+  "checkpoint_spacing_m": 125
+}

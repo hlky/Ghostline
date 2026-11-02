@@ -1,0 +1,5044 @@
+{
+  "Header": {
+    "WolvenKitVersion": "8.17.4",
+    "WKitJsonVersion": "0.0.9",
+    "GameVersion": 2310,
+    "ExportedDateTime": "1970-01-01T00:00:00Z",
+    "DataType": "CR2W",
+    "ArchiveFileName": "H:\\projects\\Ghostline\\projects\\test-quests\\gqt009\\source\\archive\\mod\\gqt009\\races\\06f3644f20e54f0f8f4b066e9a1821af\\scenes\\gqt009_race_9a1821af_result.scene"
+  },
+  "Data": {
+    "Version": 195,
+    "BuildVersion": 0,
+    "RootChunk": {
+      "$type": "scnSceneResource",
+      "version": 5,
+      "cookingPlatform": "PLATFORM_PC",
+      "sceneCategoryTag": "minorQuests",
+      "actors": [
+        {
+          "$type": "scnActorDef",
+          "actorId": {
+            "$type": "scnActorId",
+            "id": 0
+          },
+          "actorName": "Johnny",
+          "acquisitionPlan": "community",
+          "communityParams": {
+            "$type": "scnCommunityParams",
+            "entryName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "johnny"
+            },
+            "reference": {
+              "$type": "NodeRef",
+              "$storage": "string",
+              "$value": "#gqt009_race_9a1821af_spectators"
+            },
+            "forceMaxVisibility": 0
+          },
+          "voicetagId": {
+            "$type": "scnVoicetagId",
+            "id": "1103967280742240508"
+          },
+          "lipsyncAnimSet": {
+            "$type": "scnLipsyncAnimSetSRRefId",
+            "id": 0
+          },
+          "animSets": [],
+          "bodyCinematicAnimSets": [],
+          "cyberwareAnimSets": [],
+          "cyberwareCinematicAnimSets": [],
+          "deformationAnimSets": [],
+          "dynamicAnimSets": [],
+          "facialAnimSets": [],
+          "facialCinematicAnimSets": []
+        }
+      ],
+      "playerActors": [
+        {
+          "$type": "scnPlayerActorDef",
+          "actorId": {
+            "$type": "scnActorId",
+            "id": 1
+          },
+          "playerName": "Player",
+          "acquisitionPlan": "findInContext",
+          "specCharacterRecordId": {
+            "$type": "TweakDBID",
+            "$storage": "string",
+            "$value": "Character.Player_Puppet_Base"
+          },
+          "voicetagId": {
+            "$type": "scnVoicetagId",
+            "id": "1103967280742240864"
+          },
+          "lipsyncAnimSet": {
+            "$type": "scnLipsyncAnimSetSRRefId",
+            "id": 1
+          },
+          "findActorInContextParams": {
+            "$type": "scnFindEntityInContextParams",
+            "specRecordId": {
+              "$type": "TweakDBID",
+              "$storage": "string",
+              "$value": "Character.Player_Puppet_Base"
+            }
+          },
+          "animSets": [],
+          "bodyCinematicAnimSets": [],
+          "cyberwareAnimSets": [],
+          "cyberwareCinematicAnimSets": [],
+          "deformationAnimSets": [],
+          "dynamicAnimSets": [],
+          "facialAnimSets": [],
+          "facialCinematicAnimSets": []
+        }
+      ],
+      "entryPoints": [
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "lose_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 1
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "win_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 101
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "johnny_win_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 201
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "johnny_lose_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 301
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "you_ready_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 401
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "car_hp_drop_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 501
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "sandstorm_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 601
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "speeding_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 701
+          }
+        },
+        {
+          "$type": "scnEntryPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "destroying_enemy_in"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 801
+          }
+        }
+      ],
+      "exitPoints": [
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "lose_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 2
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "win_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 102
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "johnny_win_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 202
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "johnny_lose_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 302
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "you_ready_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 402
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "car_hp_drop_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 502
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "sandstorm_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 602
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "speeding_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 702
+          }
+        },
+        {
+          "$type": "scnExitPoint",
+          "name": {
+            "$type": "CName",
+            "$storage": "string",
+            "$value": "destroying_enemy_out"
+          },
+          "nodeId": {
+            "$type": "scnNodeId",
+            "id": 802
+          }
+        }
+      ],
+      "sceneGraph": {
+        "HandleId": "66",
+        "Data": {
+          "$type": "scnSceneGraph",
+          "graph": [
+            {
+              "HandleId": "1",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 1
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 3
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "2",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 2
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "3",
+              "Data": {
+                "$type": "scnRandomizerNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 3
+                },
+                "ffStrategy": "automatic",
+                "numOutSockets": 5,
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 10
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 11
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 1
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 12
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 2
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 13
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 3
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 14
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 4
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "5",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 10
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "4",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "4438003439712474128"
+                      },
+                      "startTime": 0,
+                      "duration": 1390,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 1
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 2
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "7",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 11
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "6",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "13970509836588778606"
+                      },
+                      "startTime": 0,
+                      "duration": 1750,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 257
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 2
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "9",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 12
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "8",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "13755501208601833342"
+                      },
+                      "startTime": 0,
+                      "duration": 2545,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 513
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 2
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "11",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 13
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "10",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "17114641086644383442"
+                      },
+                      "startTime": 0,
+                      "duration": 1825,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 769
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 2
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "13",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 14
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "12",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "935521853677217957"
+                      },
+                      "startTime": 0,
+                      "duration": 2305,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 1025
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 2
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "14",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 101
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 103
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "15",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 102
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "16",
+              "Data": {
+                "$type": "scnRandomizerNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 103
+                },
+                "ffStrategy": "automatic",
+                "numOutSockets": 5,
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 110
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 111
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 1
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 112
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 2
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 113
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 3
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 114
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 4
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "18",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 110
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "17",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "13406467567354271600"
+                      },
+                      "startTime": 0,
+                      "duration": 1410,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 1281
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 102
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "20",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 111
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "19",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "4750557958281113085"
+                      },
+                      "startTime": 0,
+                      "duration": 1805,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 1537
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 102
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "22",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 112
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "21",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "4132838380938159414"
+                      },
+                      "startTime": 0,
+                      "duration": 1485,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 1793
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 102
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "24",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 113
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "23",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "7901077757679750854"
+                      },
+                      "startTime": 0,
+                      "duration": 1265,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 2049
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 102
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "26",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 114
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "25",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "9584161177793604172"
+                      },
+                      "startTime": 0,
+                      "duration": 2995,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 2305
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 102
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "27",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 201
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 203
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "28",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 202
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "29",
+              "Data": {
+                "$type": "scnRandomizerNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 203
+                },
+                "ffStrategy": "automatic",
+                "numOutSockets": 2,
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 210
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 211
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 1
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "31",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 210
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "30",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "7510272318670722347"
+                      },
+                      "startTime": 0,
+                      "duration": 2540,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 2561
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 202
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "33",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 211
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "32",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "4136931236334010300"
+                      },
+                      "startTime": 0,
+                      "duration": 1410,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 2817
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 202
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "34",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 301
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 303
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "35",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 302
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "36",
+              "Data": {
+                "$type": "scnRandomizerNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 303
+                },
+                "ffStrategy": "automatic",
+                "numOutSockets": 2,
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 310
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 311
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 1
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "38",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 310
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "37",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "12834359226320215519"
+                      },
+                      "startTime": 0,
+                      "duration": 1390,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 3073
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 302
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "40",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 311
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "39",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "14663537316173367008"
+                      },
+                      "startTime": 0,
+                      "duration": 2575,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 3329
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 302
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "41",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 401
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 410
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "42",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 402
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "44",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 410
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "43",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "1606260587557950806"
+                      },
+                      "startTime": 0,
+                      "duration": 2785,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 3585
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 402
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "45",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 501
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 510
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "46",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 502
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "48",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 510
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "47",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "17408225322108341768"
+                      },
+                      "startTime": 0,
+                      "duration": 1825,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 3841
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 502
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "49",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 601
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 610
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "50",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 602
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "52",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 610
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "51",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "5024542286436116519"
+                      },
+                      "startTime": 0,
+                      "duration": 2200,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 4097
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 602
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "53",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 701
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 710
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "54",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 702
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "56",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 710
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "55",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "3026457351691912755"
+                      },
+                      "startTime": 0,
+                      "duration": 5895,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 4353
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 6170
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 702
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "57",
+              "Data": {
+                "$type": "scnStartNode",
+                "ffStrategy": "automatic",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 801
+                },
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 803
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "58",
+              "Data": {
+                "$type": "scnEndNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 802
+                },
+                "ffStrategy": "automatic",
+                "outputSockets": [],
+                "type": "Terminating"
+              }
+            },
+            {
+              "HandleId": "59",
+              "Data": {
+                "$type": "scnRandomizerNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 803
+                },
+                "ffStrategy": "automatic",
+                "numOutSockets": 3,
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 810
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 811
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 1
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 812
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 2
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "61",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 810
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "60",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "9699232443920966736"
+                      },
+                      "startTime": 0,
+                      "duration": 1770,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 4609
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 802
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "63",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 811
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "62",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "1328665963821056173"
+                      },
+                      "startTime": 0,
+                      "duration": 1620,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 4865
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 802
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "HandleId": "65",
+              "Data": {
+                "$type": "scnSectionNode",
+                "nodeId": {
+                  "$type": "scnNodeId",
+                  "id": 812
+                },
+                "ffStrategy": "automatic",
+                "events": [
+                  {
+                    "HandleId": "64",
+                    "Data": {
+                      "$type": "scnDialogLineEvent",
+                      "id": {
+                        "$type": "scnSceneEventId",
+                        "id": "3364827365228865832"
+                      },
+                      "startTime": 0,
+                      "duration": 1685,
+                      "screenplayLineId": {
+                        "$type": "scnscreenplayItemId",
+                        "id": 5121
+                      },
+                      "voParams": {
+                        "$type": "scnDialogLineVoParams",
+                        "voExpression": "Vo_Expression_Spoken"
+                      }
+                    }
+                  }
+                ],
+                "sectionDuration": {
+                  "$type": "scnSceneTime",
+                  "stu": 5000
+                },
+                "actorBehaviors": [
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 0
+                    }
+                  },
+                  {
+                    "$type": "scnSectionInternalsActorBehavior",
+                    "actorId": {
+                      "$type": "scnActorId",
+                      "id": 1
+                    }
+                  }
+                ],
+                "outputSockets": [
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [
+                      {
+                        "$type": "scnInputSocketId",
+                        "isockStamp": {
+                          "$type": "scnInputSocketStamp",
+                          "name": 0,
+                          "ordinal": 0
+                        },
+                        "nodeId": {
+                          "$type": "scnNodeId",
+                          "id": 802
+                        }
+                      }
+                    ],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 0,
+                      "ordinal": 0
+                    }
+                  },
+                  {
+                    "$type": "scnOutputSocket",
+                    "destinations": [],
+                    "stamp": {
+                      "$type": "scnOutputSocketStamp",
+                      "name": 1,
+                      "ordinal": 0
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "startNodes": [
+            {
+              "$type": "scnNodeId",
+              "id": 1
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 101
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 201
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 301
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 401
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 501
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 601
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 701
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 801
+            }
+          ],
+          "endNodes": [
+            {
+              "$type": "scnNodeId",
+              "id": 2
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 102
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 202
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 302
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 402
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 502
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 602
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 702
+            },
+            {
+              "$type": "scnNodeId",
+              "id": 802
+            }
+          ]
+        }
+      },
+      "screenplayStore": {
+        "$type": "scnscreenplayStore",
+        "lines": [
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 1
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369413620789248"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90C71C47DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90C71C47DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 257
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369428082749440"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90C75227DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90C75227DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 513
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369438400737280"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90C77897DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90C77897DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 769
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369447779201024"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90C79B87DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90C79B87DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 1025
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369458030080000"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90C7C1B7DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90C7C1B7DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 1281
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372547403411456"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90F4B687DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90F4B687DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 1537
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372566193893376"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90F4FC87DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90F4FC87DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 1793
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372575001931776"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90F51D57DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90F51D57DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 2049
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372586695651328"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90F548E7DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90F548E7DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 2305
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372680513843200"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90F6A667DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90F6A667DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 2561
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159362752931819520"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90662F47DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90662F47DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 2817
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159362765078523904"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90665C87DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90665C87DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 3073
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159363896584302592"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B9076D3B7DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B9076D3B7DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 3329
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159363909402095616"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90770377DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90770377DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 3585
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159347102540754944"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B8F827107DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B8F827107DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 3841
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159349620666658816"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B8FA715C7DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B8FA715C7DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 4097
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159351819706691584"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B8FC715D7DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B8FC715D7DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 4353
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159353074558562304"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B8FD95887DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B8FD95887DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 4609
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361710546612224"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90570417DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90570417DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 4865
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361737893474304"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B905769F7DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B905769F7DF000"
+            }
+          },
+          {
+            "$type": "scnscreenplayDialogLine",
+            "itemId": {
+              "$type": "scnscreenplayItemId",
+              "id": 5121
+            },
+            "speaker": {
+              "$type": "scnActorId",
+              "id": 0
+            },
+            "addressee": {
+              "$type": "scnActorId",
+              "id": 1
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361750291836928"
+            },
+            "usage": {
+              "$type": "scnscreenplayLineUsage",
+              "playerGenderMask": {
+                "$type": "scnGenderMask",
+                "mask": 3
+              }
+            },
+            "maleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "m_39B90579827DF000"
+            },
+            "femaleLipsyncAnimationName": {
+              "$type": "CName",
+              "$storage": "string",
+              "$value": "f_39B90579827DF000"
+            }
+          }
+        ],
+        "options": []
+      },
+      "locStore": {
+        "$type": "scnlocLocStoreEmbedded",
+        "vdEntries": [
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159347102540754948"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159347102540754944"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 0
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159349620666658820"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159349620666658816"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 3
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159351819706691588"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159351819706691584"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 5
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159353074558562308"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159353074558562304"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 7
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159361710546612228"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361710546612224"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 9
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159361737893474308"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361737893474304"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 11
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159361750291836932"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361750291836928"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 13
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159362752931819524"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159362752931819520"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 15
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159362765078523908"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159362765078523904"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 17
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159363896584302596"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159363896584302592"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 19
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159363909402095620"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159363909402095616"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 21
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369413620789252"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369413620789248"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 23
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369428082749444"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369428082749440"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 25
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369438400737284"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369438400737280"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 27
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369447779201028"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369447779201024"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 29
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369458030080004"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369458030080000"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 31
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372547403411460"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372547403411456"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 33
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372566193893380"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372566193893376"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 35
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372575001931780"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372575001931776"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 37
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372586695651332"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372586695651328"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 39
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372680513843204"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372680513843200"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 41
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575761231872"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159347102540754944"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "2"
+            },
+            "vpeIndex": 1,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929837569687552"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159347102540754944"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "1"
+            },
+            "vpeIndex": 2,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575761231876"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159349620666658816"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 4,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009088"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159351819706691584"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 6,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009092"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159353074558562304"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 8,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009096"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361710546612224"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 10,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009100"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361737893474304"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 12,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009104"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159361750291836928"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 14,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786304"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159362752931819520"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 16,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786308"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159362765078523904"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 18,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786312"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159363896584302592"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 20,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786316"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159363909402095616"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 22,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786320"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369413620789248"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 24,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786324"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369428082749440"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 26,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563520"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369438400737280"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 28,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563524"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369447779201024"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 30,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563528"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159369458030080000"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 32,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563532"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372547403411456"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 34,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563536"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372566193893376"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 36,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575828340736"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372575001931776"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 38,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575828340740"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372586695651328"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 40,
+            "localeId": "pl_pl"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantDescriptorEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575828340744"
+            },
+            "locstringId": {
+              "$type": "scnlocLocstringId",
+              "ruid": "4159372680513843200"
+            },
+            "signature": {
+              "$type": "scnlocSignature",
+              "val": "3"
+            },
+            "vpeIndex": 42,
+            "localeId": "pl_pl"
+          }
+        ],
+        "vpEntries": [
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159347102540754948"
+            },
+            "content": "So – you ready?"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575761231872"
+            },
+            "content": "To jak? Gotowa?"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929837569687552"
+            },
+            "content": "To jak? Gotowy?"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159349620666658820"
+            },
+            "content": "Fuck!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575761231876"
+            },
+            "content": "Ja pierdolę!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159351819706691588"
+            },
+            "content": "Shit, get ready."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009088"
+            },
+            "content": "Przygotuj się."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159353074558562308"
+            },
+            "content": "Slow down, turbo. Or you’ll get us killed. Again"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009092"
+            },
+            "content": "Co ty wyprawiasz?! Chcesz nas znowu pozabijać?"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159361710546612228"
+            },
+            "content": "Not half bad, that."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009096"
+            },
+            "content": "To było dobre."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159361737893474308"
+            },
+            "content": "Guess it's your lucky day."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009100"
+            },
+            "content": "No wreszcie!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159361750291836932"
+            },
+            "content": "Fuck yeah, nice!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575778009104"
+            },
+            "content": "Dobra robota."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159362752931819524"
+            },
+            "content": "Ugh, finally."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786304"
+            },
+            "content": "To twój szczęśliwy dzień."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159362765078523908"
+            },
+            "content": "Finally."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786308"
+            },
+            "content": "Nieźle."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159363896584302596"
+            },
+            "content": "Ohhh, V…"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786312"
+            },
+            "content": "Kurwa."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159363909402095620"
+            },
+            "content": "Oh, V…"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786316"
+            },
+            "content": "Oj, V, V..."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369413620789252"
+            },
+            "content": "Fuck."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786320"
+            },
+            "content": "Kurwa."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369428082749444"
+            },
+            "content": "Great. Just great."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575794786324"
+            },
+            "content": "No to pięknie."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369438400737284"
+            },
+            "content": "Fan-fucking-tastic."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563520"
+            },
+            "content": "Wspaniale, kurwa."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369447779201028"
+            },
+            "content": "Fucking hell..."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563524"
+            },
+            "content": "Ja pierdolę..."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159369458030080004"
+            },
+            "content": "Goddamnit all..."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563528"
+            },
+            "content": "Szlag by to wszystko."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372547403411460"
+            },
+            "content": "Fuuuuuu-uuu--uuuuck! Aaaaaaaaaaugh!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563532"
+            },
+            "content": "Nieźle!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372566193893380"
+            },
+            "content": "Whoooooooo... Aaaaaaah!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575811563536"
+            },
+            "content": "Udało się."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372575001931780"
+            },
+            "content": "Well, well, well."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575828340736"
+            },
+            "content": "Mamy to!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372586695651332"
+            },
+            "content": "Gonna be a good day."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575828340740"
+            },
+            "content": "Tak!"
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4159372680513843204"
+            },
+            "content": "Can't have bad luck all the time."
+          },
+          {
+            "$type": "scnlocLocStoreEmbeddedVariantPayloadEntry",
+            "variantId": {
+              "$type": "scnlocVariantId",
+              "ruid": "4169929575828340744"
+            },
+            "content": "Czasem nawet ja mam szczęście."
+          }
+        ]
+      },
+      "resouresReferences": {
+        "$type": "scnSRRefCollection",
+        "cinematicAnimNames": [],
+        "cinematicAnimSets": [],
+        "dynamicAnimNames": [],
+        "dynamicAnimSets": [],
+        "gameplayAnimNames": [],
+        "gameplayAnimSets": [],
+        "lipsyncAnimSets": [
+          {
+            "$type": "scnLipsyncAnimSetSRRef",
+            "asyncRefLipsyncAnimSet": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\quest\\minor_quests\\mq056\\scenes\\lipsync\\en\\mq056_00_commentary\\johnny.anims"
+              },
+              "Flags": "Soft"
+            }
+          },
+          {
+            "$type": "scnLipsyncAnimSetSRRef",
+            "asyncRefLipsyncAnimSet": {
+              "DepotPath": {
+                "$type": "ResourcePath",
+                "$storage": "string",
+                "$value": "base\\quest\\minor_quests\\mq056\\scenes\\lipsync\\en\\mq056_00_commentary\\v.anims"
+              },
+              "Flags": "Soft"
+            }
+          }
+        ],
+        "ridAnimationContainers": [],
+        "ridAnimations": [],
+        "ridAnimSets": [],
+        "ridCameraAnimations": [],
+        "ridCyberwareAnimSets": [],
+        "ridDeformationAnimSets": [],
+        "ridFacialAnimSets": []
+      },
+      "debugSymbols": {
+        "$type": "scnDebugSymbols",
+        "performersDebugSymbols": [
+          {
+            "$type": "scnPerformerSymbol",
+            "editorPerformerId": "0",
+            "entityRef": {
+              "$type": "gameEntityReference",
+              "dynamicEntityUniqueName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "names": [],
+              "reference": {
+                "$type": "NodeRef",
+                "$storage": "string",
+                "$value": "#player"
+              },
+              "sceneActorContextName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "slotName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "type": "EntityRef"
+            },
+            "performerId": {
+              "$type": "scnPerformerId",
+              "id": 257
+            }
+          },
+          {
+            "$type": "scnPerformerSymbol",
+            "editorPerformerId": "0",
+            "entityRef": {
+              "$type": "gameEntityReference",
+              "dynamicEntityUniqueName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "names": [
+                {
+                  "$type": "CName",
+                  "$storage": "string",
+                  "$value": "johnny"
+                }
+              ],
+              "reference": {
+                "$type": "NodeRef",
+                "$storage": "string",
+                "$value": "#gqt009_race_9a1821af_spectators"
+              },
+              "sceneActorContextName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "slotName": {
+                "$type": "CName",
+                "$storage": "string",
+                "$value": "None"
+              },
+              "type": "EntityRef"
+            },
+            "performerId": {
+              "$type": "scnPerformerId",
+              "id": 1
+            }
+          }
+        ],
+        "sceneEventsDebugSymbols": [],
+        "sceneNodesDebugSymbols": [],
+        "workspotsDebugSymbols": []
+      },
+      "workspots": [],
+      "workspotInstances": [],
+      "props": [],
+      "localMarkers": [],
+      "effectDefinitions": [],
+      "effectInstances": [],
+      "referencePoints": [],
+      "notablePoints": [],
+      "voInfo": [],
+      "executionTags": [],
+      "executionTagEntries": [],
+      "interruptionScenarios": [],
+      "ridResources": []
+    },
+    "EmbeddedFiles": []
+  }
+}

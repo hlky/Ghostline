@@ -603,6 +603,43 @@ def entity_node(
     ref: str,
     handles: HandleAllocator,
 ) -> dict[str, Any]:
+    if "vehicle_forbidden_outline" in spec:
+        return {"HandleId":handles.take(),"Data":{
+            "$type":"worldVehicleForbiddenAreaNode",
+            "debugName":cname(debug_name(ref,spec.get("debug_name"))),
+            "sourcePrefabHash":str(spec.get("source_prefab_hash","0")),
+            "outline":area_outline(spec["vehicle_forbidden_outline"],handles),
+            "notifiers":[{"HandleId":handles.take(),"Data":{
+                "$type":"worldVehicleForbiddenAreaNotifier",
+                "innerAreaBoundToOuterArea":spec.get("vehicle_forbidden_inner_bound",True),
+                "innerAreaOutline":area_outline(spec.get("vehicle_forbidden_inner_outline",
+                    spec["vehicle_forbidden_outline"]),handles),
+                "areaSpeedLimit":float(spec.get("vehicle_forbidden_speed_limit",0.0)),
+                "enableNullArea":bool(spec.get("vehicle_forbidden_null_area",False))}}]}}
+    if "ambient_event" in spec:
+        return {"HandleId":handles.take(),"Data":{
+            "$type":"worldAmbientAreaNode",
+            "debugName":cname(debug_name(ref,spec.get("debug_name"))),
+            "sourcePrefabHash":str(spec.get("source_prefab_hash","0")),
+            "outline":area_outline(spec["ambient_outline"],handles),
+            "notifiers":[{"HandleId":handles.take(),"Data":{
+                "$type":"audioAmbientAreaNotifier","includeChannels":"TC_SoundAmbientArea",
+                "Settings":{"HandleId":handles.take(),"Data":{
+                    "$type":"audioAmbientAreaSettings",
+                    "EventsOnActive":[{"$type":"audioAudEventStruct",
+                        "event":cname(spec["ambient_event"])}],
+                    "outerDistance":20.0,"verticalOuterDistance":20.0}}}}]}}
+    if "population_record" in spec:
+        data = {
+            "$type": "worldPopulationSpawnerNode",
+            "debugName": cname(debug_name(ref, spec.get("debug_name"))),
+            "sourcePrefabHash": str(spec.get("source_prefab_hash", "0")),
+            "objectRecordId": {"$type":"TweakDBID","$storage":"uint64",
+                               "$value":str(spec["population_record"])},
+            "isVehicle": bool(spec.get("is_vehicle", False))}
+        if spec.get("appearance"):
+            data["appearanceName"] = cname(spec["appearance"])
+        return {"HandleId":handles.take(),"Data":data}
     entity_template = spec.get("entity_template")
     if not entity_template:
         raise SystemExit(f"Entity {ref} requires entity_template")
@@ -853,6 +890,9 @@ def spline_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dic
         "tag": spec.get("tag", "None"),
         "tagExt": spec.get("tag_ext", "None"),
     }
+    if "speed_sections" in spec and not patrol_spots:
+        data["$type"] = "worldSpeedSplineNode"
+        data["speedChangeSections"] = race_sections(spec,ref,widths=False)
     if patrol_spots:
         data["patrolPointDefs"] = patrol_point_defs
         data["patrolPoints"] = []
@@ -861,6 +901,116 @@ def spline_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dic
         "HandleId": node_handle,
         "Data": data,
     }
+
+
+def race_number(value: Any, label: str) -> float:
+    """Reject invalid RED float inputs before publishing generated resources."""
+    try:
+        if isinstance(value, bool):
+            raise ValueError
+        number = float(value)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise SystemExit(f"{label} must be a finite non-negative number") from exc
+    if not math.isfinite(number) or number < 0 or number > 3.4028234663852886e38:
+        raise SystemExit(f"{label} must be a finite non-negative RED float")
+    return number
+
+
+def race_sections(spec: dict[str, Any], ref: str, *, widths: bool) -> list[dict[str, Any]]:
+    key = "width_sections" if widths else "speed_sections"
+    sections = spec.get(key, [])
+    label = f"race spline {ref}.{key}"
+    if not isinstance(sections, list):
+        raise SystemExit(f"{label} must be a list")
+    result = []
+    previous_end = -1.0
+    for index, section in enumerate(sections):
+        item_label = f"{label}[{index}]"
+        if not isinstance(section, dict):
+            raise SystemExit(f"{item_label} must be an object")
+        start_key, end_key = ("from", "to") if widths else ("start", "end")
+        required = ("to", "left", "right") if widths else ("speed_mps",)
+        for field in required:
+            if field not in section:
+                raise SystemExit(f"{item_label}.{field} is required")
+        start = race_number(section.get(start_key, 0), f"{item_label}.{start_key}")
+        end = race_number(section.get(end_key, start), f"{item_label}.{end_key}")
+        if end < start or (widths and end == start):
+            raise SystemExit(f"{item_label}.{end_key} must be {'greater than' if widths else 'at least'} {start_key}")
+        if start < previous_end:
+            raise SystemExit(f"{label} must be ordered without overlapping sections")
+        previous_end = end
+        if widths:
+            result.append({
+                "$type": "worldRaceSplineNodeOffset", "from": start, "to": end,
+                "left": race_number(section["left"], f"{item_label}.left"),
+                "right": race_number(section["right"], f"{item_label}.right"),
+            })
+        else:
+            result.append({
+                "$type": "worldSpeedSplineNodeSpeedChangeSection", "start": start, "end": end,
+                "targetSpeed_M_P_S": race_number(section["speed_mps"], f"{item_label}.speed_mps"),
+            })
+    return result
+
+
+def race_spline_node(spec: dict[str, Any], ref: str, handles: HandleAllocator) -> dict[str, Any]:
+    if spec.get("patrol_spots"):
+        raise SystemExit(f"race spline {ref} cannot contain patrol_spots")
+    try:
+        node = spline_node(spec, ref, handles)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise SystemExit(f"race spline {ref}.points must contain valid numeric positions and tangents") from exc
+    data = node["Data"]
+    # Validate geometry as well as tuning: NaN/Inf must not reach a CR2W writer.
+    for index, point in enumerate(data["splineData"]["Data"]["points"]):
+        vectors = [point["position"], *point["tangents"]["Elements"]]
+        for vector in vectors:
+            for axis in ("X", "Y", "Z"):
+                race_number(abs(vector[axis]), f"race spline {ref}.points[{index}].{axis}")
+    data.update({
+        "$type": "worldRaceSplineNode",
+        "speedChangeSections": race_sections(spec, ref, widths=False),
+        "orientationChangeSections": [],
+        "roadAdjustmentFactorChangeSections": [],
+        "deprecatedSpeedRestrictions": [],
+        "deprecatedDefaultSpeed": 0.0,
+        "deprecatedDefaultAdjustTime": 0.0,
+        "useDeprecated": 0,
+        "ignoreTerrain": 0,
+        "offsets": race_sections(spec, ref, widths=True),
+        "offsetDefault": race_number(spec.get("width_default", 5), f"race spline {ref}.width_default"),
+    })
+    return node
+
+
+def race_spline_bounds(node: dict[str, Any], placement: dict[str, Any]) -> tuple[Vec3, Vec3]:
+    """Conservative world bounds enclosing the curve handles and road widths."""
+    data = node["Data"]
+    scale = placement["Scale"]
+    q = placement["Orientation"]
+    origin = placement["Position"]
+    width = max([data["offsetDefault"], *[
+        section[side] for section in data["offsets"] for side in ("left", "right")
+    ]]) * max(abs(scale[axis]) for axis in ("X", "Y", "Z"))
+    transformed = []
+    for point in data["splineData"]["Data"]["points"]:
+        p = point["position"]
+        for tangent in ({"X": 0, "Y": 0, "Z": 0}, *point["tangents"]["Elements"]):
+            x, y, z = ((p[axis] + tangent[axis]) * scale[axis] for axis in ("X", "Y", "Z"))
+            # Unit quaternion rotation: v' = v + 2 * (w(q.xyz x v) + q.xyz x (q.xyz x v)).
+            tx = 2 * (q["j"] * z - q["k"] * y)
+            ty = 2 * (q["k"] * x - q["i"] * z)
+            tz = 2 * (q["i"] * y - q["j"] * x)
+            transformed.append(Vec3(
+                origin["X"] + x + q["r"] * tx + q["j"] * tz - q["k"] * ty,
+                origin["Y"] + y + q["r"] * ty + q["k"] * tx - q["i"] * tz,
+                origin["Z"] + z + q["r"] * tz + q["i"] * ty - q["j"] * tx,
+            ))
+    return (
+        Vec3(*(min(getattr(p, axis) for p in transformed) - width for axis in ("x", "y", "z"))),
+        Vec3(*(max(getattr(p, axis) for p in transformed) + width for axis in ("x", "y", "z"))),
+    )
 
 
 def community_area_node(
@@ -881,7 +1031,7 @@ def community_area_node(
                 "phasesData": [
                     {
                         "$type": "communityCommunityEntryPhaseSpotsData",
-                        "entryPhaseName": cname(phase),
+                        "entryPhaseName": cname(phase_name),
                         "timePeriodsData": [
                             {
                                 "$type": "communityCommunityEntryPhaseTimePeriodData",
@@ -889,11 +1039,11 @@ def community_area_node(
                                 "periodName": cname(period),
                                 "spotNodeIds": [
                                     {"$type": "worldGlobalNodeID", "hash": str(spot.global_node_id)}
-                                    for spot in entry.spots
+                                    for spot in entry.spots if spot.spec.get("phase", phase) == phase_name
                                 ],
                             }
                         ],
-                    }
+                    } for phase_name in (phase, *entry.spec.get("additional_phases", []))
                 ],
             }
         )
@@ -973,7 +1123,7 @@ def community_registry_node(
                                 "$type": "communitySpawnPhase",
                                 "alwaysSpawned": entry.spec.get("always_spawned", "default__false_"),
                                 "appearances": [cname(value) for value in appearances],
-                                "phaseName": cname(phase),
+                                "phaseName": cname(phase_name),
                                 "prefetchAppearance": int(entry.spec.get("prefetch_appearance", 0)),
                                 "timePeriods": [
                                     {
@@ -982,12 +1132,14 @@ def community_registry_node(
                                         "hour": period,
                                         "isSequence": int(entry.spec.get("is_sequence", 0)),
                                         "markings": [],
-                                        "quantity": int(entry.spec.get("quantity", len(entry.spots))),
-                                        "spotNodeRefs": [node_ref(spot.full_ref) for spot in entry.spots],
+                                        "quantity": int(entry.spec.get("quantity", sum(
+                                            spot.spec.get("phase", phase) == phase_name for spot in entry.spots))),
+                                        "spotNodeRefs": [node_ref(spot.full_ref) for spot in entry.spots
+                                                         if spot.spec.get("phase", phase) == phase_name],
                                     }
                                 ],
                             },
-                        }
+                        } for phase_name in (phase, *entry.spec.get("additional_phases", []))
                     ],
                     "spawnInView": entry.spec.get("spawn_in_view", "default__true_"),
                 },
@@ -1204,6 +1356,9 @@ def build_world_documents(spec: dict[str, Any], raw_root: Path, archive_root: Pa
     if not isinstance(patrol_spline_specs, list):
         raise SystemExit("patrol_splines must be a list")
     spline_specs = [*spline_specs, *patrol_spline_specs]
+    race_spline_specs = spec.get("race_splines", [])
+    if not isinstance(race_spline_specs, list):
+        raise SystemExit("race_splines must be a list")
     ai_spot_specs = spec.get("ai_spots", [])
     if not isinstance(ai_spot_specs, list):
         raise SystemExit("ai_spots must be a list")
@@ -1240,8 +1395,9 @@ def build_world_documents(spec: dict[str, Any], raw_root: Path, archive_root: Pa
     if always_loaded_ref_specs and not isinstance(always_loaded_ref_specs, list):
         raise SystemExit("always_loaded_node_refs must be a list")
     always_loaded_marker_specs = [item for item in marker_specs if item.get("sector") == "always_loaded"]
+    always_loaded_entity_specs = [item for item in entity_specs if item.get("sector") == "always_loaded"]
     always_loaded_path = None
-    if community_specs or always_loaded_ref_specs or always_loaded_marker_specs:
+    if community_specs or always_loaded_ref_specs or always_loaded_marker_specs or always_loaded_entity_specs:
         always_loaded_path = normalize_depot_path(
             spec.get("always_loaded_sector_path", rf"mod\{spec.get('name', 'ghostline')}\world\always_loaded.streamingsector")
         )
@@ -1319,13 +1475,27 @@ def build_world_documents(spec: dict[str, Any], raw_root: Path, archive_root: Pa
             f"entity {ref_value}",
         )
         yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
-        add_node(
+        add_entity = add_always_loaded_node if item.get("sector") == "always_loaded" else add_node
+        entity_handles = always_handles if item.get("sector") == "always_loaded" else handles
+        add_entity(
             ref_value,
-            entity_node(item, ref_value, handles),
+            entity_node(item, ref_value, entity_handles),
             pos,
             yaw,
             item.get("node_data"),
         )
+
+    for item in spec.get("crowd_null_areas", []):
+        ref_value = item["ref"]
+        pos, anchor_yaw = resolve_position(item.get("position"),anchors,f"crowd null area {ref_value}")
+        yaw = resolve_yaw(item.get("yaw"),anchors,anchor_yaw)
+        node = trigger_node(item,ref_value,handles)
+        node["Data"] = {key:value for key,value in node["Data"].items() if key in {
+            "$type","debugName","isHostOnly","isVisibleInGame","proxyScale",
+            "sourcePrefabHash","tag","tagExt","outline"}}
+        node["Data"].update({"$type":"worldCrowdNullAreaNode",
+                             "IsForBlockade":1,"permanentlyEnabledByDefault":0})
+        add_node(ref_value,node,pos,yaw,item.get("node_data"))
 
     for item in device_specs:
         ref_value = item["ref"]
@@ -1465,9 +1635,12 @@ def build_world_documents(spec: dict[str, Any], raw_root: Path, archive_root: Pa
             item.get("node_data"),
         )
 
-    for item in spline_specs:
+    for item, is_race in [
+        *((item, False) for item in spline_specs),
+        *((item, True) for item in race_spline_specs),
+    ]:
         if not isinstance(item, dict):
-            raise SystemExit("splines entries must be objects")
+            raise SystemExit(f"{'race_splines' if is_race else 'splines'} entries must be objects")
         ref_value = item["ref"]
         pos, anchor_yaw = resolve_position(
             item.get("position"),
@@ -1475,13 +1648,16 @@ def build_world_documents(spec: dict[str, Any], raw_root: Path, archive_root: Pa
             f"spline {ref_value}",
         )
         yaw = resolve_yaw(item.get("yaw"), anchors, anchor_yaw)
+        node = (race_spline_node if is_race else spline_node)(item, ref_value, handles)
         add_node(
             ref_value,
-            spline_node(item, ref_value, handles),
+            node,
             pos,
             yaw,
             item.get("node_data"),
         )
+        if is_race:
+            positions.extend(race_spline_bounds(node, node_datas[-1]))
 
     alias_refs: set[str] = set()
     for ref_spec in always_loaded_ref_specs:

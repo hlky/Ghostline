@@ -32,7 +32,9 @@ def make_server(scout):
         'Long travel requires allow_teleport. Scout/replay jobs run in background; use job_status, '
         'get_record and read_image for results. Stop interrupts immediately and releases camera control. '
         'FreeFly remains under player control. Semantic exploration is performed by the calling model; '
-        'autonomous_scout is a bounded geometric coverage walker. End sessions when finished.'))
+        'autonomous_scout is a bounded geometric coverage walker. For race surveys use create_race and '
+        'mark_race with surface ray hits; camera routes are not ground-level race geometry. '
+        'export_race writes generator geometry and a separate quest handoff. End sessions when finished.'))
 
     async def invoke(function, *args, **kwargs):
         try:
@@ -120,7 +122,7 @@ def make_server(scout):
 
     @server.tool(annotations=read_only)
     async def search_library(kind: str | None=None,query: str='',limit: int=50) -> CallToolResult:
-        """Search saved locations/viewpoints/images/routes/jobs/connections by name, notes or tags."""
+        """Search saved locations/viewpoints/images/routes/race plans/jobs/connections by name, notes or tags."""
         return await invoke(lambda: {'records':scout.library.list(kind,query,limit)})
 
     @server.tool(annotations=read_only)
@@ -132,6 +134,51 @@ def make_server(scout):
     async def get_record(record_id: str) -> CallToolResult:
         """Read a complete saved record, including route waypoints or job output image IDs."""
         return await invoke(scout.library.get,record_id)
+
+    @server.tool(annotations=control)
+    async def create_race(name: str,prefix: str,description: str='',looped: bool=False,
+                          width_default: float=5,speed_mps: float=10) -> CallToolResult:
+        """Create a persistent race survey. Prefix is a lowercase quest identifier; widths are metres, speeds m/s."""
+        return await invoke(scout.races.create,name,prefix,description,looped,width_default,speed_mps)
+
+    @server.tool(annotations=control)
+    async def configure_race(race_id: str,description: str | None=None,looped: bool | None=None,
+                             width_default: float | None=None,speed_mps: float | None=None) -> CallToolResult:
+        """Update race defaults/notes without changing saved marks or acquiring game control."""
+        return await invoke(scout.races.configure,race_id,description=description,looped=looped,
+                            width_default=width_default,speed_mps=speed_mps)
+
+    @server.tool(annotations=control)
+    async def mark_race(race_id: str,role: str,name: str='',notes: str='',source: str='surface',
+                       position: dict[str,float] | None=None,yaw: float | None=None,
+                       u: float=0.5,v: float=0.5,range_m: float=100,options: dict | None=None,
+                       order: int | None=None,mark_id: str | None=None) -> CallToolResult:
+        """Mark race geometry. Roles: spline_point, checkpoint, start_grid, player_start, staging, activation, finish, opponent_exit, recovery, reward, spectator, hazard, boundary, gps, prop, speed_change, width_change. Activation marks the player's waiting workspot transform. Surface raycasts the latest observed image; manual requires position/yaw. Area options: width_m/depth_m/height_m; speed_change: speed_mps; width_change: left_m/right_m; prop: entity_template. Orders are per role; mark_id replaces an existing mark."""
+        return await invoke(scout.mark_race,race_id,role,name,notes,source,position,yaw,u,v,range_m,options,order,mark_id)
+
+    @server.tool(annotations=control)
+    async def edit_race_mark(race_id: str,mark_id: str,order: int | None=None,name: str | None=None,
+                             notes: str | None=None,options: dict | None=None,
+                             position: dict[str,float] | None=None,yaw: float | None=None) -> CallToolResult:
+        """Correct a saved mark or its per-role order offline; omitted fields retain their values. Position edits retain prior capture provenance."""
+        return await invoke(scout.races.edit,race_id,mark_id,order=order,name=name,notes=notes,
+                            options=options,position=position,yaw=yaw)
+
+    @server.tool(annotations=control)
+    async def remove_race_mark(race_id: str,mark_id: str) -> CallToolResult:
+        """Remove one saved race mark by ID without moving the camera."""
+        return await invoke(scout.races.remove,race_id,mark_id)
+
+    @server.tool(annotations=control)
+    async def export_race(race_id: str,require_complete: bool=True) -> CallToolResult:
+        """Export a world-generator spec and full race handoff manifest. Complete geometry requires spline points, checkpoints, grid, player start, staging, activation workspot and finish. Set require_complete=false for a draft. Exports geometry, not executable race quest logic."""
+        return await invoke(scout.races.export,race_id,require_complete)
+
+    @server.tool(annotations=control)
+    async def build_race(race_id: str,entrants: list[dict],project: str | None=None,
+                         output_root: str | None=None,settings: dict | None=None) -> CallToolResult:
+        """Build a native race preview from survey marks. Each entrant needs id, grid order, Vehicle record and Character driver record. Requires an activation workspot mark. Settings: countdown_seconds, timeout_seconds, winning_places, reward, off_course, rubberband. Writes project-scoped raw resources and ArchiveXL registration; does not install or acquire game control. Use race_builder.py --deserialize for verified CR2W binaries."""
+        return await invoke(scout.races.build,race_id,entrants,project=project,output_root=output_root,settings=settings)
 
     @server.tool(annotations=read_only)
     async def read_image(image_id: str) -> CallToolResult:

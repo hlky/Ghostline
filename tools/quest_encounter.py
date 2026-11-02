@@ -473,7 +473,7 @@ def scene_flow_node(
     return builder.node(
         quest_id,
         "questSceneNodeDefinition",
-        input_names=(scene_flow["entry"],),
+        input_names=(scene_flow["entry"], *scene_flow.get("additional_entries", [])),
         output_names=tuple(output_names),
         properties={
             "interruptionOperations": [],
